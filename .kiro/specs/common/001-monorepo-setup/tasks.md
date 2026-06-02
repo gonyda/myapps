@@ -8,7 +8,7 @@ Parent POM 생성 → mysender 모듈 구성 → 빌드 검증 순서로 진행�
 
 ## Tasks
 
-- [ ] 1. Parent POM 생성 및 루트 프로젝트 초기화
+- [x] 1. Parent POM 생성 및 루트 프로젝트 초기화
   - `myapps/pom.xml` 파일 생성
   - `<groupId>com.myapps</groupId>`, `<artifactId>myapps</artifactId>`, `<version>1.0.0-SNAPSHOT</version>`, `<packaging>pom</packaging>` 설정
   - `spring-boot-starter-parent` 4.0.x 버전 parent로 설정
@@ -20,7 +20,7 @@ Parent POM 생성 → mysender 모듈 구성 → 빌드 검증 순서로 진행�
   - 빌드 검증: `mvn clean install` → `BUILD SUCCESS` 확인
   - _요구사항: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 4.1, 4.2, 4.3_
 
-- [ ] 2. .gitignore 파일 생성
+- [x] 2. .gitignore 파일 생성
   - `myapps/.gitignore` 파일 생성
   - Maven 빌드 산출물 패턴 추가: `target/`
   - IntelliJ IDEA 관련 패턴 추가: `.idea/`, `*.iml`
@@ -30,15 +30,15 @@ Parent POM 생성 → mysender 모듈 구성 → 빌드 검증 순서로 진행�
   - 빌드 검증: `mvn validate` → `BUILD SUCCESS` 확인
   - _요구사항: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 3. mysender 모듈 디렉터리 구조 및 Child POM 생성
-  - [ ] 3.1 mysender 모듈 디렉터리 구조 생성
+- [x] 3. mysender 모듈 디렉터리 구조 및 Child POM 생성
+  - [x] 3.1 mysender 모듈 디렉터리 구조 생성
     - `mysender/src/main/java/com/myapps/mysender/` 디렉터리 생성
     - `mysender/src/main/resources/` 디렉터리 생성
     - `mysender/src/test/java/com/myapps/mysender/` 디렉터리 생성
     - 빌드 검증: 구조 생성 후 `mvn clean install` → `BUILD SUCCESS` 확인 (POM만으로 검증)
     - _요구사항: 2.1, 2.4_
 
-  - [ ] 3.2 mysender Child POM 생성
+  - [x] 3.2 mysender Child POM 생성
     - `mysender/pom.xml` 파일 생성
     - `<parent>` 섹션에 `com.myapps:myapps:1.0.0-SNAPSHOT` 참조 선언
     - `<artifactId>mysender</artifactId>`, `<packaging>jar</packaging>` 선언 (`<groupId>`, `<version>` 미선언)
@@ -47,20 +47,20 @@ Parent POM 생성 → mysender 모듈 구성 → 빌드 검증 순서로 진행�
     - 빌드 검증: `mvn clean install -pl mysender -am` → `BUILD SUCCESS` 확인
     - _요구사항: 2.2, 2.3, 2.5, 2.6, 4.4, 4.5_
 
-- [ ] 4. 체크포인트 — 루트 빌드 및 구조 검증
+- [x] 4. 체크포인트 — 루트 빌드 및 구조 검증
   - 루트에서 `mvn clean install` 실행하여 전체 빌드 성공 확인
   - `mysender/target/` 디렉터리에 JAR 파일이 생성되었는지 확인
   - 문제 발생 시 사용자에게 질문하세요.
 
-- [ ] 5. MysenderApplication 메인 클래스 및 통합 테스트 구현
-  - [ ] 5.1 MysenderApplication 메인 클래스 작성
+- [x] 5. MysenderApplication 메인 클래스 및 통합 테스트 구현
+  - [x] 5.1 MysenderApplication 메인 클래스 작성
     - `mysender/src/main/java/com/myapps/mysender/MysenderApplication.java` 생성
     - `@SpringBootApplication` 어노테이션 선언
     - `SpringApplication.run(MysenderApplication.class, args)` 호출하는 `main` 메서드 작성
     - 빌드 검증: `mvn clean install -pl mysender -am` → `BUILD SUCCESS` 확인
     - _요구사항: 2.7_
 
-  - [ ] 5.2 Spring Boot 통합 테스트 작성
+  - [x] 5.2 Spring Boot 통합 테스트 작성
     - `mysender/src/test/java/com/myapps/mysender/MysenderApplicationTest.java` 생성
     - `@SpringBootTest` 어노테이션 선언
     - `contextLoads()` 테스트 메서드 작성 — ApplicationContext 오류 없이 로드되는지 검증
@@ -68,13 +68,13 @@ Parent POM 생성 → mysender 모듈 구성 → 빌드 검증 순서로 진행�
     - 빌드 검증: `mvn clean install -pl mysender -am` → `BUILD SUCCESS` 확인
     - _요구사항: 2.7, 3.1, 3.2_
 
-- [ ] 6. application.yml 설정 파일 생성
+- [x] 6. application.yml 설정 파일 생성
   - `mysender/src/main/resources/application.yml` 파일 생성
   - 애플리케이션 이름 설정: `spring.application.name=mysender`
   - 빌드 검증: `mvn clean install -pl mysender -am` → `BUILD SUCCESS` 확인
   - _요구사항: 2.4_
 
-- [ ] 7. 최종 체크포인트 — 전체 빌드 및 단독 빌드 검증
+- [x] 7. 최종 체크포인트 — 전체 빌드 및 단독 빌드 검증
   - 루트에서 `mvn clean install` 실행 → `BUILD SUCCESS` 및 `mysender/target/*.jar` 존재 확인
   - `mvn clean install -pl mysender` 실행 → mysender 단독 빌드 성공 확인
   - 모든 테스트 통과 여부 확인
