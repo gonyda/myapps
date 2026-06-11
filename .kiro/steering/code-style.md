@@ -109,6 +109,56 @@ public void sendMessage(final String receiverId, final String message) {
 | 레포지토리 | 슬라이스 테스트 | `@DataJpaTest` |
 | 전체 컨텍스트 | 통합 테스트 | `@SpringBootTest` |
 
+### Spring Boot 4.0 테스트 변경사항
+
+Spring Boot 4.0에서 테스트 인프라가 모듈화되었습니다. 아래 규칙을 반드시 따릅니다.
+
+#### @MockBean → @MockitoBean 마이그레이션
+
+- `@MockBean`, `@SpyBean`은 **제거됨** — 사용 금지
+- 대신 `@MockitoBean`, `@MockitoSpyBean` 사용
+- import: `org.springframework.test.context.bean.override.mockito.MockitoBean`
+
+```java
+// ❌ Spring Boot 3.x (제거됨)
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+// ✅ Spring Boot 4.0
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+@WebMvcTest(MyController.class)
+class MyControllerTest {
+    @MockitoBean
+    private MyService myService;
+}
+```
+
+#### @WebMvcTest 패키지 변경
+
+- 슬라이스 테스트에 `spring-boot-starter-webmvc-test` 의존성 필요 (모듈 pom.xml에 test scope)
+- import: `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`
+
+```java
+// ❌ Spring Boot 3.x (제거됨)
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+
+// ✅ Spring Boot 4.0
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+```
+
+#### Jackson 3 (ObjectMapper)
+
+- Jackson 3에서 패키지가 `com.fasterxml.jackson` → `tools.jackson`으로 변경
+- import: `tools.jackson.databind.ObjectMapper`
+
+```java
+// ❌ Jackson 2 (더 이상 기본 제공 안 됨)
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+// ✅ Jackson 3
+import tools.jackson.databind.ObjectMapper;
+```
+
 > Task 완료 전 테스트 실행 및 빌드 검증 기준은 `task-build-validation.md` 참고
 
 ## 소스 수정 Task 완료 전 코드 정리 (필수)
