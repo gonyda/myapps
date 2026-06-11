@@ -7,6 +7,7 @@ inclusion: always
 ## Java 코딩 컨벤션
 
 - **언어**: Java 25, 최신 언어 기능 적극 활용 (record, sealed class, pattern matching 등)
+- **`var` 사용 금지**: 지역 변수 타입 추론(`var`) 사용하지 않음 — 항상 명시적 타입 선언
 - **인코딩**: UTF-8
 - **들여쓰기**: 스페이스 4칸 (탭 금지)
 - **최대 줄 길이**: 120자
@@ -60,6 +61,26 @@ public boolean sendMessage(String receiverId, String message) { ... }
 - 레포지토리: `@Repository`
 - 설정: `@Configuration`
 - 생성자 주입 방식 사용 (필드 주입 `@Autowired` 금지)
+
+## final 키워드 사용 정책
+
+- **메서드 파라미터**: 모든 파라미터에 `final` 선언 필수
+- **지역 변수**: 재할당하지 않는 지역 변수에 `final` 선언 필수
+- **필드**: 별도 강제 없음 (불변 필드는 자연스럽게 `final` 사용)
+
+```java
+// 좋은 예
+public void sendMessage(final String receiverId, final String message) {
+    final MessageResult result = messageClient.send(receiverId, message);
+    final long startTime = System.currentTimeMillis();
+
+    // 재할당이 필요한 변수는 final 붙이지 않음
+    int retryCount = 0;
+    while (!result.isSuccess() && retryCount < MAX_RETRY_COUNT) {
+        retryCount++;
+    }
+}
+```
 
 ## Lombok 사용 정책
 
