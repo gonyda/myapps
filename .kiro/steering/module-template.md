@@ -10,6 +10,8 @@ inclusion: manual
 
 ## 모듈 유형별 기본 의존성
 
+> `spring-boot-starter-data-jpa`와 `spring-boot-starter-test`는 Parent POM에서 자동 상속되므로 모듈별 pom.xml에 선언하지 않습니다. (`pom-conventions.md` 참고)
+
 **Web 모듈:**
 ```xml
 <dependency>
@@ -18,8 +20,7 @@ inclusion: manual
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
 </dependency>
 ```
 
@@ -29,51 +30,94 @@ inclusion: manual
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-batch</artifactId>
 </dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-</dependency>
 ```
 
-## 모듈 유형별 패키지 구조
+## 패키지 네이밍 규칙
 
-**Web 모듈** (`com.myapps.{modulename}/`):
+모듈 유형에 따라 기본 패키지가 달라집니다:
+
+| 모듈 유형 | 기본 패키지 |
+|---|---|
+| Web | `com.myapps.web.{modulename}` |
+| Batch | `com.myapps.batch.{modulename}` |
+
+## 모듈 유형별 패키지 구조 (DDD)
+
+**Web 모듈** (`com.myapps.web.{modulename}/`):
 ```
 ├── {ModuleName}Application.java
-├── controller/
-├── service/
-├── repository/
-├── domain/
-├── dto/
-└── config/
+├── domain/                    # 도메인 계층 (핵심 비즈니스 로직)
+│   ├── model/                 #   @Entity 도메인 모델, 값 객체, 도메인 이벤트
+│   ├── repository/            #   리포지토리 인터페이스 (포트)
+│   └── service/               #   도메인 서비스
+├── application/               # 응용 계층 (유스케이스 오케스트레이션)
+│   ├── service/               #   애플리케이션 서비스 (유스케이스 구현)
+│   ├── dto/                   #   커맨드, 쿼리, 응답 DTO
+│   └── port/                  #   외부 시스템 포트 인터페이스
+├── infrastructure/            # 인프라 계층 (기술 구현)
+│   ├── persistence/           #   JPA 리포지토리 구현체 (Spring Data JPA)
+│   ├── external/              #   외부 API 클라이언트, 어댑터
+│   └── config/                #   인프라 관련 설정 (DB, 메시징 등)
+└── interfaces/                # 인터페이스 계층 (외부 진입점)
+    ├── api/                   #   REST 컨트롤러
+    ├── dto/                   #   요청/응답 DTO (API 전용)
+    └── config/                #   웹 관련 설정 (CORS, 시큐리티 등)
 ```
 
-**Batch 모듈** (`com.myapps.{modulename}/`):
+**Batch 모듈** (`com.myapps.batch.{modulename}/`):
 ```
 ├── {ModuleName}Application.java
-├── job/
-├── step/
-├── tasklet/
-├── reader/
-├── processor/
-├── writer/
-└── config/
+├── domain/                    # 도메인 계층 (핵심 비즈니스 로직)
+│   ├── model/                 #   @Entity 도메인 모델, 값 객체
+│   ├── repository/            #   리포지토리 인터페이스 (포트)
+│   └── service/               #   도메인 서비스
+├── application/               # 응용 계층 (유스케이스 오케스트레이션)
+│   ├── service/               #   애플리케이션 서비스
+│   ├── dto/                   #   커맨드, 쿼리 DTO
+│   └── port/                  #   외부 시스템 포트 인터페이스
+├── infrastructure/            # 인프라 계층 (기술 구현)
+│   ├── persistence/           #   JPA 리포지토리 구현체 (Spring Data JPA)
+│   ├── external/              #   외부 API 클라이언트, 어댑터
+│   └── config/                #   인프라 관련 설정
+└── job/                       # 배치 작업 계층 (진입점)
+    ├── config/                #   Job/Step 설정 (@Configuration)
+    ├── reader/                #   ItemReader 구현
+    ├── processor/             #   ItemProcessor 구현
+    ├── writer/                #   ItemWriter 구현
+    └── tasklet/               #   Tasklet 구현
 ```
 
 ## 디렉터리 구조
 
+**Web 모듈:**
 ```
 {modulename}/
 ├── pom.xml
 └── src/
     ├── main/
-    │   ├── java/com/myapps/{modulename}/
+    │   ├── java/com/myapps/web/{modulename}/
+    │   │   └── {ModuleName}Application.java
+    │   └── resources/
+    │       ├── templates/         # Thymeleaf 템플릿 (.html)
+    │       ├── static/            # 정적 리소스 (CSS, JS, 이미지)
+    │       └── application.yml
+    └── test/
+        └── java/com/myapps/web/{modulename}/
+            └── {ModuleName}ApplicationTest.java
+```
+
+**Batch 모듈:**
+```
+{modulename}/
+├── pom.xml
+└── src/
+    ├── main/
+    │   ├── java/com/myapps/batch/{modulename}/
     │   │   └── {ModuleName}Application.java
     │   └── resources/
     │       └── application.yml
     └── test/
-        └── java/com/myapps/{modulename}/
+        └── java/com/myapps/batch/{modulename}/
             └── {ModuleName}ApplicationTest.java
 ```
 
@@ -97,24 +141,42 @@ inclusion: manual
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- 모듈 유형에 맞는 starter 추가 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!-- 모듈 유형에 맞는 starter만 추가 (JPA, test는 Parent에서 상속) -->
     </dependencies>
 </project>
 ```
 
 ## 메인 애플리케이션 클래스 템플릿
 
+**Web 모듈:**
 ```java
-package com.myapps.{modulename};
+package com.myapps.web.{modulename};
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * {ModuleName} 웹 애플리케이션의 진입점.
+ */
+@SpringBootApplication
+public class {ModuleName}Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run({ModuleName}Application.class, args);
+    }
+}
+```
+
+**Batch 모듈:**
+```java
+package com.myapps.batch.{modulename};
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * {ModuleName} 배치 애플리케이션의 진입점.
+ */
 @SpringBootApplication
 public class {ModuleName}Application {
 

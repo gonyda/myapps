@@ -13,7 +13,7 @@ inclusion: always
 - **클래스명**: PascalCase (예: `MessageSender`)
 - **메서드/변수명**: camelCase (예: `sendMessage`, `messageId`)
 - **상수명**: UPPER_SNAKE_CASE (예: `MAX_RETRY_COUNT`)
-- **패키지명**: 소문자, 점 구분 (예: `com.myapps.mysender.service`)
+- **패키지명**: 소문자, 점 구분 (예: `com.myapps.web.mysender.domain.service`)
 
 ## JavaDoc 주석 규칙
 

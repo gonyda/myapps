@@ -49,6 +49,25 @@ fileMatchPattern: "**/pom.xml"
 - Parent POM의 `<build><plugins>`에 선언
 - 각 Child Module이 실행 가능한 fat JAR로 패키징되도록 보장
 
+## Parent POM 공통 의존성
+
+아래 의존성은 Parent POM의 `<dependencies>` 섹션에 선언하여 모든 Child Module에 자동 상속됩니다.
+모듈별 pom.xml에서 중복 선언하지 않습니다.
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
 ## Child Module pom.xml 규칙
 
 ```xml

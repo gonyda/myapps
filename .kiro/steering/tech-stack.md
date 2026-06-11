@@ -37,15 +37,20 @@ myapps/                        # Git 레포지토리 루트 (Project_Root)
 
 ## 패키지 구조 규칙
 
-- 기본 패키지: `com.myapps.{modulename}`
-- 예: `mysender` 모듈 → `com.myapps.mysender`
-- 메인 클래스: `com.myapps.{modulename}.{ModuleName}Application`
+- 모듈 유형에 따라 기본 패키지가 결정됩니다:
+  - Web 모듈: `com.myapps.web.{modulename}` (예: `mysender` → `com.myapps.web.mysender`)
+  - Batch 모듈: `com.myapps.batch.{modulename}` (예: `myjob` → `com.myapps.batch.myjob`)
+- 메인 클래스: `com.myapps.{web|batch}.{modulename}.{ModuleName}Application`
+- DDD 계층 구조 적용 (상세 패키지 구조는 `module-template.md` 참고)
 
 ## 주요 의존성 기준
 
 - Spring Boot Starter: `spring-boot-starter` (버전은 Parent POM에서 관리)
-- 테스트: `spring-boot-starter-test` (JUnit 5 포함)
+- JPA: `spring-boot-starter-data-jpa` (모든 모듈 공통)
+- 테스트: `spring-boot-starter-test` (모든 모듈 공통)
+- Thymeleaf: `spring-boot-starter-thymeleaf` (Web 모듈 전용 — 서버사이드 템플릿 엔진)
 - 버전은 반드시 Parent POM의 `<dependencyManagement>`에서 중앙 관리
+- 공통 의존성 선언 위치 및 상세 규칙은 `pom-conventions.md` 참고
 
 ## 환경 변수
 

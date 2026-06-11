@@ -1,3 +1,7 @@
+---
+inclusion: always
+---
+
 # Spec 문서 구조 규칙
 
 ## 폴더 구조
