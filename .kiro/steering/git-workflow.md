@@ -20,6 +20,36 @@ chore/*       # 빌드, 설정, 의존성 업데이트 등
   - 사용자가 현재 브랜치에서 작업을 원하면: 브랜치 생성 없이 진행
 - 브랜치를 생성한 경우, 변경은 PR을 통해 병합
 
+## 작업 브랜치 워크플로우
+
+코드 변경 작업 시 아래 순서를 따릅니다:
+
+1. **브랜치 생성**: `main`에서 새 브랜치 생성
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b {type}/{branch-name}
+   ```
+
+2. **커밋**: 작업 완료 후 커밋
+   ```bash
+   git add <files>
+   git commit -m "<type>(<scope>): <한글 설명>"
+   ```
+
+3. **main rebase**: push 전에 최신 main을 rebase
+   ```bash
+   git fetch origin
+   git rebase origin/main
+   ```
+
+4. **push**: 리모트에 브랜치 push
+   ```bash
+   git push -u origin {type}/{branch-name}
+   ```
+
+5. **PR 생성**: GitHub에서 PR 생성 후 리뷰 → Squash and Merge
+
 ## 커밋 메시지 컨벤션
 
 [Conventional Commits](https://www.conventionalcommits.org/) 형식 사용, **메시지는 한글로 작성**:
