@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>영어 문장 학습</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f6f9; }
+        .container { max-width: 900px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+        /* 1. 상단 입력 폼 스타일 */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            align-items: flex-end;
+        }
+        .input-group { display: flex; flex-direction: column; flex: 1; }
+        .input-group label { margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #495057; }
+        .input-group input {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .episode-input-group {
+            flex: unset;
+            width: 100px;
+        }
+        .btn-add {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 42px;
+            font-weight: bold;
+        }
+        .btn-add:hover { background-color: #0056b3; }
+
+        /* 2. 테이블 스타일 */
+        .study-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+        .study-table th, .study-table td { border: 1px solid #dee2e6; padding: 12px; }
+        .study-table th { background-color: #343a40; color: white; text-align: center; }
+        .eng-row { background-color: #fff; }
+        .kor-row { background-color: #f8f9fa; border-top: none; }
+        .eng-text { visibility: hidden; color: #28a745; font-weight: bold; font-size: 1.1em; }
+        .eng-text.show { visibility: visible; }
+        .kor-text { color: #555; }
+
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 20px; }
+        .pagination button { padding: 8px 12px; cursor: pointer; border: 1px solid #ced4da; border-radius: 4px; background-color: #fff; font-size: 0.9em; }
+        .pagination button:hover { background-color: #e9ecef; }
+        .pagination button.active { background-color: #007bff; color: white; border-color: #007bff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 영어 학습</h2>
+    <h2><span id="ebsLinkContainer"></span></h2>
+    <div class="input-section">
+        <div class="input-group episode-input-group">
+            <label>회차</label>
+            <input type="text" id="inputEpisode" placeholder="회차를 입력하세요" value="1">
+        </div>
+        <div class="input-group">
+            <label>English Sentence</label>
+            <input type="text" id="inputEng" placeholder="영어 문장을 입력하세요">
+        </div>
+        <div class="input-group">
+            <label>한국어 해석</label>
+            <input type="text" id="inputKor" placeholder="한국어 뜻을 입력하세요">
+        </div>
+        <button class="btn-add" onclick="addNewPair()">등록</button>
+    </div>
+
+    <table class="study-table" id="studyTable">
+        <colgroup>
+            <col style="width: 60px;">
+            <col style="width: 60px;">
+            <col style="width: auto;">
+        </colgroup>
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>회차</th>
+            <th>문장 (위: 영어 / 아래: 한국어)</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button onclick="prevPage()">이전</button>
+        <div id="pageNumbers" class="page-numbers"></div>
+        <button onclick="nextPage()">다음</button>
+    </div>
+</div>
+
+<script>
+    let studyData = /*[[${englishStudies}]]*/ [];
+
+    async function loadData() {
+        try {
+            const response = await fetch('/api/english-study');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            studyData = await response.json();
+        } catch (error) {
+            console.error('Error loading English study data:', error);
+            studyData = [];
+        }
+    }
+
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        let end = start + itemsPerPage;
+        if (end > studyData.length) {
+            end = studyData.length;
+        }
+        const pageData = studyData.slice(start, end);
+
+        if (pageData.length === 0 && currentPage > 1) {
+            currentPage--;
+            renderTable();
+            return;
+        }
+
+        pageData.forEach((item, index) => {
+            const displayIndex = start + index + 1;
+
+            const row1 = document.createElement('tr');
+            row1.className = 'eng-row';
+            row1.innerHTML = `
+                <td rowspan="2" style="text-align:center; vertical-align:middle; font-weight:bold;">${item.id}</td>
+                <td rowspan="2" style="text-align:center; vertical-align:middle;">${item.episode}</td>
+                <td style="border-bottom:none;" onclick="toggleEnglish('${item.id}')">
+                    <span class="eng-text" id="eng-sentence-${item.id}">${item.englishSentence}</span>
+                </td>
+            `;
+
+            const row2 = document.createElement('tr');
+            row2.className = 'kor-row';
+            row2.innerHTML = `
+                <td style="border-top:none; padding-top:0;">
+                    <span class="kor-text">${item.koreanSentence}</span>
+                </td>
+            `;
+
+            tbody.appendChild(row1);
+            tbody.appendChild(row2);
+        });
+
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        const pageNumbersContainer = document.getElementById('pageNumbers');
+        pageNumbersContainer.innerHTML = '';
+
+        const maxPage = Math.ceil(studyData.length / itemsPerPage);
+
+        for (let i = 1; i <= maxPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.innerText = i;
+            pageButton.onclick = () => goToPage(i);
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageNumbersContainer.appendChild(pageButton);
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        renderTable();
+    }
+
+    function toggleEnglish(id) {
+        const el = document.getElementById(`eng-sentence-${id}`);
+        el.classList.toggle('show');
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable();
+        }
+    }
+
+    function nextPage() {
+        const maxPage = Math.ceil(studyData.length / itemsPerPage);
+        if (currentPage < maxPage) {
+            currentPage++;
+            renderTable();
+        }
+    }
+
+    async function addNewPair() {
+        const engInput = document.getElementById('inputEng');
+        const korInput = document.getElementById('inputKor');
+        const episodeInput = document.getElementById('inputEpisode');
+
+        const englishSentence = engInput.value.trim();
+        const koreanSentence = korInput.value.trim();
+        const episode = parseInt(episodeInput.value, 10);
+
+        if (!englishSentence || !koreanSentence || isNaN(episode)) {
+            alert("영어 문장, 한국어 해석, 회차를 모두 올바르게 입력해주세요.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/english-study', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ koreanSentence, englishSentence, episode }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            engInput.value = '';
+            korInput.value = '';
+            engInput.focus();
+
+            await loadData();
+            renderTable();
+            updateEBSLink();
+        } catch (error) {
+            console.error('Error adding new pair:', error);
+            alert('문장 추가에 실패했습니다.');
+        }
+    }
+
+    function updateEBSLink() {
+        const linkContainer = document.getElementById('ebsLinkContainer');
+        const episodeInput = document.getElementById('inputEpisode');
+        if (!linkContainer || !episodeInput) return;
+
+        let nextLessonNumber;
+        if (studyData.length > 0) {
+            const maxEpisode = Math.max(...studyData.map(item => item.episode));
+            nextLessonNumber = maxEpisode;
+        } else {
+            nextLessonNumber = 1;
+        }
+        
+        episodeInput.value = nextLessonNumber;
+
+        const formattedLessonNumber = nextLessonNumber < 10 ? `0${nextLessonNumber + 1}` : `${nextLessonNumber + 1}`;
+        const baseUrl = "https://home.ebse.co.kr/beginnerenglish/replay/3/list?courseId=ER2016G0BEG01ZZ&stepId=ET2016G0BEG0101&lectId=ET2016G0BEG0101_";
+        const fullUrl = `${baseUrl}${formattedLessonNumber}`;
+
+        linkContainer.innerHTML = `<a href="${fullUrl}" target="_blank">영어 공부하러가기 (${formattedLessonNumber})</a>`;
+    }
+
+    loadData().then(() => {
+        renderTable();
+        updateEBSLink();
+    });
+</script>
+
+</body>
+</html>
