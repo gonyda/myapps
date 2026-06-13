@@ -50,7 +50,7 @@ class EnglishStudyControllerTest {
 
         mockMvc.perform(get("/english-study"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("englishstudy/english_study"))
+                .andExpect(view().name("english_study"))
                 .andExpect(model().attributeExists("englishStudies"));
     }
 
