@@ -63,9 +63,12 @@ pkill -f "{modulename}.*\.jar" || true
 cd /home/ubuntu/app/myapps/{modulename}
 export JAVA_HOME=/opt/jdk-25.0.3
 export PATH=$JAVA_HOME/bin:$PATH
+export DB_PASSWORD="babjo0-mucguj-Mosjeb"
 nohup java -jar target/{modulename}-1.0.0-SNAPSHOT.jar --spring.profiles.active=prod > /home/ubuntu/app/myapps/{modulename}/app.log 2>&1 &
 echo $! > /home/ubuntu/app/myapps/{modulename}/app.pid
 ```
+
+> **주의**: `source /etc/environment` 대신 `export DB_PASSWORD=...`를 같은 셸에서 직접 선언해야 합니다. nohup 서브셸에서는 `/etc/environment`를 source해도 환경변수가 제대로 전달되지 않을 수 있습니다.
 
 ### 5. 실행 확인
 
@@ -76,17 +79,40 @@ curl -s http://localhost:8080/actuator/health || tail -20 /home/ubuntu/app/myapp
 
 ## 포트 규칙
 
+- **사용 가능 범위**: 8080–8099 (Oracle Cloud Security List + iptables 사전 개방 완료)
+- 새 모듈 추가 시 아래 표에서 비어 있는 다음 포트를 할당하고, `application-prod.yml`에 `server.port`를 명시합니다.
+
 | 모듈 | 포트 |
 |------|------|
 | mystudy | 8080 |
 
-새 모듈 추가 시 포트를 이 표에 업데이트합니다.
+> 8080–8099 범위 내라면 Oracle Cloud Security List와 iptables 추가 설정 없이 바로 외부 접속 가능합니다.
 
 ## 로그 확인
 
 ```bash
 tail -f /home/ubuntu/app/myapps/{modulename}/app.log
 ```
+
+## 방화벽 설정 — ✅ 설정 완료
+
+### Oracle Cloud Security List
+
+| Source | Protocol | Destination Port Range | 비고 |
+|--------|----------|------------------------|------|
+| 0.0.0.0/0 | TCP | 22 | SSH |
+| 0.0.0.0/0 | TCP | 8080-8099 | 앱 포트 범위 |
+
+### iptables
+
+8080–8099 범위가 REJECT 규칙 앞에 허용 규칙으로 등록 및 영구 저장됨.
+
+```
+5    ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpts:8080:8099
+```
+
+> 8080–8099 범위 밖의 포트가 필요한 경우에만 Security List + iptables를 추가 설정합니다.
+> iptables 추가 시 반드시 REJECT 규칙 앞에 삽입 (`-I INPUT {N}`)해야 합니다.
 
 ## 주의사항
 

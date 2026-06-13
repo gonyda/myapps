@@ -44,7 +44,7 @@ public class EnglishStudyController {
     public String englishStudy(final Model model) {
         final List<EnglishStudy> englishStudies = englishStudyService.findAllOrderByIdDesc();
         model.addAttribute("englishStudies", englishStudies);
-        return "englishstudy/english_study";
+        return "english_study";
     }
 
     /**
