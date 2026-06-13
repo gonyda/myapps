@@ -16,4 +16,4 @@ inclusion: always
 
 - 모듈 유형 확인 전에는 `pom.xml`, 디렉터리, 소스 파일을 **절대 생성하지 않습니다**
 - 사용자가 유형을 명시한 경우 (예: "웹 모듈 추가해줘")에는 재확인 없이 진행해도 됩니다
-- 상세 생성 절차는 `module-template.md` 참고
+- 상세 생성 절차는 #[[file:.kiro/steering/module/module-template.md]] 참고

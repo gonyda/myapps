@@ -22,6 +22,11 @@ inclusion: manual
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-thymeleaf</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webmvc-test</artifactId>
+    <scope>test</scope>
+</dependency>
 ```
 
 **Batch 모듈:**
@@ -100,7 +105,9 @@ inclusion: manual
     │   └── resources/
     │       ├── templates/         # Thymeleaf 템플릿 (.html)
     │       ├── static/            # 정적 리소스 (CSS, JS, 이미지)
-    │       └── application.yml
+    │       ├── application.yml
+    │       ├── application-local.yml
+    │       └── application-prod.yml
     └── test/
         └── java/com/myapps/web/{modulename}/
             └── {ModuleName}ApplicationTest.java
@@ -115,7 +122,9 @@ inclusion: manual
     │   ├── java/com/myapps/batch/{modulename}/
     │   │   └── {ModuleName}Application.java
     │   └── resources/
-    │       └── application.yml
+    │       ├── application.yml
+    │       ├── application-local.yml
+    │       └── application-prod.yml
     └── test/
         └── java/com/myapps/batch/{modulename}/
             └── {ModuleName}ApplicationTest.java
@@ -141,10 +150,63 @@ inclusion: manual
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- 모듈 유형에 맞는 starter만 추가 (JPA, test는 Parent에서 상속) -->
+        <!-- 모듈 유형에 맞는 starter만 추가 (JPA, test, Oracle, spring-boot-maven-plugin은 Parent에서 상속) -->
     </dependencies>
 </project>
 ```
+
+## Application 설정 파일 템플릿
+
+모든 모듈은 아래 3개의 설정 파일을 `src/main/resources/`에 생성합니다.
+DB 설정 정보는 모든 모듈이 동일합니다.
+
+### application.yml (공통 설정)
+
+```yaml
+logging:
+  level:
+    root: info
+spring:
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        "[default_schema]": admin
+```
+
+### application-local.yml (로컬 개발 환경)
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@I38ZV6G9LRF9FI84_high?TNS_ADMIN=/Users/gony/oracle_cloud/db/Wallet_I38ZV6G9LRF9FI84
+    username: admin
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+```
+
+### application-prod.yml (운영 환경)
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@I38ZV6G9LRF9FI84_high?TNS_ADMIN=/home/ubuntu/app/Wallet_I38ZV6G9LRF9FI84
+    username: admin
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+
+server:
+  port: {할당된 포트}
+```
+
+> **`server.port`**: `deployment.md`의 포트 규칙 표를 참고하여 다음 빈 포트를 할당합니다.
 
 ## 메인 애플리케이션 클래스 템플릿
 
@@ -188,11 +250,11 @@ public class {ModuleName}Application {
 
 ## Parent POM 업데이트
 
-루트 `pom.xml`의 `<modules>` 섹션에 추가:
+루트 `pom.xml`의 `<modules>` 섹션에 기존 모듈 뒤에 추가:
 
 ```xml
 <modules>
-    <module>mysender</module>
+    <!-- 기존 모듈들 -->
     <module>{modulename}</module>
 </modules>
 ```
@@ -203,7 +265,10 @@ public class {ModuleName}Application {
 - [ ] `pom.xml` 생성 (Parent POM 참조, 버전 미선언)
 - [ ] `{ModuleName}Application.java` 메인 클래스 생성
 - [ ] `application.yml` 생성
+- [ ] `application-local.yml` 생성 (로컬 DB 설정)
+- [ ] `application-prod.yml` 생성 (운영 DB 설정 + server.port)
 - [ ] Parent POM `<modules>`에 모듈명 추가
+- [ ] `deployment.md` 포트 규칙 표에 새 모듈 포트 추가
 - [ ] 기존 모듈 `pom.xml` 변경 없음 확인
 - [ ] `mvn test -pl {modulename}` 통과
 - [ ] `mvn clean install -pl {modulename} -am` 성공

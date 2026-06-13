@@ -20,7 +20,7 @@ inclusion: always
 ```
 myapps/                        # Git 레포지토리 루트 (Project_Root)
 ├── pom.xml                    # Parent POM (packaging: pom)
-├── mysender/                  # 첫 번째 Spring Boot 애플리케이션 모듈
+├── mystudy/                   # Spring Boot 웹 애플리케이션 모듈
 │   ├── pom.xml
 │   └── src/
 │       ├── main/java/
@@ -31,17 +31,17 @@ myapps/                        # Git 레포지토리 루트 (Project_Root)
 
 ## 모듈 네이밍 규칙
 
-- 모든 애플리케이션 모듈은 `my` 접두사를 사용합니다 (예: `mysender`, `myreceiver`)
+- 모든 애플리케이션 모듈은 `my` 접두사를 사용합니다 (예: `mystudy`, `myreceiver`)
 - Maven `<artifactId>`는 모듈 디렉터리명과 동일하게 설정합니다
 - Maven `<groupId>`는 `com.myapps`로 통일합니다
 
 ## 패키지 구조 규칙
 
 - 모듈 유형에 따라 기본 패키지가 결정됩니다:
-  - Web 모듈: `com.myapps.web.{modulename}` (예: `mysender` → `com.myapps.web.mysender`)
+  - Web 모듈: `com.myapps.web.{modulename}` (예: `mystudy` → `com.myapps.web.mystudy`)
   - Batch 모듈: `com.myapps.batch.{modulename}` (예: `myjob` → `com.myapps.batch.myjob`)
 - 메인 클래스: `com.myapps.{web|batch}.{modulename}.{ModuleName}Application`
-- DDD 계층 구조 적용 (상세 패키지 구조는 `module-template.md` 참고)
+- DDD 계층 구조 적용 (상세 패키지 구조 및 모듈 생성 절차는 `module-template.md` 참고)
 
 ## 주요 의존성 기준
 

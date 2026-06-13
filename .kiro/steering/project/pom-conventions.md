@@ -47,7 +47,8 @@ fileMatchPattern: "**/pom.xml"
 ## spring-boot-maven-plugin 설정
 
 - Parent POM의 `<build><plugins>`에 선언
-- 각 Child Module이 실행 가능한 fat JAR로 패키징되도록 보장
+- 모든 Child Module이 실행 가능한 fat JAR로 자동 패키징됨
+- Child Module에서 별도 선언 불필요 (Parent에서 상속)
 
 ## Parent POM 공통 의존성
 
@@ -60,6 +61,23 @@ fileMatchPattern: "**/pom.xml"
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
+    <!-- Oracle JDBC 드라이버 및 Wallet 보안 -->
+    <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc11</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.oracle.database.security</groupId>
+        <artifactId>oraclepki</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.oracle.database.security</groupId>
+        <artifactId>osdt_core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.oracle.database.security</groupId>
+        <artifactId>osdt_cert</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
@@ -67,6 +85,8 @@ fileMatchPattern: "**/pom.xml"
     </dependency>
 </dependencies>
 ```
+
+> Oracle 의존성 버전은 `<dependencyManagement>`에서 관리합니다 (현재 21.5.0.0).
 
 ## Child Module pom.xml 규칙
 

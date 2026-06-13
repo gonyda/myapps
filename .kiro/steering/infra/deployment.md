@@ -1,3 +1,7 @@
+---
+inclusion: manual
+---
+
 # Deployment
 
 ## 배포 대상 서버
@@ -63,7 +67,7 @@ pkill -f "{modulename}.*\.jar" || true
 cd /home/ubuntu/app/myapps/{modulename}
 export JAVA_HOME=/opt/jdk-25.0.3
 export PATH=$JAVA_HOME/bin:$PATH
-export DB_PASSWORD="babjo0-mucguj-Mosjeb"
+export DB_PASSWORD="{DB_PASSWORD}"
 nohup java -jar target/{modulename}-1.0.0-SNAPSHOT.jar --spring.profiles.active=prod > /home/ubuntu/app/myapps/{modulename}/app.log 2>&1 &
 echo $! > /home/ubuntu/app/myapps/{modulename}/app.pid
 ```
@@ -74,7 +78,7 @@ echo $! > /home/ubuntu/app/myapps/{modulename}/app.pid
 
 ```bash
 sleep 5
-curl -s http://localhost:8080/actuator/health || tail -20 /home/ubuntu/app/myapps/{modulename}/app.log
+curl -s http://localhost:{port}/actuator/health || tail -20 /home/ubuntu/app/myapps/{modulename}/app.log
 ```
 
 ## 포트 규칙
