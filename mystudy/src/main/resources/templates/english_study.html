@@ -2,32 +2,35 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>영어 문장 학습</title>
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f6f9; }
-        .container { max-width: 900px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        * { box-sizing: border-box; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         /* 1. 상단 입력 폼 스타일 */
         .input-section {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 30px;
-            padding: 20px;
+            padding: 15px;
             background-color: #e9ecef;
             border-radius: 8px;
             align-items: flex-end;
         }
-        .input-group { display: flex; flex-direction: column; flex: 1; }
+        .input-group { display: flex; flex-direction: column; flex: 1; min-width: 0; }
         .input-group label { margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #495057; }
         .input-group input {
             padding: 10px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 1em;
+            font-size: 16px; /* 모바일에서 자동 확대 방지 */
         }
         .episode-input-group {
             flex: unset;
-            width: 100px;
+            width: 80px;
         }
         .btn-add {
             padding: 10px 20px;
@@ -36,25 +39,56 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            height: 42px;
+            min-height: 42px;
             font-weight: bold;
+            font-size: 16px;
         }
         .btn-add:hover { background-color: #0056b3; }
 
         /* 2. 테이블 스타일 */
         .study-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-        .study-table th, .study-table td { border: 1px solid #dee2e6; padding: 12px; }
-        .study-table th { background-color: #343a40; color: white; text-align: center; }
+        .study-table th, .study-table td { border: 1px solid #dee2e6; padding: 10px 8px; }
+        .study-table th { background-color: #343a40; color: white; text-align: center; font-size: 0.9em; }
         .eng-row { background-color: #fff; }
         .kor-row { background-color: #f8f9fa; border-top: none; }
-        .eng-text { visibility: hidden; color: #28a745; font-weight: bold; font-size: 1.1em; }
+        .eng-text { visibility: hidden; color: #28a745; font-weight: bold; font-size: 1.05em; word-break: break-word; }
         .eng-text.show { visibility: visible; }
-        .kor-text { color: #555; }
+        .kor-text { color: #555; word-break: break-word; }
 
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 20px; }
-        .pagination button { padding: 8px 12px; cursor: pointer; border: 1px solid #ced4da; border-radius: 4px; background-color: #fff; font-size: 0.9em; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 20px; flex-wrap: wrap; }
+        .pagination button { padding: 10px 14px; cursor: pointer; border: 1px solid #ced4da; border-radius: 4px; background-color: #fff; font-size: 0.9em; min-width: 40px; }
         .pagination button:hover { background-color: #e9ecef; }
         .pagination button.active { background-color: #007bff; color: white; border-color: #007bff; }
+
+        /* 반응형: 모바일 (768px 이하) */
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .container { padding: 12px; border-radius: 6px; }
+            .container h2 { font-size: 1.2em; }
+
+            .input-section {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+            }
+            .input-group { flex: unset; width: 100%; }
+            .episode-input-group { width: 100%; }
+            .btn-add { width: 100%; padding: 14px; }
+
+            .study-table colgroup col:first-child { width: 36px; }
+            .study-table colgroup col:nth-child(2) { width: 36px; }
+            .study-table th, .study-table td { padding: 8px 5px; font-size: 0.85em; }
+            .eng-text { font-size: 0.95em; }
+
+            .pagination button { padding: 10px 12px; font-size: 0.85em; }
+        }
+
+        /* 매우 작은 화면 (400px 이하) */
+        @media (max-width: 400px) {
+            .study-table colgroup col:first-child { width: 30px; }
+            .study-table colgroup col:nth-child(2) { width: 30px; }
+            .study-table th, .study-table td { padding: 6px 4px; font-size: 0.8em; }
+        }
     </style>
 </head>
 <body>
