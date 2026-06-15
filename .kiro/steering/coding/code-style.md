@@ -60,7 +60,9 @@ public boolean sendMessage(String receiverId, String message) { ... }
 - 서비스: `@Service`
 - 레포지토리: `@Repository`
 - 설정: `@Configuration`
-- 생성자 주입 방식 사용 (필드 주입 `@Autowired` 금지)
+- **`@Autowired` 사용 절대 금지**: 필드 주입, 세터 주입, 생성자 주입 어디에도 `@Autowired` 어노테이션을 사용하지 않음
+- 의존성 주입은 반드시 **순수 생성자 주입** 방식만 사용 (Spring은 단일 생성자일 때 자동으로 DI 수행)
+- 생성자가 2개 이상인 경우에도 `@Autowired` 대신 Spring이 사용할 생성자를 기본 생성자로 설계하거나 팩토리 메서드 패턴 사용
 
 ## final 키워드 사용 정책
 
@@ -84,9 +86,11 @@ public void sendMessage(final String receiverId, final String message) {
 
 ## Lombok 사용 정책
 
-- Lombok **사용하지 않음** (Java 25 record로 대체)
-- DTO/VO는 `record` 타입 사용 권장
+- **Lombok 사용 절대 금지**: `@Getter`, `@Setter`, `@Builder`, `@Data`, `@AllArgsConstructor`, `@NoArgsConstructor` 등 모든 Lombok 어노테이션 사용 불가
+- `lombok` 의존성을 pom.xml에 추가하지 않음
+- DTO/VO는 `record` 타입 사용 권장 (Java 25 record로 대체)
 - 불변 도메인 객체도 `record` 타입 권장
+- getter/setter가 필요한 경우 직접 작성
 
 ## 예외 처리
 
@@ -105,9 +109,30 @@ public void sendMessage(final String receiverId, final String message) {
 | 대상 | 테스트 유형 | 어노테이션 |
 |---|---|---|
 | 서비스 클래스 | 단위 테스트 | `@ExtendWith(MockitoExtension.class)` |
+| 서비스 클래스 | Property-Based 테스트 | jqwik `@Property` + `Mockito.mock()` |
 | 컨트롤러 | 슬라이스 테스트 | `@WebMvcTest` |
 | 레포지토리 | 슬라이스 테스트 | `@DataJpaTest` |
 | 전체 컨텍스트 | 통합 테스트 | `@SpringBootTest` |
+
+### jqwik Property-Based 테스트에서의 Mock 사용
+
+- jqwik은 자체 테스트 엔진을 사용하므로 `@ExtendWith(MockitoExtension.class)`와 호환되지 않음
+- **`@Mock` 어노테이션 사용 금지** — 대신 `Mockito.mock()`을 직접 호출하여 mock 생성
+- 인터페이스의 스텁 클래스를 직접 구현하지 않음 (JpaRepository 등 메서드가 많은 인터페이스는 코드가 불필요하게 길어짐)
+
+```java
+// ✅ jqwik에서 올바른 mock 사용
+@Property(tries = 100)
+void myProperty(@ForAll("dataProvider") final List<MyEntity> data) {
+    final MyRepository mockRepository = mock(MyRepository.class);
+    when(mockRepository.findAll()).thenReturn(data);
+    final MyService service = new MyService(mockRepository);
+    // ... property 검증
+}
+
+// ❌ 스텁 클래스 직접 구현 금지
+private static class StubMyRepository implements MyRepository { ... }
+```
 
 ### Spring Boot 4.0 테스트 변경사항
 
@@ -174,7 +199,8 @@ import tools.jackson.databind.ObjectMapper;
   - 좋은 예: `elapsedDays`, `retryCount`, `isMessageSent`
 - **매직 넘버 상수화**: 의미 없는 숫자 리터럴은 `private static final` 상수로 추출
 - **중복 코드 제거**: 동일 로직이 2회 이상 반복되면 메서드로 추출
-- **단일 책임**: 메서드가 하나의 일만 하는지 확인 (50줄 초과 시 분리 검토)
+- **메서드 분리**: 한 메서드 안에 코드가 길어지면 반드시 리팩토링하여 메서드를 분리한다 (20줄 초과 시 분리 권장, 50줄 초과 시 분리 필수)
+- **단일 책임**: 메서드가 하나의 일만 하는지 확인
 - **불필요한 주석 제거**: 코드가 충분히 명확하면 주석 불필요, `TODO`/`FIXME`는 해결 후 제거
 
 ### 완료 전 체크리스트

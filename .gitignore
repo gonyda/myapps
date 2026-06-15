@@ -26,3 +26,6 @@ bin/
 
 # Spring Boot devtools
 .spring-boot-devtools.properties
+
+# jqwik
+.jqwik-database
