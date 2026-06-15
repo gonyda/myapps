@@ -1,6 +1,9 @@
 package com.myapps.web.mystudy.interfaces.api;
 
+import com.myapps.web.mystudy.application.dto.QuizQuestionDto;
+import com.myapps.web.mystudy.application.dto.QuizResponse;
 import com.myapps.web.mystudy.application.service.EnglishStudyService;
+import com.myapps.web.mystudy.application.service.QuizService;
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,9 @@ class EnglishStudyControllerTest {
 
     @MockitoBean
     private EnglishStudyService englishStudyService;
+
+    @MockitoBean
+    private QuizService quizService;
 
     @Test
     void should_returnThymeleafView_when_getEnglishStudyPage() throws Exception {
@@ -95,5 +101,47 @@ class EnglishStudyControllerTest {
                 .andExpect(jsonPath("$.episode").value(3))
                 .andExpect(jsonPath("$.koreanSentence").value("좋은 아침"))
                 .andExpect(jsonPath("$.englishSentence").value("Good morning"));
+    }
+
+    @Test
+    void should_returnQuizWithQuestions_when_getApiQuiz() throws Exception {
+        final QuizQuestionDto question1 = new QuizQuestionDto(
+                "Hello",
+                List.of("안녕하세요", "감사합니다", "좋은 아침", "잘 가세요"),
+                0
+        );
+        final QuizQuestionDto question2 = new QuizQuestionDto(
+                "감사합니다",
+                List.of("Thank you", "Good morning", "Goodbye", "Hello"),
+                0
+        );
+        final QuizResponse quizResponse = new QuizResponse(List.of(question1, question2));
+
+        given(quizService.generateQuiz()).willReturn(quizResponse);
+
+        mockMvc.perform(get("/api/english-study/quiz"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.questions").isArray())
+                .andExpect(jsonPath("$.questions.length()").value(2))
+                .andExpect(jsonPath("$.questions[0].question").value("Hello"))
+                .andExpect(jsonPath("$.questions[0].choices").isArray())
+                .andExpect(jsonPath("$.questions[0].choices.length()").value(4))
+                .andExpect(jsonPath("$.questions[0].choices[0]").value("안녕하세요"))
+                .andExpect(jsonPath("$.questions[0].answerIndex").value(0))
+                .andExpect(jsonPath("$.questions[1].question").value("감사합니다"))
+                .andExpect(jsonPath("$.questions[1].choices").isArray())
+                .andExpect(jsonPath("$.questions[1].answerIndex").value(0));
+    }
+
+    @Test
+    void should_returnEmptyQuestions_when_noDataAvailable() throws Exception {
+        final QuizResponse emptyResponse = new QuizResponse(List.of());
+
+        given(quizService.generateQuiz()).willReturn(emptyResponse);
+
+        mockMvc.perform(get("/api/english-study/quiz"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.questions").isArray())
+                .andExpect(jsonPath("$.questions").isEmpty());
     }
 }
