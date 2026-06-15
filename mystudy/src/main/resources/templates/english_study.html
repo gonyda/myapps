@@ -89,6 +89,191 @@
             .study-table colgroup col:nth-child(2) { width: 30px; }
             .study-table th, .study-table td { padding: 6px 4px; font-size: 0.8em; }
         }
+
+        /* 퀴즈 모달 스타일 */
+        .quiz-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-modal {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .quiz-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+            line-height: 1;
+            padding: 4px 8px;
+        }
+
+        .quiz-close-btn:hover {
+            color: #343a40;
+        }
+
+        .quiz-progress {
+            text-align: center;
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+
+        .quiz-question-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 24px;
+            color: #343a40;
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .quiz-choice-btn {
+            padding: 14px 18px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+            text-align: left;
+            transition: background-color 0.2s, border-color 0.2s;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .quiz-choice-btn:hover {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+        }
+
+        .quiz-choice-btn.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .quiz-choice-btn.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .quiz-choice-btn.disabled {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .quiz-choice-btn.disabled:hover {
+            border-color: #dee2e6;
+            background-color: #fff;
+        }
+
+        .quiz-nav {
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-next-btn,
+        .quiz-finish-btn {
+            display: none;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .quiz-next-btn {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .quiz-next-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .quiz-finish-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .quiz-finish-btn:hover {
+            background-color: #1e7e34;
+        }
+
+        /* 퀴즈 모달 반응형: 모바일 (768px 이하) */
+        @media (max-width: 768px) {
+            .quiz-modal {
+                width: 95%;
+                padding: 20px;
+                border-radius: 10px;
+            }
+
+            .quiz-question-text {
+                font-size: 1.05em;
+                margin-bottom: 18px;
+            }
+
+            .quiz-choice-btn {
+                padding: 12px 14px;
+                font-size: 0.95em;
+            }
+
+            .quiz-next-btn,
+            .quiz-finish-btn {
+                width: 100%;
+                padding: 14px;
+            }
+        }
+
+        /* 퀴즈 모달 매우 작은 화면 (400px 이하) */
+        @media (max-width: 400px) {
+            .quiz-modal {
+                padding: 16px;
+            }
+
+            .quiz-question-text {
+                font-size: 1em;
+            }
+
+            .quiz-choice-btn {
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -133,6 +318,25 @@
         <button onclick="prevPage()">이전</button>
         <div id="pageNumbers" class="page-numbers"></div>
         <button onclick="nextPage()">다음</button>
+    </div>
+</div>
+
+<!-- 퀴즈 모달 -->
+<div class="quiz-overlay" id="quizOverlay">
+    <div class="quiz-modal" id="quizModal">
+        <button class="quiz-close-btn" id="quizCloseBtn" type="button">&times;</button>
+        <div class="quiz-progress" id="quizProgress">1/10</div>
+        <div class="quiz-question-text" id="quizQuestionText">문제가 표시됩니다</div>
+        <div class="quiz-choices" id="quizChoices">
+            <button class="quiz-choice-btn" type="button">보기 1</button>
+            <button class="quiz-choice-btn" type="button">보기 2</button>
+            <button class="quiz-choice-btn" type="button">보기 3</button>
+            <button class="quiz-choice-btn" type="button">보기 4</button>
+        </div>
+        <div class="quiz-nav">
+            <button class="quiz-next-btn" id="quizNextBtn" type="button">다음 문제</button>
+            <button class="quiz-finish-btn" id="quizFinishBtn" type="button">퀴즈 종료</button>
+        </div>
     </div>
 </div>
 
@@ -304,10 +508,161 @@
         linkContainer.innerHTML = `<a href="${fullUrl}" target="_blank">영어 공부하러가기 (${formattedLessonNumber})</a>`;
     }
 
+    // ===== 퀴즈 모달 JavaScript 로직 =====
+
+    /** 퀴즈 문제 데이터 배열 */
+    let quizData = [];
+
+    /** 현재 표시 중인 문제 인덱스 */
+    let currentQuestionIndex = 0;
+
+    /**
+     * 퀴즈 API를 호출하여 퀴즈 데이터를 로드하고, 성공 시 모달을 표시한다.
+     * API 실패 또는 빈 응답 시 모달을 표시하지 않는다.
+     */
+    async function loadQuiz() {
+        try {
+            const response = await fetch('/api/english-study/quiz');
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            if (!data.questions || data.questions.length === 0) {
+                return;
+            }
+            quizData = data.questions;
+            currentQuestionIndex = 0;
+            showQuizModal();
+            renderQuestion(0);
+        } catch (error) {
+            // API 실패 시 모달 미표시
+        }
+    }
+
+    /**
+     * 퀴즈 모달을 화면에 표시하고 페이지 스크롤을 차단한다.
+     */
+    function showQuizModal() {
+        const overlay = document.getElementById('quizOverlay');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * 지정된 인덱스의 문제를 렌더링한다.
+     * 진행 상태, 문제 텍스트, 보기 버튼을 갱신한다.
+     *
+     * @param {number} index - 렌더링할 문제 인덱스
+     */
+    function renderQuestion(index) {
+        const question = quizData[index];
+        const progress = document.getElementById('quizProgress');
+        const questionText = document.getElementById('quizQuestionText');
+        const choicesContainer = document.getElementById('quizChoices');
+        const nextBtn = document.getElementById('quizNextBtn');
+        const finishBtn = document.getElementById('quizFinishBtn');
+
+        // 진행 상태 업데이트
+        progress.textContent = `${index + 1}/${quizData.length}`;
+
+        // 문제 텍스트 업데이트
+        questionText.textContent = question.question;
+
+        // 보기 버튼 동적 생성
+        choicesContainer.innerHTML = '';
+        question.choices.forEach((choice, i) => {
+            const button = document.createElement('button');
+            button.className = 'quiz-choice-btn';
+            button.type = 'button';
+            button.textContent = choice;
+            button.onclick = () => selectChoice(i);
+            choicesContainer.appendChild(button);
+        });
+
+        // 네비게이션 버튼 숨기기
+        nextBtn.style.display = 'none';
+        finishBtn.style.display = 'none';
+    }
+
+    /**
+     * 보기를 선택했을 때 정답/오답 피드백을 표시하고 클릭을 비활성화한다.
+     * 마지막 문제 여부에 따라 다음 문제 또는 퀴즈 종료 버튼을 표시한다.
+     *
+     * @param {number} choiceIndex - 선택된 보기의 인덱스
+     */
+    function selectChoice(choiceIndex) {
+        const question = quizData[currentQuestionIndex];
+        const answerIndex = question.answerIndex;
+        const choicesContainer = document.getElementById('quizChoices');
+        const buttons = choicesContainer.querySelectorAll('.quiz-choice-btn');
+        const nextBtn = document.getElementById('quizNextBtn');
+        const finishBtn = document.getElementById('quizFinishBtn');
+
+        // 모든 보기 클릭 비활성화
+        buttons.forEach(btn => btn.classList.add('disabled'));
+
+        // 정답/오답 피드백 표시
+        if (choiceIndex === answerIndex) {
+            buttons[choiceIndex].classList.add('correct');
+        } else {
+            buttons[choiceIndex].classList.add('incorrect');
+            buttons[answerIndex].classList.add('correct');
+        }
+
+        // 네비게이션 버튼 표시
+        const isLastQuestion = currentQuestionIndex === quizData.length - 1;
+        if (isLastQuestion) {
+            finishBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+        }
+    }
+
+    /**
+     * 다음 문제로 이동한다.
+     */
+    function nextQuizQuestion() {
+        currentQuestionIndex++;
+        renderQuestion(currentQuestionIndex);
+    }
+
+    /**
+     * 퀴즈 모달을 닫고 페이지 스크롤을 복원한다.
+     */
+    function closeQuizModal() {
+        const overlay = document.getElementById('quizOverlay');
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // 이벤트 리스너 등록
+    document.getElementById('quizCloseBtn').addEventListener('click', closeQuizModal);
+    document.getElementById('quizFinishBtn').addEventListener('click', closeQuizModal);
+    document.getElementById('quizNextBtn').addEventListener('click', nextQuizQuestion);
+
+    // 모달 내부 클릭 시 이벤트 전파 차단 (배경 클릭으로 닫히지 않도록)
+    document.getElementById('quizModal').addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            const overlay = document.getElementById('quizOverlay');
+            if (overlay.style.display === 'flex') {
+                closeQuizModal();
+            }
+        }
+    });
+
+    // ===== 페이지 초기화 =====
+
     loadData().then(() => {
         renderTable();
         updateEBSLink();
     });
+
+    loadQuiz();
 </script>
 
 </body>

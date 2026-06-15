@@ -1,6 +1,8 @@
 package com.myapps.web.mystudy.interfaces.api;
 
+import com.myapps.web.mystudy.application.dto.QuizResponse;
 import com.myapps.web.mystudy.application.service.EnglishStudyService;
+import com.myapps.web.mystudy.application.service.QuizService;
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +24,18 @@ import java.util.List;
 public class EnglishStudyController {
 
     private final EnglishStudyService englishStudyService;
+    private final QuizService quizService;
 
     /**
      * EnglishStudyController를 생성합니다.
      *
      * @param englishStudyService 영어 학습 데이터 비즈니스 로직 서비스
+     * @param quizService         퀴즈 생성 서비스
      */
-    public EnglishStudyController(final EnglishStudyService englishStudyService) {
+    public EnglishStudyController(final EnglishStudyService englishStudyService,
+                                  final QuizService quizService) {
         this.englishStudyService = englishStudyService;
+        this.quizService = quizService;
     }
 
     /**
@@ -69,5 +75,19 @@ public class EnglishStudyController {
     public ResponseEntity<EnglishStudy> addEnglishStudy(@RequestBody final EnglishStudy englishStudy) {
         final EnglishStudy savedStudy = englishStudyService.save(englishStudy);
         return new ResponseEntity<>(savedStudy, HttpStatus.CREATED);
+    }
+
+    /**
+     * 랜덤 퀴즈를 생성하여 JSON 형식으로 반환합니다.
+     *
+     * <p>매 호출 시 EnglishStudy 데이터를 기반으로 랜덤한 객관식 퀴즈를 생성합니다.
+     * 데이터가 없거나 퀴즈 생성에 실패하면 빈 문제 목록을 반환합니다.
+     *
+     * @return 퀴즈 문제 목록을 포함한 응답 DTO
+     */
+    @GetMapping("/api/english-study/quiz")
+    @ResponseBody
+    public QuizResponse getQuiz() {
+        return quizService.generateQuiz();
     }
 }
