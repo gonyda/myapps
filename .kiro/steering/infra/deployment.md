@@ -39,46 +39,57 @@ inclusion: manual
 
 ## 배포 절차
 
-### 1. 소스 업데이트
+### 배포 스크립트 (권장 — 단일 명령 실행)
+
+서버에 `/home/ubuntu/app/deploy.sh` 스크립트가 준비되어 있습니다.
+배포 시 아래 명령 **한 번만** 실행하면 pull → build → stop → start → health check까지 자동 완료됩니다.
+
+```bash
+/home/ubuntu/app/deploy.sh {modulename}
+```
+
+예시:
+```bash
+/home/ubuntu/app/deploy.sh mystudy
+```
+
+스크립트가 수행하는 작업:
+1. `/home/ubuntu/app/.env`에서 환경변수 로드 (DB_PASSWORD, JAVA_HOME)
+2. `git pull origin main`
+3. `mvn clean package -pl {module} -am -DskipTests`
+4. `pkill -f "{module}.*SNAPSHOT.jar"` (기존 프로세스 종료)
+5. `nohup java -jar ...` (애플리케이션 시작)
+6. 최대 30초 health check (2초 간격, curl로 HTTP 응답 확인)
+
+**Kiro가 배포할 때**: SSH 명령을 여러 번 나눠 호출하지 말고, 반드시 이 스크립트를 한 번만 호출할 것.
+
+### 환경변수 파일
+
+- 경로: `/home/ubuntu/app/.env` (chmod 600)
+- 내용: `DB_PASSWORD`, `JAVA_HOME`, `PATH`
+- 새 환경변수가 필요하면 이 파일에 추가
+
+### 수동 배포 (스크립트 없이)
+
+스크립트를 사용할 수 없는 경우 아래 단계를 순서대로 실행합니다.
 
 ```bash
 cd /home/ubuntu/app/myapps
+source /home/ubuntu/app/.env
 git pull origin main
-```
-
-### 2. 빌드
-
-```bash
-cd /home/ubuntu/app/myapps
-export JAVA_HOME=/opt/jdk-25.0.3
-export PATH=$JAVA_HOME/bin:$PATH
 mvn clean package -pl {modulename} -am -DskipTests
+pkill -f "{modulename}.*SNAPSHOT.jar" || true
+sleep 2
+cd {modulename}
+nohup java -jar target/{modulename}-1.0.0-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+echo $! > app.pid
 ```
 
-### 3. 기존 프로세스 종료
-
-```bash
-pkill -f "{modulename}.*\.jar" || true
-```
-
-### 4. 실행
-
-```bash
-cd /home/ubuntu/app/myapps/{modulename}
-export JAVA_HOME=/opt/jdk-25.0.3
-export PATH=$JAVA_HOME/bin:$PATH
-export DB_PASSWORD="{DB_PASSWORD}"
-nohup java -jar target/{modulename}-1.0.0-SNAPSHOT.jar --spring.profiles.active=prod > /home/ubuntu/app/myapps/{modulename}/app.log 2>&1 &
-echo $! > /home/ubuntu/app/myapps/{modulename}/app.pid
-```
-
-> **주의**: `source /etc/environment` 대신 `export DB_PASSWORD=...`를 같은 셸에서 직접 선언해야 합니다. nohup 서브셸에서는 `/etc/environment`를 source해도 환경변수가 제대로 전달되지 않을 수 있습니다.
-
-### 5. 실행 확인
+### 실행 확인
 
 ```bash
 sleep 5
-curl -s http://localhost:{port}/actuator/health || tail -20 /home/ubuntu/app/myapps/{modulename}/app.log
+curl -s http://localhost:{port} || tail -20 /home/ubuntu/app/myapps/{modulename}/app.log
 ```
 
 ## 포트 규칙
