@@ -100,6 +100,7 @@ curl -s http://localhost:{port} || tail -20 /home/ubuntu/app/myapps/{modulename}
 | 모듈 | 포트 |
 |------|------|
 | mystudy | 8080 |
+| mycrawler | 8081 |
 
 > 8080–8099 범위 내라면 Oracle Cloud Security List와 iptables 추가 설정 없이 바로 외부 접속 가능합니다.
 
