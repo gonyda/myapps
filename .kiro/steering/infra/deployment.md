@@ -54,12 +54,15 @@ inclusion: manual
 ```
 
 스크립트가 수행하는 작업:
-1. `/home/ubuntu/app/.env`에서 환경변수 로드 (DB_PASSWORD, JAVA_HOME)
-2. `git pull origin main`
-3. `mvn clean package -pl {module} -am -DskipTests`
-4. `pkill -f "{module}.*SNAPSHOT.jar"` (기존 프로세스 종료)
-5. `nohup java -jar ...` (애플리케이션 시작)
-6. 최대 30초 health check (2초 간격, curl로 HTTP 응답 확인)
+1. 모듈명으로 포트 매핑 (`get_port` 함수: mystudy→8080, mycrawler→8081)
+2. `/home/ubuntu/app/.env`에서 환경변수 로드 (DB_PASSWORD, JAVA_HOME)
+3. `git pull origin main`
+4. `mvn clean package -pl {module} -am -DskipTests`
+5. `pkill -f "{module}.*SNAPSHOT.jar"` (기존 프로세스 종료)
+6. `nohup java -jar ...` (애플리케이션 시작)
+7. 최대 30초 health check (2초 간격, 해당 모듈 포트로 curl 확인)
+
+> 새 모듈 추가 시 `deploy.sh`의 `get_port()` 함수에 case를 추가해야 합니다.
 
 **Kiro가 배포할 때**: SSH 명령을 여러 번 나눠 호출하지 말고, 반드시 이 스크립트를 한 번만 호출할 것.
 
