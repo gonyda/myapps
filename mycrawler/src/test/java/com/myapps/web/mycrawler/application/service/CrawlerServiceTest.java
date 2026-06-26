@@ -69,15 +69,15 @@ class CrawlerServiceTest {
 
         final CrawlResult result1 = createSuccessResult(target1);
         final CrawlResult result2 = createSuccessResult(target2);
-        when(crawlerEngine.crawl(target1)).thenReturn(result1);
-        when(crawlerEngine.crawl(target2)).thenReturn(result2);
+        when(crawlerEngine.crawl(target1, TriggerSource.SCHEDULED)).thenReturn(result1);
+        when(crawlerEngine.crawl(target2, TriggerSource.SCHEDULED)).thenReturn(result2);
 
         final List<CrawlResult> results = crawlerService.executeAll(TriggerSource.SCHEDULED);
 
         assertThat(results).hasSize(2);
         assertThat(results.get(0).status()).isEqualTo(CrawlStatus.SUCCESS);
         assertThat(results.get(1).status()).isEqualTo(CrawlStatus.SUCCESS);
-        verify(crawlerEngine, times(2)).crawl(any());
+        verify(crawlerEngine, times(2)).crawl(any(), any());
         verify(antiDetectionService, times(1)).randomInterTargetDelay();
     }
 
@@ -92,10 +92,10 @@ class CrawlerServiceTest {
         when(antiDetectionService.randomInterTargetDelay()).thenReturn(0L);
 
         final CrawlResult result1 = createSuccessResult(target1);
-        when(crawlerEngine.crawl(target1)).thenReturn(result1);
-        when(crawlerEngine.crawl(target2)).thenThrow(new RuntimeException("Network error"));
+        when(crawlerEngine.crawl(target1, TriggerSource.MANUAL)).thenReturn(result1);
+        when(crawlerEngine.crawl(target2, TriggerSource.MANUAL)).thenThrow(new RuntimeException("Network error"));
         final CrawlResult result3 = createSuccessResult(target3);
-        when(crawlerEngine.crawl(target3)).thenReturn(result3);
+        when(crawlerEngine.crawl(target3, TriggerSource.MANUAL)).thenReturn(result3);
 
         final List<CrawlResult> results = crawlerService.executeAll(TriggerSource.MANUAL);
 
@@ -104,7 +104,7 @@ class CrawlerServiceTest {
         assertThat(results.get(1).status()).isEqualTo(CrawlStatus.FAILURE);
         assertThat(results.get(1).errorMessage()).isEqualTo("Network error");
         assertThat(results.get(2).status()).isEqualTo(CrawlStatus.SUCCESS);
-        verify(crawlerEngine, times(3)).crawl(any());
+        verify(crawlerEngine, times(3)).crawl(any(), any());
     }
 
     @Test
@@ -114,7 +114,7 @@ class CrawlerServiceTest {
         final List<CrawlResult> results = crawlerService.executeAll(TriggerSource.SCHEDULED);
 
         assertThat(results).isEmpty();
-        verify(crawlerEngine, never()).crawl(any());
+        verify(crawlerEngine, never()).crawl(any(), any());
         verify(crawlerConfig, never()).validTargets();
     }
 
@@ -127,14 +127,14 @@ class CrawlerServiceTest {
         when(crawlerConfig.validTargets()).thenReturn(targets);
 
         final CrawlResult expectedResult = createSuccessResult(target2);
-        when(crawlerEngine.crawl(target2)).thenReturn(expectedResult);
+        when(crawlerEngine.crawl(target2, TriggerSource.MANUAL)).thenReturn(expectedResult);
 
         final CrawlResult result = crawlerService.executeSingle(TARGET_NAME_2, TriggerSource.MANUAL);
 
         assertThat(result).isNotNull();
         assertThat(result.targetName()).isEqualTo(TARGET_NAME_2);
         assertThat(result.status()).isEqualTo(CrawlStatus.SUCCESS);
-        verify(crawlerEngine, times(1)).crawl(target2);
+        verify(crawlerEngine, times(1)).crawl(target2, TriggerSource.MANUAL);
     }
 
     @Test
@@ -147,7 +147,7 @@ class CrawlerServiceTest {
         final CrawlResult result = crawlerService.executeSingle("non-existent", TriggerSource.MANUAL);
 
         assertThat(result).isNull();
-        verify(crawlerEngine, never()).crawl(any());
+        verify(crawlerEngine, never()).crawl(any(), any());
     }
 
     @Test
@@ -157,7 +157,7 @@ class CrawlerServiceTest {
         final CrawlResult result = crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
 
         assertThat(result).isNull();
-        verify(crawlerEngine, never()).crawl(any());
+        verify(crawlerEngine, never()).crawl(any(), any());
         verify(crawlerConfig, never()).validTargets();
     }
 
@@ -169,7 +169,7 @@ class CrawlerServiceTest {
         when(crawlerConfig.validTargets()).thenReturn(targets);
 
         final CrawlResult result1 = createSuccessResult(target1);
-        when(crawlerEngine.crawl(target1)).thenReturn(result1);
+        when(crawlerEngine.crawl(target1, TriggerSource.SCHEDULED)).thenReturn(result1);
 
         crawlerService.executeAll(TriggerSource.SCHEDULED);
 
@@ -187,7 +187,7 @@ class CrawlerServiceTest {
         when(antiDetectionService.randomInterTargetDelay()).thenReturn(0L);
 
         for (final CrawlTarget target : targets) {
-            when(crawlerEngine.crawl(target)).thenReturn(createSuccessResult(target));
+            when(crawlerEngine.crawl(target, TriggerSource.SCHEDULED)).thenReturn(createSuccessResult(target));
         }
 
         crawlerService.executeAll(TriggerSource.SCHEDULED);
@@ -215,8 +215,8 @@ class CrawlerServiceTest {
                 TriggerSource.SCHEDULED, "content2", null,
                 baseTime.plusMinutes(1), baseTime.plusMinutes(1).plusSeconds(5));
 
-        when(crawlerEngine.crawl(target1)).thenReturn(result1);
-        when(crawlerEngine.crawl(target2)).thenReturn(result2);
+        when(crawlerEngine.crawl(target1, TriggerSource.SCHEDULED)).thenReturn(result1);
+        when(crawlerEngine.crawl(target2, TriggerSource.SCHEDULED)).thenReturn(result2);
 
         crawlerService.executeAll(TriggerSource.SCHEDULED);
 
@@ -231,7 +231,7 @@ class CrawlerServiceTest {
         final List<CrawlTarget> targets = List.of(new CrawlTarget(TARGET_NAME_1, TARGET_URL_1));
 
         when(crawlerConfig.validTargets()).thenReturn(targets);
-        when(crawlerEngine.crawl(any())).thenReturn(
+        when(crawlerEngine.crawl(any(), any())).thenReturn(
                 createSuccessResult(new CrawlTarget(TARGET_NAME_1, TARGET_URL_1)));
 
         crawlerService.executeAll(TriggerSource.SCHEDULED);
@@ -248,7 +248,7 @@ class CrawlerServiceTest {
 
         when(crawlerConfig.validTargets()).thenReturn(targets);
         when(antiDetectionService.randomInterTargetDelay()).thenReturn(0L);
-        when(crawlerEngine.crawl(any())).thenReturn(
+        when(crawlerEngine.crawl(any(), any())).thenReturn(
                 createSuccessResult(new CrawlTarget(TARGET_NAME_1, TARGET_URL_1)));
 
         crawlerService.executeAll(TriggerSource.SCHEDULED);

@@ -92,18 +92,19 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
      * 어떠한 예외도 외부로 전파하지 않습니다.
      */
     @Override
-    public CrawlResult crawl(final CrawlTarget target) {
-        return crawlWithBrowser(target, this.browser);
+    public CrawlResult crawl(final CrawlTarget target, final TriggerSource triggerSource) {
+        return crawlWithBrowser(target, triggerSource, this.browser);
     }
 
     /**
      * 지정된 브라우저 인스턴스를 사용하여 크롤링을 수행합니다.
      *
-     * @param target  크롤링 대상
+     * @param target        크롤링 대상
+     * @param triggerSource 크롤링 트리거 출처
      * @param targetBrowser 사용할 브라우저 인스턴스
      * @return 크롤링 결과
      */
-    CrawlResult crawlWithBrowser(final CrawlTarget target, final Browser targetBrowser) {
+    CrawlResult crawlWithBrowser(final CrawlTarget target, final TriggerSource triggerSource, final Browser targetBrowser) {
         final LocalDateTime startTime = LocalDateTime.now();
         BrowserContext context = null;
 
@@ -111,12 +112,12 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
             context = createBrowserContext(targetBrowser);
             final String content = navigateAndExtract(context, target.url());
             final LocalDateTime endTime = LocalDateTime.now();
-            final CrawlResult result = buildSuccessResult(target, content, startTime, endTime);
+            final CrawlResult result = buildSuccessResult(target, triggerSource, content, startTime, endTime);
             logCrawlResult(result);
             return result;
         } catch (final Exception exception) {
             final LocalDateTime endTime = LocalDateTime.now();
-            final CrawlResult result = buildFailureResult(target, exception, startTime, endTime);
+            final CrawlResult result = buildFailureResult(target, triggerSource, exception, startTime, endTime);
             logCrawlResult(result);
             return result;
         } finally {
@@ -154,6 +155,7 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
     }
 
     private CrawlResult buildSuccessResult(final CrawlTarget target,
+                                           final TriggerSource triggerSource,
                                            final String content,
                                            final LocalDateTime startTime,
                                            final LocalDateTime endTime) {
@@ -161,7 +163,7 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
             target.name(),
             target.url(),
             CrawlStatus.SUCCESS,
-            TriggerSource.SCHEDULED,
+            triggerSource,
             content,
             null,
             startTime,
@@ -170,6 +172,7 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
     }
 
     private CrawlResult buildFailureResult(final CrawlTarget target,
+                                           final TriggerSource triggerSource,
                                            final Exception exception,
                                            final LocalDateTime startTime,
                                            final LocalDateTime endTime) {
@@ -177,7 +180,7 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
             target.name(),
             target.url(),
             CrawlStatus.FAILURE,
-            TriggerSource.SCHEDULED,
+            triggerSource,
             null,
             exception.getMessage(),
             startTime,

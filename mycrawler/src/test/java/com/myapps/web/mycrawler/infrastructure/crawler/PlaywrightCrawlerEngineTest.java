@@ -23,6 +23,7 @@ import com.microsoft.playwright.options.ViewportSize;
 import com.myapps.web.mycrawler.domain.model.CrawlResult;
 import com.myapps.web.mycrawler.domain.model.CrawlStatus;
 import com.myapps.web.mycrawler.domain.model.CrawlTarget;
+import com.myapps.web.mycrawler.domain.model.TriggerSource;
 import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
 
@@ -74,7 +75,7 @@ class PlaywrightCrawlerEngineTest {
         when(page.content()).thenReturn(expectedContent);
 
         // when
-        final CrawlResult result = engine.crawlWithBrowser(target, browser);
+        final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then
         assertThat(result.status()).isEqualTo(CrawlStatus.SUCCESS);
@@ -82,6 +83,7 @@ class PlaywrightCrawlerEngineTest {
         assertThat(result.targetUrl()).isEqualTo("https://example.com");
         assertThat(result.content()).isEqualTo(expectedContent);
         assertThat(result.errorMessage()).isNull();
+        assertThat(result.triggerSource()).isEqualTo(TriggerSource.MANUAL);
         assertThat(result.startTime()).isNotNull();
         assertThat(result.endTime()).isNotNull();
         assertThat(result.endTime()).isAfterOrEqualTo(result.startTime());
@@ -101,7 +103,7 @@ class PlaywrightCrawlerEngineTest {
             .thenThrow(new PlaywrightException("Timeout 30000ms exceeded"));
 
         // when
-        final CrawlResult result = engine.crawlWithBrowser(target, browser);
+        final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.SCHEDULED, browser);
 
         // then
         assertThat(result.status()).isEqualTo(CrawlStatus.FAILURE);
@@ -109,6 +111,7 @@ class PlaywrightCrawlerEngineTest {
         assertThat(result.targetUrl()).isEqualTo("https://slow.example.com");
         assertThat(result.content()).isNull();
         assertThat(result.errorMessage()).contains("Timeout");
+        assertThat(result.triggerSource()).isEqualTo(TriggerSource.SCHEDULED);
         assertThat(result.startTime()).isNotNull();
         assertThat(result.endTime()).isAfterOrEqualTo(result.startTime());
     }
@@ -127,7 +130,7 @@ class PlaywrightCrawlerEngineTest {
             .thenThrow(new PlaywrightException("net::ERR_NAME_NOT_RESOLVED"));
 
         // when
-        final CrawlResult result = engine.crawlWithBrowser(target, browser);
+        final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then
         assertThat(result.status()).isEqualTo(CrawlStatus.FAILURE);
@@ -147,7 +150,7 @@ class PlaywrightCrawlerEngineTest {
         when(page.content()).thenReturn("<html></html>");
 
         // when
-        engine.crawlWithBrowser(target, browser);
+        engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then
         verify(browserContext).close();
@@ -167,7 +170,7 @@ class PlaywrightCrawlerEngineTest {
             .thenThrow(new PlaywrightException("Connection refused"));
 
         // when
-        engine.crawlWithBrowser(target, browser);
+        engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then
         verify(browserContext).close();
@@ -186,7 +189,7 @@ class PlaywrightCrawlerEngineTest {
         when(page.content()).thenReturn("<html>protected</html>");
 
         // when
-        engine.crawlWithBrowser(target, browser);
+        engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then
         verify(antiDetectionService).randomUserAgent();
@@ -209,7 +212,7 @@ class PlaywrightCrawlerEngineTest {
             .thenThrow(new RuntimeException("Browser crashed"));
 
         // when
-        final CrawlResult result = engine.crawlWithBrowser(target, browser);
+        final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
 
         // then — no exception propagated, FAILURE result returned
         assertThat(result.status()).isEqualTo(CrawlStatus.FAILURE);

@@ -60,7 +60,7 @@ class CrawlerServicePropertyTest {
         final List<CrawlResult> result = crawlerService.executeAll(triggerSource);
 
         assertThat(result).isEmpty();
-        verify(mockCrawlerEngine, never()).crawl(any());
+        verify(mockCrawlerEngine, never()).crawl(any(), any());
     }
 
     /**

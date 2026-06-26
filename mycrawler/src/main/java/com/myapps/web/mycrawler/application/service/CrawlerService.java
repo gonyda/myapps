@@ -130,7 +130,7 @@ public class CrawlerService {
 
         for (int i = 0; i < targets.size(); i++) {
             final CrawlTarget target = targets.get(i);
-            final CrawlResult result = crawlTargetSafely(target);
+            final CrawlResult result = crawlTargetSafely(target, triggerSource);
             results.add(result);
             addToRecentResults(result);
             applyInterTargetDelay(i, targets.size());
@@ -150,28 +150,28 @@ public class CrawlerService {
         }
 
         log.info("단일 크롤링 시작. targetName={}, triggerSource={}", targetName, triggerSource);
-        final CrawlResult result = crawlTargetSafely(target);
+        final CrawlResult result = crawlTargetSafely(target, triggerSource);
         addToRecentResults(result);
         return result;
     }
 
-    private CrawlResult crawlTargetSafely(final CrawlTarget target) {
+    private CrawlResult crawlTargetSafely(final CrawlTarget target, final TriggerSource triggerSource) {
         try {
-            return crawlerEngine.crawl(target);
+            return crawlerEngine.crawl(target, triggerSource);
         } catch (final Exception exception) {
             log.error("크롤링 중 예기치 않은 오류 발생. targetName={}, error={}",
                     target.name(), exception.getMessage(), exception);
-            return createFailureResult(target, exception);
+            return createFailureResult(target, triggerSource, exception);
         }
     }
 
-    private CrawlResult createFailureResult(final CrawlTarget target, final Exception exception) {
+    private CrawlResult createFailureResult(final CrawlTarget target, final TriggerSource triggerSource, final Exception exception) {
         final LocalDateTime now = LocalDateTime.now();
         return new CrawlResult(
                 target.name(),
                 target.url(),
                 CrawlStatus.FAILURE,
-                null,
+                triggerSource,
                 null,
                 exception.getMessage(),
                 now,
