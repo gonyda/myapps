@@ -1,6 +1,5 @@
 package com.myapps.web.mycrawler.interfaces.api;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.myapps.web.mycrawler.application.service.CrawlerService;
 import com.myapps.web.mycrawler.application.service.SchedulerService;
-import com.myapps.web.mycrawler.domain.model.CrawlResult;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
 
 import static org.mockito.Mockito.when;
@@ -47,7 +45,7 @@ class AdminControllerTest {
      */
     @Test
     void should_returnDashboardView_when_getAdminRequested() throws Exception {
-        final Instant nextExecution = Instant.now().plusSeconds(3600);
+        final String nextExecution = "2026-06-27 06:00:00";
 
         when(crawlerService.getRecentResults()).thenReturn(List.of());
         when(crawlerService.isRunning()).thenReturn(false);

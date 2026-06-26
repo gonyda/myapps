@@ -1,6 +1,5 @@
 package com.myapps.web.mycrawler.application.service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
 
@@ -77,7 +75,7 @@ class SchedulerServiceTest {
     }
 
     @Test
-    @DisplayName("활성화된 스케줄러는 다음 실행 시각을 반환한다")
+    @DisplayName("활성화된 스케줄러는 다음 실행 시각을 KST 포맷 문자열로 반환한다")
     void should_returnNextExecutionTime_when_schedulerIsEnabled() {
         // given
         final CrawlerConfig config = new CrawlerConfig(
@@ -85,11 +83,11 @@ class SchedulerServiceTest {
         final SchedulerService schedulerService = new SchedulerService(crawlerService, config);
 
         // when
-        final Optional<Instant> nextExecution = schedulerService.getNextExecutionTime();
+        final Optional<String> nextExecution = schedulerService.getNextExecutionTime();
 
         // then
         assertThat(nextExecution).isPresent();
-        assertThat(nextExecution.get()).isAfter(Instant.now());
+        assertThat(nextExecution.get()).matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
     }
 
     @Test
@@ -101,7 +99,7 @@ class SchedulerServiceTest {
         final SchedulerService schedulerService = new SchedulerService(crawlerService, config);
 
         // when
-        final Optional<Instant> nextExecution = schedulerService.getNextExecutionTime();
+        final Optional<String> nextExecution = schedulerService.getNextExecutionTime();
 
         // then
         assertThat(nextExecution).isEmpty();
