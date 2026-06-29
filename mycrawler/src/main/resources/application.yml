@@ -8,3 +8,5 @@ crawler:
   targets:
     - name: fmkorea-stock
       url: https://www.fmkorea.com/stock
+    - name: wepoll-stock
+      url: https://wepoll.kr/g2/bbs/board.php?bo_table=stock

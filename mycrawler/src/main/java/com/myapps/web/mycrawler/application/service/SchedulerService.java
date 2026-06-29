@@ -3,7 +3,9 @@ package com.myapps.web.mycrawler.application.service;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,10 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
+import com.myapps.web.mycrawler.domain.model.CrawlResult;
+import com.myapps.web.mycrawler.domain.model.CrawlTarget;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
+import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
 
 /**
@@ -37,6 +42,8 @@ public class SchedulerService implements SchedulingConfigurer {
 
     private final CrawlerService crawlerService;
     private final CrawlerConfig crawlerConfig;
+    private final AntiDetectionService antiDetectionService;
+    private final AtomicBoolean scheduledRunning = new AtomicBoolean(false);
     private final boolean enabled;
 
     /**
@@ -45,13 +52,16 @@ public class SchedulerService implements SchedulingConfigurer {
      * <p>생성 시점에 cron 표현식의 유효성을 검증하여
      * 스케줄링 활성화 여부를 결정합니다.
      *
-     * @param crawlerService 크롤링 실행 서비스
-     * @param crawlerConfig  크롤러 설정
+     * @param crawlerService       크롤링 실행 서비스
+     * @param crawlerConfig        크롤러 설정
+     * @param antiDetectionService 봇 탐지 회피 서비스
      */
     public SchedulerService(final CrawlerService crawlerService,
-                            final CrawlerConfig crawlerConfig) {
+                            final CrawlerConfig crawlerConfig,
+                            final AntiDetectionService antiDetectionService) {
         this.crawlerService = crawlerService;
         this.crawlerConfig = crawlerConfig;
+        this.antiDetectionService = antiDetectionService;
         this.enabled = validateCronExpression(crawlerConfig.cron());
     }
 
@@ -87,6 +97,17 @@ public class SchedulerService implements SchedulingConfigurer {
      */
     public boolean isEnabled() {
         return enabled;
+    }
+
+    /**
+     * 스케줄러에 의한 크롤링이 현재 실행 중인지 반환합니다.
+     *
+     * <p>스케줄 실행 도중 수동 실행이 끼어드는 것을 방지하기 위해 사용합니다.
+     *
+     * @return 스케줄 크롤링이 실행 중이면 true, 아니면 false
+     */
+    public boolean isScheduledRunning() {
+        return scheduledRunning.get();
     }
 
     /**
@@ -127,8 +148,53 @@ public class SchedulerService implements SchedulingConfigurer {
     }
 
     private void executeCrawl() {
-        log.info("스케줄에 의한 크롤링 실행을 시작합니다. cron={}", crawlerConfig.cron());
-        crawlerService.executeAll(TriggerSource.SCHEDULED);
+        if (!scheduledRunning.compareAndSet(false, true)) {
+            log.warn("스케줄 크롤링이 이미 실행 중입니다. 중복 실행 요청을 무시합니다.");
+            return;
+        }
+
+        try {
+            log.info("스케줄에 의한 크롤링 실행을 시작합니다. cron={}", crawlerConfig.cron());
+            final List<CrawlTarget> targets = crawlerConfig.validTargets();
+
+            for (int i = 0; i < targets.size(); i++) {
+                final CrawlTarget target = targets.get(i);
+                executeSingleTarget(target);
+                applyInterTargetDelayIfNotLast(i, targets.size());
+            }
+
+            log.info("스케줄 크롤링이 완료되었습니다. 처리된 타겟 수={}", targets.size());
+        } finally {
+            scheduledRunning.set(false);
+        }
+    }
+
+    private void executeSingleTarget(final CrawlTarget target) {
+        try {
+            final CrawlResult result = crawlerService.executeSingle(target.name(), TriggerSource.SCHEDULED);
+            if (result == null) {
+                log.error("스케줄 크롤링 결과가 null입니다. targetName={}", target.name());
+            }
+        } catch (final Exception exception) {
+            log.error("스케줄 크롤링 중 예외 발생. targetName={}, error={}",
+                    target.name(), exception.getMessage(), exception);
+        }
+    }
+
+    private void applyInterTargetDelayIfNotLast(final int currentIndex, final int totalTargets) {
+        final boolean isLastTarget = currentIndex >= totalTargets - 1;
+        if (isLastTarget) {
+            return;
+        }
+
+        final long delay = antiDetectionService.randomInterTargetDelay();
+        log.debug("스케줄 크롤링 타겟 간 딜레이 적용: {}ms", delay);
+        try {
+            Thread.sleep(delay);
+        } catch (final InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            log.warn("스케줄 크롤링 타겟 간 딜레이가 인터럽트되었습니다.");
+        }
     }
 
     private boolean validateCronExpression(final String cron) {
