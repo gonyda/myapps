@@ -13,7 +13,6 @@ import net.jqwik.api.constraints.IntRange;
 import com.myapps.web.mycrawler.domain.model.CrawlResult;
 import com.myapps.web.mycrawler.domain.model.CrawlStatus;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
-import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
 import com.myapps.web.mycrawler.infrastructure.crawler.CrawlerEngine;
 
@@ -33,23 +32,21 @@ import static org.mockito.ArgumentMatchers.any;
 class CrawlerServicePropertyTest {
 
     /**
-     * isRunning이 true일 때 executeAll() 호출이 새 크롤링을 시작하지 않고 빈 결과를 반환함을 검증합니다.
+     * isRunning이 true일 때 executeSingle() 호출이 새 크롤링을 시작하지 않고 null을 반환함을 검증합니다.
      *
      * <p>리플렉션을 사용하여 running AtomicBoolean을 true로 설정한 뒤,
-     * executeAll() 호출 결과가 빈 리스트이고 crawlerEngine.crawl()이 호출되지 않음을 확인합니다.
+     * executeSingle() 호출 결과가 null이고 crawlerEngine.crawl()이 호출되지 않음을 확인합니다.
      *
      * <p><b>Validates: Requirements 3.2</b>
      *
      * @param seed 랜덤 시드로 활용되는 임의의 정수 (jqwik이 다양한 실행 경로를 탐색하도록 유도)
      */
     @Property(tries = 100)
-    void executeAllShouldReturnEmptyWhenAlreadyRunning(@ForAll @IntRange(min = 0, max = 1000) final int seed) throws Exception {
+    void executeSingleShouldReturnNullWhenAlreadyRunning(@ForAll @IntRange(min = 0, max = 1000) final int seed) throws Exception {
         final CrawlerEngine mockCrawlerEngine = mock(CrawlerEngine.class);
-        final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final CrawlerConfig mockCrawlerConfig = mock(CrawlerConfig.class);
 
-        final CrawlerService crawlerService = new CrawlerService(
-                mockCrawlerEngine, mockAntiDetectionService, mockCrawlerConfig);
+        final CrawlerService crawlerService = new CrawlerService(mockCrawlerEngine, mockCrawlerConfig);
 
         final Field runningField = CrawlerService.class.getDeclaredField("running");
         runningField.setAccessible(true);
@@ -57,9 +54,9 @@ class CrawlerServicePropertyTest {
         running.set(true);
 
         final TriggerSource triggerSource = seed % 2 == 0 ? TriggerSource.SCHEDULED : TriggerSource.MANUAL;
-        final List<CrawlResult> result = crawlerService.executeAll(triggerSource);
+        final CrawlResult result = crawlerService.executeSingle("target-" + seed, triggerSource);
 
-        assertThat(result).isEmpty();
+        assertThat(result).isNull();
         verify(mockCrawlerEngine, never()).crawl(any(), any());
     }
 
@@ -79,11 +76,9 @@ class CrawlerServicePropertyTest {
             @ForAll @IntRange(min = 0, max = 50) final int count) throws Exception {
 
         final CrawlerEngine mockCrawlerEngine = mock(CrawlerEngine.class);
-        final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final CrawlerConfig mockCrawlerConfig = mock(CrawlerConfig.class);
 
-        final CrawlerService crawlerService = new CrawlerService(
-                mockCrawlerEngine, mockAntiDetectionService, mockCrawlerConfig);
+        final CrawlerService crawlerService = new CrawlerService(mockCrawlerEngine, mockCrawlerConfig);
 
         final Method addToRecentResultsMethod = CrawlerService.class.getDeclaredMethod(
                 "addToRecentResults", CrawlResult.class);
