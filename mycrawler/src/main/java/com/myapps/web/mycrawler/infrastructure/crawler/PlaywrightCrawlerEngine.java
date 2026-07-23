@@ -35,6 +35,8 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
 
     private static final double PAGE_LOAD_TIMEOUT_MS = 30_000.0;
     private static final int CONTENT_SUMMARY_LENGTH = 200;
+    private static final int MOUSE_MOVE_COUNT = 3;
+    private static final int SCROLL_COUNT = 2;
 
     private final AntiDetectionService antiDetectionService;
     private final CrawlerConfig crawlerConfig;
@@ -108,21 +110,37 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
         final LocalDateTime startTime = LocalDateTime.now();
         BrowserContext context = null;
 
+        final String userAgent = antiDetectionService.randomUserAgent();
+        final ViewportSize viewport = antiDetectionService.randomViewport();
+        long pageDelayMs = 0;
+
         try {
-            context = createBrowserContext(targetBrowser);
+            context = createBrowserContext(targetBrowser, userAgent, viewport);
             final String content = navigateAndExtract(context, target.url());
+            pageDelayMs = applyPageDelay();
             final LocalDateTime endTime = LocalDateTime.now();
             final CrawlResult result = buildSuccessResult(target, triggerSource, content, startTime, endTime);
-            logCrawlResult(result);
+            logCrawlResult(result, userAgent, viewport, pageDelayMs);
             return result;
         } catch (final Exception exception) {
             final LocalDateTime endTime = LocalDateTime.now();
             final CrawlResult result = buildFailureResult(target, triggerSource, exception, startTime, endTime);
-            logCrawlResult(result);
+            logCrawlResult(result, userAgent, viewport, pageDelayMs);
             return result;
         } finally {
             closeBrowserContext(context);
         }
+    }
+
+    private long applyPageDelay() {
+        final long delay = antiDetectionService.randomPageDelay();
+        try {
+            Thread.sleep(delay);
+        } catch (final InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            log.warn("페이지 딜레이가 인터럽트되었습니다.");
+        }
+        return delay;
     }
 
     private void configureBrowsersPath() {
@@ -133,10 +151,9 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
         }
     }
 
-    private BrowserContext createBrowserContext(final Browser targetBrowser) {
-        final String userAgent = antiDetectionService.randomUserAgent();
-        final ViewportSize viewport = antiDetectionService.randomViewport();
-
+    private BrowserContext createBrowserContext(final Browser targetBrowser,
+                                                final String userAgent,
+                                                final ViewportSize viewport) {
         final BrowserContext context = targetBrowser.newContext(
             new Browser.NewContextOptions()
                 .setUserAgent(userAgent)
@@ -188,12 +205,39 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
         );
     }
 
-    private void logCrawlResult(final CrawlResult result) {
-        log.info("크롤링 완료 - 상태: {}, URL: {}, 응답 요약: {}, 소요 시간: {}ms",
+    private void logCrawlResult(final CrawlResult result,
+                                final String userAgent,
+                                final ViewportSize viewport,
+                                final long pageDelayMs) {
+        log.info("""
+            
+            ┌─── 크롤링 결과 ───────────────────────────────────
+            │ 타겟       : {}
+            │ 상태       : {}
+            │ URL        : {}
+            │ 소요 시간  : {}ms
+            ├─── 안티디텍션 설정 ────────────────────────────────
+            │ User-Agent : {}
+            │ Viewport   : {}x{}
+            │ Stealth    : webdriver 은닉, plugins 위장, languages 위장, chrome.runtime 주입
+            │ 행동 시뮬  : 마우스 이동 {}회, 스크롤 {}회
+            │ 페이지 딜레이  : {}ms (1000ms ~ 5000ms)
+            ├─── 응답 요약 ─────────────────────────────────────
+            │ {}
+            └───────────────────────────────────────────────────""",
+            result.targetName(),
             result.status(),
             result.targetUrl(),
-            result.contentSummary(CONTENT_SUMMARY_LENGTH),
-            result.durationMillis());
+            result.durationMillis(),
+            userAgent,
+            viewport.width, viewport.height,
+            MOUSE_MOVE_COUNT, SCROLL_COUNT,
+            pageDelayMs,
+            result.contentSummary(CONTENT_SUMMARY_LENGTH));
+
+        if (result.content() != null) {
+            log.debug("크롤링 응답 전체 - 타겟: {}, 콘텐츠:\n{}", result.targetName(), result.content());
+        }
     }
 
     private void closeBrowserContext(final BrowserContext context) {

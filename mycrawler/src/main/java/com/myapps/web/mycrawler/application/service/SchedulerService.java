@@ -188,7 +188,7 @@ public class SchedulerService implements SchedulingConfigurer {
         }
 
         final long delay = antiDetectionService.randomInterTargetDelay();
-        log.debug("스케줄 크롤링 타겟 간 딜레이 적용: {}ms", delay);
+        log.info("  ⏳ 타겟 간 딜레이 적용: {}ms (다음 타겟까지 대기 중...)", delay);
         try {
             Thread.sleep(delay);
         } catch (final InterruptedException exception) {

@@ -1,2 +1,6 @@
 crawler:
   browsers-path: /Users/gony/Library/Caches/ms-playwright
+# 응답 컨텐츠 전체 보기 
+# logging:
+#   level:
+#     com.myapps.web.mycrawler.infrastructure.crawler: DEBUG

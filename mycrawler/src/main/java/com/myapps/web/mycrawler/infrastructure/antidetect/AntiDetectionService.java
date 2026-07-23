@@ -126,7 +126,8 @@ public class AntiDetectionService {
      * @param page 동작을 수행할 Playwright {@link Page} 인스턴스
      */
     public void simulateHumanBehavior(final Page page) {
-        log.debug("인간 행동 시뮬레이션 시작");
+        log.debug("인간 행동 시뮬레이션 시작 — 마우스 이동 {}회, 스크롤 {}회 수행",
+                MOUSE_MOVE_COUNT, SCROLL_COUNT);
         performRandomMouseMovements(page);
         performRandomScrolls(page);
         log.debug("인간 행동 시뮬레이션 완료");
@@ -142,7 +143,7 @@ public class AntiDetectionService {
      */
     public void applyStealthSettings(final BrowserContext context) {
         context.addInitScript(STEALTH_SCRIPT);
-        log.debug("스텔스 설정이 브라우저 컨텍스트에 적용되었습니다");
+        log.debug("스텔스 설정 적용 — webdriver 은닉, plugins 위장, languages(ko-KR) 설정, chrome.runtime 주입");
     }
 
     /**
