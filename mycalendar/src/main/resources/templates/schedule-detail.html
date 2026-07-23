@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>일정 상세</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <main class="container">
+
+        <h1>일정 상세</h1>
+
+        <section class="schedule-info">
+            <dl>
+                <dt>카테고리</dt>
+                <dd>
+                    <span th:if="${schedule.category().name() == 'SEUNGKWON'}">승권</span>
+                    <span th:if="${schedule.category().name() == 'CHIWON'}">치원</span>
+                    <span th:if="${schedule.category().name() == 'DATE'}">데이트</span>
+                </dd>
+
+                <dt>시작일</dt>
+                <dd th:text="${schedule.startDate()}"></dd>
+
+                <th:block th:if="${schedule.endDate() != null}">
+                    <dt>종료일</dt>
+                    <dd th:text="${schedule.endDate()}"></dd>
+                </th:block>
+
+                <th:block th:if="${schedule.scheduleTime() != null}">
+                    <dt>시간</dt>
+                    <dd th:text="${schedule.scheduleTime()}"></dd>
+                </th:block>
+
+                <dt>내용</dt>
+                <dd th:text="${schedule.content()}"></dd>
+            </dl>
+            <div class="timestamps">
+                <span>생성: <span th:text="${#temporals.format(schedule.createdAt(), 'yyyy-MM-dd HH:mm')}"></span></span>
+                <span th:if="${schedule.updatedAt() != null}">
+                    | 수정: <span th:text="${#temporals.format(schedule.updatedAt(), 'yyyy-MM-dd HH:mm')}"></span>
+                </span>
+            </div>
+        </section>
+
+        <div class="actions">
+            <a class="btn-edit" th:href="@{/schedules/{id}/edit(id=${schedule.id()})}">수정</a>
+            <form th:action="@{/schedules/{id}(id=${schedule.id()})}" method="post"
+                  onsubmit="return confirm('이 일정을 삭제하시겠습니까?');">
+                <input type="hidden" name="_method" value="DELETE"/>
+                <button type="submit" class="btn-delete">삭제</button>
+            </form>
+            <a class="btn-back"
+               th:href="@{/calendar/{year}/{month}(year=${schedule.startDate().getYear()}, month=${schedule.startDate().getMonthValue()})}">목록으로</a>
+        </div>
+
+        <section class="comments-section">
+            <h2>댓글</h2>
+
+            <div th:if="${#lists.isEmpty(schedule.comments())}">
+                <p style="color: #999;">댓글이 없습니다.</p>
+            </div>
+
+            <div th:each="comment : ${schedule.comments()}" class="comment-item">
+                <div class="comment-meta">
+                    <strong>
+                        <span th:if="${comment.author().name() == 'SEUNGKWON'}">승권</span>
+                        <span th:if="${comment.author().name() == 'CHIWON'}">치원</span>
+                    </strong>
+                    · <span th:text="${#temporals.format(comment.createdAt(), 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+                <p th:text="${comment.content()}"></p>
+                <div class="comment-actions">
+                    <a th:href="@{/comments/{id}/edit(id=${comment.id()}, scheduleId=${schedule.id()})}">수정</a>
+                    <form th:action="@{/comments/{id}(id=${comment.id()}, scheduleId=${schedule.id()})}" method="post"
+                          onsubmit="return confirm('이 댓글을 삭제하시겠습니까?');" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE"/>
+                        <button type="submit">삭제</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="comment-form">
+                <h3>댓글 작성</h3>
+                <form th:action="@{/schedules/{id}/comments(id=${schedule.id()})}" method="post">
+                    <div class="form-group">
+                        <label for="author">작성자</label>
+                        <select id="author" name="author" required>
+                            <option value="">-- 선택 --</option>
+                            <option value="SEUNGKWON">승권</option>
+                            <option value="CHIWON">치원</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment-content">내용</label>
+                        <textarea id="comment-content" name="content" maxlength="200" required
+                                  placeholder="댓글을 입력하세요 (최대 200자)"></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">댓글 등록</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>

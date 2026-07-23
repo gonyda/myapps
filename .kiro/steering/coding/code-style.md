@@ -171,6 +171,32 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 ```
 
+#### @DataJpaTest 패키지 변경
+
+- 슬라이스 테스트에 `spring-boot-starter-data-jpa-test` 의존성 필요 (모듈 pom.xml에 test scope)
+- import: `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`
+- `TestEntityManager` import: `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`
+- 생성자 주입 사용 시 `@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)` 필요
+
+```java
+// ❌ Spring Boot 3.x (제거됨)
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+
+// ✅ Spring Boot 4.0
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+```
+
+```xml
+<!-- 모듈 pom.xml에 추가 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
 #### Jackson 3 (ObjectMapper)
 
 - Jackson 3에서 패키지가 `com.fasterxml.jackson` → `tools.jackson`으로 변경

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>댓글 수정</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <main class="container">
+        <h1>댓글 수정</h1>
+        <form th:action="@{/comments/{id}(id=${commentId})}" method="post">
+            <input type="hidden" name="_method" value="PUT"/>
+            <input type="hidden" name="scheduleId" th:value="${scheduleId}"/>
+
+            <div class="form-group">
+                <label>작성자</label>
+                <div class="author-display">
+                    <span th:if="${commentForm.author().name() == 'SEUNGKWON'}">승권</span>
+                    <span th:if="${commentForm.author().name() == 'CHIWON'}">치원</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea id="content" name="content" maxlength="200"
+                          required th:text="${commentForm.content()}"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">저장</button>
+                <a th:href="@{/schedules/{id}(id=${scheduleId})}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

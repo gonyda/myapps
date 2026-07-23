@@ -1,0 +1,20 @@
+server:
+  port: 8082
+
+logging:
+  level:
+    root: info
+
+spring:
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        "[default_schema]": admin
+  thymeleaf:
+    cache: false

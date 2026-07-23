@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${scheduleId != null ? '일정 수정' : '일정 등록'}">일정 폼</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <main class="container">
+        <h1 th:text="${scheduleId != null ? '일정 수정' : '일정 등록'}">일정 폼</h1>
+
+        <form th:action="${scheduleId != null ? '/schedules/' + scheduleId : '/schedules'}" method="post">
+            <th:block th:if="${scheduleId != null}">
+                <input type="hidden" name="_method" value="PUT"/>
+            </th:block>
+
+            <div class="form-group">
+                <label for="category">카테고리</label>
+                <select id="category" name="category" required>
+                    <option value="">-- 선택 --</option>
+                    <option value="SEUNGKWON" th:selected="${scheduleForm != null && scheduleForm.category() != null && scheduleForm.category().name() == 'SEUNGKWON'}">승권</option>
+                    <option value="CHIWON" th:selected="${scheduleForm != null && scheduleForm.category() != null && scheduleForm.category().name() == 'CHIWON'}">치원</option>
+                    <option value="DATE" th:selected="${scheduleForm != null && scheduleForm.category() != null && scheduleForm.category().name() == 'DATE'}">데이트</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="startDate">시작일</label>
+                <input type="date" id="startDate" name="startDate" required
+                       th:value="${scheduleForm != null && scheduleForm.startDate() != null ? scheduleForm.startDate() : ''}"/>
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">종료일 (선택)</label>
+                <input type="date" id="endDate" name="endDate"
+                       th:value="${scheduleForm != null && scheduleForm.endDate() != null ? scheduleForm.endDate() : ''}"/>
+            </div>
+
+            <div class="form-group">
+                <label for="scheduleTime">시간 (선택)</label>
+                <input type="time" id="scheduleTime" name="scheduleTime"
+                       th:value="${scheduleForm != null && scheduleForm.scheduleTime() != null ? scheduleForm.scheduleTime() : ''}"/>
+            </div>
+
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea id="content" name="content" maxlength="200" required
+                          placeholder="일정 내용을 입력하세요 (최대 200자)"
+                          th:text="${scheduleForm != null ? scheduleForm.content() : ''}"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary" th:text="${scheduleId != null ? '수정' : '등록'}">등록</button>
+                <a href="/" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

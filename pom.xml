@@ -24,6 +24,7 @@
     <modules>
         <module>mystudy</module>
         <module>mycrawler</module>
+        <module>mycalendar</module>
     </modules>
 
     <dependencies>

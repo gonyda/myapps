@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+    <!--
+        댓글 목록 프래그먼트.
+        HTMX 부분 렌더링 시 이 프래그먼트를 반환하여 댓글 목록만 갱신할 수 있습니다.
+        사용법: th:replace="~{fragments/comment-list :: commentList(comments=${schedule.comments()}, scheduleId=${schedule.id()})}"
+    -->
+    <div th:fragment="commentList(comments, scheduleId)" id="comment-list">
+        <div th:if="${#lists.isEmpty(comments)}" class="no-comments">
+            <p>아직 댓글이 없습니다.</p>
+        </div>
+        <div th:each="comment : ${comments}" class="comment-item">
+            <div class="comment-header">
+                <span class="comment-author"
+                      th:text="${comment.author().name() == 'SEUNGKWON'} ? '승권' : '치원'"></span>
+                <span class="comment-date"
+                      th:text="${#temporals.format(comment.createdAt(), 'yyyy-MM-dd HH:mm')}"></span>
+            </div>
+            <div class="comment-content" th:text="${comment.content()}"></div>
+            <div class="comment-actions">
+                <a th:href="@{/comments/{id}/edit(id=${comment.id()})}"
+                   class="btn-sm btn-edit">수정</a>
+                <form th:action="@{/comments/{id}(id=${comment.id()})}" method="post"
+                      style="display:inline;"
+                      onsubmit="return confirm('댓글을 삭제하시겠습니까?');">
+                    <input type="hidden" name="_method" value="DELETE"/>
+                    <input type="hidden" name="scheduleId" th:value="${scheduleId}"/>
+                    <button type="submit" class="btn-sm btn-delete">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

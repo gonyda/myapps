@@ -1,0 +1,643 @@
+/* ==========================================================================
+   Couple Calendar - Mobile-First Responsive CSS
+   Requirements: 1.5, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Reset / Base
+   -------------------------------------------------------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fa;
+    color: #333;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Layout
+   -------------------------------------------------------------------------- */
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   D-Day Counter
+   -------------------------------------------------------------------------- */
+.dday-counter {
+    text-align: center;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #ff6b9d, #c44dff);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Calendar Header / Navigation
+   -------------------------------------------------------------------------- */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+}
+
+.calendar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.nav-btn:hover {
+    background: #e9ecef;
+}
+
+/* --------------------------------------------------------------------------
+   Actions / Buttons
+   -------------------------------------------------------------------------- */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+    gap: 8px;
+}
+
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 16px;
+    background: #4a90d9;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    touch-action: manipulation;
+}
+
+.btn-add:hover {
+    background: #357abd;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    touch-action: manipulation;
+}
+
+.btn-primary {
+    background: #4a90d9;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #357abd;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn-edit {
+    background: #4a90d9;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.btn-delete {
+    background: #d94a4a;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.btn-back {
+    background: #eee;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-submit {
+    background: #4a90d9;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-submit:hover {
+    background: #357abd;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Calendar Grid
+   -------------------------------------------------------------------------- */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.day-header {
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f1f3f5;
+    border-bottom: 1px solid #ddd;
+}
+
+.day-header:nth-child(1) {
+    color: #e74c3c;
+}
+
+.day-header:nth-child(7) {
+    color: #3498db;
+}
+
+/* --------------------------------------------------------------------------
+   Day Cells
+   -------------------------------------------------------------------------- */
+.day-cell {
+    min-height: 70px;
+    padding: 4px;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.day-cell:nth-child(7n + 8) {
+    border-right: none;
+}
+
+.day-cell.empty {
+    background: #fafafa;
+}
+
+.day-cell.today {
+    background: #fff3cd;
+}
+
+.day-number {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+    min-width: 44px;
+    min-height: 20px;
+    display: inline-block;
+}
+
+/* --------------------------------------------------------------------------
+   Schedule Items
+   -------------------------------------------------------------------------- */
+.schedule-item {
+    display: block;
+    padding: 2px 4px;
+    margin-bottom: 1px;
+    border-radius: 3px;
+    font-size: 0.6rem;
+    line-height: 1.3;
+    text-decoration: none;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 16px;
+}
+
+/* Category Colors */
+.category-seungkwon {
+    background: #4a90d9;
+}
+
+.category-chiwon {
+    background: #e67e22;
+}
+
+.category-date {
+    background: #e91e63;
+}
+
+/* Schedule overflow indicators */
+.schedule-overflow {
+    font-size: 0.6rem;
+    color: #888;
+    padding: 0 4px;
+}
+
+/* Mobile: show mobile overflow, hide desktop overflow */
+.schedule-overflow-mobile {
+    display: block;
+    font-size: 0.6rem;
+    color: #888;
+    padding: 0 4px;
+}
+
+.schedule-overflow-desktop {
+    display: none;
+    font-size: 0.6rem;
+    color: #888;
+    padding: 0 4px;
+}
+
+/* Desktop-only schedule items (items 4 and 5) — hidden on mobile */
+.desktop-schedule {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Anniversary Markers
+   -------------------------------------------------------------------------- */
+.anniversary-marker {
+    font-size: 0.55rem;
+    color: #9b59b6;
+    font-weight: 600;
+    padding: 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   Schedule Detail
+   -------------------------------------------------------------------------- */
+.schedule-info {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.schedule-info dt {
+    font-weight: bold;
+    color: #555;
+    margin-top: 12px;
+}
+
+.schedule-info dd {
+    margin-left: 0;
+    margin-top: 4px;
+}
+
+.timestamps {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Comments
+   -------------------------------------------------------------------------- */
+.comments-section {
+    margin-top: 32px;
+}
+
+.comments-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.comment-item {
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+}
+
+.comment-meta {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.comment-actions {
+    margin-top: 6px;
+    display: flex;
+    gap: 8px;
+}
+
+.comment-actions a,
+.comment-actions button {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comment-actions a {
+    background: #eee;
+    color: #333;
+    border: none;
+}
+
+.comment-actions button {
+    background: #d94a4a;
+    color: #fff;
+    border: none;
+}
+
+.comment-form {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.comment-form h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.author-display {
+    padding: 10px 16px;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Error Page
+   -------------------------------------------------------------------------- */
+.error-container {
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+    padding: 48px 24px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.error-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #dc3545;
+    margin-bottom: 12px;
+}
+
+.error-message {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 32px;
+    word-break: keep-all;
+}
+
+.home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    min-width: 44px;
+    min-height: 44px;
+    transition: background-color 0.2s;
+}
+
+.home-link:hover {
+    background-color: #0056b3;
+}
+
+/* --------------------------------------------------------------------------
+   Media Queries - Desktop (min-width: 769px)
+   -------------------------------------------------------------------------- */
+@media (min-width: 769px) {
+    .container {
+        padding: 24px;
+    }
+
+    .calendar-title {
+        font-size: 1.5rem;
+    }
+
+    .dday-counter {
+        font-size: 1.3rem;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* Calendar Grid - Desktop */
+    .day-cell {
+        min-height: 120px;
+        padding: 6px;
+    }
+
+    .day-number {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+
+    .day-header {
+        font-size: 0.85rem;
+        padding: 12px 4px;
+    }
+
+    /* Schedule Items - Desktop */
+    .schedule-item {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        margin-bottom: 2px;
+    }
+
+    /* Show desktop-only schedule items (4th and 5th) */
+    .desktop-schedule {
+        display: block;
+    }
+
+    /* Overflow indicators: hide mobile, show desktop */
+    .schedule-overflow-mobile {
+        display: none;
+    }
+
+    .schedule-overflow-desktop {
+        display: block;
+    }
+
+    /* Anniversary */
+    .anniversary-marker {
+        font-size: 0.65rem;
+    }
+
+    /* Schedule overflow */
+    .schedule-overflow {
+        font-size: 0.7rem;
+    }
+
+    /* Buttons - slightly larger on desktop */
+    .btn-submit {
+        width: auto;
+        min-width: 120px;
+    }
+
+    /* Actions */
+    .calendar-header {
+        margin-bottom: 16px;
+    }
+
+    .actions {
+        margin-bottom: 16px;
+    }
+}

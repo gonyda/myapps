@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="|${year}년 ${month}월 캘린더|">캘린더</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <main class="container"
+          data-swipe-container
+          th:attr="data-prev-url=@{/calendar/{y}/{m}(y=${prevYear}, m=${prevMonth})},
+                   data-next-url=@{/calendar/{y}/{m}(y=${nextYear}, m=${nextMonth})}">
+
+        <!-- D-Day Counter -->
+        <section class="dday-counter" aria-label="D-Day 카운터">
+            <span th:text="|D+${dDay}|">D+100</span>
+        </section>
+
+        <!-- Calendar Header: Navigation + Title -->
+        <header class="calendar-header">
+            <a class="nav-btn" th:href="@{/calendar/{y}/{m}(y=${prevYear}, m=${prevMonth})}" aria-label="이전 월">&laquo; 이전</a>
+            <h1 class="calendar-title" th:text="|${year}년 ${month}월|">2026년 7월</h1>
+            <a class="nav-btn" th:href="@{/calendar/{y}/{m}(y=${nextYear}, m=${nextMonth})}" aria-label="다음 월">다음 &raquo;</a>
+        </header>
+
+        <!-- Actions -->
+        <nav class="actions">
+            <a class="btn-add" th:href="@{/schedules/new}">+ 일정 추가</a>
+        </nav>
+
+        <!-- Calendar Grid -->
+        <section class="calendar-grid" aria-label="월별 캘린더">
+            <!-- Day of week headers (일~토) -->
+            <div class="day-header">일</div>
+            <div class="day-header">월</div>
+            <div class="day-header">화</div>
+            <div class="day-header">수</div>
+            <div class="day-header">목</div>
+            <div class="day-header">금</div>
+            <div class="day-header">토</div>
+
+            <!-- Empty cells before first day of month -->
+            <th:block th:with="firstDayOfWeek=${T(java.time.LocalDate).of(year, month, 1).getDayOfWeek().getValue() % 7}">
+                <div class="day-cell empty" th:each="i : ${#numbers.sequence(1, firstDayOfWeek)}" th:if="${firstDayOfWeek > 0}"></div>
+            </th:block>
+
+            <!-- Day cells -->
+            <th:block th:with="daysInMonth=${T(java.time.YearMonth).of(year, month).lengthOfMonth()}">
+                <div th:each="day : ${#numbers.sequence(1, daysInMonth)}"
+                     th:with="currentDate=${T(java.time.LocalDate).of(year, month, day)}, daySchedules=${calendarHelper.getSchedulesForDate(schedules, T(java.time.LocalDate).of(year, month, day))}"
+                     th:class="${'day-cell' + (currentDate.equals(today) ? ' today' : '')}">
+
+                    <!-- Day number -->
+                    <div class="day-number" th:text="${day}">1</div>
+
+                    <!-- Anniversary markers for this date -->
+                    <th:block th:each="anniversary : ${anniversaries}">
+                        <div class="anniversary-marker"
+                             th:if="${anniversary.date().equals(currentDate)}"
+                             th:text="${anniversary.name()}">100일</div>
+                    </th:block>
+
+                    <!-- Schedules for this date (max 5: first 3 always visible, 4th-5th desktop only) -->
+                    <th:block th:each="schedule, iterStat : ${daySchedules}" th:if="${iterStat.index < 5}">
+                        <a th:class="${'schedule-item category-' + schedule.category().name().toLowerCase() + (iterStat.index >= 3 ? ' desktop-schedule' : '')}"
+                           th:href="@{/schedules/{id}(id=${schedule.id()})}"
+                           th:text="${schedule.content()}"
+                           th:title="${schedule.content()}">일정</a>
+                    </th:block>
+
+                    <!-- Mobile overflow: show when total > 3 (hidden on desktop) -->
+                    <div class="schedule-overflow-mobile"
+                         th:if="${daySchedules.size() > 3}"
+                         th:text="${'+' + (daySchedules.size() - 3)}">+2</div>
+
+                    <!-- Desktop overflow: show when total > 5 (hidden on mobile) -->
+                    <div class="schedule-overflow-desktop"
+                         th:if="${daySchedules.size() > 5}"
+                         th:text="${'+' + (daySchedules.size() - 5)}">+2</div>
+                </div>
+            </th:block>
+        </section>
+    </main>
+
+    <!-- Hammer.js for swipe gestures -->
+    <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
+    <script th:src="@{/js/swipe.js}"></script>
+</body>
+</html>
