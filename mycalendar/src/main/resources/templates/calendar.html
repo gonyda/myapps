@@ -66,9 +66,11 @@
                     <!-- Schedules for this date (max 5: first 3 always visible, 4th-5th desktop only) -->
                     <th:block th:each="schedule, iterStat : ${daySchedules}" th:if="${iterStat.index < 5}">
                         <a th:class="${'schedule-item category-' + schedule.category().name().toLowerCase() + (iterStat.index >= 3 ? ' desktop-schedule' : '')}"
-                           th:href="@{/schedules/{id}(id=${schedule.id()})}"
+                           href="javascript:void(0)"
+                           th:attr="data-schedule-id=${schedule.id()}"
                            th:text="${schedule.content()}"
-                           th:title="${schedule.content()}">일정</a>
+                           th:title="${schedule.content()}"
+                           onclick="openScheduleDetailModal(event, this.dataset.scheduleId)">일정</a>
                     </th:block>
 
                     <!-- Mobile overflow: show when total > 3 (hidden on desktop) -->
@@ -85,12 +87,13 @@
         </section>
     </main>
 
-    <!-- Schedule Creation Modal -->
+    <!-- Schedule Modal (등록/상세/수정 겸용) -->
     <div id="schedule-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
         <div class="modal-container">
             <button type="button" class="modal-close" onclick="closeScheduleModal(event)" aria-label="닫기">&times;</button>
-            <h2 class="modal-title">일정 등록</h2>
-            <form action="/schedules" method="post" class="modal-form">
+            <h2 id="modal-title" class="modal-title">일정 등록</h2>
+            <form id="schedule-form" action="/schedules" method="post" class="modal-form">
+                <input type="hidden" id="modal-method" name="_method" value="" disabled/>
                 <div class="form-group">
                     <label for="modal-category">카테고리</label>
                     <select id="modal-category" name="category" required>
@@ -118,20 +121,85 @@
                               placeholder="일정 내용을 입력하세요 (최대 200자)"></textarea>
                 </div>
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">등록</button>
+                    <button type="submit" id="modal-submit-btn" class="btn btn-primary">등록</button>
+                    <button type="button" id="modal-delete-btn" class="btn btn-delete" style="display:none;"
+                            onclick="deleteSchedule()">삭제</button>
                     <button type="button" class="btn btn-secondary" onclick="closeScheduleModal(event)">취소</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal open/close JavaScript -->
+    <!-- Modal JavaScript -->
     <script>
+        var currentScheduleId = null;
+
         function openScheduleModal(date) {
-            var modal = document.getElementById('schedule-modal');
-            var startDateInput = document.getElementById('modal-startDate');
-            startDateInput.value = date;
-            modal.classList.add('active');
+            resetModal();
+            document.getElementById('modal-startDate').value = date;
+            document.getElementById('schedule-modal').classList.add('active');
+        }
+
+        function openScheduleDetailModal(event, scheduleId) {
+            event.stopPropagation();
+            resetModal();
+            currentScheduleId = scheduleId;
+
+            fetch('/schedules/' + scheduleId)
+                .then(function(response) { return response.json(); })
+                .then(function(schedule) {
+                    document.getElementById('modal-title').textContent = '일정 상세';
+                    document.getElementById('modal-submit-btn').textContent = '수정';
+                    document.getElementById('modal-delete-btn').style.display = '';
+
+                    var form = document.getElementById('schedule-form');
+                    form.action = '/schedules/' + scheduleId;
+
+                    var methodInput = document.getElementById('modal-method');
+                    methodInput.value = 'PUT';
+                    methodInput.disabled = false;
+
+                    document.getElementById('modal-category').value = schedule.category;
+                    document.getElementById('modal-startDate').value = schedule.startDate || '';
+                    document.getElementById('modal-endDate').value = schedule.endDate || '';
+                    document.getElementById('modal-scheduleTime').value = schedule.scheduleTime || '';
+                    document.getElementById('modal-content').value = schedule.content || '';
+
+                    document.getElementById('schedule-modal').classList.add('active');
+                });
+        }
+
+        function resetModal() {
+            currentScheduleId = null;
+            document.getElementById('modal-title').textContent = '일정 등록';
+            document.getElementById('modal-submit-btn').textContent = '등록';
+            document.getElementById('modal-delete-btn').style.display = 'none';
+
+            var form = document.getElementById('schedule-form');
+            form.action = '/schedules';
+            form.reset();
+
+            var methodInput = document.getElementById('modal-method');
+            methodInput.value = '';
+            methodInput.disabled = true;
+        }
+
+        function deleteSchedule() {
+            if (!currentScheduleId) return;
+            if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+
+            var form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/schedules/' + currentScheduleId;
+
+            var methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function closeScheduleModal(event) {
@@ -145,7 +213,6 @@
             }
         }
 
-        /* Prevent schedule-item link clicks from triggering modal open */
         document.addEventListener('DOMContentLoaded', function() {
             var scheduleLinks = document.querySelectorAll('.schedule-item');
             for (var i = 0; i < scheduleLinks.length; i++) {

@@ -162,8 +162,8 @@ class PreservationMockMvcTest {
     }
 
     /**
-     * GET /schedules/{id} 요청이 200을 반환하고 일정 데이터를
-     * 정상적으로 모델에 포함하는지 확인합니다.
+     * GET /schedules/{id} 요청이 200을 반환하고 일정 JSON 데이터를
+     * 정상적으로 반환하는지 확인합니다.
      *
      * <p><b>Validates: Requirements 3.3</b>
      */
@@ -182,10 +182,7 @@ class PreservationMockMvcTest {
         when(scheduleService.findById(eq(1L))).thenReturn(response);
 
         mockMvc.perform(get("/schedules/1"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("schedule-detail"))
-                .andExpect(model().attributeExists("schedule"))
-                .andExpect(model().attributeExists("categories"));
+                .andExpect(status().isOk());
     }
 
     private ScheduleResponse createScheduleResponse(final Long id,

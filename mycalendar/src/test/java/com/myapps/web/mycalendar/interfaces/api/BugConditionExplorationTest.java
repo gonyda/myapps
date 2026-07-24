@@ -77,7 +77,7 @@ class BugConditionExplorationTest {
                         .param("startDate", "2026-07-01")
                         .param("content", "수정된 일정"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/schedules/1"));
+                .andExpect(redirectedUrl("/calendar/2026/7"));
     }
 
     /**
@@ -94,12 +94,14 @@ class BugConditionExplorationTest {
     @Test
     void should_routeToDeleteMapping_when_postWithMethodDelete() throws Exception {
         final Long scheduleId = 1L;
+        final ScheduleResponse response = createScheduleResponse(scheduleId);
+        when(scheduleService.findById(scheduleId)).thenReturn(response);
         doNothing().when(scheduleService).delete(scheduleId);
 
         mockMvc.perform(post("/schedules/{id}", scheduleId)
                         .param("_method", "DELETE"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+                .andExpect(redirectedUrl("/calendar/2026/7"));
     }
 
     /**

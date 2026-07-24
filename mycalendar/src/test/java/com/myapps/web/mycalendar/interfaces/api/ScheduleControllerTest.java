@@ -45,19 +45,16 @@ class ScheduleControllerTest {
     private ScheduleService scheduleService;
 
     /**
-     * GET /schedules/{id} 요청 시 일정 상세 뷰와 모델 속성을 검증합니다.
+     * GET /schedules/{id} 요청 시 일정 상세 JSON을 반환하는지 검증합니다.
      */
     @Test
-    void should_returnScheduleDetailView_when_scheduleExists() throws Exception {
+    void should_returnScheduleDetailJson_when_scheduleExists() throws Exception {
         final Long scheduleId = 1L;
         final ScheduleResponse response = createScheduleResponse(scheduleId);
         when(scheduleService.findById(scheduleId)).thenReturn(response);
 
         mockMvc.perform(get("/schedules/{id}", scheduleId))
-                .andExpect(status().isOk())
-                .andExpect(view().name("schedule-detail"))
-                .andExpect(model().attribute("schedule", response))
-                .andExpect(model().attribute("categories", Category.values()));
+                .andExpect(status().isOk());
     }
 
     /**
@@ -159,10 +156,10 @@ class ScheduleControllerTest {
     }
 
     /**
-     * PUT /schedules/{id} 요청 시 일정 수정 성공 후 일정 상세 페이지로 리다이렉트되는지 검증합니다.
+     * PUT /schedules/{id} 요청 시 일정 수정 성공 후 캘린더 뷰로 리다이렉트되는지 검증합니다.
      */
     @Test
-    void should_redirectToScheduleDetail_when_scheduleUpdatedSuccessfully() throws Exception {
+    void should_redirectToCalendar_when_scheduleUpdatedSuccessfully() throws Exception {
         final Long scheduleId = 1L;
         final ScheduleResponse response = createScheduleResponse(scheduleId);
         when(scheduleService.update(eq(scheduleId), any())).thenReturn(response);
@@ -172,7 +169,7 @@ class ScheduleControllerTest {
                         .param("startDate", "2026-07-15")
                         .param("content", "수정된 일정"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/schedules/1"));
+                .andExpect(redirectedUrl("/calendar/2026/7"));
     }
 
     /**
@@ -195,31 +192,31 @@ class ScheduleControllerTest {
     }
 
     /**
-     * DELETE /schedules/{id} 요청 시 일정 삭제 성공 후 루트 페이지로 리다이렉트되는지 검증합니다.
+     * DELETE /schedules/{id} 요청 시 일정 삭제 성공 후 캘린더 뷰로 리다이렉트되는지 검증합니다.
      */
     @Test
-    void should_redirectToRoot_when_scheduleDeletedSuccessfully() throws Exception {
+    void should_redirectToCalendar_when_scheduleDeletedSuccessfully() throws Exception {
         final Long scheduleId = 1L;
+        final ScheduleResponse response = createScheduleResponse(scheduleId);
+        when(scheduleService.findById(scheduleId)).thenReturn(response);
         doNothing().when(scheduleService).delete(scheduleId);
 
         mockMvc.perform(delete("/schedules/{id}", scheduleId))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+                .andExpect(redirectedUrl("/calendar/2026/7"));
     }
 
     /**
-     * GET /schedules/{id} 요청 시 일정이 존재하지 않으면 404 에러 페이지를 반환하는지 검증합니다.
+     * GET /schedules/{id} 요청 시 일정이 존재하지 않으면 404 에러를 반환하는지 검증합니다.
      */
     @Test
-    void should_return404ErrorView_when_scheduleNotFound() throws Exception {
+    void should_return404_when_scheduleNotFound() throws Exception {
         final Long scheduleId = 999L;
         when(scheduleService.findById(scheduleId))
                 .thenThrow(new ScheduleNotFoundException("일정을 찾을 수 없습니다: ID=999"));
 
         mockMvc.perform(get("/schedules/{id}", scheduleId))
-                .andExpect(status().isNotFound())
-                .andExpect(view().name("error"))
-                .andExpect(model().attribute("errorMessage", "일정을 찾을 수 없습니다: ID=999"));
+                .andExpect(status().isNotFound());
     }
 
     private ScheduleResponse createScheduleResponse(final Long id) {

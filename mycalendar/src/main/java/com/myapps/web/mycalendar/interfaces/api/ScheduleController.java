@@ -2,6 +2,7 @@ package com.myapps.web.mycalendar.interfaces.api;
 
 import java.time.LocalDate;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
@@ -42,18 +44,19 @@ public class ScheduleController {
     }
 
     /**
-     * 일정 상세 조회 페이지를 렌더링합니다.
+     * 일정 상세 정보를 JSON으로 반환합니다.
      *
-     * @param id    조회할 일정 ID
-     * @param model 뷰에 전달할 모델
-     * @return 일정 상세 뷰 이름
+     * <p>캘린더 모달에서 일정 상세를 표시하기 위해 사용됩니다.
+     * 일정이 존재하지 않는 경우 404 응답을 반환합니다.
+     *
+     * @param id 조회할 일정 ID
+     * @return 일정 응답 JSON 또는 404
      */
     @GetMapping("/{id}")
-    public String detail(@PathVariable("id") final Long id, final Model model) {
+    @ResponseBody
+    public ResponseEntity<ScheduleResponse> detail(@PathVariable("id") final Long id) {
         final ScheduleResponse schedule = scheduleService.findById(id);
-        model.addAttribute("schedule", schedule);
-        model.addAttribute("categories", Category.values());
-        return "schedule-detail";
+        return ResponseEntity.ok(schedule);
     }
 
     /**
@@ -108,29 +111,35 @@ public class ScheduleController {
     }
 
     /**
-     * 일정을 수정하고 일정 상세 페이지로 리다이렉트합니다.
+     * 일정을 수정하고 캘린더 뷰로 리다이렉트합니다.
      *
      * @param id   수정할 일정 ID
      * @param form 폼에서 바인딩된 일정 데이터
-     * @return 일정 상세 뷰 리다이렉트 URL
+     * @return 캘린더 뷰 리다이렉트 URL
      */
     @PutMapping("/{id}")
     public String update(@PathVariable("id") final Long id,
                          @ModelAttribute final ScheduleForm form) {
         final ScheduleUpdateCommand command = toUpdateCommand(form);
         scheduleService.update(id, command);
-        return "redirect:/schedules/" + id;
+        return buildCalendarRedirect(form);
     }
 
     /**
-     * 일정을 삭제하고 루트 페이지로 리다이렉트합니다.
+     * 일정을 삭제하고 캘린더 뷰로 리다이렉트합니다.
      *
      * @param id 삭제할 일정 ID
-     * @return 루트 페이지 리다이렉트 URL
+     * @return 캘린더 뷰 리다이렉트 URL
      */
     @DeleteMapping("/{id}")
     public String delete(@PathVariable("id") final Long id) {
+        final ScheduleResponse schedule = scheduleService.findById(id);
         scheduleService.delete(id);
+        if (schedule.startDate() != null) {
+            final int year = schedule.startDate().getYear();
+            final int month = schedule.startDate().getMonthValue();
+            return "redirect:/calendar/" + year + "/" + month;
+        }
         return "redirect:/";
     }
 
