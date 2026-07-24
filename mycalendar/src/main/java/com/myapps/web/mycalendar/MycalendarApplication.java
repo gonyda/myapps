@@ -17,6 +17,10 @@ public class MycalendarApplication {
      * @param args 커맨드라인 인수
      */
     public static void main(final String[] args) {
+        String tnsAdmin = System.getenv("TNS_ADMIN");
+        if (tnsAdmin != null && !tnsAdmin.isEmpty()) {
+            System.setProperty("oracle.net.tns_admin", tnsAdmin);
+        }
         SpringApplication.run(MycalendarApplication.class, args);
     }
 }

@@ -1,5 +1,7 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,13 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
 import com.myapps.web.mycalendar.application.service.ScheduleService;
 import com.myapps.web.mycalendar.domain.model.Category;
-import com.myapps.web.mycalendar.interfaces.dto.CommentForm;
 import com.myapps.web.mycalendar.interfaces.dto.ScheduleForm;
 
 /**
@@ -50,7 +52,6 @@ public class ScheduleController {
     public String detail(@PathVariable("id") final Long id, final Model model) {
         final ScheduleResponse schedule = scheduleService.findById(id);
         model.addAttribute("schedule", schedule);
-        model.addAttribute("commentForm", new CommentForm(null, null));
         model.addAttribute("categories", Category.values());
         return "schedule-detail";
     }
@@ -58,13 +59,19 @@ public class ScheduleController {
     /**
      * 일정 생성 폼을 렌더링합니다.
      *
-     * @param model 뷰에 전달할 모델
+     * <p>선택적으로 {@code startDate} 쿼리 파라미터를 받아 폼의 시작일 필드를 미리 설정합니다.
+     * 캘린더 모달에서 날짜 셀 클릭 시 해당 날짜가 전달됩니다.
+     *
+     * @param startDate 시작일 미리 설정 값 (yyyy-MM-dd 형식, 선택)
+     * @param model     뷰에 전달할 모델
      * @return 일정 폼 뷰 이름
      */
     @GetMapping("/new")
-    public String newForm(final Model model) {
+    public String newForm(@RequestParam(required = false) final String startDate,
+                          final Model model) {
+        final LocalDate parsedStartDate = parseStartDate(startDate);
         model.addAttribute("scheduleForm",
-                new ScheduleForm(null, null, null, null, null));
+                new ScheduleForm(null, parsedStartDate, null, null, null));
         model.addAttribute("scheduleId", null);
         model.addAttribute("categories", Category.values());
         return "schedule-form";
@@ -164,5 +171,12 @@ public class ScheduleController {
             return "redirect:/calendar/" + year + "/" + month;
         }
         return "redirect:/";
+    }
+
+    private LocalDate parseStartDate(final String startDate) {
+        if (startDate == null || startDate.isBlank()) {
+            return null;
+        }
+        return LocalDate.parse(startDate);
     }
 }

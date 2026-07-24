@@ -1,7 +1,5 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
-import com.myapps.web.mycalendar.application.exception.CommentNotFoundException;
-import com.myapps.web.mycalendar.application.exception.InvalidCommentException;
 import com.myapps.web.mycalendar.application.exception.InvalidScheduleException;
 import com.myapps.web.mycalendar.application.exception.ScheduleNotFoundException;
 
@@ -41,23 +39,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 댓글을 찾을 수 없을 때 404 에러 페이지를 반환합니다.
-     *
-     * @param ex       발생한 예외
-     * @param model    뷰에 전달할 모델
-     * @param response HTTP 응답 객체
-     * @return 에러 뷰 이름
-     */
-    @ExceptionHandler(CommentNotFoundException.class)
-    public String handleCommentNotFound(final CommentNotFoundException ex,
-                                        final Model model,
-                                        final HttpServletResponse response) {
-        response.setStatus(HTTP_NOT_FOUND);
-        model.addAttribute("errorMessage", ex.getMessage());
-        return "error";
-    }
-
-    /**
      * 일정 유효성 검증 실패 시 400 에러 메시지를 표시합니다.
      *
      * @param ex       발생한 예외
@@ -69,23 +50,6 @@ public class GlobalExceptionHandler {
     public String handleInvalidSchedule(final InvalidScheduleException ex,
                                         final Model model,
                                         final HttpServletResponse response) {
-        response.setStatus(HTTP_BAD_REQUEST);
-        model.addAttribute("errorMessage", ex.getMessage());
-        return "error";
-    }
-
-    /**
-     * 댓글 유효성 검증 실패 시 400 에러 메시지를 표시합니다.
-     *
-     * @param ex       발생한 예외
-     * @param model    뷰에 전달할 모델
-     * @param response HTTP 응답 객체
-     * @return 에러 뷰 이름
-     */
-    @ExceptionHandler(InvalidCommentException.class)
-    public String handleInvalidComment(final InvalidCommentException ex,
-                                       final Model model,
-                                       final HttpServletResponse response) {
         response.setStatus(HTTP_BAD_REQUEST);
         model.addAttribute("errorMessage", ex.getMessage());
         return "error";

@@ -237,14 +237,12 @@ class ScheduleServicePropertyTest {
     /**
      * Property 7: 일정 삭제 시 리포지토리 delete가 호출되어야 한다.
      *
-     * <p>Schedule 엔티티의 CascadeType.ALL + orphanRemoval에 의해
-     * 연관 댓글도 함께 삭제되므로, 서비스 레벨에서는 delete 위임을 검증한다.
+     * <p>서비스 레벨에서 delete 위임을 검증한다.
      *
      * <p>**Validates: Requirements 5.2**
      */
     @Property(tries = 100)
-    void deleteMustInvokeRepositoryDeleteOnFoundSchedule(
-            @ForAll("commentCounts") final int commentCount) {
+    void deleteMustInvokeRepositoryDeleteOnFoundSchedule() {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
         final ScheduleService service = new ScheduleService(mockRepo);
@@ -386,11 +384,6 @@ class ScheduleServicePropertyTest {
     Arbitrary<YearMonth> yearMonths() {
         return Arbitraries.integers().between(0, 60)
                 .map(offset -> YearMonth.of(2026, 1).plusMonths(offset));
-    }
-
-    @Provide
-    Arbitrary<Integer> commentCounts() {
-        return Arbitraries.integers().between(0, 20);
     }
 
     private Arbitrary<String> validContentStrings() {

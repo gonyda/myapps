@@ -7,14 +7,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.myapps.web.mycalendar.application.dto.CommentResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
 import com.myapps.web.mycalendar.application.exception.InvalidScheduleException;
 import com.myapps.web.mycalendar.application.exception.ScheduleNotFoundException;
 import com.myapps.web.mycalendar.domain.model.Schedule;
-import com.myapps.web.mycalendar.domain.model.ScheduleComment;
 import com.myapps.web.mycalendar.domain.repository.ScheduleRepository;
 
 /**
@@ -62,7 +60,7 @@ public class ScheduleService {
      * ID로 일정을 조회합니다.
      *
      * @param id 일정 식별자
-     * @return 일정 응답 (댓글 포함)
+     * @return 일정 응답
      * @throws ScheduleNotFoundException 해당 ID의 일정이 존재하지 않을 때
      */
     public ScheduleResponse findById(final Long id) {
@@ -114,10 +112,7 @@ public class ScheduleService {
     }
 
     /**
-     * 일정 및 연관 댓글을 삭제합니다.
-     *
-     * <p>Schedule 엔티티의 {@code CascadeType.ALL + orphanRemoval}에 의해
-     * 연관된 댓글도 함께 삭제됩니다.
+     * 일정을 삭제합니다.
      *
      * @param id 삭제할 일정 ID
      * @throws ScheduleNotFoundException 해당 ID의 일정이 존재하지 않을 때
@@ -171,10 +166,6 @@ public class ScheduleService {
     }
 
     private ScheduleResponse toResponse(final Schedule schedule) {
-        final List<CommentResponse> commentResponses = schedule.getComments().stream()
-                .map(this::toCommentResponse)
-                .toList();
-
         return new ScheduleResponse(
                 schedule.getId(),
                 schedule.getCategory(),
@@ -183,17 +174,7 @@ public class ScheduleService {
                 schedule.getScheduleTime(),
                 schedule.getContent(),
                 schedule.getCreatedAt(),
-                schedule.getUpdatedAt(),
-                commentResponses
-        );
-    }
-
-    private CommentResponse toCommentResponse(final ScheduleComment comment) {
-        return new CommentResponse(
-                comment.getId(),
-                comment.getAuthor(),
-                comment.getContent(),
-                comment.getCreatedAt()
+                schedule.getUpdatedAt()
         );
     }
 }

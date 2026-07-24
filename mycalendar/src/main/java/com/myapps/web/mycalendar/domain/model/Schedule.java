@@ -3,11 +3,7 @@ package com.myapps.web.mycalendar.domain.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -24,7 +19,7 @@ import jakarta.persistence.Table;
  * 일정을 나타내는 핵심 도메인 엔티티.
  *
  * <p>커플 캘린더의 개별 일정 항목을 표현하며, 카테고리(승권/치원/데이트),
- * 날짜 범위, 시간, 내용을 포함합니다. 일정에는 여러 개의 댓글이 달릴 수 있습니다.
+ * 날짜 범위, 시간, 내용을 포함합니다.
  */
 @Entity
 @Table(name = "schedule")
@@ -57,9 +52,6 @@ public class Schedule {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduleComment> comments = new ArrayList<>();
 
     /**
      * JPA 전용 기본 생성자.
@@ -171,15 +163,6 @@ public class Schedule {
     }
 
     /**
-     * 일정에 달린 댓글 목록을 반환합니다.
-     *
-     * @return 변경 불가능한 댓글 목록
-     */
-    public List<ScheduleComment> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /**
      * 일정 카테고리를 변경합니다.
      *
      * @param category 새 카테고리
@@ -224,27 +207,4 @@ public class Schedule {
         this.scheduleTime = scheduleTime;
     }
 
-    /**
-     * 일정에 댓글을 추가합니다.
-     *
-     * <p>양방향 연관관계를 동기화하여 댓글의 schedule 필드도 함께 설정합니다.
-     *
-     * @param comment 추가할 댓글
-     */
-    public void addComment(final ScheduleComment comment) {
-        comments.add(comment);
-        comment.assignSchedule(this);
-    }
-
-    /**
-     * 일정에서 댓글을 제거합니다.
-     *
-     * <p>양방향 연관관계를 동기화하여 댓글의 schedule 필드도 함께 해제합니다.
-     *
-     * @param comment 제거할 댓글
-     */
-    public void removeComment(final ScheduleComment comment) {
-        comments.remove(comment);
-        comment.assignSchedule(null);
-    }
 }

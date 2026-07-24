@@ -2,7 +2,6 @@ package com.myapps.web.mycalendar.domain.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Schedule 엔티티의 생성, 필드 업데이트, 댓글 양방향 연관관계 관리를 검증합니다.
+ * Schedule 엔티티의 생성 및 필드 업데이트를 검증합니다.
  */
 class ScheduleTest {
 
@@ -24,7 +23,6 @@ class ScheduleTest {
         assertThat(schedule.getContent()).isEqualTo("데이트 일정");
         assertThat(schedule.getEndDate()).isNull();
         assertThat(schedule.getScheduleTime()).isNull();
-        assertThat(schedule.getComments()).isEmpty();
     }
 
     @Test
@@ -66,32 +64,5 @@ class ScheduleTest {
         schedule.onUpdate();
 
         assertThat(schedule.getUpdatedAt()).isNotNull();
-    }
-
-    @Test
-    @DisplayName("addComment로 댓글을 추가하면 양방향 연관관계가 설정된다")
-    void should_setRelationship_when_commentAdded() {
-        final Schedule schedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 1), "일정");
-        final ScheduleComment comment = new ScheduleComment(Author.CHIWON, "좋아!");
-
-        schedule.addComment(comment);
-
-        final List<ScheduleComment> comments = schedule.getComments();
-        assertThat(comments).hasSize(1);
-        assertThat(comments.get(0)).isEqualTo(comment);
-        assertThat(comment.getSchedule()).isEqualTo(schedule);
-    }
-
-    @Test
-    @DisplayName("removeComment로 댓글을 제거하면 양방향 연관관계가 해제된다")
-    void should_clearRelationship_when_commentRemoved() {
-        final Schedule schedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 1), "일정");
-        final ScheduleComment comment = new ScheduleComment(Author.CHIWON, "삭제될 댓글");
-        schedule.addComment(comment);
-
-        schedule.removeComment(comment);
-
-        assertThat(schedule.getComments()).isEmpty();
-        assertThat(comment.getSchedule()).isNull();
     }
 }

@@ -57,53 +57,6 @@
                th:href="@{/calendar/{year}/{month}(year=${schedule.startDate().getYear()}, month=${schedule.startDate().getMonthValue()})}">목록으로</a>
         </div>
 
-        <section class="comments-section">
-            <h2>댓글</h2>
-
-            <div th:if="${#lists.isEmpty(schedule.comments())}">
-                <p style="color: #999;">댓글이 없습니다.</p>
-            </div>
-
-            <div th:each="comment : ${schedule.comments()}" class="comment-item">
-                <div class="comment-meta">
-                    <strong>
-                        <span th:if="${comment.author().name() == 'SEUNGKWON'}">승권</span>
-                        <span th:if="${comment.author().name() == 'CHIWON'}">치원</span>
-                    </strong>
-                    · <span th:text="${#temporals.format(comment.createdAt(), 'yyyy-MM-dd HH:mm')}"></span>
-                </div>
-                <p th:text="${comment.content()}"></p>
-                <div class="comment-actions">
-                    <a th:href="@{/comments/{id}/edit(id=${comment.id()}, scheduleId=${schedule.id()})}">수정</a>
-                    <form th:action="@{/comments/{id}(id=${comment.id()}, scheduleId=${schedule.id()})}" method="post"
-                          onsubmit="return confirm('이 댓글을 삭제하시겠습니까?');" style="display:inline;">
-                        <input type="hidden" name="_method" value="DELETE"/>
-                        <button type="submit">삭제</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="comment-form">
-                <h3>댓글 작성</h3>
-                <form th:action="@{/schedules/{id}/comments(id=${schedule.id()})}" method="post">
-                    <div class="form-group">
-                        <label for="author">작성자</label>
-                        <select id="author" name="author" required>
-                            <option value="">-- 선택 --</option>
-                            <option value="SEUNGKWON">승권</option>
-                            <option value="CHIWON">치원</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="comment-content">내용</label>
-                        <textarea id="comment-content" name="content" maxlength="200" required
-                                  placeholder="댓글을 입력하세요 (최대 200자)"></textarea>
-                    </div>
-                    <button type="submit" class="btn-submit">댓글 등록</button>
-                </form>
-            </div>
-        </section>
-
     </main>
 </body>
 </html>

@@ -9,10 +9,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.mycalendar.domain.model.Author;
 import com.myapps.web.mycalendar.domain.model.Category;
 import com.myapps.web.mycalendar.domain.model.Schedule;
-import com.myapps.web.mycalendar.domain.model.ScheduleComment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * ScheduleRepository 통합 테스트.
  *
  * <p>{@code @DataJpaTest}를 활용한 슬라이스 테스트로, 월별 조회 쿼리와
- * cascade 삭제 동작을 검증합니다.
+ * 삭제 동작을 검증합니다.
  */
 @DataJpaTest
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
@@ -28,14 +26,11 @@ class ScheduleRepositoryTest {
 
     private final TestEntityManager entityManager;
     private final ScheduleRepository scheduleRepository;
-    private final CommentRepository commentRepository;
 
     ScheduleRepositoryTest(final TestEntityManager entityManager,
-                           final ScheduleRepository scheduleRepository,
-                           final CommentRepository commentRepository) {
+                           final ScheduleRepository scheduleRepository) {
         this.entityManager = entityManager;
         this.scheduleRepository = scheduleRepository;
-        this.commentRepository = commentRepository;
     }
 
     @Test
@@ -99,13 +94,9 @@ class ScheduleRepositoryTest {
     }
 
     @Test
-    @DisplayName("일정 삭제 시 연관된 댓글도 cascade 삭제된다")
-    void should_deleteComments_when_scheduleDeleted() {
+    @DisplayName("일정 삭제 시 정상적으로 삭제된다")
+    void should_deleteSchedule_when_deleteByIdCalled() {
         final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "삭제 대상 일정");
-        final ScheduleComment comment1 = new ScheduleComment(Author.SEUNGKWON, "첫 번째 댓글");
-        final ScheduleComment comment2 = new ScheduleComment(Author.CHIWON, "두 번째 댓글");
-        schedule.addComment(comment1);
-        schedule.addComment(comment2);
         entityManager.persistAndFlush(schedule);
         final Long scheduleId = schedule.getId();
         entityManager.clear();
@@ -115,8 +106,5 @@ class ScheduleRepositoryTest {
         entityManager.clear();
 
         assertThat(scheduleRepository.findById(scheduleId)).isEmpty();
-        final List<ScheduleComment> remainingComments =
-                commentRepository.findByScheduleIdOrderByCreatedAtAsc(scheduleId);
-        assertThat(remainingComments).isEmpty();
     }
 }

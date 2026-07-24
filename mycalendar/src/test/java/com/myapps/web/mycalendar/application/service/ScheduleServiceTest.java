@@ -171,7 +171,6 @@ class ScheduleServiceTest {
         // then
         assertThat(response.category()).isEqualTo(Category.CHIWON);
         assertThat(response.content()).isEqualTo("치원 일정");
-        assertThat(response.comments()).isEmpty();
     }
 
     @Test

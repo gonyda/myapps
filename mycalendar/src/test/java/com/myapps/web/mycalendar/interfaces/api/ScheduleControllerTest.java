@@ -2,7 +2,6 @@ package com.myapps.web.mycalendar.interfaces.api;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import com.myapps.web.mycalendar.application.exception.InvalidScheduleException;
 import com.myapps.web.mycalendar.application.exception.ScheduleNotFoundException;
 import com.myapps.web.mycalendar.application.service.ScheduleService;
 import com.myapps.web.mycalendar.domain.model.Category;
-import com.myapps.web.mycalendar.interfaces.dto.CommentForm;
 import com.myapps.web.mycalendar.interfaces.dto.ScheduleForm;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -59,7 +57,6 @@ class ScheduleControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("schedule-detail"))
                 .andExpect(model().attribute("schedule", response))
-                .andExpect(model().attribute("commentForm", new CommentForm(null, null)))
                 .andExpect(model().attribute("categories", Category.values()));
     }
 
@@ -69,6 +66,32 @@ class ScheduleControllerTest {
     @Test
     void should_returnScheduleFormView_when_newFormRequested() throws Exception {
         mockMvc.perform(get("/schedules/new"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("schedule-form"))
+                .andExpect(model().attribute("scheduleForm",
+                        new ScheduleForm(null, null, null, null, null)))
+                .andExpect(model().attribute("categories", Category.values()));
+    }
+
+    /**
+     * GET /schedules/new?startDate=2026-07-15 요청 시 시작일이 미리 설정된 ScheduleForm을 검증합니다.
+     */
+    @Test
+    void should_prefillStartDate_when_startDateParamProvided() throws Exception {
+        mockMvc.perform(get("/schedules/new").param("startDate", "2026-07-15"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("schedule-form"))
+                .andExpect(model().attribute("scheduleForm",
+                        new ScheduleForm(null, LocalDate.of(2026, 7, 15), null, null, null)))
+                .andExpect(model().attribute("categories", Category.values()));
+    }
+
+    /**
+     * GET /schedules/new?startDate= (빈 값) 요청 시 startDate가 null인 폼을 반환하는지 검증합니다.
+     */
+    @Test
+    void should_returnNullStartDate_when_startDateParamIsEmpty() throws Exception {
+        mockMvc.perform(get("/schedules/new").param("startDate", ""))
                 .andExpect(status().isOk())
                 .andExpect(view().name("schedule-form"))
                 .andExpect(model().attribute("scheduleForm",
@@ -208,8 +231,7 @@ class ScheduleControllerTest {
                 null,
                 "테스트 일정",
                 LocalDateTime.of(2026, 7, 1, 10, 0),
-                LocalDateTime.of(2026, 7, 1, 10, 0),
-                List.of()
+                LocalDateTime.of(2026, 7, 1, 10, 0)
         );
     }
 }

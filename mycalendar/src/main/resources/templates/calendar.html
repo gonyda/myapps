@@ -26,10 +26,7 @@
             <a class="nav-btn" th:href="@{/calendar/{y}/{m}(y=${nextYear}, m=${nextMonth})}" aria-label="다음 월">다음 &raquo;</a>
         </header>
 
-        <!-- Actions -->
-        <nav class="actions">
-            <a class="btn-add" th:href="@{/schedules/new}">+ 일정 추가</a>
-        </nav>
+        <!-- Actions (removed: full-page navigation link) -->
 
         <!-- Calendar Grid -->
         <section class="calendar-grid" aria-label="월별 캘린더">
@@ -51,7 +48,9 @@
             <th:block th:with="daysInMonth=${T(java.time.YearMonth).of(year, month).lengthOfMonth()}">
                 <div th:each="day : ${#numbers.sequence(1, daysInMonth)}"
                      th:with="currentDate=${T(java.time.LocalDate).of(year, month, day)}, daySchedules=${calendarHelper.getSchedulesForDate(schedules, T(java.time.LocalDate).of(year, month, day))}"
-                     th:class="${'day-cell' + (currentDate.equals(today) ? ' today' : '')}">
+                     th:class="${'day-cell' + (currentDate.equals(today) ? ' today' : '')}"
+                     th:attr="data-date=${currentDate}"
+                     onclick="openScheduleModal(this.dataset.date)">
 
                     <!-- Day number -->
                     <div class="day-number" th:text="${day}">1</div>
@@ -84,6 +83,77 @@
             </th:block>
         </section>
     </main>
+
+    <!-- Schedule Creation Modal -->
+    <div id="schedule-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-container">
+            <button type="button" class="modal-close" onclick="closeScheduleModal(event)" aria-label="닫기">&times;</button>
+            <h2 class="modal-title">일정 등록</h2>
+            <form action="/schedules" method="post" class="modal-form">
+                <div class="form-group">
+                    <label for="modal-category">카테고리</label>
+                    <select id="modal-category" name="category" required>
+                        <option value="">-- 선택 --</option>
+                        <option value="SEUNGKWON">승권</option>
+                        <option value="CHIWON">치원</option>
+                        <option value="DATE">데이트</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modal-startDate">시작일</label>
+                    <input type="date" id="modal-startDate" name="startDate" required/>
+                </div>
+                <div class="form-group">
+                    <label for="modal-endDate">종료일 (선택)</label>
+                    <input type="date" id="modal-endDate" name="endDate"/>
+                </div>
+                <div class="form-group">
+                    <label for="modal-scheduleTime">시간 (선택)</label>
+                    <input type="time" id="modal-scheduleTime" name="scheduleTime"/>
+                </div>
+                <div class="form-group">
+                    <label for="modal-content">내용</label>
+                    <textarea id="modal-content" name="content" maxlength="200" required
+                              placeholder="일정 내용을 입력하세요 (최대 200자)"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">등록</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeScheduleModal(event)">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal open/close JavaScript -->
+    <script>
+        function openScheduleModal(date) {
+            var modal = document.getElementById('schedule-modal');
+            var startDateInput = document.getElementById('modal-startDate');
+            startDateInput.value = date;
+            modal.classList.add('active');
+        }
+
+        function closeScheduleModal(event) {
+            event.stopPropagation();
+            document.getElementById('schedule-modal').classList.remove('active');
+        }
+
+        function handleOverlayClick(event) {
+            if (event.target === document.getElementById('schedule-modal')) {
+                document.getElementById('schedule-modal').classList.remove('active');
+            }
+        }
+
+        /* Prevent schedule-item link clicks from triggering modal open */
+        document.addEventListener('DOMContentLoaded', function() {
+            var scheduleLinks = document.querySelectorAll('.schedule-item');
+            for (var i = 0; i < scheduleLinks.length; i++) {
+                scheduleLinks[i].addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+    </script>
 
     <!-- Hammer.js for swipe gestures -->
     <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>

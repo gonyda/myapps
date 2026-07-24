@@ -2,6 +2,7 @@ package com.myapps.web.mycalendar.interfaces.api;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @Controller
 public class CalendarController {
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final ScheduleService scheduleService;
     private final AnniversaryCalculator anniversaryCalculator;
@@ -49,7 +52,7 @@ public class CalendarController {
      */
     @GetMapping("/")
     public String redirectToCurrentMonth() {
-        final LocalDate today = LocalDate.now();
+        final LocalDate today = LocalDate.now(KST);
         return "redirect:/calendar/" + today.getYear() + "/" + today.getMonthValue();
     }
 
@@ -69,7 +72,7 @@ public class CalendarController {
                                @PathVariable("month") final int month,
                                final Model model) {
         final YearMonth yearMonth = YearMonth.of(year, month);
-        final LocalDate today = LocalDate.now();
+        final LocalDate today = LocalDate.now(KST);
 
         final List<ScheduleResponse> schedules = scheduleService.findByMonth(yearMonth);
         final List<Anniversary> anniversaries = anniversaryCalculator.getAnniversariesForMonth(yearMonth);

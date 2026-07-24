@@ -168,7 +168,7 @@ class CalendarControllerTest {
         final List<ScheduleResponse> schedules = List.of(
                 new ScheduleResponse(1L, Category.DATE, LocalDate.of(2026, 9, 10),
                         null, LocalTime.of(18, 0), "저녁 약속",
-                        now, now, List.of())
+                        now, now)
         );
         final List<Anniversary> anniversaries = List.of(
                 new Anniversary(LocalDate.of(2026, 9, 24), "100일")

@@ -6,6 +6,10 @@ logging:
     root: info
 
 spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
   profiles:
     active: local
   datasource:
@@ -16,5 +20,6 @@ spring:
     properties:
       hibernate:
         "[default_schema]": admin
+        "[dialect]": org.hibernate.dialect.OracleDialect
   thymeleaf:
     cache: false

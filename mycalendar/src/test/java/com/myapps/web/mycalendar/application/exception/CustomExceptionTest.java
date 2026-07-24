@@ -23,33 +23,11 @@ class CustomExceptionTest {
     }
 
     @Test
-    @DisplayName("CommentNotFoundException은 RuntimeException을 상속하고 메시지를 전달한다")
-    void should_createCommentNotFoundException_when_messageProvided() {
-        final String message = "댓글을 찾을 수 없습니다: ID=5";
-
-        final CommentNotFoundException exception = new CommentNotFoundException(message);
-
-        assertInstanceOf(RuntimeException.class, exception);
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
     @DisplayName("InvalidScheduleException은 RuntimeException을 상속하고 메시지를 전달한다")
     void should_createInvalidScheduleException_when_messageProvided() {
         final String message = "200자를 초과할 수 없습니다";
 
         final InvalidScheduleException exception = new InvalidScheduleException(message);
-
-        assertInstanceOf(RuntimeException.class, exception);
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("InvalidCommentException은 RuntimeException을 상속하고 메시지를 전달한다")
-    void should_createInvalidCommentException_when_messageProvided() {
-        final String message = "내용을 입력해주세요";
-
-        final InvalidCommentException exception = new InvalidCommentException(message);
 
         assertInstanceOf(RuntimeException.class, exception);
         assertEquals(message, exception.getMessage());

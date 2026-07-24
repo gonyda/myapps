@@ -5,11 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 
-import com.myapps.web.mycalendar.application.service.CommentService;
 import com.myapps.web.mycalendar.application.service.ScheduleService;
 import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
 import com.myapps.web.mycalendar.interfaces.api.CalendarController;
-import com.myapps.web.mycalendar.interfaces.api.CommentController;
 import com.myapps.web.mycalendar.interfaces.api.ScheduleController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +41,6 @@ class MycalendarApplicationTest {
     @Test
     void should_registerServiceBeans_when_contextLoads() {
         assertThat(applicationContext.getBean(ScheduleService.class)).isNotNull();
-        assertThat(applicationContext.getBean(CommentService.class)).isNotNull();
         assertThat(applicationContext.getBean(AnniversaryCalculator.class)).isNotNull();
     }
 
@@ -54,7 +51,6 @@ class MycalendarApplicationTest {
     void should_registerControllerBeans_when_contextLoads() {
         assertThat(applicationContext.getBean(CalendarController.class)).isNotNull();
         assertThat(applicationContext.getBean(ScheduleController.class)).isNotNull();
-        assertThat(applicationContext.getBean(CommentController.class)).isNotNull();
     }
 
     /**
