@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "낡은 검",         "weaponType": "SWORD",  "baseAttack": 10, "baseSpeed": 2,  "baseCritical": 2, "baseValue": 20 },
+  { "id": 2, "name": "녹슨 단검",       "weaponType": "DAGGER", "baseAttack": 8,  "baseSpeed": 6,  "baseCritical": 8, "baseValue": 16 },
+  { "id": 3, "name": "사냥용 창",       "weaponType": "SPEAR",  "baseAttack": 11, "baseSpeed": 3,  "baseCritical": 1, "baseValue": 22 },
+  { "id": 4, "name": "강철 도끼",       "weaponType": "AXE",    "baseAttack": 13, "baseSpeed": -3, "baseCritical": 0, "baseValue": 26 },
+  { "id": 5, "name": "사냥꾼의 활",     "weaponType": "BOW",    "baseAttack": 10, "baseSpeed": 5,  "baseCritical": 4, "baseValue": 20 },
+  { "id": 6, "name": "견습생의 지팡이", "weaponType": "STAFF",  "baseAttack": 11, "baseSpeed": 1,  "baseCritical": 1, "baseValue": 22 }
+]

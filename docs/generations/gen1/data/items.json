@@ -1,0 +1,4 @@
+[
+  { "id": 1, "name": "HP 포션", "itemType": "POTION", "effectType": "HEAL_HP", "effectAmount": 50, "buyPrice": 30 },
+  { "id": 2, "name": "MP 포션", "itemType": "POTION", "effectType": "HEAL_MP", "effectAmount": 30, "buyPrice": 25 }
+]
