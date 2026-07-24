@@ -282,7 +282,7 @@ h3 {
     position: relative;
 }
 
-.day-cell:nth-child(7n + 8) {
+.day-cell:nth-child(7n + 14) {
     border-right: none;
 }
 
