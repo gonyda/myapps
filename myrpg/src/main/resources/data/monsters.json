@@ -1,0 +1,11 @@
+[
+  { "id": 1, "name": "고블린",     "hp": 50,  "attack": 12, "defense": 5,  "speed": 8,  "damageType": "PHYSICAL", "expReward": 20,  "goldReward": 10,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 2, "name": "들늑대",     "hp": 65,  "attack": 15, "defense": 4,  "speed": 14, "damageType": "PHYSICAL", "expReward": 28,  "goldReward": 12,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 3, "name": "고대 트렌트", "hp": 150, "attack": 20, "defense": 18, "speed": 6,  "damageType": "PHYSICAL", "expReward": 150, "goldReward": 80,  "boss": true,  "drops": [ { "category": "WEAPON", "rate": 0.15 }, { "category": "SKILL_BOOK", "rate": 0.15 } ] },
+  { "id": 4, "name": "동굴 박쥐",   "hp": 80,  "attack": 20, "defense": 6,  "speed": 18, "damageType": "PHYSICAL", "expReward": 48,  "goldReward": 22,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 5, "name": "바위 골렘",   "hp": 160, "attack": 26, "defense": 22, "speed": 4,  "damageType": "PHYSICAL", "expReward": 95,  "goldReward": 52,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 6, "name": "광산왕",     "hp": 340, "attack": 36, "defense": 26, "speed": 10, "damageType": "PHYSICAL", "expReward": 300, "goldReward": 170, "boss": true,  "drops": [ { "category": "WEAPON", "rate": 0.15 }, { "category": "SKILL_BOOK", "rate": 0.15 } ] },
+  { "id": 7, "name": "견습 마법사", "hp": 130, "attack": 30, "defense": 10, "speed": 13, "damageType": "MAGICAL",  "expReward": 120, "goldReward": 48,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 8, "name": "가고일",     "hp": 210, "attack": 36, "defense": 25, "speed": 11, "damageType": "PHYSICAL", "expReward": 150, "goldReward": 65,  "boss": false, "drops": [ { "category": "ARMOR", "rate": 0.05 } ] },
+  { "id": 9, "name": "흑마도사",   "hp": 500, "attack": 44, "defense": 30, "speed": 16, "damageType": "MAGICAL",  "expReward": 480, "goldReward": 320, "boss": true,  "drops": [ { "category": "WEAPON", "rate": 0.15 }, { "category": "SKILL_BOOK", "rate": 0.15 } ] }
+]

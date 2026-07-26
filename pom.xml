@@ -25,6 +25,7 @@
         <module>mystudy</module>
         <module>mycrawler</module>
         <module>mycalendar</module>
+        <module>myrpg</module>
     </modules>
 
     <dependencies>

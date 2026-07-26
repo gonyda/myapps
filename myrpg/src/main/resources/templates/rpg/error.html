@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>⚔️ MyRPG - 오류</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e; color: #eee;
+            min-height: 100dvh; display: flex; flex-direction: column;
+            padding: 1rem; line-height: 1.8; font-size: 1.1rem;
+        }
+        .container { width: 100%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; min-height: 100dvh; }
+        .header { text-align: center; padding: 0.5rem 0; border-bottom: 1px solid #333; margin-bottom: 1rem; }
+        .header h1 { font-size: 1.4rem; }
+        .error-box { background: #16213e; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; }
+        .error-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .error-message { color: #e94560; font-size: 1.1rem; font-weight: bold; line-height: 1.6; }
+        .error-message.system { color: #aaa; }
+        .action-area { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .action-btn {
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem; font-size: 1.1rem; font-weight: bold;
+            border: 2px solid #333; border-radius: 8px;
+            background: #16213e; color: #eee; text-decoration: none;
+            cursor: pointer;
+        }
+        .action-btn:active { background: #0f3460; border-color: #e94560; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ MyRPG</h1>
+        </div>
+
+        <div class="error-box">
+            <div class="error-icon" th:switch="${errorType}">
+                <span th:case="'player'">👤</span>
+                <span th:case="'system'">⚙️</span>
+                <span th:case="*">⚠️</span>
+            </div>
+            <div th:class="${errorType == 'system'} ? 'error-message system' : 'error-message'"
+                 th:text="${errorMessage}">오류가 발생했습니다.</div>
+        </div>
+
+        <div class="action-area">
+            <a class="action-btn" th:if="${errorType == 'player'}" th:href="@{/rpg/town}">🏠 캐릭터 생성하기</a>
+            <a class="action-btn" th:if="${errorType != 'player'}" th:href="@{/rpg/town}">🏠 마을로 돌아가기</a>
+        </div>
+    </div>
+</body>
+</html>

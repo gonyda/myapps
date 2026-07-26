@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@I38ZV6G9LRF9FI84_high?TNS_ADMIN=/home/ubuntu/app/Wallet_I38ZV6G9LRF9FI84
+    username: admin
+    password: ${DB_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        "[default_schema]": admin
+
+server:
+  port: 8080

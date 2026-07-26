@@ -186,7 +186,7 @@ public EffectiveStats compute(Player player,
 - 유효 공격력 = 캐릭터 공격력 + 무기 base_attack + 장비 랜덤 ATTACK 합
 - 유효 속도 = 캐릭터 속도 + 무기 base_speed + 장비 랜덤 SPEED 합
 - 유효 치명타 = 캐릭터 치명타 + 무기 base_critical + 장비 랜덤 CRITICAL 합
-- 유효 방어력 = 캐릭터 방어력 + 장비 랜덤 DEFENSE 합
+- 유효 방어력 = 캐릭터 방어력 + 착용 방어구 base_defense 합 + 장비 랜덤 DEFENSE 합
 - 유효 최대 HP = 캐릭터 최대 HP + 장비 랜덤 HP 합
 - 데미지 타입: 착용 무기 타입이 STAFF면 MAGICAL, 그 외 PHYSICAL. (Requirement 5.6, 5.7, 12.3)
 
@@ -278,7 +278,8 @@ Jackson 3로 역직렬화되는 불변 record. (`docs/generations/gen1/data/*.js
 public record WeaponTemplate(long id, String name, WeaponType weaponType,
                              int baseAttack, int baseSpeed, int baseCritical, int baseValue) {}
 
-public record ArmorTemplate(long id, String name, ArmorSlot slot, int baseValue) {}
+public record ArmorTemplate(long id, String name, ArmorSlot slot,
+                            int baseDefense, int baseValue) {}
 
 public record SkillTemplate(long id, String name, WeaponType weaponType,
                             DamageType damageType, double damageMultiplier, int mpCost) {}
@@ -339,7 +340,7 @@ public enum TreasureKind { GOLD, POTION, EQUIPMENT }
 | `PlayerWeapon` | `rpg_player_weapon` | weapon_template_id, grade, item_level, base_attack, base_speed, base_critical, skill_slots, is_equipped |
 | `PlayerWeaponStat` | `rpg_player_weapon_stat` | player_weapon_id, stat_type, stat_value |
 | `PlayerWeaponSkill` | `rpg_player_weapon_skill` | player_weapon_id, skill_id, slot_index |
-| `PlayerArmor` | `rpg_player_armor` | armor_template_id, grade, item_level, is_equipped |
+| `PlayerArmor` | `rpg_player_armor` | armor_template_id, grade, item_level, base_defense, is_equipped |
 | `PlayerArmorStat` | `rpg_player_armor_stat` | player_armor_id, stat_type, stat_value |
 | `PlayerInventory` | `rpg_player_inventory` | item_type, item_ref_id, quantity |
 | `PlayerDungeonProgress` | `rpg_player_dungeon_progress` | dungeon_id, is_cleared, best_stage |
@@ -412,7 +413,7 @@ public enum TreasureKind { GOLD, POTION, EQUIPMENT }
 
 ### Property 9: 유효 스탯 합산
 
-*For any* 캐릭터 기본 스탯, 착용 무기(없을 수 있음), 착용 방어구 목록에 대해, 유효 공격력/속도/치명타는 `캐릭터값 + 무기 base값 + 장비 랜덤 해당스탯 합`, 유효 방어력/최대 HP는 `캐릭터값 + 장비 랜덤 해당스탯 합`과 같다.
+*For any* 캐릭터 기본 스탯, 착용 무기(없을 수 있음), 착용 방어구 목록에 대해, 유효 공격력/속도/치명타는 `캐릭터값 + 무기 base값 + 장비 랜덤 해당스탯 합`, 유효 방어력은 `캐릭터값 + 착용 방어구 base_defense 합 + 장비 랜덤 해당스탯 합`, 유효 최대 HP는 `캐릭터값 + 장비 랜덤 해당스탯 합`과 같다.
 
 **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 12.2**
 
