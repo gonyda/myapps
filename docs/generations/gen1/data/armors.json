@@ -1,6 +1,0 @@
-[
-  { "id": 1, "name": "가죽 투구",   "armorSlot": "HELMET", "baseDefense": 3, "baseValue": 15 },
-  { "id": 2, "name": "천 장갑",     "armorSlot": "GLOVES", "baseDefense": 2, "baseValue": 15 },
-  { "id": 3, "name": "강철 갑옷",   "armorSlot": "CHEST",  "baseDefense": 5, "baseValue": 15 },
-  { "id": 4, "name": "민첩의 신발", "armorSlot": "BOOTS",  "baseDefense": 2, "baseValue": 15 }
-]
