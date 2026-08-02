@@ -68,9 +68,8 @@
                         <a th:class="${'schedule-item category-' + schedule.category().name().toLowerCase() + (iterStat.index >= 3 ? ' desktop-schedule' : '')}"
                            href="javascript:void(0)"
                            th:attr="data-schedule-id=${schedule.id()}"
-                           th:text="${schedule.content()}"
                            th:title="${schedule.content()}"
-                           onclick="openScheduleDetailModal(event, this.dataset.scheduleId)">일정</a>
+                           onclick="openScheduleDetailModal(event, this.dataset.scheduleId)"><span class="category-icon" th:if="${schedule.category().name() == 'SEUNGKWON'}">💙</span><span class="category-icon" th:if="${schedule.category().name() == 'CHIWON'}">❤️</span><span th:text="${schedule.content()}">일정</span></a>
                     </th:block>
 
                     <!-- Mobile overflow: show when total > 3 (hidden on desktop) -->

@@ -323,15 +323,25 @@ h3 {
 
 /* Category Colors */
 .category-seungkwon {
-    background: #1b2a4a;
+    background: #e8f0fe;
+    color: #1b2a4a;
 }
 
 .category-chiwon {
-    background: #f27a7a;
+    background: #fde8e8;
+    color: #5a1a1a;
 }
 
 .category-date {
-    background: #ff8c42;
+    background: #fff0f0;
+    color: #6b3030;
+    border-left: 3px solid #ff6b9d;
+}
+
+/* Category icon (heart emoji) */
+.category-icon {
+    margin-right: 2px;
+    font-size: 0.55rem;
 }
 
 /* Schedule overflow indicators */

@@ -46,14 +46,16 @@ public class CalendarController {
     }
 
     /**
-     * 루트 경로 접근 시 현재 월 캘린더 뷰로 리다이렉트합니다.
+     * 루트 경로 접근 시 현재 월 캘린더 뷰로 내부 포워딩합니다.
      *
-     * @return 현재 연도/월 캘린더 경로로의 리다이렉트 문자열
+     * <p>주소창에 {@code /} 상태를 유지하면서 현재 월 캘린더를 렌더링합니다.
+     *
+     * @return 현재 연도/월 캘린더 경로로의 forward 문자열
      */
     @GetMapping("/")
-    public String redirectToCurrentMonth() {
+    public String forwardToCurrentMonth() {
         final LocalDate today = LocalDate.now(KST);
-        return "redirect:/calendar/" + today.getYear() + "/" + today.getMonthValue();
+        return "forward:/calendar/" + today.getYear() + "/" + today.getMonthValue();
     }
 
     /**

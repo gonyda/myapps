@@ -21,8 +21,8 @@ import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -48,16 +48,16 @@ class CalendarControllerTest {
     private CalendarViewHelper calendarViewHelper;
 
     /**
-     * GET / 요청 시 현재 월 캘린더 경로로 리다이렉트되는지 검증합니다.
+     * GET / 요청 시 현재 월 캘린더 경로로 내부 포워딩되는지 검증합니다.
      */
     @Test
-    void should_redirectToCurrentMonth_when_rootPathAccessed() throws Exception {
+    void should_forwardToCurrentMonth_when_rootPathAccessed() throws Exception {
         final LocalDate today = LocalDate.now();
         final String expectedUrl = "/calendar/" + today.getYear() + "/" + today.getMonthValue();
 
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(expectedUrl));
+                .andExpect(status().isOk())
+                .andExpect(forwardedUrl(expectedUrl));
     }
 
     /**
