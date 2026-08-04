@@ -253,9 +253,27 @@
         }
 
         .minimap .minimap-title {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .minimap .map-name {
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .minimap .map-hint {
             font-size: var(--fs-xs);
             color: #888;
-            margin-bottom: var(--gap);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /*
@@ -307,12 +325,21 @@
 
         .node {
             border-radius: var(--radius);
-            background: #555;
+            background: #555;   /* 미지정/미탐색 기본색 */
         }
 
+        /*
+         * 맵 유형별 색상 (확장 가능).
+         * 새 유형 추가 시 .type-{name} 규칙만 늘리면 됨.
+         */
+        .node.type-town,    .dot.type-town    { background: #6b93bf; }   /* 마을 (연파랑) */
+        .node.type-field,   .dot.type-field   { background: #7bb07b; }   /* 자유필드 (연초록) */
+        .node.type-dungeon, .dot.type-dungeon { background: #c08585; }   /* 던전 (연빨강) */
+
+        /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
         .node.current {
-            background: #f0c419;
-            box-shadow: 0 0 8px #f0c419;
+            box-shadow: 0 0 0 2px #f0c419, 0 0 8px #f0c419;
+            z-index: 2;
         }
 
         /* 상하좌우 이동 패드 (축소) */
@@ -379,6 +406,13 @@
             flex: 1;
             min-width: 0;
         }
+
+        /* 로그 타입별 색상 */
+        .action-log .log-move   { color: #bbbbbb; }   /* 이동 (기본) */
+        .action-log .log-combat { color: #d98b8b; }   /* 전투 (연빨강) */
+        .action-log .log-reward { color: #d9c479; }   /* 보상/획득 (노랑) */
+        .action-log .log-growth { color: #8fb5d9; }   /* 성장 (연파랑) */
+        .action-log .log-item   { color: #8fc98f; }   /* 아이템 (연초록) */
 
         /* 전체화면 팝업 오버레이 */
         .overlay {
@@ -480,6 +514,31 @@
             font-size: var(--fs-lg);
         }
 
+        /* 유형 범례 */
+        .map-legend {
+            display: flex;
+            gap: var(--pad);
+            padding: calc(var(--pad) * 0.5) var(--pad);
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .map-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--gap) * 0.4);
+            font-size: var(--fs-xs);
+            color: #bbb;
+        }
+
+        .map-legend .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
         /* 지도 뷰포트: 줌/이동을 위해 overflow 숨김 + 터치 제스처 처리 */
         .map-body {
             flex: 1;
@@ -520,6 +579,20 @@
         .map-grid .node {
             position: relative;
             z-index: 1;
+        }
+
+        /* 노드 이름 라벨: 항상 표시 */
+        .map-grid .node-label {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            line-height: 1.2;
+            color: #ddd;
+            white-space: nowrap;
+            text-shadow: 0 0 3px #000, 0 0 3px #000;
+            pointer-events: none;
         }
 
         .map-grid .node[class*="link-"]::before,
@@ -614,8 +687,8 @@
             <!-- 가운데 영역 -->
             <section class="center">
                 <!-- 상황 멘트 -->
-                <div class="situation">
-                    당신은 어두운 숲의 입구에 서 있습니다. 멀리서 고블린의 울음소리가 들려옵니다.
+                <div class="situation" id="situation">
+                    맵 데이터를 불러오는 중...
                 </div>
 
                 <!-- NPC 멘트 -->
@@ -642,47 +715,26 @@
 
                 <!-- 미니맵 (9x4 그리드 / 연결된 노드만 표시) -->
                 <div class="minimap" onclick="openMap()">
-                    <div class="minimap-title">미니맵 (탭하면 전체맵)</div>
-                    <!-- 가운데(5열 3행)가 항상 내 위치. 나머지는 주변 노드 -->
-                    <div class="node-grid">
-                        <!-- 위쪽 세로 경로 -->
-                        <div class="node link-down" style="grid-column:5;grid-row:1"></div>
-                        <div class="node link-down" style="grid-column:5;grid-row:2"></div>
-                        <!-- 가로 본선 (row 3) -->
-                        <div class="node link-right link-down" style="grid-column:3;grid-row:3"></div>
-                        <div class="node link-right" style="grid-column:4;grid-row:3"></div>
-                        <div class="node current link-right link-down" style="grid-column:5;grid-row:3"></div>
-                        <div class="node link-right" style="grid-column:6;grid-row:3"></div>
-                        <div class="node" style="grid-column:7;grid-row:3"></div>
-                        <!-- 아래쪽 분기 (row 4) -->
-                        <div class="node" style="grid-column:3;grid-row:4"></div>
-                        <div class="node" style="grid-column:5;grid-row:4"></div>
+                    <div class="minimap-title">
+                        <span class="map-name" id="minimapName">-</span>
+                        <span class="map-hint">전체지도 ▸</span>
                     </div>
+                    <!-- 가운데(5열 3행)가 항상 내 위치. map.json 기반으로 채워짐 -->
+                    <div class="node-grid" id="minimapGrid"></div>
                 </div>
 
                 <!-- 상하좌우 이동 -->
                 <div class="move-pad">
-                    <button class="up">▲</button>
-                    <button class="left">◀</button>
-                    <button class="right">▶</button>
-                    <button class="down">▼</button>
+                    <button class="up" onclick="move(0,-1)">▲</button>
+                    <button class="left" onclick="move(-1,0)">◀</button>
+                    <button class="right" onclick="move(1,0)">▶</button>
+                    <button class="down" onclick="move(0,1)">▼</button>
                 </div>
             </section>
         </div>
 
-        <!-- 하단 행동 로그 -->
-        <footer class="action-log">
-            <div class="log-line"><span class="log-time">2025-08-04 14:20</span><span class="log-msg">숲의 입구로 이동했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:21</span><span class="log-msg">고블린을 발견했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:21</span><span class="log-msg">고블린을 공격하여 12의 피해를 입혔습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:21</span><span class="log-msg">고블린의 반격! 8의 피해를 받았습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:22</span><span class="log-msg">고블린을 처치했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:22</span><span class="log-msg">경험치를 15 획득했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:22</span><span class="log-msg">골드를 7 획득했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:23</span><span class="log-msg">떠돌이 상인이 말을 걸어옵니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:24</span><span class="log-msg">북쪽 숲으로 이동했습니다.</span></div>
-            <div class="log-line"><span class="log-time">2025-08-04 14:25</span><span class="log-msg">늑대 무리가 나타났습니다.</span></div>
-        </footer>
+        <!-- 하단 행동 로그 (map.json 이동 시 갱신) -->
+        <footer class="action-log" id="actionLog"></footer>
     </div>
 
     <!-- 전체화면 팝업 (장비/인벤토리/스킬/정보 공용) -->
@@ -705,31 +757,15 @@
                 <h3>전체 지도</h3>
                 <button class="panel-close" onclick="closeMap()" aria-label="닫기">✕</button>
             </header>
+            <div class="map-legend">
+                <span class="legend-item"><i class="dot type-town"></i>마을</span>
+                <span class="legend-item"><i class="dot type-field"></i>자유필드</span>
+                <span class="legend-item"><i class="dot type-dungeon"></i>던전</span>
+            </div>
             <div class="map-body" id="mapViewport">
                 <div class="map-canvas" id="mapCanvas">
-                    <div class="map-grid">
-                        <!-- 상단 분기 -->
-                        <div class="node link-down" style="grid-column:2;grid-row:1"></div>
-                        <!-- 메인 경로 (row 2) -->
-                        <div class="node link-right link-down" style="grid-column:2;grid-row:2"></div>
-                        <div class="node link-right" style="grid-column:3;grid-row:2"></div>
-                        <div class="node link-right link-down" style="grid-column:4;grid-row:2"></div>
-                        <div class="node link-right" style="grid-column:5;grid-row:2"></div>
-                        <div class="node link-down" style="grid-column:6;grid-row:2"></div>
-                        <!-- 왼쪽 막다른 분기 -->
-                        <div class="node" style="grid-column:2;grid-row:3"></div>
-                        <!-- 중앙 수직 경로 -->
-                        <div class="node link-down" style="grid-column:4;grid-row:3"></div>
-                        <div class="node link-right link-down" style="grid-column:6;grid-row:3"></div>
-                        <div class="node link-right" style="grid-column:7;grid-row:3"></div>
-                        <div class="node" style="grid-column:8;grid-row:3"></div>
-                        <!-- 하단 우회 경로 (row 4) -->
-                        <div class="node link-right" style="grid-column:4;grid-row:4"></div>
-                        <div class="node link-right" style="grid-column:5;grid-row:4"></div>
-                        <div class="node link-down" style="grid-column:6;grid-row:4"></div>
-                        <!-- 현재 위치 -->
-                        <div class="node current" style="grid-column:6;grid-row:5"></div>
-                    </div>
+                    <!-- map.json 기반으로 채워짐 -->
+                    <div class="map-grid" id="mapGrid"></div>
                 </div>
                 <div class="zoom-controls">
                     <button onclick="mapZoom(1.25)" aria-label="확대">+</button>
@@ -889,6 +925,264 @@
         function closePanel() {
             document.getElementById("panelOverlay").classList.remove("open");
         }
+
+        // ===== map.json 로드 & 렌더링 =====
+        const MINIMAP_HALF_W = 4;   // 가운데 기준 좌우 칸 수 (9칸 = 4+1+4)
+        const MINIMAP_HALF_H = 2;   // 가운데 기준 상하 칸 수 (5칸 = 2+1+2)
+        const MAX_LOG = 10;
+
+        let mapData = null;
+        let ambienceData = null;
+        let currentNodeId = null;
+        const nodeById = {};
+        const nodeByCoord = {};   // "x,y" -> node
+
+        function coordKey(x, y) {
+            return x + "," + y;
+        }
+
+        function currentNode() {
+            return nodeById[currentNodeId];
+        }
+
+        function isLinked(a, b) {
+            return Boolean(a && b && a.links && a.links.indexOf(b.id) !== -1);
+        }
+
+        function loadMap() {
+            Promise.all([
+                fetch("map.json").then(function (res) {
+                    if (!res.ok) {
+                        throw new Error("map.json HTTP " + res.status);
+                    }
+                    return res.json();
+                }),
+                fetch("ambience.json").then(function (res) {
+                    return res.ok ? res.json() : null;
+                }).catch(function () {
+                    return null;
+                })
+            ])
+                .then(function (results) {
+                    ambienceData = results[1];
+                    initMap(results[0]);
+                })
+                .catch(function (err) {
+                    document.getElementById("situation").textContent =
+                        "맵 데이터를 불러오지 못했습니다. 로컬 서버로 실행해야 합니다 (예: jwebserver -p 8000).";
+                    console.warn("map load failed:", err);
+                });
+        }
+
+        // 현재 월(1~12)로 계절 키 결정
+        function getSeason(month) {
+            const seasons = ambienceData.season;
+            for (const key in seasons) {
+                if (seasons[key].indexOf(month) !== -1) {
+                    return key;
+                }
+            }
+            return "spring";
+        }
+
+        // 현재 시(0~23)로 시간대 키 결정 (자정 넘어가는 구간 처리)
+        function getTimeOfDay(hour) {
+            const buckets = ambienceData.timeOfDay;
+            for (const key in buckets) {
+                const from = buckets[key].from;
+                const to = buckets[key].to;
+                if (from < to) {
+                    if (hour >= from && hour < to) {
+                        return key;
+                    }
+                } else if (hour >= from || hour < to) {
+                    return key;
+                }
+            }
+            return "day";
+        }
+
+        // 현재 시간 + 노드 테마 기반으로 상황 멘트 후보를 모아 랜덤 선택
+        function pickAmbience(node) {
+            const candidates = [];
+            if (ambienceData) {
+                const theme = node.theme || node.type;
+                const now = new Date();
+                const season = getSeason(now.getMonth() + 1);
+                const tod = getTimeOfDay(now.getHours());
+                const themePool = ambienceData.themes[theme];
+                if (themePool) {
+                    const seasonPool = themePool[season] || {};
+                    if (Array.isArray(seasonPool[tod])) {
+                        candidates.push.apply(candidates, seasonPool[tod]);
+                    } else {
+                        // 해당 시간대가 없으면 같은 계절의 다른 시간대로 폴백
+                        for (const tk in seasonPool) {
+                            candidates.push.apply(candidates, seasonPool[tk]);
+                        }
+                    }
+                    // 그래도 비면 테마 내 모든 멘트로 폴백
+                    if (candidates.length === 0) {
+                        for (const sk in themePool) {
+                            for (const tk in themePool[sk]) {
+                                candidates.push.apply(candidates, themePool[sk][tk]);
+                            }
+                        }
+                    }
+                }
+            }
+            if (Array.isArray(node.ambienceExtra)) {
+                candidates.push.apply(candidates, node.ambienceExtra);
+            }
+            if (candidates.length === 0) {
+                return node.name + " 주변을 둘러봅니다.";
+            }
+            return candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
+        function initMap(data) {
+            mapData = data;
+            data.nodes.forEach(function (n) {
+                nodeById[n.id] = n;
+                nodeByCoord[coordKey(n.x, n.y)] = n;
+            });
+            currentNodeId = data.startNodeId;
+            renderMinimap();
+            renderFullMap();
+            updateSituation();
+            addLog(currentNode().name + "에서 시작합니다.", "move");
+        }
+
+        function makeNode(node, isCurrent, hasRight, hasDown) {
+            const el = document.createElement("div");
+            el.className = "node type-" + node.type;
+            if (isCurrent) {
+                el.classList.add("current");
+            }
+            if (hasRight) {
+                el.classList.add("link-right");
+            }
+            if (hasDown) {
+                el.classList.add("link-down");
+            }
+            return el;
+        }
+
+        function renderMinimap() {
+            const cur = currentNode();
+            const grid = document.getElementById("minimapGrid");
+            grid.innerHTML = "";
+            document.getElementById("minimapName").textContent = cur.name;
+
+            for (let dy = -MINIMAP_HALF_H; dy <= MINIMAP_HALF_H; dy++) {
+                for (let dx = -MINIMAP_HALF_W; dx <= MINIMAP_HALF_W; dx++) {
+                    const node = nodeByCoord[coordKey(cur.x + dx, cur.y + dy)];
+                    if (!node) {
+                        continue;
+                    }
+                    const right = nodeByCoord[coordKey(cur.x + dx + 1, cur.y + dy)];
+                    const down = nodeByCoord[coordKey(cur.x + dx, cur.y + dy + 1)];
+                    // 이웃이 창(window) 안에 있을 때만 간선 표시
+                    const hasRight = dx + 1 <= MINIMAP_HALF_W && isLinked(node, right);
+                    const hasDown = dy + 1 <= MINIMAP_HALF_H && isLinked(node, down);
+                    const el = makeNode(node, node.id === cur.id, hasRight, hasDown);
+                    el.style.gridColumn = dx + MINIMAP_HALF_W + 1;
+                    el.style.gridRow = dy + MINIMAP_HALF_H + 1;
+                    grid.appendChild(el);
+                }
+            }
+        }
+
+        function renderFullMap() {
+            const grid = document.getElementById("mapGrid");
+            grid.innerHTML = "";
+
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+            mapData.nodes.forEach(function (n) {
+                minX = Math.min(minX, n.x);
+                minY = Math.min(minY, n.y);
+                maxX = Math.max(maxX, n.x);
+                maxY = Math.max(maxY, n.y);
+            });
+
+            grid.style.gridTemplateColumns = "repeat(" + (maxX - minX + 1) + ", 52px)";
+            grid.style.gridTemplateRows = "repeat(" + (maxY - minY + 1) + ", 52px)";
+
+            mapData.nodes.forEach(function (node) {
+                const right = nodeByCoord[coordKey(node.x + 1, node.y)];
+                const down = nodeByCoord[coordKey(node.x, node.y + 1)];
+                const el = makeNode(
+                    node,
+                    node.id === currentNodeId,
+                    isLinked(node, right),
+                    isLinked(node, down)
+                );
+                el.style.gridColumn = node.x - minX + 1;
+                el.style.gridRow = node.y - minY + 1;
+
+                const label = document.createElement("span");
+                label.className = "node-label";
+                label.textContent = node.name;
+                el.appendChild(label);
+
+                grid.appendChild(el);
+            });
+        }
+
+        function updateSituation() {
+            document.getElementById("situation").textContent = pickAmbience(currentNode());
+        }
+
+        function move(dx, dy) {
+            if (!mapData) {
+                return;
+            }
+            const cur = currentNode();
+            const target = nodeByCoord[coordKey(cur.x + dx, cur.y + dy)];
+            if (!isLinked(cur, target)) {
+                return;
+            }
+            currentNodeId = target.id;
+            renderMinimap();
+            renderFullMap();
+            updateSituation();
+            addLog(target.name + "(으)로 이동했습니다.", "move");
+        }
+
+        function formatNow() {
+            const d = new Date();
+            const p = function (n) {
+                return String(n).padStart(2, "0");
+            };
+            return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+                " " + p(d.getHours()) + ":" + p(d.getMinutes());
+        }
+
+        // type: move | combat | reward | growth | item (기본 move)
+        function addLog(message, type) {
+            const log = document.getElementById("actionLog");
+            const line = document.createElement("div");
+            line.className = "log-line";
+            const time = document.createElement("span");
+            time.className = "log-time";
+            time.textContent = formatNow();
+            const msg = document.createElement("span");
+            msg.className = "log-msg log-" + (type || "move");
+            msg.textContent = message;
+            line.appendChild(time);
+            line.appendChild(msg);
+            log.appendChild(line);
+
+            while (log.children.length > MAX_LOG) {
+                log.removeChild(log.firstChild);
+            }
+            log.scrollTop = log.scrollHeight;
+        }
+
+        loadMap();
     </script>
 </body>
 </html>

@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "description": "myrpg 고정 맵 데이터. 마비노기 지리를 참고한 마을+자유필드 그래프. 던전 내부 맵은 추후 확장.",
+  "nodeTypes": ["town", "field", "dungeon"],
+  "startNodeId": "tir-chonaill",
+  "coordinateSystem": {
+    "note": "x는 동쪽(+)/서쪽(-), y는 남쪽(+)/북쪽(-). 미니맵은 현재 노드를 중앙에 두고 주변만 렌더링한다.",
+    "xAxis": "east-positive",
+    "yAxis": "south-positive"
+  },
+  "nodes": [
+    {
+      "id": "tir-chonaill",
+      "name": "티르코네일",
+      "type": "town",
+      "x": 0,
+      "y": 0,
+      "links": ["alby-entrance", "east-hill", "dugald-north"]
+    },
+    {
+      "id": "alby-entrance",
+      "name": "알비 던전 입구",
+      "type": "dungeon",
+      "x": 0,
+      "y": -1,
+      "dungeonId": "alby",
+      "links": ["tir-chonaill"]
+    },
+    {
+      "id": "east-hill",
+      "name": "동쪽 언덕",
+      "type": "field",
+      "x": 1,
+      "y": 0,
+      "links": ["tir-chonaill", "ciar-entrance"]
+    },
+    {
+      "id": "ciar-entrance",
+      "name": "키아 던전 입구",
+      "type": "dungeon",
+      "x": 2,
+      "y": 0,
+      "dungeonId": "ciar",
+      "links": ["east-hill"]
+    },
+    {
+      "id": "dugald-north",
+      "name": "두갈드 아일 북부",
+      "type": "field",
+      "x": 0,
+      "y": 1,
+      "links": ["tir-chonaill", "dugald-south"]
+    },
+    {
+      "id": "dugald-south",
+      "name": "두갈드 아일 남부",
+      "type": "field",
+      "x": 0,
+      "y": 2,
+      "links": ["dugald-north", "dunbarton"]
+    },
+    {
+      "id": "dunbarton",
+      "name": "던바튼",
+      "type": "town",
+      "x": 0,
+      "y": 3,
+      "links": ["dugald-south", "rabbie-entrance", "west-forest"]
+    },
+    {
+      "id": "rabbie-entrance",
+      "name": "라비 던전 입구",
+      "type": "dungeon",
+      "x": 1,
+      "y": 3,
+      "dungeonId": "rabbie",
+      "links": ["dunbarton"]
+    },
+    {
+      "id": "west-forest",
+      "name": "서쪽 숲",
+      "type": "field",
+      "x": -1,
+      "y": 3,
+      "links": ["dunbarton"]
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "alby",
+      "name": "알비 던전",
+      "entranceNodeId": "alby-entrance",
+      "implemented": false,
+      "map": null
+    },
+    {
+      "id": "ciar",
+      "name": "키아 던전",
+      "entranceNodeId": "ciar-entrance",
+      "implemented": false,
+      "map": null
+    },
+    {
+      "id": "rabbie",
+      "name": "라비 던전",
+      "entranceNodeId": "rabbie-entrance",
+      "implemented": false,
+      "map": null
+    }
+  ]
+}
