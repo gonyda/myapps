@@ -1,18 +1,24 @@
 package com.myapps.web.myrpg.interfaces.api;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
+import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
+import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
+import com.myapps.web.myrpg.domain.model.Npc;
+import com.myapps.web.myrpg.domain.model.NpcLines;
+import com.myapps.web.myrpg.domain.model.NpcType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -121,5 +127,67 @@ class PlayScreenViewHelperTest {
         assertThat(view.fullMap()).isEqualTo(fullMap);
         assertThat(view.ambience()).isEqualTo(ambience);
         assertThat(view.logs()).hasSize(1);
+    }
+
+    @Test
+    void should_buildPlayScreen_withNullNpc_when_noTalkingNpc() {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final MinimapView minimap = new MinimapView("티르 코네일", List.of());
+        final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
+        final List<InteractionItem> interactions = List.of(
+                new InteractionItem("neris", "네리스 (대장간)", true)
+        );
+        final List<ActionLogEntry> logs = List.of();
+
+        final PlayScreenView view = helper.buildPlayScreen(
+                progress, minimap, fullMap, "평화로운 마을", interactions, null, null, logs);
+
+        assertThat(view.npcName()).isNull();
+        assertThat(view.npcDialogue()).isNull();
+        assertThat(view.npcActions()).isNull();
+        assertThat(view.interactions()).isEqualTo(interactions);
+    }
+
+    @Test
+    void should_buildPlayScreen_withNpcActions_when_talkingNpcProvided() {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final MinimapView minimap = new MinimapView("티르 코네일", List.of());
+        final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
+        final NpcLines lines = new NpcLines(List.of("안녕"), Map.of());
+        final Npc npc = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
+        final List<ActionLogEntry> logs = List.of();
+
+        final PlayScreenView view = helper.buildPlayScreen(
+                progress, minimap, fullMap, "평화로운 마을", null, npc, "반갑다.", logs);
+
+        assertThat(view.npcName()).isEqualTo("네리스");
+        assertThat(view.npcDialogue()).isEqualTo("반갑다.");
+        assertThat(view.npcActions()).hasSize(2);
+        assertThat(view.npcActions().get(0).label()).isEqualTo("상점");
+        assertThat(view.npcActions().get(1).label()).isEqualTo("수리");
+    }
+
+    @Test
+    void should_buildInteractions_when_npcListProvided() {
+        final NpcLines lines = new NpcLines(List.of("안녕"), Map.of());
+        final Npc neris = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
+        final Npc duncan = new Npc("duncan", "던컨", NpcType.CHIEF, "tir-chonaill", "마을의 촌장", lines);
+
+        final List<InteractionItem> items = helper.buildInteractions(List.of(neris, duncan));
+
+        assertThat(items).hasSize(2);
+        assertThat(items.get(0).id()).isEqualTo("neris");
+        assertThat(items.get(0).name()).isEqualTo("네리스 (대장간)");
+        assertThat(items.get(0).npc()).isTrue();
+        assertThat(items.get(1).id()).isEqualTo("duncan");
+        assertThat(items.get(1).name()).isEqualTo("던컨 (촌장)");
+        assertThat(items.get(1).npc()).isTrue();
+    }
+
+    @Test
+    void should_buildInteractions_when_emptyList() {
+        final List<InteractionItem> items = helper.buildInteractions(List.of());
+
+        assertThat(items).isEmpty();
     }
 }

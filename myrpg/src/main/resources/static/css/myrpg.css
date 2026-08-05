@@ -224,6 +224,29 @@
             margin-bottom: calc(var(--gap) * 0.4);
         }
 
+        /* NPC 행동 버튼 (가로 flex, 작은 버튼) */
+        .npc-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: calc(var(--gap) * 0.5);
+            flex-shrink: 0;
+        }
+
+        .npc-actions button {
+            background: #2a3a2a;
+            color: #9ad19a;
+            border: 1px solid #4a6a4a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.4) var(--pad);
+            font-size: var(--fs-sm);
+            cursor: pointer;
+            min-height: calc(var(--touch) * 0.7);
+        }
+
+        .npc-actions button:active {
+            background: #3a4a3a;
+        }
+
         /* 상호작용 버튼들 (최소 2줄, 넘치면 스크롤) */
         .interactions {
             display: flex;

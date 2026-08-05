@@ -9,6 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
+import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
@@ -18,6 +19,8 @@ import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MovementService;
+import com.myapps.web.myrpg.application.service.NpcDialogueService;
+import com.myapps.web.myrpg.application.service.NpcService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -25,7 +28,9 @@ import com.myapps.web.myrpg.domain.model.MapNode;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,6 +65,12 @@ class PlayScreenControllerTest {
     private MovementService movementService;
 
     @MockitoBean
+    private NpcService npcService;
+
+    @MockitoBean
+    private NpcDialogueService npcDialogueService;
+
+    @MockitoBean
     private ActionLog actionLog;
 
     @MockitoBean
@@ -79,7 +90,10 @@ class PlayScreenControllerTest {
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
-        when(playScreenViewHelper.buildPlayScreen(any(), any(), any(), anyString(), any()))
+        when(npcService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(playScreenViewHelper.buildPlayScreen(
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(get("/"))
@@ -107,7 +121,10 @@ class PlayScreenControllerTest {
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("새로운 장소");
         when(actionLog.getEntries()).thenReturn(List.of(logEntry));
-        when(playScreenViewHelper.buildPlayScreen(any(), any(), any(), anyString(), any()))
+        when(npcService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(playScreenViewHelper.buildPlayScreen(
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -136,7 +153,10 @@ class PlayScreenControllerTest {
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
-        when(playScreenViewHelper.buildPlayScreen(any(), any(), any(), anyString(), any()))
+        when(npcService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(playScreenViewHelper.buildPlayScreen(
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -165,7 +185,10 @@ class PlayScreenControllerTest {
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
-        when(playScreenViewHelper.buildPlayScreen(any(), any(), any(), anyString(), any()))
+        when(npcService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(playScreenViewHelper.buildPlayScreen(
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -199,6 +222,7 @@ class PlayScreenControllerTest {
                 new MinimapView("테스트맵", List.of()),
                 new FullMapView(List.of(), 5, 5),
                 "평화로운 마을",
+                null,
                 null,
                 null,
                 null,

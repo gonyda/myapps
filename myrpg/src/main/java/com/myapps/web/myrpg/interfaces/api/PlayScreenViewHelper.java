@@ -6,12 +6,15 @@ import org.springframework.stereotype.Component;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
+import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
+import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
+import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.Vital;
 
 /**
@@ -72,7 +75,10 @@ public class PlayScreenViewHelper {
     }
 
     /**
-     * 플레이 화면 전체 뷰를 집계한다.
+     * 플레이 화면 전체 뷰를 집계한다 (하위 호환 오버로드).
+     *
+     * <p>상호작용 목록·NPC 대사·행동 버튼 없이 뷰를 조립한다.
+     * 내부적으로 확장 메서드에 {@code null} 인자를 전달한다.
      *
      * @param progress 캐릭터 진행상황
      * @param minimap  미니맵 뷰 모델
@@ -86,12 +92,72 @@ public class PlayScreenViewHelper {
                                           final FullMapView fullMap,
                                           final String ambience,
                                           final List<ActionLogEntry> logs) {
+        return buildPlayScreen(progress, minimap, fullMap, ambience, null, null, null, logs);
+    }
+
+    /**
+     * 플레이 화면 전체 뷰를 집계한다 (상호작용·NPC 대사·행동 버튼 포함).
+     *
+     * <p>{@code talkingNpc}가 {@code null}이면 NPC 이름·대사·행동 버튼을 모두 비운다.
+     * {@code talkingNpc}가 존재하면 이름·대사를 채우고, 해당 타입의 행동 라벨을
+     * 정의 순서대로 {@link NpcActionButton}으로 변환한다.
+     *
+     * @param progress     캐릭터 진행상황
+     * @param minimap      미니맵 뷰 모델
+     * @param fullMap      전체지도 뷰 모델
+     * @param ambience     상황 멘트 텍스트
+     * @param interactions 상호작용 대상 목록 (NPC 버튼, 정의 순서)
+     * @param talkingNpc   대사 대상 NPC (없으면 {@code null})
+     * @param dialogue     선택된 대사 텍스트 (없으면 {@code null})
+     * @param logs         행동 로그 항목 목록
+     * @return 플레이 화면 전체 뷰 모델
+     */
+    public PlayScreenView buildPlayScreen(final CharacterProgress progress,
+                                          final MinimapView minimap,
+                                          final FullMapView fullMap,
+                                          final String ambience,
+                                          final List<InteractionItem> interactions,
+                                          final Npc talkingNpc,
+                                          final String dialogue,
+                                          final List<ActionLogEntry> logs) {
         final TopBarView topBar = buildTopBar(progress);
-        return new PlayScreenView(topBar, minimap, fullMap, ambience, null, null, null, logs);
+        final String npcName = talkingNpc != null ? talkingNpc.name() : null;
+        final String npcDialogue = talkingNpc != null ? dialogue : null;
+        final List<NpcActionButton> npcActions = buildNpcActions(talkingNpc);
+        return new PlayScreenView(topBar, minimap, fullMap, ambience, npcName, npcDialogue, interactions, npcActions, logs);
+    }
+
+    /**
+     * NPC 목록을 상호작용 항목 목록으로 변환한다.
+     *
+     * <p>각 NPC의 라벨은 {@code "name (type.label())"} 형식이며, {@code npc=true}로 표시된다.
+     * 반환 목록은 입력 NPC 목록의 정의 순서를 보존한다.
+     *
+     * @param npcs NPC 목록 (정의 순서)
+     * @return 상호작용 항목 목록
+     */
+    public List<InteractionItem> buildInteractions(final List<Npc> npcs) {
+        return npcs.stream()
+                .map(this::toInteractionItem)
+                .toList();
     }
 
     private GaugeView buildVitalGauge(final Vital vital) {
         return buildGauge(vital.current(), vital.max());
+    }
+
+    private List<NpcActionButton> buildNpcActions(final Npc talkingNpc) {
+        if (talkingNpc == null) {
+            return null;
+        }
+        return talkingNpc.type().actionLabels().stream()
+                .map(NpcActionButton::new)
+                .toList();
+    }
+
+    private InteractionItem toInteractionItem(final Npc npc) {
+        final String label = npc.name() + " (" + npc.type().label() + ")";
+        return new InteractionItem(npc.id(), label, true);
     }
 
     private int calculatePercent(final int current, final int max) {

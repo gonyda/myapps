@@ -191,6 +191,37 @@ function move(dx, dy) {
         });
 }
 
+// ===== NPC 대화: POST /npc/talk 호출 + .center swap =====
+function talkToNpc(npcId) {
+    fetch("/npc/talk?npcId=" + npcId, { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) {
+                return;
+            }
+            var container = document.createElement("div");
+            container.innerHTML = html;
+
+            var newCenter = container.querySelector(".center");
+            if (newCenter) {
+                var oldCenter = document.querySelector(".center");
+                if (oldCenter) {
+                    oldCenter.replaceWith(newCenter);
+                }
+            }
+        });
+}
+
+// ===== NPC 행동 버튼 (미구현 플레이스홀더) =====
+function npcAction() {
+    alert("구현 예정입니다");
+}
+
 // 페이지 로드 시 행동 로그를 맨 아래로 스크롤
 document.addEventListener("DOMContentLoaded", function () {
     var actionLog = document.getElementById("actionLog");

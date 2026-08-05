@@ -15,12 +15,23 @@
         </th:block>
     </div>
 
+    <!-- NPC 행동 버튼 -->
+    <div class="npc-actions" id="npcActions"
+         th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
+        <button th:each="action : ${view.npcActions}"
+                th:text="${action.label}"
+                onclick="npcAction()">
+        </button>
+    </div>
+
     <!-- 상호작용 버튼 -->
     <div class="interactions" id="interactions">
         <th:block th:if="${view.interactions != null}">
             <button th:each="item : ${view.interactions}"
                     th:classappend="${item.npc} ? 'npc' : ''"
-                    th:text="${item.name}">
+                    th:text="${item.name}"
+                    th:attr="data-npc-id=${item.npc ? item.id : null}"
+                    onclick="if(this.dataset.npcId){talkToNpc(this.dataset.npcId)}">
             </button>
         </th:block>
     </div>
