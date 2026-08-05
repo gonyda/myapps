@@ -188,6 +188,16 @@ function move(dx, dy) {
                     newActionLog.scrollTop = newActionLog.scrollHeight;
                 }
             }
+
+            var newMap = container.querySelector(".map-overlay");
+            if (newMap) {
+                var oldGrid = document.getElementById("mapGrid");
+                var newGrid = newMap.querySelector("#mapGrid");
+                if (oldGrid && newGrid) {
+                    oldGrid.setAttribute("style", newGrid.getAttribute("style"));
+                    oldGrid.innerHTML = newGrid.innerHTML;
+                }
+            }
         });
 }
 
