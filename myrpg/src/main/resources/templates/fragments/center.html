@@ -7,21 +7,20 @@
         맵 데이터를 불러오는 중...
     </div>
 
-    <!-- NPC 멘트 -->
+    <!-- NPC 멘트 + 행동 버튼 (스크롤 영역) -->
     <div class="npc-talk" id="npcTalk">
         <th:block th:if="${view.npcName != null}">
             <span class="npc-name" th:text="${view.npcName}"></span>
             <p th:text="${view.npcDialogue}"></p>
         </th:block>
-    </div>
-
-    <!-- NPC 행동 버튼 -->
-    <div class="npc-actions" id="npcActions"
-         th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
-        <button th:each="action : ${view.npcActions}"
-                th:text="${action.label}"
-                onclick="npcAction()">
-        </button>
+        <!-- NPC 행동 버튼 (멘트 하단) -->
+        <div class="npc-actions" id="npcActions"
+             th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
+            <button th:each="action : ${view.npcActions}"
+                    th:text="${action.label}"
+                    onclick="npcAction()">
+            </button>
+        </div>
     </div>
 
     <!-- 상호작용 버튼 -->

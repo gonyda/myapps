@@ -212,7 +212,7 @@
             font-size: var(--fs-md);
             line-height: 1.6;
             flex: 0 0 auto;
-            height: clamp(64px, 12dvh, 120px);
+            max-height: clamp(80px, 18dvh, 160px);
             overflow-y: auto;
         }
 
@@ -224,12 +224,14 @@
             margin-bottom: calc(var(--gap) * 0.4);
         }
 
-        /* NPC 행동 버튼 (가로 flex, 작은 버튼) */
+        /* NPC 행동 버튼 (멘트 영역 내부 하단) */
         .npc-actions {
             display: flex;
             flex-wrap: wrap;
             gap: calc(var(--gap) * 0.5);
-            flex-shrink: 0;
+            margin-top: calc(var(--gap) * 0.6);
+            padding-top: calc(var(--gap) * 0.5);
+            border-top: 1px solid #3a4a3a;
         }
 
         .npc-actions button {
