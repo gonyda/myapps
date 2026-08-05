@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="move-pad" th:fragment="move-pad">
+    <button class="up" onclick="move(0,-1)">▲</button>
+    <button class="left" onclick="move(-1,0)">◀</button>
+    <button class="right" onclick="move(1,0)">▶</button>
+    <button class="down" onclick="move(0,1)">▼</button>
+</div>
+</body>
+</html>

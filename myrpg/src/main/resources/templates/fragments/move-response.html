@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="move-response">
+    <header class="top-bar" id="topBar" th:replace="~{fragments/top-bar :: top-bar}"></header>
+    <section class="center" id="center" th:replace="~{fragments/center :: center}"></section>
+    <footer class="action-log" id="actionLog" th:replace="~{fragments/action-log :: action-log}"></footer>
+</div>
+</body>
+</html>

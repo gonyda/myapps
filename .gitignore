@@ -29,3 +29,9 @@ bin/
 
 # jqwik
 .jqwik-database
+
+# H2 file DB (로컬 개발용)
+**/data/*.db
+**/data/*.mv.db
+**/data/*.trace.db
+**/data/*.lock.db

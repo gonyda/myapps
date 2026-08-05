@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>myrpg</title>
+    <link rel="stylesheet" th:href="@{/css/myrpg.css}">
+</head>
+<body>
+    <div class="phone">
+        <!-- 상단 바 -->
+        <div th:replace="~{fragments/top-bar :: top-bar}"></div>
+
+        <div class="main">
+            <!-- 왼쪽 사이드바 -->
+            <div th:replace="~{fragments/left-sidebar :: left-sidebar}"></div>
+
+            <!-- 가운데 영역 -->
+            <div th:replace="~{fragments/center :: center}"></div>
+        </div>
+
+        <!-- 하단 행동 로그 -->
+        <div th:replace="~{fragments/action-log :: action-log}"></div>
+    </div>
+
+    <!-- 전체화면 팝업 (장비/인벤토리/스킬/정보 공용) -->
+    <div th:replace="~{fragments/panel-popup :: panel-popup}"></div>
+
+    <!-- 전체 맵 팝업 -->
+    <div th:replace="~{fragments/full-map :: full-map}"></div>
+
+    <script th:src="@{/js/myrpg.js}"></script>
+</body>
+</html>

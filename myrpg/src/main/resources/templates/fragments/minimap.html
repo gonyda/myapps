@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="minimap" th:fragment="minimap" onclick="openMap()">
+    <div class="minimap-title">
+        <span class="map-name" id="minimapName" th:text="${view.minimap.mapName}">-</span>
+        <span class="map-hint">전체지도 ▸</span>
+    </div>
+    <div class="node-grid" id="minimapGrid">
+        <div th:each="cell : ${view.minimap.cells}"
+             th:style="'grid-column:' + ${cell.gridColumn} + '; grid-row:' + ${cell.gridRow}"
+             th:classappend="'node type-' + ${cell.type}
+                 + (${cell.current} ? ' current' : '')
+                 + (${cell.linkRight} ? ' link-right' : '')
+                 + (${cell.linkDown} ? ' link-down' : '')">
+        </div>
+    </div>
+</div>
+</body>
+</html>

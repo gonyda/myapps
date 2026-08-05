@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 - myrpg</title>
+    <link rel="stylesheet" th:href="@{/css/myrpg.css}">
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100dvh;
+            padding: 2rem;
+            text-align: center;
+            background: #1a1a1a;
+            color: #ddd;
+        }
+        .error-container h1 {
+            font-size: 1.5rem;
+            color: #d9534f;
+            margin-bottom: 1rem;
+        }
+        .error-container p {
+            font-size: 1rem;
+            color: #aaa;
+            max-width: 400px;
+        }
+        .error-container a {
+            margin-top: 1.5rem;
+            color: #6b93bf;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>오류가 발생했습니다</h1>
+        <p th:text="${message}">알 수 없는 오류가 발생했습니다.</p>
+        <a th:href="@{/}">플레이 화면으로 돌아가기</a>
+    </div>
+</body>
+</html>

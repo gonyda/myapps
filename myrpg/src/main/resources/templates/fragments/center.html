@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section class="center" th:fragment="center">
+    <!-- 상황 멘트 -->
+    <div class="situation" id="situation" th:text="${view.ambience}">
+        맵 데이터를 불러오는 중...
+    </div>
+
+    <!-- NPC 멘트 -->
+    <div class="npc-talk" id="npcTalk">
+        <th:block th:if="${view.npcName != null}">
+            <span class="npc-name" th:text="${view.npcName}"></span>
+            <p th:text="${view.npcDialogue}"></p>
+        </th:block>
+    </div>
+
+    <!-- 상호작용 버튼 -->
+    <div class="interactions" id="interactions">
+        <th:block th:if="${view.interactions != null}">
+            <button th:each="item : ${view.interactions}"
+                    th:classappend="${item.npc} ? 'npc' : ''"
+                    th:text="${item.name}">
+            </button>
+        </th:block>
+    </div>
+
+    <!-- 미니맵 -->
+    <div th:replace="~{fragments/minimap :: minimap}"></div>
+
+    <!-- 상하좌우 이동 -->
+    <div th:replace="~{fragments/move-pad :: move-pad}"></div>
+</section>
+</body>
+</html>

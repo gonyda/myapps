@@ -1,0 +1,659 @@
+        /*
+         * 유동형(fluid) 반응형 목업 - 세로 전용
+         * - 크기/간격/폰트는 clamp()로 화면 폭에 비례해 조정
+         * - 높이는 dvh 기반으로 세로 화면에 맞춤
+         */
+        :root {
+            /* 화면 폭 기준 유동 스케일 값 */
+            --gap: clamp(8px, 2.6vw, 14px);
+            --pad: clamp(10px, 3.2vw, 16px);
+            --radius: clamp(6px, 1.6vw, 9px);
+
+            --fs-xs: clamp(9px, 2.6vw, 11px);
+            --fs-sm: clamp(11px, 3.2vw, 13px);
+            --fs-md: clamp(13px, 3.8vw, 15px);
+            --fs-lg: clamp(15px, 4.6vw, 18px);
+
+            --touch: clamp(44px, 12vw, 52px);
+            --bar-h: clamp(9px, 2.6vw, 12px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: "Malgun Gothic", sans-serif;
+            background: #000;
+            color: #ddd;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 모바일 세로 화면 컨테이너 */
+        .phone {
+            width: 100%;
+            max-width: 480px;
+            height: 100dvh;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 상단 바 */
+        .top-bar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #444;
+            padding: calc(var(--pad) * 0.6) var(--pad);
+            flex-shrink: 0;
+        }
+
+        .top-row {
+            display: flex;
+            align-items: center;
+            gap: var(--gap);
+            margin-bottom: calc(var(--gap) * 0.5);
+        }
+
+        .top-row .nickname {
+            font-weight: bold;
+            font-size: var(--fs-md);
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .top-row .level {
+            background: #3a5a8a;
+            padding: 0.1em 0.6em;
+            border-radius: var(--radius);
+            font-size: var(--fs-sm);
+            white-space: nowrap;
+        }
+
+        .top-row .exp-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: calc(var(--gap) * 0.5);
+            min-width: 0;
+        }
+
+        .top-row .exp-label {
+            font-size: var(--fs-xs);
+            color: #aaa;
+        }
+
+        .stat-bars {
+            display: flex;
+            gap: var(--gap);
+        }
+
+        .stat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.25);
+            min-width: 0;
+        }
+
+        .stat .label {
+            font-size: var(--fs-xs);
+            color: #aaa;
+        }
+
+        .bar {
+            height: var(--bar-h);
+            background: #444;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;   /* 게이지 위 수치 오버레이 기준 */
+        }
+
+        .bar > span {
+            display: block;
+            height: 100%;
+        }
+
+        /* 게이지 바 위 현재값/최대값 수치 (연하게 오버레이) */
+        .bar > .bar-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: clamp(7px, 2vw, 9px);
+            line-height: 1;
+            color: rgba(255, 255, 255, 0.55);
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .bar.exp > span { background: #f0c419; width: 45%; }
+        .bar.hp  > span { background: #d9534f; width: 80%; }
+        .bar.mp  > span { background: #4a7bd0; width: 60%; }
+        .bar.stamina > span { background: #5cb85c; width: 70%; }
+
+        /* 본문 */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* 왼쪽 사이드바 */
+        .left-sidebar {
+            width: clamp(56px, 16vw, 76px);
+            background: #232323;
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+            padding: var(--pad) calc(var(--pad) * 0.4);
+            flex-shrink: 0;
+        }
+
+        .left-sidebar button {
+            background: #333;
+            color: #ddd;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.6) 0;
+            font-size: var(--fs-sm);
+            cursor: pointer;
+            min-height: var(--touch);
+        }
+
+        .left-sidebar button:active {
+            background: #444;
+        }
+
+        /* 가운데 영역 */
+        .center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--pad);
+            gap: var(--gap);
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        /* 상황 멘트 (세로 공간 확장) */
+        .situation {
+            background: #262626;
+            border: 1px solid #444;
+            border-radius: var(--radius);
+            padding: var(--pad);
+            font-size: var(--fs-md);
+            line-height: 1.6;
+            flex: 0 0 auto;
+            height: clamp(64px, 12dvh, 120px);
+            overflow-y: auto;
+        }
+
+        /* NPC 멘트 (텍스트 길어지면 스크롤) */
+        .npc-talk {
+            background: #23281f;
+            border: 1px solid #4a6a4a;
+            border-radius: var(--radius);
+            padding: var(--pad);
+            font-size: var(--fs-md);
+            line-height: 1.6;
+            flex: 0 0 auto;
+            height: clamp(64px, 12dvh, 120px);
+            overflow-y: auto;
+        }
+
+        .npc-talk .npc-name {
+            display: block;
+            color: #9ad19a;
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            margin-bottom: calc(var(--gap) * 0.4);
+        }
+
+        /* 상호작용 버튼들 (최소 2줄, 넘치면 스크롤) */
+        .interactions {
+            display: flex;
+            gap: var(--gap);
+            flex-wrap: wrap;
+            align-content: flex-start;
+            flex-shrink: 0;
+            height: clamp(64px, 12dvh, 120px);
+            max-height: calc(var(--touch) * 2 + var(--gap));
+            overflow-y: auto;
+        }
+
+        .interactions button {
+            background: #3a2a2a;
+            color: #ffcccc;
+            border: 1px solid #6a4a4a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.8) var(--pad);
+            font-size: var(--fs-md);
+            cursor: pointer;
+            min-height: var(--touch);
+            flex: 0 0 clamp(80px, 24vw, 110px);
+        }
+
+        .interactions button.npc {
+            background: #2a3a2a;
+            color: #ccffcc;
+            border-color: #4a6a4a;
+        }
+
+        /* 미니맵 */
+        .minimap {
+            background: #202020;
+            border: 1px solid #444;
+            border-radius: var(--radius);
+            padding: var(--pad);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .minimap .minimap-title {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .minimap .map-name {
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .minimap .map-hint {
+            font-size: var(--fs-xs);
+            color: #888;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /*
+         * 미니맵: 9x4 그리드 위에 노드를 '있는 곳에만' 배치.
+         * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비워둠).
+         * 연결선은 노드의 link-* 클래스로 이웃 방향에만 그림.
+         */
+        .minimap .node-grid {
+            --nm-gap: calc(var(--gap) * 0.5);
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: var(--nm-gap);
+            aspect-ratio: 9 / 5;   /* 9x5, 가운데가 항상 내 위치 */
+        }
+
+        .minimap .node-grid .node {
+            position: relative;
+            aspect-ratio: 1 / 1;   /* 각 노드 정사각형 */
+            z-index: 1;
+        }
+
+        /* 노드 사이 연결선 (이웃 노드 중심까지 이어짐) */
+        .minimap .node[class*="link-"]::before,
+        .minimap .node[class*="link-"]::after {
+            content: "";
+            position: absolute;
+            background: #4a4a4a;
+            z-index: -1;
+        }
+
+        /* 가로선: 오른쪽 이웃으로 */
+        .minimap .node.link-right::after {
+            top: 50%;
+            left: 100%;
+            width: var(--nm-gap);
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        /* 세로선: 아래 이웃으로 */
+        .minimap .node.link-down::before {
+            left: 50%;
+            top: 100%;
+            width: 2px;
+            height: var(--nm-gap);
+            transform: translateX(-50%);
+        }
+
+        .node {
+            border-radius: var(--radius);
+            background: #555;   /* 미지정/미탐색 기본색 */
+        }
+
+        /*
+         * 맵 유형별 색상 (확장 가능).
+         * 새 유형 추가 시 .type-{name} 규칙만 늘리면 됨.
+         */
+        .node.type-town,    .dot.type-town    { background: #6b93bf; }   /* 마을 (연파랑) */
+        .node.type-field,   .dot.type-field   { background: #7bb07b; }   /* 자유필드 (연초록) */
+        .node.type-dungeon, .dot.type-dungeon { background: #c08585; }   /* 던전 (연빨강) */
+
+        /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
+        .node.current {
+            box-shadow: 0 0 0 2px #f0c419, 0 0 8px #f0c419;
+            z-index: 2;
+        }
+
+        /* 상하좌우 이동 패드 (축소) */
+        .move-pad {
+            --move-cell: clamp(38px, 10vw, 46px);
+            align-self: center;
+            display: grid;
+            grid-template-columns: repeat(3, var(--move-cell));
+            grid-template-rows: repeat(2, var(--move-cell));
+            gap: calc(var(--gap) * 0.25);
+            padding-top: calc(var(--gap) * 0.3);
+            flex-shrink: 0;
+        }
+
+        .move-pad button {
+            background: #333;
+            color: #ddd;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            font-size: var(--fs-sm);
+            cursor: pointer;
+        }
+
+        .move-pad button:active {
+            background: #444;
+        }
+
+        /* PC 화살표 키 배열: 위=윗줄 가운데, 좌·하·우=아랫줄 */
+        .move-pad .up    { grid-column: 2; grid-row: 1; }
+        .move-pad .left  { grid-column: 1; grid-row: 2; }
+        .move-pad .down  { grid-column: 2; grid-row: 2; }
+        .move-pad .right { grid-column: 3; grid-row: 2; }
+
+        /* 하단 행동 로그 (4줄 노출, 넘치면 스크롤 / 최대 10개) */
+        .action-log {
+            /* 한 줄 = 글자높이(fs*1.6) + 상하 패딩 4px + 점선 border 1px */
+            --log-line-h: calc(var(--fs-sm) * 1.6 + 5px);
+            height: calc(var(--log-line-h) * 4 + var(--pad) * 1.2);
+            background: #161616;
+            border-top: 1px solid #444;
+            padding: calc(var(--pad) * 0.6) var(--pad);
+            overflow-y: auto;
+            font-size: var(--fs-sm);
+            line-height: 1.6;
+            color: #bbb;
+            flex-shrink: 0;
+        }
+
+        .action-log .log-line {
+            border-bottom: 1px dotted #333;
+            padding: 2px 0;
+            display: flex;
+            gap: calc(var(--gap) * 0.6);
+        }
+
+        .action-log .log-time {
+            color: #777;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .action-log .log-msg {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* 로그 타입별 색상 */
+        .action-log .log-move   { color: #bbbbbb; }   /* 이동 (기본) */
+        .action-log .log-combat { color: #d98b8b; }   /* 전투 (연빨강) */
+        .action-log .log-reward { color: #d9c479; }   /* 보상/획득 (노랑) */
+        .action-log .log-growth { color: #8fb5d9; }   /* 성장 (연파랑) */
+        .action-log .log-item   { color: #8fc98f; }   /* 아이템 (연초록) */
+
+        /* 전체화면 팝업 오버레이 */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad);
+            z-index: 1000;
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        /* 화면을 거의 꽉 채우는 패널 */
+        .panel {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            max-height: calc(100dvh - var(--pad) * 2);
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--pad);
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+        }
+
+        .panel-header h3 {
+            color: #fff;
+            font-size: var(--fs-lg);
+        }
+
+        .panel-close {
+            background: #444;
+            color: #ddd;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            width: var(--touch);
+            height: var(--touch);
+            font-size: var(--fs-md);
+            cursor: pointer;
+        }
+
+        .panel-close:active {
+            background: #555;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--pad);
+            min-height: 0;
+        }
+
+        .panel-body .placeholder {
+            color: #888;
+            font-size: var(--fs-sm);
+            text-align: center;
+            padding: calc(var(--pad) * 3) 0;
+        }
+
+        /* 전체 맵 팝업 (가운데 영역에 위치하는 모달) */
+        .map-popup {
+            width: 88%;
+            max-width: 400px;
+            height: 70dvh;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--pad);
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+        }
+
+        .map-header h3 {
+            color: #fff;
+            font-size: var(--fs-lg);
+        }
+
+        /* 유형 범례 */
+        .map-legend {
+            display: flex;
+            gap: var(--pad);
+            padding: calc(var(--pad) * 0.5) var(--pad);
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .map-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--gap) * 0.4);
+            font-size: var(--fs-xs);
+            color: #bbb;
+        }
+
+        .map-legend .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* 지도 뷰포트: 줌/이동을 위해 overflow 숨김 + 터치 제스처 처리 */
+        .map-body {
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+            position: relative;
+            background: #1c1c1c;
+            touch-action: none;      /* 브라우저 기본 줌/스크롤 막고 직접 처리 */
+            cursor: grab;
+        }
+
+        .map-body:active {
+            cursor: grabbing;
+        }
+
+        /* 실제로 확대/이동되는 캔버스 */
+        .map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+            padding: var(--pad);
+            will-change: transform;
+        }
+
+        /*
+         * 전체맵: 미니맵과 동일하게 연결된 노드만 배치 + 간선 표시.
+         * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비움).
+         */
+        .map-grid {
+            --map-gap: 12px;
+            display: grid;
+            grid-template-columns: repeat(9, 52px);
+            grid-template-rows: repeat(6, 52px);
+            gap: var(--map-gap);
+        }
+
+        .map-grid .node {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 노드 이름 라벨: 항상 표시 */
+        .map-grid .node-label {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            line-height: 1.2;
+            color: #ddd;
+            white-space: nowrap;
+            text-shadow: 0 0 3px #000, 0 0 3px #000;
+            pointer-events: none;
+        }
+
+        .map-grid .node[class*="link-"]::before,
+        .map-grid .node[class*="link-"]::after {
+            content: "";
+            position: absolute;
+            background: #4a4a4a;
+            z-index: -1;
+        }
+
+        /* 가로선: 오른쪽 이웃으로 */
+        .map-grid .node.link-right::after {
+            top: 50%;
+            left: 100%;
+            width: var(--map-gap);
+            height: 3px;
+            transform: translateY(-50%);
+        }
+
+        /* 세로선: 아래 이웃으로 */
+        .map-grid .node.link-down::before {
+            left: 50%;
+            top: 100%;
+            width: 3px;
+            height: var(--map-gap);
+            transform: translateX(-50%);
+        }
+
+        /* 줌 버튼 */
+        .zoom-controls {
+            position: absolute;
+            right: var(--pad);
+            bottom: var(--pad);
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.5);
+        }
+
+        .zoom-controls button {
+            width: var(--touch);
+            height: var(--touch);
+            background: rgba(51, 51, 51, 0.9);
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: var(--radius);
+            font-size: var(--fs-lg);
+            cursor: pointer;
+        }
+
+        .zoom-controls button:active {
+            background: #555;
+        }

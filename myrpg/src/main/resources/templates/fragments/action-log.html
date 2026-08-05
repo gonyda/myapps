@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer class="action-log" id="actionLog" th:fragment="action-log">
+    <div th:each="entry : ${view.logs}" class="log-line">
+        <span class="log-time" th:text="${entry.timestamp}">2025-01-01 00:00:00</span>
+        <span th:class="'log-msg log-' + ${entry.type}" th:text="${entry.message}">이동 로그</span>
+    </div>
+</footer>
+</body>
+</html>

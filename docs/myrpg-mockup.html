@@ -121,11 +121,29 @@
             background: #444;
             border-radius: 999px;
             overflow: hidden;
+            position: relative;   /* 게이지 위 수치 오버레이 기준 */
         }
 
         .bar > span {
             display: block;
             height: 100%;
+        }
+
+        /* 게이지 바 위 현재값/최대값 수치 (연하게 오버레이) */
+        .bar > .bar-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: clamp(7px, 2vw, 9px);
+            line-height: 1;
+            color: rgba(255, 255, 255, 0.55);
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            pointer-events: none;
         }
 
         .bar.exp > span { background: #f0c419; width: 45%; }
@@ -656,21 +674,21 @@
                 <span class="level">Lv. 12</span>
                 <div class="exp-wrap">
                     <span class="exp-label">EXP</span>
-                    <div class="bar exp" style="flex:1"><span></span></div>
+                    <div class="bar exp" style="flex:1"><span></span><span class="bar-text">450 / 1000</span></div>
                 </div>
             </div>
             <div class="stat-bars">
                 <div class="stat">
                     <span class="label">HP</span>
-                    <div class="bar hp"><span></span></div>
+                    <div class="bar hp"><span></span><span class="bar-text">80 / 100</span></div>
                 </div>
                 <div class="stat">
                     <span class="label">MP</span>
-                    <div class="bar mp"><span></span></div>
+                    <div class="bar mp"><span></span><span class="bar-text">60 / 100</span></div>
                 </div>
                 <div class="stat">
                     <span class="label">스태미나</span>
-                    <div class="bar stamina"><span></span></div>
+                    <div class="bar stamina"><span></span><span class="bar-text">70 / 100</span></div>
                 </div>
             </div>
         </header>
@@ -1158,7 +1176,7 @@
                 return String(n).padStart(2, "0");
             };
             return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
-                " " + p(d.getHours()) + ":" + p(d.getMinutes());
+                " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
         }
 
         // type: move | combat | reward | growth | item (기본 move)
