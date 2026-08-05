@@ -1,8 +1,10 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/myrpg;AUTO_SERVER=TRUE
-    username: sa
+    url: jdbc:oracle:thin:@I38ZV6G9LRF9FI84_high?TNS_ADMIN=/home/ubuntu/app/Wallet_I38ZV6G9LRF9FI84
+    username: admin
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: validate

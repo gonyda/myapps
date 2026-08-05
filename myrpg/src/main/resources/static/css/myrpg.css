@@ -212,7 +212,7 @@
             font-size: var(--fs-md);
             line-height: 1.6;
             flex: 0 0 auto;
-            max-height: clamp(80px, 18dvh, 160px);
+            height: clamp(64px, 12dvh, 120px);
             overflow-y: auto;
         }
 
@@ -256,8 +256,8 @@
             flex-wrap: wrap;
             align-content: flex-start;
             flex-shrink: 0;
-            height: clamp(64px, 12dvh, 120px);
-            max-height: calc(var(--touch) * 2 + var(--gap));
+            height: clamp(84px, 12dvh, 120px);
+            max-height: calc(var(--touch) * 2.3 + var(--gap));
             overflow-y: auto;
         }
 
