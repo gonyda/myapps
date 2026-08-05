@@ -1,6 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.util.Random;
 
 import org.springframework.context.annotation.Bean;
@@ -20,13 +21,13 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 public class ApplicationServiceConfiguration {
 
     /**
-     * 시스템 기본 시계 빈을 생성합니다.
+     * 한국 표준시(Asia/Seoul) 기준 시계 빈을 생성합니다.
      *
-     * @return 시스템 기본 Clock
+     * @return Asia/Seoul 타임존 Clock
      */
     @Bean
     public Clock clock() {
-        return Clock.systemDefaultZone();
+        return Clock.system(ZoneId.of("Asia/Seoul"));
     }
 
     /**
