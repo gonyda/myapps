@@ -16,6 +16,9 @@
 
             --touch: clamp(44px, 12vw, 52px);
             --bar-h: clamp(9px, 2.6vw, 12px);
+
+            /* 하단 행동 로그 높이 (4줄 노출) - move-pad 배치 기준으로 재사용 */
+            --log-h: calc((var(--fs-sm) * 1.6 + 5px) * 4 + var(--pad) * 1.2);
         }
 
         * {
@@ -46,6 +49,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;   /* move-pad 오버레이 배치 기준 */
         }
 
         /* 상단 바 */
@@ -379,36 +383,48 @@
             z-index: 2;
         }
 
-        /* 상하좌우 이동 패드 (축소) */
+        /* 상하좌우 이동 패드 (우하단 고정 오버레이, 원형 십자 D-pad) */
         .move-pad {
-            --move-cell: clamp(38px, 10vw, 46px);
-            align-self: center;
+            --move-cell: clamp(34px, 9vw, 42px);
+            position: absolute;
+            right: var(--pad);
+            bottom: calc(var(--log-h) + var(--gap));
+            z-index: 50;
             display: grid;
-            grid-template-columns: repeat(3, var(--move-cell));
-            grid-template-rows: repeat(2, var(--move-cell));
-            gap: calc(var(--gap) * 0.25);
-            padding-top: calc(var(--gap) * 0.3);
-            flex-shrink: 0;
+            grid-template-columns: var(--move-cell) calc(var(--move-cell) * 0.5) var(--move-cell);
+            grid-template-rows: var(--move-cell) calc(var(--move-cell) * 0.5) var(--move-cell);
+            gap: 0;
+            place-items: center;
+            padding: calc(var(--gap) * 0.5);
+            background: rgba(26, 26, 26, 0.82);
+            border: 1px solid #444;
+            border-radius: 50%;
+            backdrop-filter: blur(2px);
         }
 
         .move-pad button {
+            width: var(--move-cell);
+            height: var(--move-cell);
             background: #333;
             color: #ddd;
             border: 1px solid #555;
-            border-radius: var(--radius);
+            border-radius: 50%;
             font-size: var(--fs-sm);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .move-pad button:active {
             background: #444;
         }
 
-        /* PC 화살표 키 배열: 위=윗줄 가운데, 좌·하·우=아랫줄 */
+        /* 십자(+) 배열: 위=상단 중앙, 좌·우=중앙 양옆, 아래=하단 중앙 */
         .move-pad .up    { grid-column: 2; grid-row: 1; }
         .move-pad .left  { grid-column: 1; grid-row: 2; }
-        .move-pad .down  { grid-column: 2; grid-row: 2; }
         .move-pad .right { grid-column: 3; grid-row: 2; }
+        .move-pad .down  { grid-column: 2; grid-row: 3; }
 
         /* 하단 행동 로그 (4줄 노출, 넘치면 스크롤 / 최대 10개) */
         .action-log {
