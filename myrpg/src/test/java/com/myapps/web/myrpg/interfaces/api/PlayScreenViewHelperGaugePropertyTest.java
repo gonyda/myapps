@@ -8,8 +8,8 @@ import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.StatProgression;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PlayScreenViewHelperGaugePropertyTest {
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy);
+    private final StatProgression statProgression = new StatProgression();
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, statProgression);
 
     /**
      * 임의의 current(0~max)와 max(1~10000)에 대해 퍼센트가
@@ -71,23 +72,25 @@ class PlayScreenViewHelperGaugePropertyTest {
 
     /**
      * EXP 게이지의 max가 {@link ExperiencePolicy#requiredForNext(int)}와 일치함을 검증한다.
-     * 레벨 1~100 범위에서 buildTopBar가 올바른 EXP max를 사용하는지 확인한다.
+     * 레벨 1~99 범위에서 buildTopBar가 올바른 EXP max를 사용하는지 확인한다.
+     * (레벨 100은 최대레벨로서 EXP 게이지가 "MAX"로 표시되며 별도 프로퍼티 테스트에서 검증한다.)
      *
-     * @param level 캐릭터 레벨 (1~100)
+     * @param level 캐릭터 레벨 (1~99)
      */
     @Property(tries = 100)
     void should_useRequiredExpAsMax_when_buildingExpGauge(
-            @ForAll @IntRange(min = 1, max = 100) final int level) {
+            @ForAll @IntRange(min = 1, max = 99) final int level) {
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니",
                 level,
                 level,
                 0L,
-                Stats.createDefault(),
-                Vital.createDefault(),
-                Vital.createDefault(),
-                Vital.createDefault(),
+                TalentType.MELEE,
+                null,
+                100,
+                100,
+                100,
                 "tir-chonaill"
         );
 

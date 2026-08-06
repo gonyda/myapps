@@ -19,6 +19,7 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
+import com.myapps.web.myrpg.domain.model.StatProgression;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +32,7 @@ class PlayScreenViewHelperTest {
 
     @BeforeEach
     void setUp() {
-        helper = new PlayScreenViewHelper(new ExperiencePolicy());
+        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression());
     }
 
     @Test

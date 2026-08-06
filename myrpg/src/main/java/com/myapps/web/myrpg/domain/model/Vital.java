@@ -1,18 +1,16 @@
 package com.myapps.web.myrpg.domain.model;
 
-import jakarta.persistence.Embeddable;
-
 /**
- * HP, MP, Stamina 등 현재값/최대값 쌍을 나타내는 불변 임베더블 값 객체.
+ * HP, MP, Stamina 등 현재값/최대값 쌍을 나타내는 순수 표시 VO (Value Object).
  *
- * <p>표시·저장 모두 정수이며, 현재값이 0이어도 보정하지 않는다.
- * {@code CharacterProgress}에서 {@code @AttributeOverrides}를 통해
- * hp, mp, stamina 각각의 컬럼으로 매핑된다.
+ * <p>이 record는 JPA 엔티티에 직접 매핑되지 않는다.
+ * 저장되는 값은 현재값({@code current})뿐이며, 최대값({@code max})은
+ * 레벨·장비·스킬 등으로부터 계산되어 조립된다.
+ * 표시·로직 모두 정수이며, 현재값이 0이어도 보정하지 않는다.
  *
  * @param current 현재값
  * @param max     최대값
  */
-@Embeddable
 public record Vital(
         int current,
         int max

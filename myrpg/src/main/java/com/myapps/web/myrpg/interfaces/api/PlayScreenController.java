@@ -1,5 +1,6 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,17 +10,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
+import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
+import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.dto.RebirthResult;
+import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
+import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -30,14 +37,18 @@ import com.myapps.web.myrpg.domain.model.Npc;
  * 플레이 화면을 서버사이드 렌더링하는 컨트롤러.
  *
  * <p>GET / 요청에 대해 캐릭터 진행상황, 미니맵, 전체지도,
- * 상황 멘트, 상호작용 목록, 행동 로그를 조합하여 {@code play} 뷰를 렌더링한다.
+ * 상황 멘트, 상호작용 목록, 행동 로그, 정보 팝업을 조합하여 {@code play} 뷰를 렌더링한다.
  * POST /move 요청으로 턴제 이동을 처리하고 갱신된 프래그먼트를 반환한다.
  * POST /npc/talk 요청으로 NPC 대화를 처리하고 센터 프래그먼트를 반환한다.
+ * POST /exp/up, /exp/down, /rebirth 요청으로 경험치·사망·환생 진행을 처리한다.
  */
 @Controller
 public class PlayScreenController {
 
     private static final String NOTIFICATION_TYPE = "system";
+    private static final String GROWTH_TYPE = "growth";
+    private static final long TEST_EXP_AMOUNT = 500L;
+    private static final long MINUTES_PER_HOUR = 60;
 
     private final CharacterService characterService;
     private final MapService mapService;
@@ -45,6 +56,7 @@ public class PlayScreenController {
     private final MovementService movementService;
     private final NpcService npcService;
     private final NpcDialogueService npcDialogueService;
+    private final ProgressionService progressionService;
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
 
@@ -57,6 +69,7 @@ public class PlayScreenController {
      * @param movementService      이동 처리 서비스
      * @param npcService           NPC 데이터 서비스
      * @param npcDialogueService   NPC 대사 선택 서비스
+     * @param progressionService   경험치/레벨업/사망/환생 서비스
      * @param actionLog            세션 보관 행동 로그
      * @param playScreenViewHelper 뷰 모델 조립 헬퍼
      */
@@ -66,6 +79,7 @@ public class PlayScreenController {
                                 final MovementService movementService,
                                 final NpcService npcService,
                                 final NpcDialogueService npcDialogueService,
+                                final ProgressionService progressionService,
                                 final ActionLog actionLog,
                                 final PlayScreenViewHelper playScreenViewHelper) {
         this.characterService = characterService;
@@ -74,6 +88,7 @@ public class PlayScreenController {
         this.movementService = movementService;
         this.npcService = npcService;
         this.npcDialogueService = npcDialogueService;
+        this.progressionService = progressionService;
         this.actionLog = actionLog;
         this.playScreenViewHelper = playScreenViewHelper;
     }
@@ -162,10 +177,86 @@ public class PlayScreenController {
     }
 
     /**
+     * 경험치 획득(테스트 버튼)을 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>고정 획득량({@code TEST_EXP_AMOUNT}) 만큼 경험치를 획득하고,
+     * 레벨업 발생 시 피드백 로그를 추가한 뒤 진행 응답 프래그먼트를 반환한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/exp/up")
+    public String expUp(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final LevelUpResult result = progressionService.gainExperience(progress, TEST_EXP_AMOUNT);
+        characterService.saveTurn(progress);
+
+        actionLog.add("경험치 " + TEST_EXP_AMOUNT + " 획득", GROWTH_TYPE);
+        if (result.levelsGained() > 0) {
+            actionLog.add("레벨업! Lv." + result.newLevel(), GROWTH_TYPE);
+        }
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
+     * 사망 패널티(테스트 버튼)를 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>사망 패널티를 적용하여 경험치를 차감하고,
+     * 피드백 로그를 추가한 뒤 진행 응답 프래그먼트를 반환한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/exp/down")
+    public String expDown(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final DeathResult result = progressionService.applyDeathPenalty(progress);
+        characterService.saveTurn(progress);
+
+        actionLog.add("사망 패널티: 경험치 -" + result.experienceLost(), NOTIFICATION_TYPE);
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
+     * 환생을 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>환생 성공 시 진행상황을 저장하고 성공 로그를 추가한다.
+     * 쿨다운 활성 시 저장하지 않고 남은 시간을 안내하는 로그를 추가한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/rebirth")
+    public String rebirth(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final RebirthResult result = progressionService.rebirth(progress);
+
+        if (result instanceof RebirthResult.Reborn) {
+            characterService.saveTurn(progress);
+            actionLog.add("환생했습니다", NOTIFICATION_TYPE);
+        } else if (result instanceof RebirthResult.CooldownActive cooldown) {
+            final Duration remaining = cooldown.remaining();
+            final long hours = remaining.toHours();
+            final long minutes = remaining.toMinutes() % MINUTES_PER_HOUR;
+            actionLog.add("환생까지 " + hours + "시간 " + minutes + "분 남았습니다", NOTIFICATION_TYPE);
+        }
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
      * 캐릭터 진행상황으로부터 플레이 화면 전체 뷰 모델을 조립한다.
      *
      * <p>현재 노드의 NPC 목록을 조회하여 상호작용 버튼을 구성하고,
-     * 대사·행동 버튼은 비운 상태로 뷰를 조립한다.
+     * 환생 상태를 조회하여 정보 팝업을 조립한 뒤 뷰를 반환한다.
      *
      * @param progress 캐릭터 진행상황
      * @return 플레이 화면 뷰 모델
@@ -181,7 +272,10 @@ public class PlayScreenController {
         final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
         final List<InteractionItem> interactions = playScreenViewHelper.buildInteractions(npcsOnNode);
 
+        final RebirthStatus status = progressionService.rebirthStatus(progress);
+        final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
+
         return playScreenViewHelper.buildPlayScreen(
-                progress, minimap, fullMap, ambience, interactions, null, null, logs);
+                progress, minimap, fullMap, ambience, interactions, null, null, logs, info);
     }
 }

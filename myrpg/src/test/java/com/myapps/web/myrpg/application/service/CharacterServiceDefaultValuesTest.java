@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import com.myapps.web.myrpg.application.exception.CharacterCreationException;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,54 +20,23 @@ import static org.mockito.Mockito.when;
 /**
  * 기본 캐릭터 초기값 및 생성 실패 롤백 동작을 검증하는 단위 테스트.
  *
- * <p>Base_Stats, Lv1/누적1/EXP0, 시작 노드, HP/MP/Stamina 초기값을 확인하고,
+ * <p>Lv1/누적1/EXP0, 시작 노드, HP/MP/Stamina 현재값, 재능/환생 초기값을 확인하고,
  * 저장 실패 시 {@link CharacterCreationException} 전파 및 롤백 동작을 검증한다.
  *
  * <p><b>Validates: Requirements 2.2, 2.3, 2.4, 2.7, 2.8, 2.9</b>
  */
 class CharacterServiceDefaultValuesTest {
 
-    private static final int EXPECTED_STR = 10;
-    private static final int EXPECTED_DEX = 10;
-    private static final int EXPECTED_INT = 10;
-    private static final int EXPECTED_CRITICAL = 5;
-    private static final int EXPECTED_DEFENSE = 5;
     private static final int EXPECTED_LEVEL = 1;
     private static final int EXPECTED_ACCUMULATED_LEVEL = 1;
     private static final long EXPECTED_EXPERIENCE = 0L;
     private static final String EXPECTED_START_NODE = "tir-chonaill";
     private static final int EXPECTED_HP_CURRENT = 100;
-    private static final int EXPECTED_HP_MAX = 100;
     private static final int EXPECTED_MP_CURRENT = 100;
-    private static final int EXPECTED_MP_MAX = 100;
     private static final int EXPECTED_STAMINA_CURRENT = 100;
-    private static final int EXPECTED_STAMINA_MAX = 100;
 
     private final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
     private final CharacterService characterService = new CharacterService(mockRepository);
-
-    /**
-     * 빈 저장소에서 생성된 캐릭터의 Base_Stats가 STR=10, DEX=10, INT=10, Critical=5, DEF=5인지 검증한다.
-     */
-    @Test
-    @DisplayName("Req 2.2: Base_Stats 초기값 — STR=10, DEX=10, INT=10, Critical=5, DEF=5")
-    void should_haveDefaultBaseStats_when_storeIsEmpty() {
-        // Given
-        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
-        when(mockRepository.save(any(CharacterProgress.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        // When
-        final CharacterProgress result = characterService.loadOrCreateDefault();
-
-        // Then
-        final Stats stats = result.getStats();
-        assertThat(stats.str()).isEqualTo(EXPECTED_STR);
-        assertThat(stats.dex()).isEqualTo(EXPECTED_DEX);
-        assertThat(stats.intelligence()).isEqualTo(EXPECTED_INT);
-        assertThat(stats.critical()).isEqualTo(EXPECTED_CRITICAL);
-        assertThat(stats.defense()).isEqualTo(EXPECTED_DEFENSE);
-    }
 
     /**
      * 빈 저장소에서 생성된 캐릭터의 레벨/누적레벨/경험치가 Lv1/누적1/EXP0인지 검증한다.
@@ -109,11 +77,11 @@ class CharacterServiceDefaultValuesTest {
     }
 
     /**
-     * 빈 저장소에서 생성된 캐릭터의 HP/MP/Stamina가 각각 100/100인지 검증한다.
+     * 빈 저장소에서 생성된 캐릭터의 HP/MP/Stamina 현재값이 각각 100인지 검증한다.
      */
     @Test
-    @DisplayName("Req 2.2: HP=100/100, MP=100/100, Stamina=100/100 초기값")
-    void should_haveDefaultVitals_when_storeIsEmpty() {
+    @DisplayName("Req 2.2: HP=100, MP=100, Stamina=100 현재값 초기값")
+    void should_haveDefaultVitalCurrentValues_when_storeIsEmpty() {
         // Given
         when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
         when(mockRepository.save(any(CharacterProgress.class)))
@@ -123,17 +91,28 @@ class CharacterServiceDefaultValuesTest {
         final CharacterProgress result = characterService.loadOrCreateDefault();
 
         // Then
-        final Vital hp = result.getHp();
-        assertThat(hp.current()).isEqualTo(EXPECTED_HP_CURRENT);
-        assertThat(hp.max()).isEqualTo(EXPECTED_HP_MAX);
+        assertThat(result.getHpCurrent()).isEqualTo(EXPECTED_HP_CURRENT);
+        assertThat(result.getMpCurrent()).isEqualTo(EXPECTED_MP_CURRENT);
+        assertThat(result.getStaminaCurrent()).isEqualTo(EXPECTED_STAMINA_CURRENT);
+    }
 
-        final Vital mp = result.getMp();
-        assertThat(mp.current()).isEqualTo(EXPECTED_MP_CURRENT);
-        assertThat(mp.max()).isEqualTo(EXPECTED_MP_MAX);
+    /**
+     * 빈 저장소에서 생성된 캐릭터의 재능이 MELEE이고 환생 기록이 없는지 검증한다.
+     */
+    @Test
+    @DisplayName("Req 2.2: 재능 MELEE, lastRebirthAt null 초기값")
+    void should_haveDefaultTalent_when_storeIsEmpty() {
+        // Given
+        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
+        when(mockRepository.save(any(CharacterProgress.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        final Vital stamina = result.getStamina();
-        assertThat(stamina.current()).isEqualTo(EXPECTED_STAMINA_CURRENT);
-        assertThat(stamina.max()).isEqualTo(EXPECTED_STAMINA_MAX);
+        // When
+        final CharacterProgress result = characterService.loadOrCreateDefault();
+
+        // Then
+        assertThat(result.getTalent()).isEqualTo(TalentType.MELEE);
+        assertThat(result.getLastRebirthAt()).isNull();
     }
 
     /**

@@ -17,6 +17,7 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
+import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,7 @@ class InteractionLabelPropertyTest {
     private static final int MAX_LINE_LENGTH = 20;
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy);
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, new StatProgression());
 
     /**
      * 임의 Npc에 대해 {@code buildInteractions}로 생성된 라벨이

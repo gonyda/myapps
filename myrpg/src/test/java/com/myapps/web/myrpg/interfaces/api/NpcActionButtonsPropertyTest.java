@@ -21,8 +21,8 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
+import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
-import com.myapps.web.myrpg.domain.model.Vital;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -44,7 +44,7 @@ class NpcActionButtonsPropertyTest {
     private static final int MAX_LINE_LENGTH = 20;
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy);
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, new StatProgression());
 
     /**
      * 임의 Npc를 talkingNpc로 전달했을 때, 반환되는 {@code npcActions} 라벨 목록이
@@ -89,9 +89,9 @@ class NpcActionButtonsPropertyTest {
         when(progress.getNickname()).thenReturn("테스트");
         when(progress.getCurrentLevel()).thenReturn(1);
         when(progress.getExperience()).thenReturn(0L);
-        when(progress.getHp()).thenReturn(new Vital(100, 100));
-        when(progress.getMp()).thenReturn(new Vital(100, 100));
-        when(progress.getStamina()).thenReturn(new Vital(100, 100));
+        when(progress.getHpCurrent()).thenReturn(100);
+        when(progress.getMpCurrent()).thenReturn(100);
+        when(progress.getStaminaCurrent()).thenReturn(100);
         return progress;
     }
 

@@ -239,3 +239,82 @@ document.addEventListener("DOMContentLoaded", function () {
         actionLog.scrollTop = actionLog.scrollHeight;
     }
 });
+
+// ===== 정보 팝업 열기/닫기 =====
+function openInfo() {
+    document.getElementById("infoOverlay").classList.add("open");
+}
+function closeInfo() {
+    document.getElementById("infoOverlay").classList.remove("open");
+}
+
+// ===== 경험치 증가/감소: POST → 3영역 스왑 =====
+function expUp() {
+    fetch("/exp/up", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) { return; }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+function expDown() {
+    fetch("/exp/down", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) { return; }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+// ===== 환생: confirm 후 POST → 3영역 스왑 =====
+function rebirth() {
+    if (!confirm("환생을 진행하시겠습니까?")) {
+        return;
+    }
+    fetch("/rebirth", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) { return; }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+// ===== 성장 응답 공통 스왑: .top-bar, #infoContent, .action-log =====
+function swapProgressResponse(html) {
+    var container = document.createElement("div");
+    container.innerHTML = html;
+
+    var newTopBar = container.querySelector(".top-bar");
+    var newInfoContent = container.querySelector("#infoContent");
+    var newActionLog = container.querySelector(".action-log");
+
+    if (newTopBar) {
+        var oldTopBar = document.querySelector(".top-bar");
+        if (oldTopBar) {
+            oldTopBar.replaceWith(newTopBar);
+        }
+    }
+    if (newInfoContent) {
+        var oldInfoContent = document.getElementById("infoContent");
+        if (oldInfoContent) {
+            oldInfoContent.innerHTML = newInfoContent.innerHTML;
+        }
+    }
+    if (newActionLog) {
+        var oldActionLog = document.querySelector(".action-log");
+        if (oldActionLog) {
+            oldActionLog.replaceWith(newActionLog);
+            newActionLog.scrollTop = newActionLog.scrollHeight;
+        }
+    }
+}

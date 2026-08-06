@@ -13,8 +13,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,10 +38,7 @@ class CharacterProgressRepositoryTest {
     private static final int LEVEL_MAX = 100;
     private static final int ACCUMULATED_LEVEL_MAX = 1000;
     private static final long EXPERIENCE_MAX = 100_000L;
-    private static final int STAT_MIN = 1;
-    private static final int STAT_MAX = 100;
-    private static final int CRITICAL_DEFENSE_MAX = 50;
-    private static final int VITAL_MAX_UPPER = 1000;
+    private static final int VITAL_CURRENT_MAX = 1000;
     private static final int NODE_ID_MIN_LENGTH = 1;
     private static final int NODE_ID_MAX_LENGTH = 30;
 
@@ -74,35 +70,16 @@ class CharacterProgressRepositoryTest {
         assertThat(found.getCurrentLevel()).isEqualTo(progress.getCurrentLevel());
         assertThat(found.getAccumulatedLevel()).isEqualTo(progress.getAccumulatedLevel());
         assertThat(found.getExperience()).isEqualTo(progress.getExperience());
-
-        // Stats (Embeddable) 보존
-        assertThat(found.getStats().str()).isEqualTo(progress.getStats().str());
-        assertThat(found.getStats().dex()).isEqualTo(progress.getStats().dex());
-        assertThat(found.getStats().intelligence()).isEqualTo(progress.getStats().intelligence());
-        assertThat(found.getStats().critical()).isEqualTo(progress.getStats().critical());
-        assertThat(found.getStats().defense()).isEqualTo(progress.getStats().defense());
-
-        // HP (Vital Embeddable) 보존
-        assertThat(found.getHp().current()).isEqualTo(progress.getHp().current());
-        assertThat(found.getHp().max()).isEqualTo(progress.getHp().max());
-
-        // MP (Vital Embeddable) 보존
-        assertThat(found.getMp().current()).isEqualTo(progress.getMp().current());
-        assertThat(found.getMp().max()).isEqualTo(progress.getMp().max());
-
-        // Stamina (Vital Embeddable) 보존
-        assertThat(found.getStamina().current()).isEqualTo(progress.getStamina().current());
-        assertThat(found.getStamina().max()).isEqualTo(progress.getStamina().max());
-
-        // currentNodeId 보존
+        assertThat(found.getTalent()).isEqualTo(progress.getTalent());
+        assertThat(found.getLastRebirthAt()).isEqualTo(progress.getLastRebirthAt());
+        assertThat(found.getHpCurrent()).isEqualTo(progress.getHpCurrent());
+        assertThat(found.getMpCurrent()).isEqualTo(progress.getMpCurrent());
+        assertThat(found.getStaminaCurrent()).isEqualTo(progress.getStaminaCurrent());
         assertThat(found.getCurrentNodeId()).isEqualTo(progress.getCurrentNodeId());
     }
 
     /**
      * 유효한 CharacterProgress를 생성하는 Arbitrary 제공자.
-     *
-     * <p>jqwik Combinators는 최대 8개 파라미터만 지원하므로,
-     * Vital 3종을 먼저 결합한 뒤 나머지와 합성한다.
      *
      * @return 임의의 유효한 CharacterProgress Arbitrary
      */
@@ -122,8 +99,10 @@ class CharacterProgressRepositoryTest {
         final Arbitrary<Long> experiences = Arbitraries.longs()
                 .between(0L, EXPERIENCE_MAX);
 
-        final Arbitrary<Stats> stats = buildStatsArbitrary();
-        final Arbitrary<VitalTriple> vitals = buildVitalTripleArbitrary();
+        final Arbitrary<TalentType> talents = Arbitraries.of(TalentType.values());
+
+        final Arbitrary<Integer> vitalCurrents = Arbitraries.integers()
+                .between(0, VITAL_CURRENT_MAX);
 
         final Arbitrary<String> nodeIds = Arbitraries.strings()
                 .withCharRange('a', 'z')
@@ -134,40 +113,16 @@ class CharacterProgressRepositoryTest {
 
         return Combinators.combine(
                 nicknames, currentLevels, accumulatedLevels, experiences,
-                stats, vitals, nodeIds
-        ).as((nickname, level, accumulated, exp, st, vt, nodeId) ->
-                new CharacterProgress(nickname, level, accumulated, exp, st, vt.hp(), vt.mp(), vt.stamina(), nodeId)
-        );
-    }
-
-    private Arbitrary<Stats> buildStatsArbitrary() {
-        final Arbitrary<Integer> mainStats = Arbitraries.integers()
-                .between(STAT_MIN, STAT_MAX);
-        final Arbitrary<Integer> secondaryStats = Arbitraries.integers()
-                .between(STAT_MIN, CRITICAL_DEFENSE_MAX);
-
-        return Combinators.combine(mainStats, mainStats, mainStats, secondaryStats, secondaryStats)
-                .as(Stats::new);
-    }
-
-    private Arbitrary<Vital> buildVitalArbitrary() {
-        return Arbitraries.integers()
-                .between(LEVEL_MIN, VITAL_MAX_UPPER)
-                .flatMap(max -> Arbitraries.integers()
-                        .between(0, max)
-                        .map(current -> new Vital(current, max)));
-    }
-
-    private Arbitrary<VitalTriple> buildVitalTripleArbitrary() {
-        return Combinators.combine(buildVitalArbitrary(), buildVitalArbitrary(), buildVitalArbitrary())
-                .as(VitalTriple::new);
-    }
-
-    /**
-     * HP/MP/Stamina 세 Vital을 묶는 내부 레코드.
-     *
-     * <p>jqwik Combinators 파라미터 수 제한(최대 8개) 우회 목적.
-     */
-    private record VitalTriple(Vital hp, Vital mp, Vital stamina) {
+                talents, vitalCurrents, vitalCurrents, vitalCurrents
+        ).as((nickname, level, accumulated, exp, talent, hp, mp, stamina) ->
+                new CharacterProgress(nickname, level, accumulated, exp, talent, null,
+                        hp, mp, stamina, "tir-chonaill")
+        ).flatMap(base -> nodeIds.map(nodeId ->
+                new CharacterProgress(base.getNickname(), base.getCurrentLevel(),
+                        base.getAccumulatedLevel(), base.getExperience(),
+                        base.getTalent(), null,
+                        base.getHpCurrent(), base.getMpCurrent(), base.getStaminaCurrent(),
+                        nodeId)
+        ));
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
+import com.myapps.web.myrpg.domain.model.StatProgression;
 
 /**
  * 도메인 서비스 빈 등록 설정.
@@ -32,5 +33,15 @@ public class DomainServiceConfiguration {
     @Bean
     public ExperiencePolicy experiencePolicy() {
         return new ExperiencePolicy();
+    }
+
+    /**
+     * {@link StatProgression} 빈을 생성합니다.
+     *
+     * @return 레벨 기반 스탯/바이탈 최대치 계산 정책
+     */
+    @Bean
+    public StatProgression statProgression() {
+        return new StatProgression();
     }
 }

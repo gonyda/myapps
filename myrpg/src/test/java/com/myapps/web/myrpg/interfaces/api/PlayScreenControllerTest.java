@@ -9,18 +9,22 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
+import com.myapps.web.myrpg.application.dto.GaugeView;
+import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
+import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -71,6 +75,9 @@ class PlayScreenControllerTest {
     private NpcDialogueService npcDialogueService;
 
     @MockitoBean
+    private ProgressionService progressionService;
+
+    @MockitoBean
     private ActionLog actionLog;
 
     @MockitoBean
@@ -83,6 +90,7 @@ class PlayScreenControllerTest {
     void should_returnPlayView_when_rootAccessed() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final PlayScreenView view = createDummyView();
+        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(mapService.node(anyString())).thenReturn(dummyNode());
@@ -92,8 +100,11 @@ class PlayScreenControllerTest {
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(get("/"))
@@ -112,6 +123,7 @@ class PlayScreenControllerTest {
         final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
         final MovementResult.Moved moved = new MovementResult.Moved(targetNode, logEntry);
         final PlayScreenView view = createDummyView();
+        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(moved);
@@ -123,8 +135,11 @@ class PlayScreenControllerTest {
         when(actionLog.getEntries()).thenReturn(List.of(logEntry));
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -145,6 +160,7 @@ class PlayScreenControllerTest {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MovementResult.Blocked blocked = new MovementResult.Blocked("그곳으로는 갈 수 없습니다.");
         final PlayScreenView view = createDummyView();
+        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(blocked);
@@ -155,8 +171,11 @@ class PlayScreenControllerTest {
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -177,6 +196,7 @@ class PlayScreenControllerTest {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MovementResult.DungeonLocked locked = new MovementResult.DungeonLocked("아직 준비 중입니다.");
         final PlayScreenView view = createDummyView();
+        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(locked);
@@ -187,8 +207,11 @@ class PlayScreenControllerTest {
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move")
@@ -217,6 +240,12 @@ class PlayScreenControllerTest {
     private PlayScreenView createDummyView() {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         final TopBarView topBar = new TopBarView("고니", 1, gauge, gauge, gauge, gauge);
+        final InfoPopupView info = new InfoPopupView(
+                "고니", 1, 1, "근접전투",
+                gauge, gauge, gauge,
+                List.of(new StatLine("STR", "5", "+0")),
+                true, "환생 기록 없음"
+        );
         return new PlayScreenView(
                 topBar,
                 new MinimapView("테스트맵", List.of()),
@@ -226,7 +255,18 @@ class PlayScreenControllerTest {
                 null,
                 null,
                 null,
-                List.of()
+                List.of(),
+                info
+        );
+    }
+
+    private InfoPopupView dummyInfo() {
+        final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
+        return new InfoPopupView(
+                "고니", 1, 1, "근접전투",
+                gauge, gauge, gauge,
+                List.of(new StatLine("STR", "5", "+0")),
+                true, "환생 기록 없음"
         );
     }
 }

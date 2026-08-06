@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="progress-response">
+    <div th:replace="~{fragments/top-bar :: top-bar}"></div>
+    <div th:replace="~{fragments/info-popup :: info-content}"></div>
+    <div th:replace="~{fragments/action-log :: action-log}"></div>
+</div>
+</body>
+</html>

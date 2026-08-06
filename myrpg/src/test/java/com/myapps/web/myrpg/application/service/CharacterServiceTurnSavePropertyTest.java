@@ -21,8 +21,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,8 +81,7 @@ class CharacterServiceTurnSavePropertyTest {
         final CharacterService characterService = new CharacterService(mockRepository);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(),
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
                 currentNodeId);
 
         // When: 인접 이동 실행

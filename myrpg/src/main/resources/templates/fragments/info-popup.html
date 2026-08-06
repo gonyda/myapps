@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="overlay" id="infoOverlay" th:fragment="info-popup">
+    <div class="panel">
+        <header class="panel-header">
+            <h3>정보</h3>
+            <button class="panel-close" onclick="closeInfo()" aria-label="닫기">✕</button>
+        </header>
+        <div class="panel-body" id="infoContent" th:fragment="info-content">
+            <!-- 상단: 닉네임, 레벨, 누적레벨, 재능, HP/MP/Stamina -->
+            <div class="info-top">
+                <div class="info-row">
+                    <span class="info-nickname" th:text="${view.info.nickname}">고니</span>
+                    <span class="info-level" th:text="'Lv. ' + ${view.info.currentLevel}">Lv. 1</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">누적 레벨</span>
+                    <span th:text="${view.info.accumulatedLevel}">1</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">재능</span>
+                    <span th:text="${view.info.talentLabel}">근접전투</span>
+                </div>
+                <div class="stat">
+                    <span class="label">HP</span>
+                    <div class="bar hp">
+                        <span th:style="'width:' + ${view.info.hp.percent} + '%'"></span>
+                        <span class="bar-text" th:text="${view.info.hp.overlay}">100 / 100</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="label">MP</span>
+                    <div class="bar mp">
+                        <span th:style="'width:' + ${view.info.mp.percent} + '%'"></span>
+                        <span class="bar-text" th:text="${view.info.mp.overlay}">100 / 100</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="label">스태미나</span>
+                    <div class="bar stamina">
+                        <span th:style="'width:' + ${view.info.stamina.percent} + '%'"></span>
+                        <span class="bar-text" th:text="${view.info.stamina.overlay}">100 / 100</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 중앙: 스탯 목록 (STR, DEX, INT, CRIT, DEF) -->
+            <div class="info-middle">
+                <div th:each="stat : ${view.info.stats}" class="info-stat-line">
+                    <span class="stat-label" th:text="${stat.label}">STR</span>
+                    <span class="stat-value" th:text="${stat.value}">10</span>
+                    <span class="stat-bonus" th:text="'(' + ${stat.bonus} + ')'"> (+0)</span>
+                </div>
+            </div>
+
+            <!-- 하단: 환생 버튼 + 경과시간 -->
+            <div class="info-bottom">
+                <button class="rebirth-btn"
+                        th:attr="disabled=${view.info.rebirthAvailable} ? null : 'disabled'"
+                        onclick="rebirth()">환생하기</button>
+                <span class="rebirth-elapsed" th:text="${view.info.rebirthElapsedText}">환생 기록 없음</span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

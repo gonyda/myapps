@@ -18,8 +18,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -61,8 +60,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -90,8 +88,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "field-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "field-a");
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -118,8 +115,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
 
         // when — no neighbor at (0, 1)
         final MovementResult result = movementService.move(progress, 0, 1);
@@ -143,8 +139,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
 
         // when — neighbor exists at (1,0) but not in links
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -158,8 +153,7 @@ class MovementServiceTest {
     void should_returnDungeonLocked_when_enterDungeonCalled() {
         // given
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "dungeon-entrance");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "dungeon-entrance");
 
         // when
         final MovementResult result = movementService.enterDungeon(progress, "d1");
@@ -175,8 +169,7 @@ class MovementServiceTest {
     void should_returnDungeonLocked_regardlessOfDungeonId() {
         // given
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
 
         // when — even for non-existent dungeon
         final MovementResult result = movementService.enterDungeon(progress, "non-existent-dungeon");
@@ -200,8 +193,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(), "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
 
         // when
         movementService.move(progress, 1, 0);

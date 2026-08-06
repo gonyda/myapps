@@ -698,3 +698,118 @@
         .zoom-controls button:active {
             background: #555;
         }
+
+        /* ===== 정보 팝업 (상/중/하 3구역) ===== */
+        .info-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+            padding: var(--pad);
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* 상단: 기본 정보 + 바이탈 게이지 */
+        .info-top {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.5);
+            padding-bottom: var(--gap);
+            border-bottom: 1px solid #444;
+        }
+
+        .info-top .info-row {
+            display: flex;
+            align-items: center;
+            gap: var(--gap);
+            font-size: var(--fs-sm);
+        }
+
+        .info-top .info-nickname {
+            font-weight: bold;
+            font-size: var(--fs-md);
+            color: #fff;
+        }
+
+        .info-top .info-level {
+            background: #3a5a8a;
+            padding: 0.1em 0.6em;
+            border-radius: var(--radius);
+            font-size: var(--fs-sm);
+        }
+
+        .info-top .info-talent {
+            color: #d9c479;
+            font-size: var(--fs-sm);
+        }
+
+        /* 중앙: 스탯 목록 */
+        .info-middle {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.4);
+            padding-bottom: var(--gap);
+            border-bottom: 1px solid #444;
+        }
+
+        .info-middle .stat-row {
+            display: flex;
+            align-items: center;
+            gap: var(--gap);
+            font-size: var(--fs-sm);
+            padding: calc(var(--gap) * 0.3) 0;
+        }
+
+        .info-middle .stat-label {
+            width: 3em;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .info-middle .stat-value {
+            color: #fff;
+        }
+
+        .info-middle .stat-bonus {
+            color: #8fb5d9;
+            font-size: var(--fs-xs);
+        }
+
+        /* 하단: 환생 버튼 + 경과 시간 */
+        .info-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.5);
+            align-items: center;
+            padding-top: var(--gap);
+        }
+
+        .info-bottom .rebirth-btn {
+            background: #5a3a8a;
+            color: #fff;
+            border: 1px solid #7a5aaa;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.8) var(--pad);
+            font-size: var(--fs-md);
+            cursor: pointer;
+            min-height: var(--touch);
+            width: 100%;
+            text-align: center;
+        }
+
+        .info-bottom .rebirth-btn:active {
+            background: #6a4a9a;
+        }
+
+        /* 비활성 버튼 스타일 */
+        .info-bottom .rebirth-btn:disabled {
+            background: #333;
+            color: #666;
+            border-color: #444;
+            cursor: not-allowed;
+        }
+
+        .info-bottom .rebirth-elapsed {
+            font-size: var(--fs-xs);
+            color: #888;
+        }

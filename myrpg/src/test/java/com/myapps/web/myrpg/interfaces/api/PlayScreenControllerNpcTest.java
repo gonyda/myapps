@@ -12,11 +12,13 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
+import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
@@ -24,6 +26,7 @@ import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
+import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -76,6 +79,9 @@ class PlayScreenControllerNpcTest {
     private NpcDialogueService npcDialogueService;
 
     @MockitoBean
+    private ProgressionService progressionService;
+
+    @MockitoBean
     private ActionLog actionLog;
 
     @MockitoBean
@@ -107,7 +113,8 @@ class PlayScreenControllerNpcTest {
                 null,
                 interactions,
                 null,
-                List.of()
+                List.of(),
+                dummyInfo()
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
@@ -118,8 +125,12 @@ class PlayScreenControllerNpcTest {
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(npcs);
         when(playScreenViewHelper.buildInteractions(npcs)).thenReturn(interactions);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(new RebirthStatus(true, false, null, null));
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), eq(interactions), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), eq(interactions), isNull(), isNull(), any(), any()))
                 .thenReturn(viewWithNpcs);
 
         final MvcResult result = mockMvc.perform(get("/"))
@@ -169,7 +180,8 @@ class PlayScreenControllerNpcTest {
                 "좋은 물건이 많아요!",
                 interactions,
                 npcActions,
-                List.of()
+                List.of(),
+                dummyInfo()
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
@@ -226,7 +238,8 @@ class PlayScreenControllerNpcTest {
                 null,
                 newInteractions,
                 null,
-                List.of(logEntry)
+                List.of(logEntry),
+                dummyInfo()
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
@@ -239,8 +252,12 @@ class PlayScreenControllerNpcTest {
         when(actionLog.getEntries()).thenReturn(List.of(logEntry));
         when(npcService.byNode(anyString())).thenReturn(newNodeNpcs);
         when(playScreenViewHelper.buildInteractions(newNodeNpcs)).thenReturn(newInteractions);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(new RebirthStatus(true, false, null, null));
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), eq(newInteractions), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), eq(newInteractions), isNull(), isNull(), any(), any()))
                 .thenReturn(movedView);
 
         final MvcResult result = mockMvc.perform(post("/move")
@@ -277,7 +294,8 @@ class PlayScreenControllerNpcTest {
                 null,
                 List.of(),
                 null,
-                List.of()
+                List.of(),
+                dummyInfo()
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
@@ -288,8 +306,12 @@ class PlayScreenControllerNpcTest {
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(List.of())).thenReturn(List.of());
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(new RebirthStatus(true, false, null, null));
+        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
+                .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), eq(List.of()), isNull(), isNull(), any()))
+                any(), any(), any(), anyString(), eq(List.of()), isNull(), isNull(), any(), any()))
                 .thenReturn(emptyView);
 
         final MvcResult result = mockMvc.perform(get("/"))
@@ -312,6 +334,11 @@ class PlayScreenControllerNpcTest {
 
     private MapNode dummyNode(final String nodeId) {
         return new MapNode(nodeId, "테스트 노드", "village", null, 0, 0, null, null, List.of());
+    }
+
+    private InfoPopupView dummyInfo() {
+        final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
+        return new InfoPopupView("고니", 1, 1, "근접전투", gauge, gauge, gauge, List.of(), true, "환생 기록 없음");
     }
 
     private TopBarView dummyTopBar() {

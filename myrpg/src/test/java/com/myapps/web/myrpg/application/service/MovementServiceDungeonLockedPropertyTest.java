@@ -14,8 +14,7 @@ import net.jqwik.api.Tuple;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.Stats;
-import com.myapps.web.myrpg.domain.model.Vital;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -56,8 +55,7 @@ class MovementServiceDungeonLockedPropertyTest {
         final MovementService movementService = new MovementService(mockMapService, actionLog);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, Stats.createDefault(),
-                Vital.createDefault(), Vital.createDefault(), Vital.createDefault(),
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
                 currentNodeId);
 
         // When
