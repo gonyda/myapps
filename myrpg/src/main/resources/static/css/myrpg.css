@@ -121,9 +121,10 @@
             position: relative;   /* 게이지 위 수치 오버레이 기준 */
         }
 
-        .bar > span {
+        .bar > .fill {
             display: block;
             height: 100%;
+            width: 0;
         }
 
         /* 게이지 바 위 현재값/최대값 수치 (연하게 오버레이) */
@@ -143,10 +144,10 @@
             pointer-events: none;
         }
 
-        .bar.exp > span { background: #f0c419; width: 45%; }
-        .bar.hp  > span { background: #d9534f; width: 80%; }
-        .bar.mp  > span { background: #4a7bd0; width: 60%; }
-        .bar.stamina > span { background: #5cb85c; width: 70%; }
+        .bar.exp > .fill { background: #f0c419; }
+        .bar.hp  > .fill { background: #d9534f; }
+        .bar.mp  > .fill { background: #4a7bd0; }
+        .bar.stamina > .fill { background: #5cb85c; }
 
         /* 본문 */
         .main {

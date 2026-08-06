@@ -177,7 +177,7 @@ public class PlayScreenViewHelper {
     /**
      * NPC 목록을 상호작용 항목 목록으로 변환한다.
      *
-     * <p>각 NPC의 라벨은 {@code "name (type.label())"} 형식이며, {@code npc=true}로 표시된다.
+     * <p>각 NPC의 라벨은 {@code "name emoji"} 형식이며, {@code npc=true}로 표시된다.
      * 반환 목록은 입력 NPC 목록의 정의 순서를 보존한다.
      *
      * @param npcs NPC 목록 (정의 순서)
@@ -303,7 +303,7 @@ public class PlayScreenViewHelper {
     }
 
     private InteractionItem toInteractionItem(final Npc npc) {
-        final String label = npc.name() + " (" + npc.type().label() + ")";
+        final String label = npc.name() + " " + npc.type().emoji();
         return new InteractionItem(npc.id(), label, true);
     }
 

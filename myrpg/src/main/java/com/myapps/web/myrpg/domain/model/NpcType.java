@@ -14,30 +14,32 @@ import java.util.Optional;
 public enum NpcType {
 
     /** 촌장 NPC. */
-    CHIEF("chief", "촌장", List.of("퀘스트")),
+    CHIEF("chief", "촌장", "🏛️", List.of("퀘스트")),
 
     /** 대장간 NPC. */
-    BLACKSMITH("blacksmith", "대장간", List.of("상점", "수리")),
+    BLACKSMITH("blacksmith", "대장간", "⚒️", List.of("상점", "수리")),
 
     /** 마법학교 NPC. */
-    MAGIC_SCHOOL("magic-school", "마법학교", List.of("상점")),
+    MAGIC_SCHOOL("magic-school", "마법학교", "🧙", List.of("상점")),
 
     /** 학교 NPC. */
-    SCHOOL("school", "학교", List.of("상점")),
+    SCHOOL("school", "학교", "📚", List.of("상점")),
 
     /** 힐러집 NPC. */
-    HEALER("healer", "힐러집", List.of("상점", "치료받기")),
+    HEALER("healer", "힐러집", "💊", List.of("상점", "치료받기")),
 
     /** 은행 NPC. */
-    BANK("bank", "은행", List.of("아이템 보관", "골드 입/출금"));
+    BANK("bank", "은행", "🏦", List.of("아이템 보관", "골드 입/출금"));
 
     private final String typeString;
     private final String label;
+    private final String emoji;
     private final List<String> actionLabels;
 
-    NpcType(final String typeString, final String label, final List<String> actionLabels) {
+    NpcType(final String typeString, final String label, final String emoji, final List<String> actionLabels) {
         this.typeString = typeString;
         this.label = label;
+        this.emoji = emoji;
         this.actionLabels = actionLabels;
     }
 
@@ -57,6 +59,15 @@ public enum NpcType {
      */
     public String label() {
         return label;
+    }
+
+    /**
+     * NPC 유형의 이모지를 반환한다.
+     *
+     * @return 화면에 표시할 이모지 (예: "⚒️", "🧙")
+     */
+    public String emoji() {
+        return emoji;
     }
 
     /**

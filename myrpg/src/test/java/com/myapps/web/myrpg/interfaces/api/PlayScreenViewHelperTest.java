@@ -178,10 +178,10 @@ class PlayScreenViewHelperTest {
 
         assertThat(items).hasSize(2);
         assertThat(items.get(0).id()).isEqualTo("neris");
-        assertThat(items.get(0).name()).isEqualTo("네리스 (대장간)");
+        assertThat(items.get(0).name()).isEqualTo("네리스 ⚒️");
         assertThat(items.get(0).npc()).isTrue();
         assertThat(items.get(1).id()).isEqualTo("duncan");
-        assertThat(items.get(1).name()).isEqualTo("던컨 (촌장)");
+        assertThat(items.get(1).name()).isEqualTo("던컨 🏛️");
         assertThat(items.get(1).npc()).isTrue();
     }
 

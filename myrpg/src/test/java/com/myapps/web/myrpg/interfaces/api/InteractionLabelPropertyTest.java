@@ -26,8 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 상호작용 버튼 라벨 형식 프로퍼티 테스트.
  *
  * <p>임의 Npc에 대해 {@link PlayScreenViewHelper#buildInteractions(List)}가 생성하는
- * 라벨이 정확히 {@code name + " (" + type.label() + ")"} 형식임을 검증한다.
- * 예: {@code "네리스 (대장간)"}.
+ * 라벨이 정확히 {@code name + " " + type.emoji()} 형식임을 검증한다.
+ * 예: {@code "네리스 ⚒️"}.
  *
  * <p>Feature: 002-npc-system, Property 4: 상호작용 버튼 라벨 형식
  *
@@ -57,7 +57,7 @@ class InteractionLabelPropertyTest {
         assertThat(interactions).hasSize(1);
 
         final InteractionItem item = interactions.getFirst();
-        final String expectedLabel = npc.name() + " (" + npc.type().label() + ")";
+        final String expectedLabel = npc.name() + " " + npc.type().emoji();
 
         assertThat(item.name()).isEqualTo(expectedLabel);
         assertThat(item.id()).isEqualTo(npc.id());
@@ -82,7 +82,7 @@ class InteractionLabelPropertyTest {
         for (int i = 0; i < npcList.size(); i++) {
             final Npc npc = npcList.get(i);
             final InteractionItem item = interactions.get(i);
-            final String expectedLabel = npc.name() + " (" + npc.type().label() + ")";
+            final String expectedLabel = npc.name() + " " + npc.type().emoji();
 
             assertThat(item.name())
                     .as("NPC at index %d should have label '%s'", i, expectedLabel)

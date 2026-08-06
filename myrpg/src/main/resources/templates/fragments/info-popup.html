@@ -25,21 +25,21 @@
                 <div class="stat">
                     <span class="label">HP</span>
                     <div class="bar hp">
-                        <span th:style="'width:' + ${view.info.hp.percent} + '%'"></span>
+                        <span class="fill" th:style="'width:' + ${view.info.hp.percent} + '%'"></span>
                         <span class="bar-text" th:text="${view.info.hp.overlay}">100 / 100</span>
                     </div>
                 </div>
                 <div class="stat">
                     <span class="label">MP</span>
                     <div class="bar mp">
-                        <span th:style="'width:' + ${view.info.mp.percent} + '%'"></span>
+                        <span class="fill" th:style="'width:' + ${view.info.mp.percent} + '%'"></span>
                         <span class="bar-text" th:text="${view.info.mp.overlay}">100 / 100</span>
                     </div>
                 </div>
                 <div class="stat">
                     <span class="label">스태미나</span>
                     <div class="bar stamina">
-                        <span th:style="'width:' + ${view.info.stamina.percent} + '%'"></span>
+                        <span class="fill" th:style="'width:' + ${view.info.stamina.percent} + '%'"></span>
                         <span class="bar-text" th:text="${view.info.stamina.overlay}">100 / 100</span>
                     </div>
                 </div>
