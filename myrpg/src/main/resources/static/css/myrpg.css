@@ -261,7 +261,7 @@
             flex-wrap: wrap;
             align-content: flex-start;
             flex-shrink: 0;
-            height: clamp(84px, 12dvh, 120px);
+            height: clamp(84px, 14dvh, 120px);
             max-height: calc(var(--touch) * 2.3 + var(--gap));
             overflow-y: auto;
         }
