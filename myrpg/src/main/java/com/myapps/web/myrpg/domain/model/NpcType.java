@@ -14,19 +14,19 @@ import java.util.Optional;
 public enum NpcType {
 
     /** 촌장 NPC. */
-    CHIEF("chief", "촌장", "🏛️", List.of("퀘스트")),
+    CHIEF("chief", "촌장", "🏡", List.of("퀘스트")),
 
     /** 대장간 NPC. */
     BLACKSMITH("blacksmith", "대장간", "⚒️", List.of("상점", "수리")),
 
     /** 마법학교 NPC. */
-    MAGIC_SCHOOL("magic-school", "마법학교", "🧙", List.of("상점")),
+    MAGIC_SCHOOL("magic-school", "마법학교", "🕍", List.of("상점")),
 
     /** 학교 NPC. */
-    SCHOOL("school", "학교", "📚", List.of("상점")),
+    SCHOOL("school", "학교", "🏫", List.of("상점")),
 
     /** 힐러집 NPC. */
-    HEALER("healer", "힐러집", "💊", List.of("상점", "치료받기")),
+    HEALER("healer", "힐러집", "🏥", List.of("상점", "치료받기")),
 
     /** 은행 NPC. */
     BANK("bank", "은행", "🏦", List.of("아이템 보관", "골드 입/출금"));

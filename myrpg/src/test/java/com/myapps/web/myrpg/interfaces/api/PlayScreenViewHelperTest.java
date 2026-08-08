@@ -181,7 +181,7 @@ class PlayScreenViewHelperTest {
         assertThat(items.get(0).name()).isEqualTo("네리스 ⚒️");
         assertThat(items.get(0).npc()).isTrue();
         assertThat(items.get(1).id()).isEqualTo("duncan");
-        assertThat(items.get(1).name()).isEqualTo("던컨 🏛️");
+        assertThat(items.get(1).name()).isEqualTo("던컨 🏡");
         assertThat(items.get(1).npc()).isTrue();
     }
 
