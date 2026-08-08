@@ -15,8 +15,8 @@ import jakarta.persistence.Table;
  * 캐릭터 진행상황을 영속 저장하는 유일한 JPA 엔티티.
  *
  * <p>닉네임, 현재 레벨, 누적 레벨, 경험치, 재능, 마지막 환생 시각,
- * HP/MP/Stamina 현재값, 현재 맵 노드 id를 보관한다.
- * 스탯과 바이탈 최대값은 저장하지 않으며, 레벨·장비·스킬 등으로부터 매번 계산한다.
+ * HP/MP/Stamina 현재값, 현재 맵 노드 id, 보유 AP(어빌리티 포인트)를 보관한다.
+ * 스탯과 바이탈 최대값은 저장하지 않으며, 레벨·재능 등으로부터 매번 계산한다.
  *
  * <p>안정적인 기본 키({@code id})를 통해 향후 인벤토리, 장착 장비,
  * 스킬 목록 등 별도 연관 엔티티를 확장할 수 있다 (Req 10.1).
@@ -66,6 +66,9 @@ public class CharacterProgress {
     @Column(name = "current_node_id", nullable = false)
     private String currentNodeId;
 
+    @Column(name = "ability_points", nullable = false)
+    private int abilityPoints;
+
     /**
      * JPA 전용 기본 생성자.
      */
@@ -85,6 +88,7 @@ public class CharacterProgress {
      * @param mpCurrent        MP 현재값
      * @param staminaCurrent   Stamina 현재값
      * @param currentNodeId    현재 맵 노드 id
+     * @param abilityPoints    보유 어빌리티 포인트
      */
     public CharacterProgress(final String nickname,
                              final int currentLevel,
@@ -95,7 +99,8 @@ public class CharacterProgress {
                              final int hpCurrent,
                              final int mpCurrent,
                              final int staminaCurrent,
-                             final String currentNodeId) {
+                             final String currentNodeId,
+                             final int abilityPoints) {
         this.nickname = nickname;
         this.currentLevel = currentLevel;
         this.accumulatedLevel = accumulatedLevel;
@@ -106,13 +111,15 @@ public class CharacterProgress {
         this.mpCurrent = mpCurrent;
         this.staminaCurrent = staminaCurrent;
         this.currentNodeId = currentNodeId;
+        this.abilityPoints = abilityPoints;
     }
 
     /**
      * 신규 캐릭터용 기본 진행상황을 생성한다.
      *
      * <p>닉네임 "고니", Lv1, 누적 Lv1, EXP 0, 재능 MELEE,
-     * lastRebirthAt null, HP/MP/Stamina 현재값 100, 시작 노드 "tir-chonaill".
+     * lastRebirthAt null, HP/MP/Stamina 현재값 100, 시작 노드 "tir-chonaill",
+     * AP 0.
      *
      * @return 기본값이 설정된 CharacterProgress 인스턴스
      */
@@ -127,7 +134,8 @@ public class CharacterProgress {
                 DEFAULT_VITAL_CURRENT,
                 DEFAULT_VITAL_CURRENT,
                 DEFAULT_VITAL_CURRENT,
-                DEFAULT_START_NODE
+                DEFAULT_START_NODE,
+                0
         );
     }
 
@@ -232,6 +240,15 @@ public class CharacterProgress {
         return currentNodeId;
     }
 
+    /**
+     * 보유 어빌리티 포인트(AP)를 반환한다.
+     *
+     * @return 보유 AP 잔량
+     */
+    public int getAbilityPoints() {
+        return abilityPoints;
+    }
+
     // ─── Mutators ───────────────────────────────────────────────────────────
 
     /**
@@ -283,11 +300,54 @@ public class CharacterProgress {
      * HP, MP, Stamina 현재값을 최대값으로 완전 회복한다.
      *
      * @param max 회복할 최대값 (HP/MP/Stamina 모두 동일하게 적용)
+     * @deprecated 바이탈별 최대치를 지원하는 {@link #fullRecover(VitalMax)}를 사용할 것
      */
     public void fullRecover(final int max) {
         this.hpCurrent = max;
         this.mpCurrent = max;
         this.staminaCurrent = max;
+    }
+
+    /**
+     * HP, MP, Stamina 현재값을 바이탈별 최대치로 완전 회복한다.
+     *
+     * <p>재능에 따라 각 바이탈의 최대치가 다를 수 있으므로,
+     * {@link VitalMax}의 각 필드를 대응하는 현재값에 대입한다.
+     *
+     * @param vitalMax 바이탈별 최대치 (hp, mp, stamina 각각)
+     */
+    public void fullRecover(final VitalMax vitalMax) {
+        this.hpCurrent = vitalMax.hp();
+        this.mpCurrent = vitalMax.mp();
+        this.staminaCurrent = vitalMax.stamina();
+    }
+
+    /**
+     * 보유 어빌리티 포인트를 지정된 양만큼 증가시킨다.
+     *
+     * <p>레벨업 시 또는 환생 시 AP 지급에 사용된다.
+     *
+     * @param amount 증가시킬 양 (양수)
+     */
+    public void increaseAbilityPoints(final int amount) {
+        this.abilityPoints += amount;
+    }
+
+    /**
+     * 보유 어빌리티 포인트를 지정된 양만큼 소모한다.
+     *
+     * <p>스킬 랭크업 등의 AP 소모에 사용된다.
+     * 소모량이 보유량을 초과하면 선행조건 위반으로 예외를 던진다.
+     *
+     * @param amount 소모할 양 (양수)
+     * @throws IllegalArgumentException 소모량이 보유 AP를 초과할 경우
+     */
+    public void spendAbilityPoints(final int amount) {
+        if (amount > this.abilityPoints) {
+            throw new IllegalArgumentException(
+                    "AP 부족: 소모 요청 " + amount + ", 보유 " + this.abilityPoints);
+        }
+        this.abilityPoints -= amount;
     }
 
     /**

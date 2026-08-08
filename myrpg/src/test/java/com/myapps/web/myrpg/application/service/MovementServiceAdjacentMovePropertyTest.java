@@ -71,7 +71,7 @@ class MovementServiceAdjacentMovePropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
-                currentNodeId);
+                currentNodeId, 0);
 
         // When
         final MovementResult result = movementService.move(progress, dx, dy);

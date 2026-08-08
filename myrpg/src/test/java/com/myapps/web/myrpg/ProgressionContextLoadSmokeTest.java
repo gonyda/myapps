@@ -14,15 +14,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 캐릭터 진행 컨텍스트 로드 및 정보 팝업 렌더링 스모크 테스트.
+ * 캐릭터 진행 컨텍스트 로드 및 정보 팝업·재능 선택 렌더링 스모크 테스트.
  *
  * <p>Spring Boot 전체 컨텍스트 기동이 성공하고,
- * 신규 빈({@link StatProgression}, {@link ProgressionService})이 정상 로딩되며,
- * 정보 팝업 렌더링 경로({@code GET /})가 정상 동작하는지 검증한다.
- * 고정 게임 데이터를 저장하지 않고 캐릭터 진행상황만 저장하는 원칙(001)이
- * 유지됨을 컨텍스트 로드 자체로 증명한다.
+ * 확장 빈({@link StatProgression}, {@link ProgressionService})이 정상 로딩되며,
+ * 정보 팝업(AP·재능 효과 필드 포함) 및 재능 선택 팝업 렌더링 경로({@code GET /})가
+ * 정상 동작하는지 검증한다.
  *
- * <p>Validates: Requirements 11.3
+ * <p>Validates: Requirements 13.3
  */
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:progression-smoke-test;DB_CLOSE_DELAY=-1",
@@ -87,5 +86,43 @@ class ProgressionContextLoadSmokeTest {
         assertThat(content).contains("info-middle");
         assertThat(content).contains("info-bottom");
         assertThat(content).contains("rebirth-btn");
+    }
+
+    /**
+     * 정보 팝업에 보유 AP 및 재능 효과 필드가 렌더링되는지 검증한다.
+     *
+     * <p>004 스펙에서 추가된 AP·재능 효과 행이 정상적으로 출력되며,
+     * 재능 성장 수치가 레벨·재능으로부터 계산되어 렌더링됨을 확인한다.
+     */
+    @Test
+    void should_renderAbilityPointsAndTalentEffect_when_getRoot() throws Exception {
+        final String content = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(content).contains("보유 AP");
+        assertThat(content).contains("재능 효과");
+    }
+
+    /**
+     * 재능 선택 팝업이 렌더링되는지 검증한다.
+     *
+     * <p>환생 2단계 흐름을 위한 재능 선택 오버레이({@code #talentSelectOverlay})가
+     * 3종 재능 버튼과 함께 출력됨을 확인한다.
+     */
+    @Test
+    void should_renderTalentSelectOverlay_when_getRoot() throws Exception {
+        final String content = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(content).contains("talentSelectOverlay");
+        assertThat(content).contains("confirmRebirth('MELEE')");
+        assertThat(content).contains("confirmRebirth('ARCHERY')");
+        assertThat(content).contains("confirmRebirth('MAGIC')");
     }
 }

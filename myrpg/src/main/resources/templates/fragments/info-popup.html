@@ -22,6 +22,14 @@
                     <span class="info-label">재능</span>
                     <span th:text="${view.info.talentLabel}">근접전투</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-label">보유 AP</span>
+                    <span th:text="${view.info.abilityPoints}">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">재능 효과</span>
+                    <span th:text="${view.info.talentEffectSummary}">근접 데미지 +10%, STR +2/Lv, HP +5/Lv</span>
+                </div>
                 <div class="stat">
                     <span class="label">HP</span>
                     <div class="bar hp">

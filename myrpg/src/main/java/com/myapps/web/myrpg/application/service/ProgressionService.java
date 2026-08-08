@@ -51,7 +51,7 @@ public class ProgressionService {
      * 경험치를 획득하고 연속 레벨업을 처리한다.
      *
      * <p>최대레벨(100)이면 아무 변경 없이 반환한다. 음수 획득량은 0으로 취급한다.
-     * 레벨업이 1회 이상 발생하면 풀회복을 적용한다.
+     * 레벨업이 1회 이상 발생하면 AP를 획득 레벨 수만큼 지급하고 풀회복을 적용한다.
      * 최대레벨 도달 시 잔여 경험치는 0으로 폐기된다.
      *
      * @param p      변경할 캐릭터 진행상황
@@ -82,7 +82,8 @@ public class ProgressionService {
         if (gained > 0) {
             p.setCurrentLevel(level);
             p.increaseAccumulatedLevel(gained);
-            p.fullRecover(statProgression.vitalMaxFor(level));
+            p.increaseAbilityPoints(gained);
+            p.fullRecover(statProgression.vitalMaxFor(level, p.getTalent()));
         }
 
         return new LevelUpResult(gained, level);
@@ -137,16 +138,33 @@ public class ProgressionService {
     }
 
     /**
-     * 환생을 시도한다.
+     * 환생을 시도한다 (재능 MELEE 고정, 하위 호환 유지).
      *
      * <p>쿨다운이 활성 상태이면 거부하고 상태를 변경하지 않는다.
-     * 환생 성공 시 레벨 1, 경험치 0, 누적 레벨 +1, 재능 MELEE,
+     * 환생 성공 시 레벨 1, 경험치 0, 누적 레벨 +1, AP +1, 재능 MELEE,
      * 현재 시각을 환생 시각으로 기록하고 풀회복을 적용한다.
      *
      * @param p 변경할 캐릭터 진행상황
      * @return 환생 결과 (성공 또는 쿨다운 활성)
+     * @deprecated 선택 재능을 받는 {@link #rebirth(CharacterProgress, TalentType)} 사용 권장
      */
+    @Deprecated
     public RebirthResult rebirth(final CharacterProgress p) {
+        return rebirth(p, TalentType.MELEE);
+    }
+
+    /**
+     * 선택 재능으로 환생을 시도한다.
+     *
+     * <p>쿨다운이 활성 상태이면 거부하고 상태를 변경하지 않는다.
+     * 환생 성공 시 레벨 1, 경험치 0, 누적 레벨 +1, AP +1, 재능을 선택값으로 설정,
+     * 현재 시각을 환생 시각으로 기록하고 바이탈별 최대치(레벨 1, 선택 재능) 풀회복을 적용한다.
+     *
+     * @param p      변경할 캐릭터 진행상황
+     * @param talent 선택할 재능 유형
+     * @return 환생 결과 (성공 또는 쿨다운 활성)
+     */
+    public RebirthResult rebirth(final CharacterProgress p, final TalentType talent) {
         final RebirthStatus status = rebirthStatus(p);
 
         if (!status.available()) {
@@ -156,9 +174,10 @@ public class ProgressionService {
         p.setCurrentLevel(1);
         p.setExperience(0);
         p.increaseAccumulatedLevel(1);
-        p.setTalent(TalentType.MELEE);
+        p.increaseAbilityPoints(1);
+        p.setTalent(talent);
         p.setLastRebirthAt(LocalDateTime.now(clock));
-        p.fullRecover(statProgression.vitalMaxFor(1));
+        p.fullRecover(statProgression.vitalMaxFor(1, talent));
 
         return new RebirthResult.Reborn();
     }

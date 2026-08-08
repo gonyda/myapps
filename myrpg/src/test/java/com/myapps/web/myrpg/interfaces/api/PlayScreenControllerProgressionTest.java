@@ -13,7 +13,6 @@ import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
-import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
@@ -31,9 +30,9 @@ import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -222,7 +221,7 @@ class PlayScreenControllerProgressionTest {
         final PlayScreenView view = buildDefaultView();
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(progressionService.rebirth(any(CharacterProgress.class)))
+        when(progressionService.rebirth(any(CharacterProgress.class), any(TalentType.class)))
                 .thenReturn(new RebirthResult.Reborn());
         when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
         stubBuildViewFromProgress(view);
@@ -233,7 +232,7 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(model().attributeExists("view"));
 
         verify(characterService).saveTurn(progress);
-        verify(actionLog).add("환생했습니다", "system");
+        verify(actionLog).add("환생했습니다 (재능: 근접전투)", "system");
     }
 
     /**
@@ -246,7 +245,7 @@ class PlayScreenControllerProgressionTest {
         final Duration remaining = Duration.ofHours(5).plusMinutes(30);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(progressionService.rebirth(any(CharacterProgress.class)))
+        when(progressionService.rebirth(any(CharacterProgress.class), any(TalentType.class)))
                 .thenReturn(new RebirthResult.CooldownActive(remaining));
         stubBuildViewFromProgress(view);
 
@@ -271,6 +270,108 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("expUp()")))
                 .andExpect(content().string(containsString("expDown()")));
+    }
+
+    /**
+     * GET / 정보 팝업에 보유 AP 값과 재능 효과 요약이 올바르게 렌더링되는지 검증한다.
+     *
+     * <p>info-popup.html의 "보유 AP" 행에 AP 숫자가, "재능 효과" 행에 효과 요약 문자열이 노출된다.
+     */
+    @Test
+    void should_renderAbilityPointsAndTalentEffectSummary_when_rootAccessed() throws Exception {
+        final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
+        final GaugeView exp = new GaugeView(500, 250000, 0, "500 / 250000");
+        final TopBarView topBar = new TopBarView("고니", 10, exp, gauge, gauge, gauge);
+        final InfoPopupView info = new InfoPopupView(
+                "고니", 10, 12, "활",
+                5, "원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv",
+                gauge, gauge, gauge,
+                List.of(new StatLine("STR", "10", "+0")),
+                true, "환생 후 25시간 0분 경과");
+        final PlayScreenView view = new PlayScreenView(
+                topBar, dummyMinimap(), dummyFullMap(), "평화로운 마을",
+                null, null, null, null, List.of(), info);
+        stubCommonForGet(view);
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("보유 AP")))
+                .andExpect(content().string(containsString(">5<")))
+                .andExpect(content().string(containsString("재능 효과")))
+                .andExpect(content().string(containsString("원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv")));
+    }
+
+    /**
+     * POST /rebirth?talent=ARCHERY 요청 시 ARCHERY 재능으로 환생이 수행되고
+     * 응답 로그에 "활" 재능이 반영되는지 검증한다.
+     */
+    @Test
+    void should_rebirthWithArcheryTalent_when_talentParamIsArchery() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final PlayScreenView view = buildDefaultView();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(progressionService.rebirth(any(CharacterProgress.class), any(TalentType.class)))
+                .thenReturn(new RebirthResult.Reborn());
+        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
+        stubBuildViewFromProgress(view);
+
+        mockMvc.perform(post("/rebirth").param("talent", "ARCHERY"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/progress-response"))
+                .andExpect(model().attributeExists("view"));
+
+        verify(progressionService).rebirth(progress, TalentType.ARCHERY);
+        verify(characterService).saveTurn(progress);
+        verify(actionLog).add("환생했습니다 (재능: 활)", "system");
+    }
+
+    /**
+     * POST /rebirth (talent 파라미터 누락) 시 기본 재능 MELEE로 폴백되어
+     * 환생이 수행되는지 검증한다.
+     */
+    @Test
+    void should_fallbackToMelee_when_talentParamMissing() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final PlayScreenView view = buildDefaultView();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(progressionService.rebirth(any(CharacterProgress.class), any(TalentType.class)))
+                .thenReturn(new RebirthResult.Reborn());
+        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
+        stubBuildViewFromProgress(view);
+
+        mockMvc.perform(post("/rebirth"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/progress-response"));
+
+        verify(progressionService).rebirth(progress, TalentType.MELEE);
+        verify(actionLog).add("환생했습니다 (재능: 근접전투)", "system");
+    }
+
+    /**
+     * POST /rebirth?talent=ARCHERY 쿨다운 활성 시 상태가 변경되지 않고
+     * saveTurn이 호출되지 않음을 검증한다.
+     */
+    @Test
+    void should_keepStateUnchanged_when_rebirthWithTalentDuringCooldown() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final PlayScreenView view = buildDefaultView();
+        final Duration remaining = Duration.ofHours(12).plusMinutes(45);
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(progressionService.rebirth(any(CharacterProgress.class), any(TalentType.class)))
+                .thenReturn(new RebirthResult.CooldownActive(remaining));
+        stubBuildViewFromProgress(view);
+
+        mockMvc.perform(post("/rebirth").param("talent", "ARCHERY"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/progress-response"))
+                .andExpect(model().attributeExists("view"));
+
+        verify(progressionService).rebirth(progress, TalentType.ARCHERY);
+        verify(characterService, never()).saveTurn(any());
+        verify(actionLog).add("환생까지 12시간 45분 남았습니다", "system");
     }
 
     // ─────────────────────────────────────── 헬퍼 메서드 ───────────────────────────────────────
@@ -344,6 +445,7 @@ class PlayScreenControllerProgressionTest {
         );
         return new InfoPopupView(
                 "고니", 50, 51, "근접전투",
+                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
                 gauge, gauge, gauge,
                 stats, rebirthAvailable, elapsedText);
     }

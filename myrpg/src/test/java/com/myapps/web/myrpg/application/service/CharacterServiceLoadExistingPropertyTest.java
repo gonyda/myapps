@@ -56,7 +56,7 @@ class CharacterServiceLoadExistingPropertyTest {
         // Given: 저장소에 이미 존재하는 CharacterProgress
         final CharacterProgress existingProgress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
-                TalentType.MELEE, null, hpCurrent, mpCurrent, staminaCurrent, "tir-chonaill");
+                TalentType.MELEE, null, hpCurrent, mpCurrent, staminaCurrent, "tir-chonaill", 0);
 
         final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
         when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existingProgress));

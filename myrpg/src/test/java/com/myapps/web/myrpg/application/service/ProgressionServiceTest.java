@@ -37,7 +37,7 @@ class ProgressionServiceTest {
     @Test
     void should_reduceTo13_when_deathPenaltyAt23ExpLevel1() {
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 23L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill");
+                "고니", 1, 1, 23L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0);
 
         final DeathResult result = service.applyDeathPenalty(progress);
 
@@ -52,7 +52,7 @@ class ProgressionServiceTest {
     @Test
     void should_reduceTo0_when_deathPenaltyAt5ExpLevel1() {
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 5L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill");
+                "고니", 1, 1, 5L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0);
 
         final DeathResult result = service.applyDeathPenalty(progress);
 

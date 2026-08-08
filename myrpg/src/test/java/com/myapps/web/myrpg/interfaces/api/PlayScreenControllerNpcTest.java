@@ -338,7 +338,7 @@ class PlayScreenControllerNpcTest {
 
     private InfoPopupView dummyInfo() {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
-        return new InfoPopupView("고니", 1, 1, "근접전투", gauge, gauge, gauge, List.of(), true, "환생 기록 없음");
+        return new InfoPopupView("고니", 1, 1, "근접전투", 0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv", gauge, gauge, gauge, List.of(), true, "환생 기록 없음");
     }
 
     private TopBarView dummyTopBar() {

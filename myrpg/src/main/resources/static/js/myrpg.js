@@ -273,12 +273,16 @@ function expDown() {
         });
 }
 
-// ===== 환생: confirm 후 POST → 3영역 스왑 =====
+// ===== 환생 2단계: 1단계 confirm → 재능 선택 팝업, 2단계 재능 선택 → POST =====
 function rebirth() {
     if (!confirm("환생을 진행하시겠습니까?")) {
         return;
     }
-    fetch("/rebirth", { method: "POST" })
+    openTalentSelect();
+}
+
+function confirmRebirth(talent) {
+    fetch("/rebirth?talent=" + talent, { method: "POST" })
         .then(function (response) {
             if (!response.ok) { return; }
             return response.text();
@@ -286,7 +290,16 @@ function rebirth() {
         .then(function (html) {
             if (!html) { return; }
             swapProgressResponse(html);
+            closeTalentSelect();
         });
+}
+
+function openTalentSelect() {
+    document.getElementById("talentSelectOverlay").style.display = "flex";
+}
+
+function closeTalentSelect() {
+    document.getElementById("talentSelectOverlay").style.display = "none";
 }
 
 // ===== 성장 응답 공통 스왑: .top-bar, #infoContent, .action-log =====

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="talent-select" id="talentSelectOverlay" class="talent-select-overlay" style="display: none;">
+    <div class="talent-select-popup">
+        <h3>재능을 선택하세요</h3>
+        <div class="talent-buttons">
+            <button type="button" class="talent-btn" onclick="confirmRebirth('MELEE')">근접전투</button>
+            <button type="button" class="talent-btn" onclick="confirmRebirth('ARCHERY')">활</button>
+            <button type="button" class="talent-btn" onclick="confirmRebirth('MAGIC')">마법</button>
+        </div>
+        <button type="button" class="talent-cancel-btn" onclick="closeTalentSelect()">취소</button>
+    </div>
+</div>
+</body>
+</html>

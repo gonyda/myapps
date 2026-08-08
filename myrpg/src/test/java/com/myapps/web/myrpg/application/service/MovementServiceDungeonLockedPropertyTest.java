@@ -56,7 +56,7 @@ class MovementServiceDungeonLockedPropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
-                currentNodeId);
+                currentNodeId, 0);
 
         // When
         final MovementResult result = movementService.enterDungeon(progress, dungeonId);

@@ -41,4 +41,44 @@ public record Stats(
     public static Stats createDefault() {
         return new Stats(DEFAULT_STR, DEFAULT_DEX, DEFAULT_INTELLIGENCE, DEFAULT_CRITICAL, DEFAULT_DEFENSE);
     }
+
+    /**
+     * STR에 델타를 더한 새 인스턴스를 반환한다.
+     *
+     * @param delta STR에 가산할 값 (음수 가능)
+     * @return STR만 변경된 새 Stats 인스턴스
+     */
+    public Stats withStrDelta(final int delta) {
+        return new Stats(str + delta, dex, intelligence, critical, defense);
+    }
+
+    /**
+     * DEX에 델타를 더한 새 인스턴스를 반환한다.
+     *
+     * @param delta DEX에 가산할 값 (음수 가능)
+     * @return DEX만 변경된 새 Stats 인스턴스
+     */
+    public Stats withDexDelta(final int delta) {
+        return new Stats(str, dex + delta, intelligence, critical, defense);
+    }
+
+    /**
+     * INT(지능)에 델타를 더한 새 인스턴스를 반환한다.
+     *
+     * @param delta INT에 가산할 값 (음수 가능)
+     * @return INT만 변경된 새 Stats 인스턴스
+     */
+    public Stats withIntDelta(final int delta) {
+        return new Stats(str, dex, intelligence + delta, critical, defense);
+    }
+
+    /**
+     * Critical(0.1% 단위)에 델타를 더한 새 인스턴스를 반환한다.
+     *
+     * @param delta Critical에 가산할 값 (0.1% 단위, 음수 가능)
+     * @return Critical만 변경된 새 Stats 인스턴스
+     */
+    public Stats withCriticalDelta(final int delta) {
+        return new Stats(str, dex, intelligence, critical + delta, defense);
+    }
 }

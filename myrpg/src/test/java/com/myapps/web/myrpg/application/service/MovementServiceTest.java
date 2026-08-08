@@ -60,7 +60,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0);
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -88,7 +88,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "field-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "field-a", 0);
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -115,7 +115,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0);
 
         // when — no neighbor at (0, 1)
         final MovementResult result = movementService.move(progress, 0, 1);
@@ -139,7 +139,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0);
 
         // when — neighbor exists at (1,0) but not in links
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -153,7 +153,7 @@ class MovementServiceTest {
     void should_returnDungeonLocked_when_enterDungeonCalled() {
         // given
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "dungeon-entrance");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "dungeon-entrance", 0);
 
         // when
         final MovementResult result = movementService.enterDungeon(progress, "d1");
@@ -169,7 +169,7 @@ class MovementServiceTest {
     void should_returnDungeonLocked_regardlessOfDungeonId() {
         // given
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0);
 
         // when — even for non-existent dungeon
         final MovementResult result = movementService.enterDungeon(progress, "non-existent-dungeon");
@@ -193,7 +193,7 @@ class MovementServiceTest {
         when(mapService.graph()).thenReturn(graph);
 
         final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a");
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0);
 
         // when
         movementService.move(progress, 1, 0);

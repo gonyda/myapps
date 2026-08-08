@@ -242,6 +242,7 @@ class PlayScreenControllerTest {
         final TopBarView topBar = new TopBarView("고니", 1, gauge, gauge, gauge, gauge);
         final InfoPopupView info = new InfoPopupView(
                 "고니", 1, 1, "근접전투",
+                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
                 gauge, gauge, gauge,
                 List.of(new StatLine("STR", "5", "+0")),
                 true, "환생 기록 없음"
@@ -264,6 +265,7 @@ class PlayScreenControllerTest {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         return new InfoPopupView(
                 "고니", 1, 1, "근접전투",
+                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
                 gauge, gauge, gauge,
                 List.of(new StatLine("STR", "5", "+0")),
                 true, "환생 기록 없음"

@@ -1,0 +1,733 @@
+{
+  "pbtResults": {
+    "2.3 재능 데이터 완비 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786117478732
+    },
+    "2.4 재능 파라미터 폴백 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786117687703
+    },
+    "6.3 재능별 보조 치명 성장 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786119686231
+    },
+    "6.2 재능별 보조 바이탈 성장 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786119733550
+    },
+    "6.1 재능별 주 스탯 성장 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786119760981
+    },
+    "6.5 환생 시 재능 보너스 초기화 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786119821281
+    },
+    "6.4 대상 종류 분류 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786119849270
+    },
+    "7.3 사망 패널티 AP 불변 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120088400
+    },
+    "7.2 AP 정합성 불변식 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120143310
+    },
+    "7.5 환생 재능 반영과 AP 지급 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120273535
+    },
+    "7.4 AP 소모 가드 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120275677
+    },
+    "7.1 AP 지급과 누적레벨 동기 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120340025
+    },
+    "7.6 레벨업/환생 풀회복 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120516644
+    },
+    "7.7 환생 쿨다운 재검증 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120519096
+    },
+    "7.8 진행상황 영속 라운드트립 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786120648397
+    }
+  },
+  "executionHistory": {
+    "1.1 BonusKind / BonusTarget enum 구현": [
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116582861
+      },
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116676084
+      }
+    ],
+    "2.1 Stats 델타 헬퍼 추가": [
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116812378
+      },
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116884182
+      }
+    ],
+    "1.2 TalentBonus / VitalMax record 구현": [
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116888295
+      },
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116990367
+      }
+    ],
+    "1.3 값 타입 단위 테스트": [
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786116994747
+      },
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786117123178
+      }
+    ],
+    "1. 재능 성장 값 타입 (신규, 기존 빌드 무영향)": [
+      {
+        "executionId": "6af2f29f-06de-402c-8c9f-9d87b8d9c10a",
+        "chatSessionId": "sess_4ec77f6a-1291-434e-b27e-0a2a27a777e1",
+        "timestamp": 1786117123215
+      }
+    ],
+    "2.2 TalentType 확장 (재능 데이터·폴백 파서)": [
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117230245
+      },
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117366641
+      }
+    ],
+    "2.3 재능 데이터 완비 프로퍼티 테스트": [
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117371366
+      },
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117782018
+      }
+    ],
+    "2.4 재능 파라미터 폴백 프로퍼티 테스트": [
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117372750
+      },
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117783401
+      }
+    ],
+    "2.5 TalentType 값·라벨 예시 단위 테스트": [
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117373545
+      },
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117784334
+      }
+    ],
+    "2. TalentType 재능 데이터 확장 (라벨 유지, 기존 빌드 무영향)": [
+      {
+        "executionId": "ab70bfac-70af-4fd0-8670-04f91a99c9f8",
+        "chatSessionId": "sess_f7010d98-ad25-46e9-938a-fd876f8679dc",
+        "timestamp": 1786117784372
+      }
+    ],
+    "3. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117837877
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117842118
+      }
+    ],
+    "4.1 StatProgression 재능 오버로드 + 바이탈별 최대치": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847096
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117862502
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786118504340
+      }
+    ],
+    "4.2 CharacterProgress AP 컬럼 + 바이탈별 풀회복": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847139
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117863773
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786118505171
+      }
+    ],
+    "4.3 ProgressionService 확장 (AP 지급·선택 재능 환생·VitalMax 풀회복)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847190
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786118510301
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786118716812
+      }
+    ],
+    "4.4 뷰 모델·헬퍼·컨트롤러 호출부 교체": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847226
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786118725929
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119262250
+      }
+    ],
+    "4.5 영향받는 003 테스트 갱신 (빌드 그린)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847293
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119267247
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119437928
+      }
+    ],
+    "5. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847350
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119444996
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119449628
+      }
+    ],
+    "6.1 재능별 주 스탯 성장 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847396
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119455342
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119869028
+      }
+    ],
+    "6.2 재능별 보조 바이탈 성장 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847448
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119456329
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119869771
+      }
+    ],
+    "6.3 재능별 보조 치명 성장 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847495
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119457257
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119870795
+      }
+    ],
+    "6.4 대상 종류 분류 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847539
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119458111
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119871723
+      }
+    ],
+    "6.5 환생 시 재능 보너스 초기화 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847583
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119458950
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119872509
+      }
+    ],
+    "7.1 AP 지급과 누적레벨 동기 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847627
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119879025
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120357980
+      }
+    ],
+    "7.2 AP 정합성 불변식 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847672
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119879804
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120358948
+      }
+    ],
+    "7.3 사망 패널티 AP 불변 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847716
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119880730
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120359927
+      }
+    ],
+    "7.4 AP 소모 가드 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847760
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119881522
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120360924
+      }
+    ],
+    "7.5 환생 재능 반영과 AP 지급 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847800
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119882408
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120361963
+      }
+    ],
+    "7.6 레벨업/환생 풀회복 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847886
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120368159
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120669174
+      }
+    ],
+    "7.7 환생 쿨다운 재검증 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847919
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120368861
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120666048
+      }
+    ],
+    "7.8 진행상황 영속 라운드트립 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847954
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120369782
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120666979
+      }
+    ],
+    "7.9 AP·재능 성장 예시 단위 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117847987
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120370695
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120668208
+      }
+    ],
+    "8. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848021
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120675558
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120680914
+      }
+    ],
+    "9.1 info-popup.html 확장 (보유 AP·재능 효과 행)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848060
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120687629
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121186940
+      }
+    ],
+    "9.2 talent-select.html 신규 + play.html include": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848107
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120688517
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121189358
+      }
+    ],
+    "9.3 myrpg.js 확장 (환생 2단계 흐름)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848154
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120689215
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121188691
+      }
+    ],
+    "9.4 myrpg.css 확장": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848202
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120690093
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121187806
+      }
+    ],
+    "9.5 PlayScreenViewHelper 정보 팝업 단위 테스트 확장": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848246
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121195414
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122261566
+      }
+    ],
+    "9.6 컨트롤러 슬라이스 테스트 확장": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848285
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121196311
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122262483
+      }
+    ],
+    "10.1 로컬 H2 세이브 초기화": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848326
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121197147
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122263300
+      }
+    ],
+    "10.2 컨텍스트 로드 스모크 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848365
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786121198093
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122264183
+      }
+    ],
+    "11. 최종 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786117848445
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122270106
+      },
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122275471
+      }
+    ],
+    "4. 도메인 계산·엔티티 마이그레이션 + 호출부 교체 (원자적, 빌드 그린 유지)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119437992
+      }
+    ],
+    "6. StatProgression 재능 계산 프로퍼티 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786119872572
+      }
+    ],
+    "7. 진행 서비스·엔티티 프로퍼티/단위 테스트": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786120669229
+      }
+    ],
+    "9. 표현 계층 배선 (정보 팝업·재능 선택 UI)": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122262549
+      }
+    ],
+    "10. 통합·스모크·로컬 세이브 초기화": [
+      {
+        "executionId": "43c7b8b1-ec47-4eee-b992-6a63f31e6183",
+        "chatSessionId": "sess_0e490d55-8cd7-40ea-8f07-b670791d1889",
+        "timestamp": 1786122264235
+      }
+    ]
+  }
+}

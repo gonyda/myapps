@@ -70,7 +70,8 @@ class DeathPenaltyPropertyTest {
                 100,
                 100,
                 100,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         // When: 사망 패널티 적용
@@ -129,7 +130,8 @@ class DeathPenaltyPropertyTest {
                 100,
                 100,
                 100,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         // When: 사망 패널티 적용
@@ -166,7 +168,8 @@ class DeathPenaltyPropertyTest {
                 100,
                 100,
                 100,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         // When: 사망 패널티 적용

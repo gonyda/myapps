@@ -91,7 +91,8 @@ class PlayScreenViewHelperGaugePropertyTest {
                 100,
                 100,
                 100,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         final TopBarView topBar = helper.buildTopBar(progress);

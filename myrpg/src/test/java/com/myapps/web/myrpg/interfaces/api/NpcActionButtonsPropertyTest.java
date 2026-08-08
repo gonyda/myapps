@@ -22,6 +22,7 @@ import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
+import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,6 +93,7 @@ class NpcActionButtonsPropertyTest {
         when(progress.getHpCurrent()).thenReturn(100);
         when(progress.getMpCurrent()).thenReturn(100);
         when(progress.getStaminaCurrent()).thenReturn(100);
+        when(progress.getTalent()).thenReturn(TalentType.MELEE);
         return progress;
     }
 

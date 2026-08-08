@@ -32,6 +32,7 @@ import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.Npc;
+import com.myapps.web.myrpg.domain.model.TalentType;
 
 /**
  * 플레이 화면을 서버사이드 렌더링하는 컨트롤러.
@@ -226,20 +227,24 @@ public class PlayScreenController {
     /**
      * 환생을 처리하고 갱신된 프래그먼트를 반환한다.
      *
-     * <p>환생 성공 시 진행상황을 저장하고 성공 로그를 추가한다.
+     * <p>재능 파라미터를 파싱하고(누락/이상값은 MELEE 폴백), 환생을 시도한다.
+     * 환생 성공 시 진행상황을 저장하고 선택 재능을 포함한 성공 로그를 추가한다.
      * 쿨다운 활성 시 저장하지 않고 남은 시간을 안내하는 로그를 추가한다.
      *
-     * @param model Spring MVC 모델
+     * @param talentParam 재능 상수명 (누락/이상값 시 MELEE 폴백)
+     * @param model       Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
      */
     @PostMapping("/rebirth")
-    public String rebirth(final Model model) {
+    public String rebirth(@RequestParam(name = "talent", required = false) final String talentParam,
+                          final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final RebirthResult result = progressionService.rebirth(progress);
+        final TalentType talent = TalentType.fromNameOrFallback(talentParam, TalentType.MELEE);
+        final RebirthResult result = progressionService.rebirth(progress, talent);
 
         if (result instanceof RebirthResult.Reborn) {
             characterService.saveTurn(progress);
-            actionLog.add("환생했습니다", NOTIFICATION_TYPE);
+            actionLog.add("환생했습니다 (재능: " + talent.label() + ")", NOTIFICATION_TYPE);
         } else if (result instanceof RebirthResult.CooldownActive cooldown) {
             final Duration remaining = cooldown.remaining();
             final long hours = remaining.toHours();

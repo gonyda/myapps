@@ -81,7 +81,7 @@ class CharacterProgressPersistencePropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
-                talent, null, hpCurrent, mpCurrent, staminaCurrent, currentNodeId);
+                talent, null, hpCurrent, mpCurrent, staminaCurrent, currentNodeId, 0);
 
         // persist → flush → clear → find
         entityManager.persistAndFlush(progress);
@@ -135,7 +135,7 @@ class CharacterProgressPersistencePropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
-                talent, lastRebirthAt, hpCurrent, mpCurrent, staminaCurrent, currentNodeId);
+                talent, lastRebirthAt, hpCurrent, mpCurrent, staminaCurrent, currentNodeId, 0);
 
         // persist → flush → clear → find
         entityManager.persistAndFlush(progress);

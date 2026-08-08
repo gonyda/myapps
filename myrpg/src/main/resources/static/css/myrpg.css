@@ -814,3 +814,105 @@
             font-size: var(--fs-xs);
             color: #888;
         }
+
+        /* ===== 재능 선택 오버레이 (환생 2단계) ===== */
+        .talent-select-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad);
+            z-index: 1100;
+        }
+
+        .talent-select-overlay.open {
+            display: flex;
+        }
+
+        /* 재능 선택 팝업 컨테이너 */
+        .talent-select-popup {
+            width: 88%;
+            max-width: 360px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            padding: var(--pad);
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+        }
+
+        .talent-select-popup h3 {
+            color: #fff;
+            font-size: var(--fs-lg);
+            text-align: center;
+        }
+
+        /* 3종 재능 버튼 컨테이너 */
+        .talent-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+        }
+
+        /* 개별 재능 버튼 */
+        .talent-btn {
+            background: #3a2a5a;
+            color: #fff;
+            border: 1px solid #5a4a7a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 1.2) var(--pad);
+            font-size: var(--fs-md);
+            cursor: pointer;
+            min-height: var(--touch);
+            text-align: center;
+            transition: background 0.15s;
+        }
+
+        .talent-btn:active {
+            background: #5a3a8a;
+        }
+
+        /* 취소 버튼 */
+        .talent-cancel-btn {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.8) var(--pad);
+            font-size: var(--fs-sm);
+            cursor: pointer;
+            min-height: var(--touch);
+            text-align: center;
+        }
+
+        .talent-cancel-btn:active {
+            background: #444;
+            color: #ddd;
+        }
+
+        /* ===== 정보 팝업 - 보유 AP·재능 효과 행 ===== */
+        .info-top .info-ap,
+        .info-top .info-effect {
+            display: flex;
+            align-items: center;
+            gap: var(--gap);
+            font-size: var(--fs-sm);
+        }
+
+        .info-top .info-label {
+            color: #aaa;
+            white-space: nowrap;
+        }
+
+        .info-top .info-ap .info-value {
+            color: #d9c479;
+            font-weight: bold;
+        }
+
+        .info-top .info-effect .info-value {
+            color: #8fb5d9;
+            font-size: var(--fs-xs);
+        }

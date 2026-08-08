@@ -16,14 +16,15 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TalentType;
+import com.myapps.web.myrpg.domain.model.VitalMax;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 레벨업이 1회 이상 발생했을 때 HP/MP/Stamina가 최종 레벨의 최대치로 풀회복되는지 검증하는 프로퍼티 테스트.
+ * 레벨업이 1회 이상 발생했을 때 HP/MP/Stamina가 최종 레벨·재능의 바이탈별 최대치로 풀회복되는지 검증하는 프로퍼티 테스트.
  *
  * <p>현재 바이탈을 낮은 값으로 설정한 뒤 경험치를 부여하여 레벨업을 유발하고,
- * 레벨업 후 HP/MP/Stamina 현재치가 {@code vitalMaxFor(최종 레벨)}과 같음을 확인한다.
+ * 레벨업 후 HP/MP/Stamina 현재치가 {@code vitalMaxFor(최종 레벨, talent)}의 각 대응 필드와 같음을 확인한다.
  *
  * <p>Feature: 003-character-progression-and-rebirth, Property 6: 레벨업 시 풀회복
  *
@@ -69,7 +70,8 @@ class LevelUpFullRecoveryPropertyTest {
                 hpCurrent,
                 mpCurrent,
                 staCurrent,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         // 최소 1회 레벨업을 보장하는 획득량: requiredForNext(level) + extraAmount
@@ -83,19 +85,19 @@ class LevelUpFullRecoveryPropertyTest {
                 .as("최소 1회 레벨업이 발생해야 한다")
                 .isGreaterThanOrEqualTo(1);
 
-        final int expectedVitalMax = statProgression.vitalMaxFor(result.newLevel());
+        final VitalMax expectedVitalMax = statProgression.vitalMaxFor(result.newLevel(), TalentType.MELEE);
 
         assertThat(progress.getHpCurrent())
-                .as("레벨업 후 HP 현재치는 최종 레벨의 최대 바이탈과 같아야 한다")
-                .isEqualTo(expectedVitalMax);
+                .as("레벨업 후 HP 현재치는 최종 레벨·재능의 HP 최대치와 같아야 한다")
+                .isEqualTo(expectedVitalMax.hp());
 
         assertThat(progress.getMpCurrent())
-                .as("레벨업 후 MP 현재치는 최종 레벨의 최대 바이탈과 같아야 한다")
-                .isEqualTo(expectedVitalMax);
+                .as("레벨업 후 MP 현재치는 최종 레벨·재능의 MP 최대치와 같아야 한다")
+                .isEqualTo(expectedVitalMax.mp());
 
         assertThat(progress.getStaminaCurrent())
-                .as("레벨업 후 Stamina 현재치는 최종 레벨의 최대 바이탈과 같아야 한다")
-                .isEqualTo(expectedVitalMax);
+                .as("레벨업 후 Stamina 현재치는 최종 레벨·재능의 Stamina 최대치와 같아야 한다")
+                .isEqualTo(expectedVitalMax.stamina());
     }
 
     /**

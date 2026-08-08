@@ -20,6 +20,8 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
+import com.myapps.web.myrpg.domain.model.TalentType;
+import com.myapps.web.myrpg.domain.model.VitalMax;
 
 /**
  * 플레이 화면 뷰 모델 조립 및 표현 계산을 담당하는 헬퍼 컴포넌트.
@@ -76,7 +78,7 @@ public class PlayScreenViewHelper {
      *
      * <p>EXP 게이지는 최대 레벨(100)이면 퍼센트 100, 오버레이 "MAX"를 표시하고,
      * 미만이면 현재 경험치 / 다음 레벨 필요 경험치로 산출한다.
-     * HP/MP/Stamina 게이지는 현재값(저장) / vitalMaxFor(level)로 조립한다.
+     * HP/MP/Stamina 게이지는 현재값(저장) / vitalMaxFor(level, talent)의 각 대응 필드로 조립한다.
      *
      * @param progress 캐릭터 진행상황
      * @return 상단바 뷰 모델
@@ -84,10 +86,10 @@ public class PlayScreenViewHelper {
     public TopBarView buildTopBar(final CharacterProgress progress) {
         final int level = progress.getCurrentLevel();
         final GaugeView exp = buildExpGauge(progress, level);
-        final int vitalMax = statProgression.vitalMaxFor(level);
-        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax);
-        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax);
-        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax);
+        final VitalMax vitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
+        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
+        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
+        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
         return new TopBarView(progress.getNickname(), level, exp, hp, mp, stamina);
     }
 
@@ -192,8 +194,8 @@ public class PlayScreenViewHelper {
     /**
      * 정보 팝업 뷰 모델을 조립한다.
      *
-     * <p>상단: 닉네임, 현재 레벨, 누적 레벨, 재능 라벨, HP·MP·Stamina 게이지.
-     * 중앙: {@code levelStatsFor(level)} 본체 + 스킬 보너스 {@link Stats#ZERO}로 StatLine 목록.
+     * <p>상단: 닉네임, 현재 레벨, 누적 레벨, 재능 라벨, 보유 AP, 재능 효과 요약, HP·MP·Stamina 게이지.
+     * 중앙: {@code levelStatsFor(level, talent)} 본체 + 스킬 보너스 {@link Stats#ZERO}로 StatLine 목록.
      * 하단: 환생 가능 여부, 경과 텍스트.
      *
      * @param progress      캐릭터 진행상황
@@ -203,12 +205,13 @@ public class PlayScreenViewHelper {
     public InfoPopupView buildInfo(final CharacterProgress progress,
                                    final RebirthStatus rebirthStatus) {
         final int level = progress.getCurrentLevel();
-        final int vitalMax = statProgression.vitalMaxFor(level);
-        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax);
-        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax);
-        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax);
+        final TalentType talent = progress.getTalent();
+        final VitalMax vitalMax = statProgression.vitalMaxFor(level, talent);
+        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
+        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
+        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
 
-        final Stats levelStats = statProgression.levelStatsFor(level);
+        final Stats levelStats = statProgression.levelStatsFor(level, talent);
         final Stats skillBonus = Stats.ZERO;
         final List<StatLine> stats = buildStatLines(levelStats, skillBonus);
 
@@ -218,7 +221,9 @@ public class PlayScreenViewHelper {
                 progress.getNickname(),
                 progress.getCurrentLevel(),
                 progress.getAccumulatedLevel(),
-                progress.getTalent().label(),
+                talent.label(),
+                progress.getAbilityPoints(),
+                talent.effectSummary(),
                 hp,
                 mp,
                 stamina,

@@ -77,7 +77,8 @@ class RebirthEffectPropertyTest {
                 hpCurrent,
                 mpCurrent,
                 stamCurrent,
-                "tir-chonaill"
+                "tir-chonaill",
+                0
         );
 
         final int previousAccumulated = progress.getAccumulatedLevel();

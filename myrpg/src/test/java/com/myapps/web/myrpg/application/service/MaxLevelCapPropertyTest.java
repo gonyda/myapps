@@ -59,7 +59,7 @@ class MaxLevelCapPropertyTest {
         final long exp = levelAndExp.get2();
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", level, level, exp, TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill");
+                null, 100, 100, 100, "tir-chonaill", 0);
 
         progressionService.gainExperience(progress, amount);
 
@@ -76,7 +76,7 @@ class MaxLevelCapPropertyTest {
     void should_noChange_when_alreadyAtMaxLevel(@ForAll("amounts") final long amount) {
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", MAX_LEVEL, MAX_LEVEL, 0L, TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill");
+                null, 100, 100, 100, "tir-chonaill", 0);
 
         final LevelUpResult result = progressionService.gainExperience(progress, amount);
 
@@ -101,7 +101,7 @@ class MaxLevelCapPropertyTest {
         final long exp = levelAndExp.get2();
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", level, level, exp, TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill");
+                null, 100, 100, 100, "tir-chonaill", 0);
 
         progressionService.gainExperience(progress, amount);
 
