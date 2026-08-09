@@ -6,12 +6,14 @@ import net.jqwik.api.constraints.IntRange;
 
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * 게이지 계산과 수치 오버레이 프로퍼티 테스트.
@@ -28,7 +30,8 @@ class PlayScreenViewHelperGaugePropertyTest {
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
     private final StatProgression statProgression = new StatProgression();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, statProgression);
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
+            experiencePolicy, statProgression, mock(SkillService.class));
 
     /**
      * 임의의 current(0~max)와 max(1~10000)에 대해 퍼센트가

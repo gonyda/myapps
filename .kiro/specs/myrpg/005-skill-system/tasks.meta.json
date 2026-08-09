@@ -1,0 +1,794 @@
+{
+  "pbtResults": {
+    "1.4 값 enum 프로퍼티/단위 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786160735831
+    },
+    "2.4 정책 프로퍼티/단위 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786161119020
+    },
+    "4.3 영속 라운드트립 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786161286453
+    },
+    "5.2 카탈로그 검증 프로퍼티/통합 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786161754798
+    },
+    "7.3 랭크업 트랜잭션 효과 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162368490
+    },
+    "7.4 AP 소모 가드 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162391447
+    },
+    "7.5 AP 정합성 불변식(확장) 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162433729
+    },
+    "7.2 랭크업 게이트 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162437167
+    },
+    "7.6 랭크업 영구 보너스 합산 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162473981
+    },
+    "7.7 스킬 습득 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162742172
+    },
+    "7.9 임시 드라이버 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162760211
+    },
+    "7.8 신규 시드/환생 유지 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786162885149
+    },
+    "11.2 진행바 프로퍼티 테스트": {
+      "status": "passed",
+      "lastRunTimestamp": 1786166166385
+    }
+  },
+  "executionHistory": {
+    "1.1 SkillType / ResourceKind enum 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160109852
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160143428
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160342892
+      }
+    ],
+    "1.2 SkillTalent enum 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160109919
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160353190
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160579883
+      }
+    ],
+    "1.3 SkillRank enum 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160109978
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160144211
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160343568
+      }
+    ],
+    "1.4 값 enum 프로퍼티/단위 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110045
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160585054
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160880198
+      }
+    ],
+    "2.1 Skill sealed + record + RankUpRequirement 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110115
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160145400
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160344632
+      }
+    ],
+    "2.2 SkillRankPolicy 구현 (요구치·AP 표)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110152
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160585711
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160878461
+      }
+    ],
+    "2.3 SkillDamagePolicy / SkillRankupBonus 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110185
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160586526
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160879354
+      }
+    ],
+    "2.4 정책 프로퍼티/단위 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110233
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160885296
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161137755
+      }
+    ],
+    "3. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110278
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166595605
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166652944
+      }
+    ],
+    "4.1 CharacterSkill 엔티티 + 리포지토리": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110315
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160885923
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161138605
+      }
+    ],
+    "4.2 skill.json 카탈로그 리소스 이식": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110361
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160886728
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161139605
+      }
+    ],
+    "4.3 영속 라운드트립 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110397
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161149422
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161414517
+      }
+    ],
+    "5.1 SkillDataException + SkillCatalogService 구현": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110433
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161150238
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161415150
+      }
+    ],
+    "5.2 카탈로그 검증 프로퍼티/통합 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110470
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161425401
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162127687
+      }
+    ],
+    "6. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110513
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166658258
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166663354
+      }
+    ],
+    "7.1 InsufficientAbilityPointsException + SkillService 핵심": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110546
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161426213
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162128506
+      }
+    ],
+    "7.2 랭크업 게이트 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110580
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162134487
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162493471
+      }
+    ],
+    "7.3 랭크업 트랜잭션 효과 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110617
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162135169
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162494307
+      }
+    ],
+    "7.4 AP 소모 가드 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110651
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162135986
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162495204
+      }
+    ],
+    "7.5 AP 정합성 불변식(확장) 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110681
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162136792
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162496056
+      }
+    ],
+    "7.6 랭크업 영구 보너스 합산 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110738
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162137719
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162496940
+      }
+    ],
+    "7.7 스킬 습득 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110797
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162502288
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162906442
+      }
+    ],
+    "7.8 신규 시드/환생 유지 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110829
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162503119
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162907268
+      }
+    ],
+    "7.9 임시 드라이버 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110863
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162503991
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162908180
+      }
+    ],
+    "7.10 랭크업/보너스 예시 단위 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110895
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162504829
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162909318
+      }
+    ],
+    "8. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110929
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166668920
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166674134
+      }
+    ],
+    "9.1 CharacterService 신규 캐릭터 windmill 시드": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110963
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162927823
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163627664
+      }
+    ],
+    "9.2 PlayScreenViewHelper 스킬 보너스 주입": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160110996
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162928573
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163628146
+      }
+    ],
+    "9.3 GlobalExceptionHandler 확장": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111030
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162929401
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163628191
+      }
+    ],
+    "10. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111067
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166679359
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166684625
+      }
+    ],
+    "11.1 뷰 모델 + SkillService 뷰 조립": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111111
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163633842
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165843698
+      }
+    ],
+    "11.2 진행바 프로퍼티 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111165
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165853109
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166414266
+      }
+    ],
+    "11.3 SkillController 엔드포인트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111196
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163634631
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165843999
+      }
+    ],
+    "11.4 skill-popup.html + play.html include": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111230
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163635375
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165844813
+      }
+    ],
+    "11.5 myrpg.js 확장 (팝업·탭·승급 confirm·임시 드라이버)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111263
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165854197
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166412495
+      }
+    ],
+    "11.6 myrpg.css 확장": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111307
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786163636155
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165845605
+      }
+    ],
+    "11.7 컨트롤러 슬라이스 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111384
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786165854857
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166413193
+      }
+    ],
+    "12.1 로컬 H2 세이브 초기화": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111427
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166421011
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166589397
+      }
+    ],
+    "12.2 컨텍스트 로드 스모크 테스트": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111478
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166420427
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166588589
+      }
+    ],
+    "13. 최종 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160111514
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166690728
+      },
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166696049
+      }
+    ],
+    "1. 스킬 분류 값 타입 (신규, 기존 빌드 무영향)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786160880247
+      }
+    ],
+    "2. 카탈로그 모델·정책 (순수, 기존 빌드 무영향)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161137803
+      }
+    ],
+    "4. 영속 모델 + 카탈로그 리소스 (신규)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786161414615
+      }
+    ],
+    "5. 카탈로그 로더 (신규)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162127745
+      }
+    ],
+    "7. 애플리케이션 서비스 (랭크업·보너스·시드·습득·임시 드라이버)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786162909364
+      }
+    ],
+    "11. 표현 계층 배선 (스킬 팝업·승급 모달)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166414338
+      }
+    ],
+    "12. 통합·스모크·로컬 세이브 초기화": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166589449
+      }
+    ],
+    "9. 004 산출물 확장 (원자적, 빌드 그린 유지)": [
+      {
+        "executionId": "3fb7e91f-e1c9-49e7-a9ed-e89742dee92a",
+        "chatSessionId": "sess_999fb122-2589-4904-8ef6-3ea5a1f7008b",
+        "timestamp": 1786166712203
+      }
+    ]
+  }
+}

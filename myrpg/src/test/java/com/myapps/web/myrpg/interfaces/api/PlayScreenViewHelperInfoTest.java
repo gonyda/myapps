@@ -9,29 +9,38 @@ import org.junit.jupiter.api.Test;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
+import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.VitalMax;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link PlayScreenViewHelper#buildInfo(CharacterProgress, RebirthStatus)} 단위 테스트.
  *
  * <p>StatLine 형식, 재능 라벨, 환생 경과/기록 없음 텍스트, AP 매핑,
- * 재능 효과 요약 매핑, 재능 반영 중앙 스탯, 바이탈별 게이지 max를 검증한다.
+ * 재능 효과 요약 매핑, 재능 반영 중앙 스탯, 바이탈별 게이지 max,
+ * 스킬 랭크업 보너스 (+X) 반영을 검증한다.
  *
- * <p><b>Validates: Requirements 4.1, 4.3, 8.4, 8.5, 10.2, 10.3, 10.7</b>
+ * <p><b>Validates: Requirements 4.1, 4.3, 8.4, 8.5, 8.6, 10.2, 10.3, 10.7</b>
  */
 class PlayScreenViewHelperInfoTest {
 
     private PlayScreenViewHelper helper;
+    private SkillService skillService;
 
     @BeforeEach
     void setUp() {
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression());
+        skillService = mock(SkillService.class);
+        when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
+        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService);
     }
 
     @Test
@@ -367,5 +376,62 @@ class PlayScreenViewHelperInfoTest {
         assertThat(info.mp().max()).isEqualTo(190);
         assertThat(info.stamina().max()).isEqualTo(expectedMax.stamina());
         assertThat(info.stamina().max()).isEqualTo(190);
+    }
+
+    /**
+     * 스킬 랭크업 보너스가 0일 때(신규 캐릭터) StatLine 보너스가 "+0"임을 검증한다.
+     *
+     * <p><b>Validates: Requirements 8.5, 8.6</b>
+     */
+    @Test
+    void should_showZeroSkillBonus_when_newCharacterHasNoRankedSkills() {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        final List<StatLine> stats = info.stats();
+        assertThat(stats.get(0).bonus()).isEqualTo("+0");
+        assertThat(stats.get(1).bonus()).isEqualTo("+0");
+        assertThat(stats.get(2).bonus()).isEqualTo("+0");
+        assertThat(stats.get(3).bonus()).isEqualTo("+0.0%");
+        assertThat(stats.get(4).bonus()).isEqualTo("+0");
+    }
+
+    /**
+     * 스킬 랭크업 보너스가 존재할 때 StatLine 보너스에 (+X)가 반영됨을 검증한다.
+     *
+     * <p>예: MELEE 스킬 E랭크(order=1) → STR +1, 나머지 0.
+     *
+     * <p><b>Validates: Requirements 8.5, 8.6</b>
+     */
+    @Test
+    void should_reflectSkillBonus_when_skillRankedUp() {
+        final Stats bonus = new Stats(3, 0, 0, 0, 2);
+        when(skillService.rankupBonus(any())).thenReturn(bonus);
+
+        final CharacterProgress progress = new CharacterProgress(
+                "전사",
+                10,
+                10,
+                0L,
+                TalentType.MELEE,
+                null,
+                190,
+                190,
+                190,
+                "tir-chonaill",
+                6
+        );
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        final List<StatLine> stats = info.stats();
+        assertThat(stats.get(0).bonus()).isEqualTo("+3");
+        assertThat(stats.get(1).bonus()).isEqualTo("+0");
+        assertThat(stats.get(2).bonus()).isEqualTo("+0");
+        assertThat(stats.get(3).bonus()).isEqualTo("+0.0%");
+        assertThat(stats.get(4).bonus()).isEqualTo("+2");
     }
 }

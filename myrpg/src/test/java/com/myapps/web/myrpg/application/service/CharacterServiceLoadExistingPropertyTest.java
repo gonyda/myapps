@@ -61,7 +61,8 @@ class CharacterServiceLoadExistingPropertyTest {
         final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
         when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existingProgress));
 
-        final CharacterService characterService = new CharacterService(mockRepository);
+        final SkillService mockSkillService = mock(SkillService.class);
+        final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
 
         // When: loadOrCreateDefault 호출
         final CharacterProgress result = characterService.loadOrCreateDefault();

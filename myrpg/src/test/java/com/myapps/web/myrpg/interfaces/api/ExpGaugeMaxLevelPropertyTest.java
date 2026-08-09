@@ -7,11 +7,13 @@ import net.jqwik.api.constraints.LongRange;
 
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * EXP 게이지와 최대레벨 표기 프로퍼티 테스트.
@@ -29,7 +31,8 @@ class ExpGaugeMaxLevelPropertyTest {
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
     private final StatProgression statProgression = new StatProgression();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, statProgression);
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
+            experiencePolicy, statProgression, mock(SkillService.class));
 
     /**
      * 레벨이 100 미만일 때 EXP 게이지의 percent와 overlay가

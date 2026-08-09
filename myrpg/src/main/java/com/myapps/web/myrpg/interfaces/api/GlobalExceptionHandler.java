@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.myapps.web.myrpg.application.exception.CharacterCreationException;
+import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import com.myapps.web.myrpg.application.exception.MapViewGenerationException;
 import com.myapps.web.myrpg.application.exception.NodeNotFoundException;
 
@@ -64,6 +65,25 @@ public class GlobalExceptionHandler {
     public String handleCharacterCreation(final CharacterCreationException exception, final Model model) {
         LOG.error("캐릭터 생성/저장 실패: {}", exception.getMessage(), exception);
         model.addAttribute("message", exception.getMessage());
+        return "error";
+    }
+
+    /**
+     * {@link InsufficientAbilityPointsException} 발생 시 승급 거부 안내를 반환한다.
+     *
+     * <p>AP 부족으로 스킬 랭크업이 거부되었음을 사용자에게 안내하며,
+     * 캐릭터 상태(랭크·카운트·AP)는 변경되지 않는다.
+     *
+     * @param exception 발생한 예외
+     * @param model     Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(InsufficientAbilityPointsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleInsufficientAbilityPoints(final InsufficientAbilityPointsException exception,
+                                                  final Model model) {
+        LOG.warn("AP 부족으로 승급 거부: {}", exception.getMessage());
+        model.addAttribute("message", "AP가 부족하여 승급할 수 없습니다.");
         return "error";
     }
 }

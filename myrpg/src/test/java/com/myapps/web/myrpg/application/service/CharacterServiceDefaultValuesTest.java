@@ -15,15 +15,17 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 /**
  * 기본 캐릭터 초기값 및 생성 실패 롤백 동작을 검증하는 단위 테스트.
  *
  * <p>Lv1/누적1/EXP0, 시작 노드, HP/MP/Stamina 현재값, 재능/환생 초기값을 확인하고,
  * 저장 실패 시 {@link CharacterCreationException} 전파 및 롤백 동작을 검증한다.
+ * 신규 캐릭터 생성 시 windmill F 스킬 시드 호출도 검증한다.
  *
- * <p><b>Validates: Requirements 2.2, 2.3, 2.4, 2.7, 2.8, 2.9</b>
+ * <p><b>Validates: Requirements 2.2, 2.3, 2.4, 2.7, 2.8, 2.9, 10.3, 15.4</b>
  */
 class CharacterServiceDefaultValuesTest {
 
@@ -34,9 +36,11 @@ class CharacterServiceDefaultValuesTest {
     private static final int EXPECTED_HP_CURRENT = 100;
     private static final int EXPECTED_MP_CURRENT = 100;
     private static final int EXPECTED_STAMINA_CURRENT = 100;
+    private static final Long SAVED_CHARACTER_ID = 1L;
 
     private final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
-    private final CharacterService characterService = new CharacterService(mockRepository);
+    private final SkillService mockSkillService = mock(SkillService.class);
+    private final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
 
     /**
      * 빈 저장소에서 생성된 캐릭터의 레벨/누적레벨/경험치가 Lv1/누적1/EXP0인지 검증한다.
@@ -165,5 +169,61 @@ class CharacterServiceDefaultValuesTest {
         assertThatThrownBy(() -> characterService.loadOrCreateDefault())
                 .isInstanceOf(CharacterCreationException.class)
                 .hasCause(rootCause);
+    }
+
+    /**
+     * 신규 캐릭터 생성 시 windmill 스킬을 시드하기 위해 seedDefault가 호출되는지 검증한다.
+     */
+    @Test
+    @DisplayName("Req 10.3, 15.4: 신규 캐릭터 생성 시 skillService.seedDefault 호출")
+    void should_callSeedDefault_when_newCharacterCreated() {
+        // Given
+        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
+        when(mockRepository.save(any(CharacterProgress.class)))
+                .thenAnswer(invocation -> {
+                    final CharacterProgress saved = invocation.getArgument(0);
+                    setId(saved, SAVED_CHARACTER_ID);
+                    return saved;
+                });
+
+        // When
+        characterService.loadOrCreateDefault();
+
+        // Then
+        verify(mockSkillService).seedDefault(SAVED_CHARACTER_ID);
+    }
+
+    /**
+     * 기존 캐릭터가 이미 존재할 때에는 seedDefault가 호출되지 않는지 검증한다.
+     */
+    @Test
+    @DisplayName("Req 10.3: 기존 캐릭터 로드 시 seedDefault 미호출")
+    void should_notCallSeedDefault_when_existingCharacterLoaded() {
+        // Given
+        final CharacterProgress existing = CharacterProgress.createDefault();
+        setId(existing, SAVED_CHARACTER_ID);
+        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+
+        // When
+        characterService.loadOrCreateDefault();
+
+        // Then
+        verify(mockSkillService, never()).seedDefault(any());
+    }
+
+    /**
+     * 리플렉션으로 CharacterProgress의 id 필드를 설정한다 (테스트 전용).
+     *
+     * @param progress 대상 엔티티
+     * @param id       설정할 ID 값
+     */
+    private void setId(final CharacterProgress progress, final Long id) {
+        try {
+            final java.lang.reflect.Field idField = CharacterProgress.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(progress, id);
+        } catch (final ReflectiveOperationException exception) {
+            throw new RuntimeException("테스트 ID 설정 실패", exception);
+        }
     }
 }

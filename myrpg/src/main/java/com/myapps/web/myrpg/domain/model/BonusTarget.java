@@ -28,7 +28,10 @@ public enum BonusTarget {
     MP(BonusKind.VITAL),
 
     /** 기력 최대치 (바이탈 계열). */
-    STAMINA(BonusKind.VITAL);
+    STAMINA(BonusKind.VITAL),
+
+    /** 방어력 (스탯 계열). */
+    DEF(BonusKind.STAT);
 
     private final BonusKind kind;
 

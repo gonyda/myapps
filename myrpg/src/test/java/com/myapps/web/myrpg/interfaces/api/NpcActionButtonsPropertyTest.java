@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 
 import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
@@ -26,6 +27,7 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -45,7 +47,8 @@ class NpcActionButtonsPropertyTest {
     private static final int MAX_LINE_LENGTH = 20;
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(experiencePolicy, new StatProgression());
+    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
+            experiencePolicy, new StatProgression(), mock(SkillService.class));
 
     /**
      * 임의 Npc를 talkingNpc로 전달했을 때, 반환되는 {@code npcActions} 라벨 목록이

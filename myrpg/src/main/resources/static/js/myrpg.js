@@ -331,3 +331,60 @@ function swapProgressResponse(html) {
         }
     }
 }
+
+// ─── 스킬 팝업 ─────────────────────────────
+function openSkillPopup() {
+    document.getElementById('skillOverlay').classList.add('open');
+    loadSkillTab('all');
+}
+
+function closeSkillPopup() {
+    document.getElementById('skillOverlay').classList.remove('open');
+}
+
+function loadSkillTab(tab) {
+    fetch('/skills?tab=' + tab)
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('skillListArea').innerHTML = html;
+            document.getElementById('rankupModalArea').style.display = 'none';
+        });
+}
+
+function openRankUpModal(skillId) {
+    fetch('/skills/' + skillId + '/rankup-modal')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('rankupModalArea').innerHTML = html;
+            document.getElementById('rankupModalArea').style.display = 'block';
+        });
+}
+
+function closeRankUpModal() {
+    document.getElementById('rankupModalArea').style.display = 'none';
+}
+
+function confirmRankUp(skillId) {
+    if (!confirm('승급하시겠습니까?')) return;
+    fetch('/skills/' + skillId + '/rankup', { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('rankupModalArea').innerHTML = html;
+        });
+}
+
+function fillUsage(skillId) {
+    fetch('/skills/' + skillId + '/dev/fill-usage', { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('rankupModalArea').innerHTML = html;
+        });
+}
+
+function fillKill(skillId) {
+    fetch('/skills/' + skillId + '/dev/fill-kill', { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('rankupModalArea').innerHTML = html;
+        });
+}

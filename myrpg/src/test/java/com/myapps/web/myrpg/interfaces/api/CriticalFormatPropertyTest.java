@@ -4,10 +4,12 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.IntRange;
 
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Critical 표시 포맷 프로퍼티 테스트.
@@ -22,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CriticalFormatPropertyTest {
 
     private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            new ExperiencePolicy(), new StatProgression());
+            new ExperiencePolicy(), new StatProgression(), mock(SkillService.class));
 
     /**
      * 임의의 t(0~9999)에서 formatCritical(t)이 "{t/10}.{t%10}%" 형식임을 검증한다.

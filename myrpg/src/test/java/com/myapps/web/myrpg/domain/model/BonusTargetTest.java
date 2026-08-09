@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * {@link BonusTarget} 7개 상수의 {@link BonusKind} 분류를 검증하는 단위 테스트.
+ * {@link BonusTarget} 8개 상수의 {@link BonusKind} 분류를 검증하는 단위 테스트.
  *
- * <p>스탯 계열 4종({@code STR}/{@code DEX}/{@code INT}/{@code CRITICAL})은 {@code STAT}으로,
+ * <p>스탯 계열 5종({@code STR}/{@code DEX}/{@code INT}/{@code CRITICAL}/{@code DEF})은 {@code STAT}으로,
  * 바이탈 계열 3종({@code HP}/{@code MP}/{@code STAMINA})은 {@code VITAL}로 분류되는지 확인한다.
  *
  * <p><b>Validates: Requirements 11.2</b>
@@ -68,5 +68,13 @@ class BonusTargetTest {
     @Test
     void should_classifyAsVital_when_stamina() {
         assertThat(BonusTarget.STAMINA.kind()).isEqualTo(BonusKind.VITAL);
+    }
+
+    /**
+     * DEF의 kind()는 STAT임을 검증한다.
+     */
+    @Test
+    void should_classifyAsStat_when_def() {
+        assertThat(BonusTarget.DEF.kind()).isEqualTo(BonusKind.STAT);
     }
 }

@@ -46,7 +46,8 @@ class CharacterServiceDefaultCreationPropertyTest {
         when(mockRepository.save(org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        final CharacterService characterService = new CharacterService(mockRepository);
+        final SkillService mockSkillService = mock(SkillService.class);
+        final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
 
         // When: loadOrCreateDefault 호출
         final CharacterProgress result = characterService.loadOrCreateDefault();

@@ -78,7 +78,8 @@ class CharacterServiceTurnSavePropertyTest {
 
         final ActionLog actionLog = new ActionLog(FIXED_CLOCK);
         final MovementService movementService = new MovementService(mockMapService, actionLog);
-        final CharacterService characterService = new CharacterService(mockRepository);
+        final SkillService mockSkillService = mock(SkillService.class);
+        final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,

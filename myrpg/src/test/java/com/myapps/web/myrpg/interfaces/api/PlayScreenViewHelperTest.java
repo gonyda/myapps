@@ -13,6 +13,7 @@ import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -20,8 +21,12 @@ import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
+import com.myapps.web.myrpg.domain.model.Stats;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link PlayScreenViewHelper}의 게이지 계산 및 뷰 조립 단위 테스트.
@@ -32,7 +37,9 @@ class PlayScreenViewHelperTest {
 
     @BeforeEach
     void setUp() {
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression());
+        final SkillService skillService = mock(SkillService.class);
+        when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
+        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService);
     }
 
     @Test

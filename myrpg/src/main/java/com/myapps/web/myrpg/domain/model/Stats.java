@@ -81,4 +81,14 @@ public record Stats(
     public Stats withCriticalDelta(final int delta) {
         return new Stats(str, dex, intelligence, critical + delta, defense);
     }
+
+    /**
+     * DEF(방어력)에 델타를 더한 새 인스턴스를 반환한다.
+     *
+     * @param delta DEF에 가산할 값 (음수 가능)
+     * @return DEF만 변경된 새 Stats 인스턴스
+     */
+    public Stats withDefenseDelta(final int delta) {
+        return new Stats(str, dex, intelligence, critical, defense + delta);
+    }
 }

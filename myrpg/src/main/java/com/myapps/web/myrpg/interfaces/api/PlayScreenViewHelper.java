@@ -14,6 +14,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -44,17 +45,21 @@ public class PlayScreenViewHelper {
 
     private final ExperiencePolicy experiencePolicy;
     private final StatProgression statProgression;
+    private final SkillService skillService;
 
     /**
      * PlayScreenViewHelper를 생성한다.
      *
      * @param experiencePolicy 경험치 정책 (EXP 게이지 최대값 산출용)
      * @param statProgression  스탯 진행 정책 (HP/MP/Stamina 최대값 산출용)
+     * @param skillService     스킬 서비스 (랭크업 영구 보너스 합산용)
      */
     public PlayScreenViewHelper(final ExperiencePolicy experiencePolicy,
-                                final StatProgression statProgression) {
+                                final StatProgression statProgression,
+                                final SkillService skillService) {
         this.experiencePolicy = experiencePolicy;
         this.statProgression = statProgression;
+        this.skillService = skillService;
     }
 
     /**
@@ -195,7 +200,7 @@ public class PlayScreenViewHelper {
      * 정보 팝업 뷰 모델을 조립한다.
      *
      * <p>상단: 닉네임, 현재 레벨, 누적 레벨, 재능 라벨, 보유 AP, 재능 효과 요약, HP·MP·Stamina 게이지.
-     * 중앙: {@code levelStatsFor(level, talent)} 본체 + 스킬 보너스 {@link Stats#ZERO}로 StatLine 목록.
+     * 중앙: {@code levelStatsFor(level, talent)} 본체 + {@code skillService.rankupBonus(characterId)}로 StatLine 목록.
      * 하단: 환생 가능 여부, 경과 텍스트.
      *
      * @param progress      캐릭터 진행상황
@@ -212,7 +217,7 @@ public class PlayScreenViewHelper {
         final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
 
         final Stats levelStats = statProgression.levelStatsFor(level, talent);
-        final Stats skillBonus = Stats.ZERO;
+        final Stats skillBonus = skillService.rankupBonus(progress.getId());
         final List<StatLine> stats = buildStatLines(levelStats, skillBonus);
 
         final String elapsedText = rebirthElapsedText(rebirthStatus);

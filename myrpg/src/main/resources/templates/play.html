@@ -38,6 +38,22 @@
     <!-- 전체 맵 팝업 -->
     <div th:replace="~{fragments/full-map :: full-map}"></div>
 
+    <!-- 스킬 팝업 (목록 + 승급 모달) -->
+    <div class="overlay" id="skillOverlay">
+        <div class="panel">
+            <header class="panel-header">
+                <h3>스킬</h3>
+                <button class="panel-close" onclick="closeSkillPopup()" aria-label="닫기">✕</button>
+            </header>
+            <div class="panel-body" id="skillPanelBody">
+                <!-- 스킬 목록 (탭 + 행) -->
+                <div id="skillListArea"></div>
+                <!-- 승급 모달 (열렸을 때만 표시) -->
+                <div id="rankupModalArea" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
     <script th:src="@{/js/myrpg.js}"></script>
 </body>
 </html>

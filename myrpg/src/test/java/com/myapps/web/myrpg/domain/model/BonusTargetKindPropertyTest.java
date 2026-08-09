@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BonusTargetKindPropertyTest {
 
     private static final Set<BonusTarget> STAT_TARGETS = Set.of(
-            BonusTarget.STR, BonusTarget.DEX, BonusTarget.INT, BonusTarget.CRITICAL);
+            BonusTarget.STR, BonusTarget.DEX, BonusTarget.INT, BonusTarget.CRITICAL, BonusTarget.DEF);
 
     private static final Set<BonusTarget> VITAL_TARGETS = Set.of(
             BonusTarget.HP, BonusTarget.MP, BonusTarget.STAMINA);
@@ -154,7 +154,7 @@ class BonusTargetKindPropertyTest {
     /**
      * 모든 {@link BonusTarget} 상수를 균등하게 선택하는 Arbitrary 제공자.
      *
-     * @return BonusTarget 7종 중 하나를 선택하는 Arbitrary
+     * @return BonusTarget 8종 중 하나를 선택하는 Arbitrary
      */
     @Provide
     Arbitrary<BonusTarget> bonusTargets() {
