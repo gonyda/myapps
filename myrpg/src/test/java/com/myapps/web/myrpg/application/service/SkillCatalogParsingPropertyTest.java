@@ -49,7 +49,7 @@ class SkillCatalogParsingPropertyTest {
 
     private static final String[] VALID_TYPES = {"NORMAL", "HEAVY", "DEFENSE"};
     private static final String[] VALID_TALENTS = {"MELEE", "ARCHERY", "MAGIC", "COMMON"};
-    private static final String[] REQUIRED_FIELDS = {"id", "label", "type", "talent", "resourceCost", "effectSummary"};
+    private static final String[] REQUIRED_FIELDS = {"id", "label", "type", "talent", "resourceCost", "description"};
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final SkillCatalogService skillCatalogService = new SkillCatalogService(objectMapper);
@@ -249,7 +249,7 @@ class SkillCatalogParsingPropertyTest {
             final String uniqueId = original.id() + "_" + i;
             result.add(new SkillInputData(
                     uniqueId, original.label(), original.type(), original.talent(),
-                    original.resourceCost(), original.effectSummary()));
+                    original.resourceCost(), original.description()));
         }
         return List.copyOf(result);
     }
@@ -276,7 +276,7 @@ class SkillCatalogParsingPropertyTest {
         final SkillInputData first = result.getFirst();
         result.set(0, new SkillInputData(
                 first.id(), first.label(), invalidType, first.talent(),
-                first.resourceCost(), first.effectSummary()));
+                first.resourceCost(), first.description()));
         return List.copyOf(result);
     }
 
@@ -286,7 +286,7 @@ class SkillCatalogParsingPropertyTest {
         final SkillInputData first = result.getFirst();
         result.set(0, new SkillInputData(
                 first.id(), first.label(), first.type(), invalidTalent,
-                first.resourceCost(), first.effectSummary()));
+                first.resourceCost(), first.description()));
         return List.copyOf(result);
     }
 
@@ -296,7 +296,7 @@ class SkillCatalogParsingPropertyTest {
         final SkillInputData second = result.get(1);
         result.set(1, new SkillInputData(
                 first.id(), second.label(), second.type(), second.talent(),
-                second.resourceCost(), second.effectSummary()));
+                second.resourceCost(), second.description()));
         return List.copyOf(result);
     }
 
@@ -341,7 +341,7 @@ class SkillCatalogParsingPropertyTest {
         skillNode.put("type", data.type());
         skillNode.put("talent", data.talent());
         skillNode.put("resourceCost", data.resourceCost());
-        skillNode.put("effectSummary", data.effectSummary());
+        skillNode.put("description", data.description());
 
         if ("DEFENSE".equals(data.type())) {
             addFullRankMap(skillNode, "blockRateByRank");
@@ -361,7 +361,7 @@ class SkillCatalogParsingPropertyTest {
         skillNode.put("type", data.type());
         skillNode.put("talent", data.talent());
         skillNode.put("resourceCost", data.resourceCost());
-        skillNode.put("effectSummary", data.effectSummary());
+        skillNode.put("description", data.description());
 
         if ("DEFENSE".equals(data.type())) {
             if (injectDefect) {
@@ -414,7 +414,7 @@ class SkillCatalogParsingPropertyTest {
      * @param type          스킬 타입 문자열
      * @param talent        스킬 재능 문자열
      * @param resourceCost  자원 소모량
-     * @param effectSummary 효과 요약
+     * @param description 스킬 설명
      */
     record SkillInputData(
             String id,
@@ -422,7 +422,7 @@ class SkillCatalogParsingPropertyTest {
             String type,
             String talent,
             int resourceCost,
-            String effectSummary
+            String description
     ) {
     }
 }

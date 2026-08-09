@@ -32,6 +32,9 @@
                 <div class="skill-progress-fill"
                      th:if="${!row.maxed()}"
                      th:style="'width:' + ${row.progressPercent()} + '%'"></div>
+                <div class="skill-progress-fill maxed"
+                     th:if="${row.maxed()}"
+                     style="width:100%"></div>
                 <span class="skill-progress-text"
                       th:if="${row.maxed()}"
                       th:text="'MAX'">MAX</span>
@@ -40,9 +43,8 @@
                       th:text="${row.progressPercent()} + '%'">0%</span>
             </div>
             <button class="skill-rankup-btn"
-                    th:classappend="${row.rankable()} ? ' rankable' : ' disabled'"
-                    th:disabled="${!row.rankable()}"
-                    th:attr="onclick=${row.rankable()} ? 'openRankUpModal(\'' + ${row.id()} + '\')' : null"
+                    th:classappend="${row.maxed()} ? ' maxed' : (${row.progressPercent() == 100} ? ' ready' : '')"
+                    th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"
                     th:text="${row.maxed()} ? 'MAX' : '승급'">승급</button>
         </div>
     </div>
@@ -50,83 +52,101 @@
 
 <!-- 승급 모달 fragment -->
 <div th:fragment="rankup-modal" id="rankupModalContent">
-    <div class="rankup-modal-body">
-        <!-- 스킬명 + 현재 랭크 → 다음 랭크 -->
-        <div class="rankup-header">
+    <div class="rankup-modal-inner">
+        <!-- 헤더 -->
+        <div class="rankup-modal-header">
             <span class="rankup-skill-name" th:text="${rankUp.label()}">윈드밀</span>
             <span class="rankup-rank-transition" th:if="${!rankUp.maxed()}">
                 <span th:text="${rankUp.currentRankLabel()}">F</span>
                 →
-                <span th:text="${rankUp.nextRankLabel()}">E</span>
+                <span class="rankup-next-rank" th:text="${rankUp.nextRankLabel()}">E</span>
             </span>
-            <span class="rankup-rank-max" th:if="${rankUp.maxed()}">최고 랭크</span>
+            <span class="rankup-rank-max" th:if="${rankUp.maxed()}">Master</span>
+            <button class="rankup-modal-close" onclick="closeRankUpModal()">✕</button>
         </div>
 
-        <!-- 수치 정보 (maxed가 아닐 때만 다음 랭크 미리보기) -->
-        <div class="rankup-stats" th:if="${!rankUp.maxed()}">
-            <div class="rankup-stat-row">
-                <span class="rankup-stat-label" th:text="${rankUp.primaryStatLabel()}">보너스 데미지</span>
-                <span class="rankup-stat-value">
-                    <span th:text="${rankUp.currentValue()}">100</span>%
-                    →
-                    <span th:text="${rankUp.nextValue()}">120</span>%
-                </span>
+        <!-- 본문 -->
+        <div class="rankup-modal-body">
+
+            <!-- 스킬 설명 -->
+            <div class="rankup-description">
+                <p th:text="${rankUp.description()}">스킬 설명이 여기에 표시됩니다.</p>
             </div>
-            <!-- 디펜스 스킬 반격 배율 (딜스킬은 null) -->
-            <div class="rankup-stat-row" th:if="${rankUp.currentCounterValue() != null}">
-                <span class="rankup-stat-label">반격 배율</span>
-                <span class="rankup-stat-value">
-                    <span th:text="${rankUp.currentCounterValue()}">30</span>%
-                    →
-                    <span th:text="${rankUp.nextCounterValue()}">35</span>%
-                </span>
+
+            <!-- ① 스킬 정보 -->
+            <div class="rankup-section">
+                <h4 class="rankup-section-title">스킬 정보</h4>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label" th:text="${rankUp.primaryStatLabel()}">보너스 데미지</span>
+                    <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
+                        <span th:text="${rankUp.currentValue()}">100</span>%
+                        →
+                        <span class="rankup-stat-next" th:text="${rankUp.nextValue()}">120</span>%
+                    </span>
+                    <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
+                          th:text="${rankUp.currentValue()} + '%'">170%</span>
+                </div>
+                <div class="rankup-stat-row" th:if="${rankUp.currentCounterValue() != null}">
+                    <span class="rankup-stat-label">반격 배율</span>
+                    <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
+                        <span th:text="${rankUp.currentCounterValue()}">30</span>%
+                        →
+                        <span class="rankup-stat-next" th:text="${rankUp.nextCounterValue()}">35</span>%
+                    </span>
+                    <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
+                          th:text="${rankUp.currentCounterValue()} + '%'">100%</span>
+                </div>
             </div>
+
+            <!-- ② 소모 자원 -->
+            <div class="rankup-section">
+                <h4 class="rankup-section-title">소모 자원</h4>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label" th:text="${rankUp.resourceKindLabel()}">스태미나</span>
+                    <span class="rankup-stat-value" th:text="${rankUp.resourceCost()}">10</span>
+                </div>
+            </div>
+
+            <!-- ③ 수련 방법 -->
+            <div class="rankup-section" th:if="${!rankUp.maxed()}">
+                <h4 class="rankup-section-title">수련 방법</h4>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label">사용 횟수</span>
+                    <span class="rankup-stat-value"
+                          th:classappend="${rankUp.usageCurrent() >= rankUp.usageRequired()} ? ' fulfilled' : ''"
+                          th:text="${rankUp.usageCurrent()} + ' / ' + ${rankUp.usageRequired()}">0 / 5</span>
+                </div>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label">막타 처치</span>
+                    <span class="rankup-stat-value"
+                          th:classappend="${rankUp.killCurrent() >= rankUp.killRequired()} ? ' fulfilled' : ''"
+                          th:text="${rankUp.killCurrent()} + ' / ' + ${rankUp.killRequired()}">0 / 1</span>
+                </div>
+            </div>
+
+            <!-- ④ 승급 비용 -->
+            <div class="rankup-section" th:if="${!rankUp.maxed()}">
+                <h4 class="rankup-section-title">승급 비용</h4>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label">필요 AP</span>
+                    <span class="rankup-stat-value" th:text="${rankUp.apCost()}">1</span>
+                </div>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label">보유 AP</span>
+                    <span class="rankup-stat-value"
+                          th:classappend="${rankUp.apOwned() >= rankUp.apCost()} ? ' fulfilled' : ''"
+                          th:text="${rankUp.apOwned()}">10</span>
+                </div>
+            </div>
+
         </div>
 
-        <!-- 자원 소모 -->
-        <div class="rankup-resource">
-            <span class="rankup-resource-label" th:text="${rankUp.resourceKindLabel()}">스태미나</span>
-            <span class="rankup-resource-cost" th:text="${rankUp.resourceCost()}">10</span>
-        </div>
-
-        <!-- 진행 상황 (maxed가 아닐 때) -->
-        <div class="rankup-progress" th:if="${!rankUp.maxed()}">
-            <div class="rankup-progress-row">
-                <span class="rankup-progress-label">사용 횟수</span>
-                <span class="rankup-progress-value"
-                      th:text="${rankUp.usageCurrent()} + ' / ' + ${rankUp.usageRequired()}">0 / 5</span>
-            </div>
-            <div class="rankup-progress-row">
-                <span class="rankup-progress-label">막타 처치</span>
-                <span class="rankup-progress-value"
-                      th:text="${rankUp.killCurrent()} + ' / ' + ${rankUp.killRequired()}">0 / 1</span>
-            </div>
-        </div>
-
-        <!-- AP 정보 (maxed가 아닐 때) -->
-        <div class="rankup-ap" th:if="${!rankUp.maxed()}">
-            <div class="rankup-ap-row">
-                <span class="rankup-ap-label">필요 AP</span>
-                <span class="rankup-ap-value" th:text="${rankUp.apCost()}">1</span>
-            </div>
-            <div class="rankup-ap-row">
-                <span class="rankup-ap-label">보유 AP</span>
-                <span class="rankup-ap-value" th:text="${rankUp.apOwned()}">10</span>
-            </div>
-        </div>
-
-        <!-- 버튼 영역 -->
-        <div class="rankup-actions">
+        <!-- 하단 버튼 -->
+        <div class="rankup-modal-footer" th:if="${!rankUp.maxed()}">
             <button class="rankup-confirm-btn"
-                    th:if="${!rankUp.maxed()}"
                     th:classappend="${rankUp.rankable()} ? ' rankable' : ' disabled'"
                     th:disabled="${!rankUp.rankable()}"
                     th:attr="onclick=${rankUp.rankable()} ? 'confirmRankUp(\'' + ${rankUp.id()} + '\')' : null">승급</button>
-            <button class="rankup-close-btn" onclick="closeRankUpModal()">닫기</button>
-        </div>
-
-        <!-- 임시 드라이버 버튼 (maxed가 아닐 때만 표시) -->
-        <div class="rankup-temp-drivers" th:if="${!rankUp.maxed()}">
             <button class="rankup-temp-btn"
                     th:attr="onclick='fillUsage(\'' + ${rankUp.id()} + '\')'">사용횟수 업</button>
             <button class="rankup-temp-btn"

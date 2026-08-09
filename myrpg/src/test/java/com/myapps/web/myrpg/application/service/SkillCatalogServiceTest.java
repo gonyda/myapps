@@ -51,7 +51,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "회전 베기"
+                  "description": "회전 베기"
                 }]
                 """;
 
@@ -91,7 +91,7 @@ class SkillCatalogServiceTest {
                     "R9":58,"R8":63,"R7":67,"R6":72,"R5":77,"R4":81,
                     "R3":86,"R2":91,"R1":95,"MASTER":100
                   },
-                  "effectSummary": "방어 후 반격"
+                  "description": "방어 후 반격"
                 }]
                 """;
 
@@ -134,7 +134,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 }]
                 """;
 
@@ -157,7 +157,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 }]
                 """;
 
@@ -180,7 +180,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 }]
                 """;
 
@@ -203,7 +203,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 },{
                   "id": "dup",
                   "label": "두번째",
@@ -215,7 +215,7 @@ class SkillCatalogServiceTest {
                     "R9":178,"R8":186,"R7":194,"R6":202,"R5":210,"R4":218,
                     "R3":226,"R2":234,"R1":242,"MASTER":250
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 }]
                 """;
 
@@ -236,7 +236,7 @@ class SkillCatalogServiceTest {
                   "multiplierByRank": {
                     "F":90,"E":95,"D":101
                   },
-                  "effectSummary": "테스트"
+                  "description": "테스트"
                 }]
                 """;
 
@@ -259,7 +259,7 @@ class SkillCatalogServiceTest {
                     "R9":123,"R8":128,"R7":134,"R6":139,"R5":145,"R4":150,
                     "R3":156,"R2":161,"R1":166,"MASTER":170
                   },
-                  "effectSummary": "회전 베기"
+                  "description": "회전 베기"
                 }]
                 """;
 
@@ -283,7 +283,7 @@ class SkillCatalogServiceTest {
                     "R9":178,"R8":186,"R7":194,"R6":202,"R5":210,"R4":218,
                     "R3":226,"R2":234,"R1":242,"MASTER":250
                   },
-                  "effectSummary": "화염 폭발"
+                  "description": "화염 폭발"
                 }]
                 """;
 
@@ -308,7 +308,7 @@ class SkillCatalogServiceTest {
                     "R9":178,"R8":186,"R7":194,"R6":202,"R5":210,"R4":218,
                     "R3":226,"R2":234,"R1":242,"MASTER":250
                   },
-                  "effectSummary": "화염 폭발"
+                  "description": "화염 폭발"
                 }]
                 """;
 

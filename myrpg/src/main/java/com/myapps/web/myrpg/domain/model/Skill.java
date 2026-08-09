@@ -5,7 +5,7 @@ package com.myapps.web.myrpg.domain.model;
  *
  * <p>모든 스킬은 고유 식별자({@link #id()}), 표시 라벨({@link #label()}),
  * 공격/방어 유형({@link #type()}), 재능 분류({@link #talent()}),
- * 자원 소모량({@link #resourceCost()}), 효과 요약({@link #effectSummary()})을 가진다.
+ * 자원 소모량({@link #resourceCost()}), 스킬 설명({@link #description()})을 가진다.
  *
  * <p>구현체는 딜스킬({@link DamageSkill})과 방어스킬({@link DefenseSkill})로 제한된다.
  *
@@ -52,9 +52,11 @@ public sealed interface Skill permits DamageSkill, DefenseSkill {
     int resourceCost();
 
     /**
-     * 스킬 효과를 한 줄로 요약한 문자열을 반환한다.
+     * 스킬에 대한 설명 문자열을 반환한다.
      *
-     * @return 효과 요약 문자열
+     * <p>스킬의 특성과 활용법을 간략히 서술한다.
+     *
+     * @return 스킬 설명 문자열
      */
-    String effectSummary();
+    String description();
 }

@@ -187,6 +187,7 @@ class SkillControllerTest {
     private SkillRankUpView dummyRankUpView() {
         return new SkillRankUpView(
                 SKILL_ID, "윈드밀",
+                "무기를 크게 휘둘러 주변의 적을 회전 베기로 공격한다. 여러 적에게 동시에 피해를 줄 수 있어 다수와의 전투에서 유용하다.",
                 "F", "E",
                 "보너스 데미지", 100, 150,
                 null, null,

@@ -224,6 +224,7 @@ public class SkillService {
 
         return new SkillRankUpView(
                 catalog.id(), catalog.label(),
+                catalog.description(),
                 currentRankLabel, nextRankLabel,
                 primaryStatLabel, currentValue, nextValue,
                 currentCounterValue, nextCounterValue,

@@ -16,7 +16,7 @@ import java.util.Map;
  * @param resourceCost             자원 소모량 (랭크 무관 고정)
  * @param blockRateByRank          랭크별 피해 경감률(%) 맵 (16키)
  * @param counterMultiplierByRank  랭크별 반격 배율(%) 맵 (16키)
- * @param effectSummary            효과 요약 문자열
+ * @param description              스킬 설명 문자열
  */
 public record DefenseSkill(
         String id,
@@ -26,6 +26,6 @@ public record DefenseSkill(
         int resourceCost,
         Map<SkillRank, Integer> blockRateByRank,
         Map<SkillRank, Integer> counterMultiplierByRank,
-        String effectSummary
+        String description
 ) implements Skill {
 }

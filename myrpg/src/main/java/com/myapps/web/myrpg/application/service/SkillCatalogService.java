@@ -136,7 +136,7 @@ public class SkillCatalogService {
         final String typeString = extractRequiredField(skillNode, "type");
         final String talentString = extractRequiredField(skillNode, "talent");
         final int resourceCost = extractRequiredInt(skillNode, "resourceCost", id);
-        final String effectSummary = extractRequiredField(skillNode, "effectSummary");
+        final String description = extractRequiredField(skillNode, "description");
 
         final SkillType skillType = SkillType.fromString(typeString)
                 .orElseThrow(() -> new SkillDataException(
@@ -148,32 +148,32 @@ public class SkillCatalogService {
 
         if (skillType == SkillType.DEFENSE) {
             return parseDefenseSkill(skillNode, id, label, skillType, skillTalent,
-                    resourceCost, effectSummary);
+                    resourceCost, description);
         }
         return parseDamageSkill(skillNode, id, label, skillType, skillTalent,
-                resourceCost, effectSummary);
+                resourceCost, description);
     }
 
     private DamageSkill parseDamageSkill(final JsonNode skillNode, final String id,
                                          final String label, final SkillType type,
                                          final SkillTalent talent, final int resourceCost,
-                                         final String effectSummary) {
+                                         final String description) {
         final Map<SkillRank, Integer> multiplierByRank =
                 parseRankMap(skillNode, "multiplierByRank", id);
         return new DamageSkill(id, label, type, talent, resourceCost,
-                multiplierByRank, effectSummary);
+                multiplierByRank, description);
     }
 
     private DefenseSkill parseDefenseSkill(final JsonNode skillNode, final String id,
                                            final String label, final SkillType type,
                                            final SkillTalent talent, final int resourceCost,
-                                           final String effectSummary) {
+                                           final String description) {
         final Map<SkillRank, Integer> blockRateByRank =
                 parseRankMap(skillNode, "blockRateByRank", id);
         final Map<SkillRank, Integer> counterMultiplierByRank =
                 parseRankMap(skillNode, "counterMultiplierByRank", id);
         return new DefenseSkill(id, label, type, talent, resourceCost,
-                blockRateByRank, counterMultiplierByRank, effectSummary);
+                blockRateByRank, counterMultiplierByRank, description);
     }
 
     private Map<SkillRank, Integer> parseRankMap(final JsonNode skillNode,

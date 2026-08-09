@@ -242,7 +242,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ===== 정보 팝업 열기/닫기 =====
 function openInfo() {
-    document.getElementById("infoOverlay").classList.add("open");
+    fetch('/info')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('infoContent').innerHTML = html;
+            document.getElementById('infoOverlay').classList.add('open');
+        });
 }
 function closeInfo() {
     document.getElementById("infoOverlay").classList.remove("open");
@@ -340,6 +345,7 @@ function openSkillPopup() {
 
 function closeSkillPopup() {
     document.getElementById('skillOverlay').classList.remove('open');
+    closeRankUpModal();
 }
 
 function loadSkillTab(tab) {
@@ -347,7 +353,6 @@ function loadSkillTab(tab) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('skillListArea').innerHTML = html;
-            document.getElementById('rankupModalArea').style.display = 'none';
         });
 }
 
@@ -356,12 +361,12 @@ function openRankUpModal(skillId) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('rankupModalArea').innerHTML = html;
-            document.getElementById('rankupModalArea').style.display = 'block';
+            document.getElementById('rankupOverlay').classList.add('open');
         });
 }
 
 function closeRankUpModal() {
-    document.getElementById('rankupModalArea').style.display = 'none';
+    document.getElementById('rankupOverlay').classList.remove('open');
 }
 
 function confirmRankUp(skillId) {
@@ -370,6 +375,8 @@ function confirmRankUp(skillId) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('rankupModalArea').innerHTML = html;
+            // 목록도 갱신
+            loadSkillTab(getCurrentSkillTab());
         });
 }
 
@@ -378,6 +385,7 @@ function fillUsage(skillId) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('rankupModalArea').innerHTML = html;
+            loadSkillTab(getCurrentSkillTab());
         });
 }
 
@@ -386,5 +394,19 @@ function fillKill(skillId) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('rankupModalArea').innerHTML = html;
+            loadSkillTab(getCurrentSkillTab());
         });
+}
+
+function getCurrentSkillTab() {
+    var activeTab = document.querySelector('.skill-tab.active');
+    if (!activeTab) return 'all';
+    var text = activeTab.textContent.trim();
+    switch (text) {
+        case '근접전투': return 'melee';
+        case '활': return 'archery';
+        case '마법': return 'magic';
+        case '공용': return 'common';
+        default: return 'all';
+    }
 }

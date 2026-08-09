@@ -113,6 +113,23 @@ public class PlayScreenController {
     }
 
     /**
+     * 정보 팝업 내용만 반환한다 (동적 갱신용).
+     *
+     * <p>스킬 승급 등으로 스탯 보너스가 변경된 후 정보 팝업을 열 때
+     * 최신 데이터를 반영하기 위해 사용한다.
+     *
+     * @param model Spring MVC 모델
+     * @return info-content fragment 뷰 이름
+     */
+    @GetMapping("/info")
+    public String infoContent(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/info-popup :: info-content";
+    }
+
+    /**
      * 턴제 이동을 처리하고 갱신된 HTML 프래그먼트를 반환한다.
      *
      * <p>이동 성공 시 캐릭터 진행상황을 저장한 뒤 갱신된 top-bar, center,

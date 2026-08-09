@@ -8,6 +8,7 @@ package com.myapps.web.myrpg.application.dto;
  *
  * @param id                   스킬 카탈로그 ID
  * @param label                스킬 표시명
+ * @param description          스킬 설명 문자열
  * @param currentRankLabel     현재 랭크 라벨
  * @param nextRankLabel        다음 랭크 라벨 (MASTER일 경우 null)
  * @param primaryStatLabel     주요 스탯 라벨 (예: "보너스 데미지", "피해 경감")
@@ -29,6 +30,7 @@ package com.myapps.web.myrpg.application.dto;
 public record SkillRankUpView(
         String id,
         String label,
+        String description,
         String currentRankLabel,
         String nextRankLabel,
         String primaryStatLabel,

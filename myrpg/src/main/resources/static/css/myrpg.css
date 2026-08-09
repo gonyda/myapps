@@ -1014,6 +1014,7 @@
             border-radius: 999px;
             overflow: hidden;
             min-width: 0;
+            position: relative;
         }
 
         .skill-progress-fill {
@@ -1025,21 +1026,60 @@
             transition: width 0.3s ease;
         }
 
+        .skill-progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--fs-xs) * 0.85);
+            color: #333;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
         /* ===== 승급 버튼 ===== */
         .skill-rankup-btn {
             background: #333;
-            color: #666;
+            color: #888;
             border: 1px solid #444;
             border-radius: var(--radius);
             padding: calc(var(--gap) * 0.5) calc(var(--pad) * 0.8);
             font-size: var(--fs-xs);
-            cursor: not-allowed;
+            cursor: pointer;
             white-space: nowrap;
             flex-shrink: 0;
             min-height: calc(var(--touch) * 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .skill-rankup-btn:active {
+            background: #3a3a3a;
+        }
+
+        .skill-rankup-btn.ready {
+            background: #3a5a8a;
+            color: #fff;
+            border-color: #5a8aba;
+            box-shadow: 0 0 6px rgba(90, 138, 186, 0.4);
+        }
+
+        .skill-rankup-btn.ready:active {
+            background: #4a6a9a;
+        }
+
+        .skill-rankup-btn.disabled {
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .skill-rankup-btn.maxed {
+            background: #3a3520;
+            color: #f0c419;
+            border-color: #5a4d1a;
+            cursor: pointer;
         }
 
         .skill-rankup-btn.rankable {
@@ -1054,96 +1094,109 @@
             background: #4a6a9a;
         }
 
-        /* ===== 승급 모달 ===== */
-        .skill-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            padding: var(--pad);
+        /* ===== 승급 모달 오버레이 ===== */
+        .rankup-overlay {
             z-index: 1100;
         }
 
-        .skill-modal.open {
-            display: flex;
-        }
-
-        .skill-modal-content {
+        .rankup-modal-panel {
             width: 88%;
             max-width: 360px;
             background: #2a2a2a;
             border: 1px solid #555;
             border-radius: var(--radius);
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
 
-        .skill-modal-header {
+        .rankup-modal-inner {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rankup-modal-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: calc(var(--gap) * 0.5);
             padding: var(--pad);
             border-bottom: 1px solid #444;
-            flex-shrink: 0;
         }
 
-        .skill-modal-header h4 {
+        .rankup-skill-name {
             color: #fff;
             font-size: var(--fs-md);
-            margin: 0;
+            font-weight: bold;
         }
 
-        .skill-modal-body {
+        .rankup-rank-transition {
+            color: #aaa;
+            font-size: var(--fs-sm);
+        }
+
+        .rankup-next-rank {
+            color: #f0c419;
+            font-weight: bold;
+        }
+
+        .rankup-rank-max {
+            color: #f0c419;
+            font-size: var(--fs-sm);
+            font-weight: bold;
+        }
+
+        .rankup-modal-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: var(--fs-lg);
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .rankup-modal-close:active {
+            color: #ddd;
+        }
+
+        .rankup-modal-body {
             padding: var(--pad);
             display: flex;
             flex-direction: column;
-            gap: calc(var(--gap) * 0.6);
+            gap: 0;
             overflow-y: auto;
             max-height: 50dvh;
         }
 
-        .skill-modal-footer {
-            display: flex;
-            gap: var(--gap);
-            padding: var(--pad);
-            border-top: 1px solid #444;
-            flex-shrink: 0;
+        .rankup-section {
+            padding: calc(var(--gap) * 0.6) 0;
+            border-bottom: 1px solid #333;
         }
 
-        .skill-modal-footer button {
-            flex: 1;
-            min-height: var(--touch);
-            border-radius: var(--radius);
+        .rankup-section:last-child {
+            border-bottom: none;
+        }
+
+        .rankup-section-title {
+            font-size: var(--fs-xs);
+            color: #f0c419;
+            font-weight: bold;
+            margin: 0 0 calc(var(--gap) * 0.4) 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rankup-description {
+            padding: calc(var(--gap) * 0.4) 0 calc(var(--gap) * 0.6) 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .rankup-description p {
             font-size: var(--fs-sm);
-            cursor: pointer;
-            border: 1px solid #555;
+            color: #bbb;
+            line-height: 1.5;
+            margin: 0;
         }
 
-        .skill-modal-footer .confirm-btn {
-            background: #3a5a8a;
-            color: #fff;
-            border-color: #5a8aba;
-        }
-
-        .skill-modal-footer .confirm-btn:active {
-            background: #4a6a9a;
-        }
-
-        .skill-modal-footer .cancel-btn {
-            background: #333;
-            color: #aaa;
-        }
-
-        .skill-modal-footer .cancel-btn:active {
-            background: #444;
-            color: #ddd;
-        }
-
-        /* ===== 스탯 비교 행 (모달 내부) ===== */
-        .skill-stat-line {
+        .rankup-stat-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1152,30 +1205,65 @@
             border-bottom: 1px dotted #333;
         }
 
-        .skill-stat-line:last-child {
+        .rankup-stat-row:last-child {
             border-bottom: none;
         }
 
-        .skill-stat-line .stat-label {
+        .rankup-stat-label {
             color: #aaa;
         }
 
-        .skill-stat-line .stat-current {
+        .rankup-stat-value {
             color: #ddd;
         }
 
-        .skill-stat-line .stat-arrow {
-            color: #888;
-            padding: 0 calc(var(--gap) * 0.4);
+        .rankup-stat-value.fulfilled {
+            color: #4caf50;
         }
 
-        .skill-stat-line .stat-next {
+        .rankup-stat-next {
             color: #f0c419;
             font-weight: bold;
         }
 
-        /* ===== 임시 드라이버 버튼 (개발용, 점선 테두리로 구분) ===== */
-        .skill-temp-btn {
+        .rankup-modal-footer {
+            display: flex;
+            gap: var(--gap);
+            padding: var(--pad);
+            border-top: 1px solid #444;
+            align-items: center;
+        }
+
+        .rankup-confirm-btn {
+            background: #333;
+            color: #888;
+            border: 1px solid #444;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.6) calc(var(--pad) * 1);
+            font-size: var(--fs-sm);
+            cursor: not-allowed;
+            min-height: calc(var(--touch) * 0.8);
+        }
+
+        .rankup-confirm-btn.rankable {
+            background: #3a5a8a;
+            color: #fff;
+            border-color: #5a8aba;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(90, 138, 186, 0.4);
+        }
+
+        .rankup-confirm-btn.rankable:active {
+            background: #4a6a9a;
+        }
+
+        .rankup-confirm-btn.disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .rankup-temp-btn {
             background: transparent;
             color: #888;
             border: 1px dashed #666;
@@ -1186,7 +1274,7 @@
             white-space: nowrap;
         }
 
-        .skill-temp-btn:active {
+        .rankup-temp-btn:active {
             background: #2a2a2a;
             color: #aaa;
             border-color: #888;
