@@ -20,10 +20,14 @@ import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
+import com.myapps.web.myrpg.application.service.MonsterDialogueService;
+import com.myapps.web.myrpg.application.service.MonsterEncounterService;
+import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
@@ -32,6 +36,7 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.TalentType;
 
@@ -49,6 +54,7 @@ public class PlayScreenController {
 
     private static final String NOTIFICATION_TYPE = "system";
     private static final String GROWTH_TYPE = "growth";
+    private static final String COMBAT_TYPE = "combat";
     private static final long TEST_EXP_AMOUNT = 500L;
     private static final long TEST_GOLD_AMOUNT = 100L;
     private static final long MINUTES_PER_HOUR = 60;
@@ -60,21 +66,27 @@ public class PlayScreenController {
     private final NpcService npcService;
     private final NpcDialogueService npcDialogueService;
     private final ProgressionService progressionService;
+    private final MonsterService monsterService;
+    private final MonsterDialogueService monsterDialogueService;
+    private final MonsterEncounterService monsterEncounterService;
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
 
     /**
      * PlayScreenController를 생성한다.
      *
-     * @param characterService     캐릭터 서비스
-     * @param mapService           맵 서비스
-     * @param ambienceService      상황 멘트 서비스
-     * @param movementService      이동 처리 서비스
-     * @param npcService           NPC 데이터 서비스
-     * @param npcDialogueService   NPC 대사 선택 서비스
-     * @param progressionService   경험치/레벨업/사망/환생 서비스
-     * @param actionLog            세션 보관 행동 로그
-     * @param playScreenViewHelper 뷰 모델 조립 헬퍼
+     * @param characterService          캐릭터 서비스
+     * @param mapService                맵 서비스
+     * @param ambienceService           상황 멘트 서비스
+     * @param movementService           이동 처리 서비스
+     * @param npcService                NPC 데이터 서비스
+     * @param npcDialogueService        NPC 대사 선택 서비스
+     * @param progressionService        경험치/레벨업/사망/환생 서비스
+     * @param monsterService            몬스터 카탈로그 조회 서비스
+     * @param monsterDialogueService    몬스터 조우 대사 선택 서비스
+     * @param monsterEncounterService   필드 진입 선공 판정 서비스
+     * @param actionLog                 세션 보관 행동 로그
+     * @param playScreenViewHelper      뷰 모델 조립 헬퍼
      */
     public PlayScreenController(final CharacterService characterService,
                                 final MapService mapService,
@@ -83,6 +95,9 @@ public class PlayScreenController {
                                 final NpcService npcService,
                                 final NpcDialogueService npcDialogueService,
                                 final ProgressionService progressionService,
+                                final MonsterService monsterService,
+                                final MonsterDialogueService monsterDialogueService,
+                                final MonsterEncounterService monsterEncounterService,
                                 final ActionLog actionLog,
                                 final PlayScreenViewHelper playScreenViewHelper) {
         this.characterService = characterService;
@@ -92,6 +107,9 @@ public class PlayScreenController {
         this.npcService = npcService;
         this.npcDialogueService = npcDialogueService;
         this.progressionService = progressionService;
+        this.monsterService = monsterService;
+        this.monsterDialogueService = monsterDialogueService;
+        this.monsterEncounterService = monsterEncounterService;
         this.actionLog = actionLog;
         this.playScreenViewHelper = playScreenViewHelper;
     }
@@ -152,6 +170,13 @@ public class PlayScreenController {
 
         if (result instanceof MovementResult.Moved) {
             characterService.saveTurn(progress);
+
+            final List<Monster> monstersOnNode = monsterService.byNode(progress.getCurrentNodeId());
+            final Optional<Monster> ambusher = monsterEncounterService.rollPreemptiveStrike(monstersOnNode);
+            ambusher.ifPresent(monster -> {
+                actionLog.add(monster.name() + " 선공!", COMBAT_TYPE);
+                model.addAttribute("preemptiveMonsterName", monster.name());
+            });
         }
 
         final PlayScreenView view = buildViewFromProgress(progress);
@@ -194,6 +219,59 @@ public class PlayScreenController {
                 progress, minimap, fullMap, ambience, interactions, talkingNpc, dialogue, logs);
         model.addAttribute("view", view);
         return "fragments/npc-response";
+    }
+
+    /**
+     * 몬스터 조우를 처리하고 센터 프래그먼트를 반환한다.
+     *
+     * <p>지정된 몬스터와의 조우를 시작하여 몬스터 이름·레벨·HP·대사·행동 버튼을
+     * 포함한 센터 영역을 완전히 교체하는 프래그먼트를 반환한다.
+     * 현재 노드의 상호작용 목록(NPC+몬스터)도 함께 재구성된다.
+     *
+     * <p>미지 몬스터 ID이거나 현재 노드에 배치되지 않은 몬스터를 요청하면
+     * 예외 없이 대사·행동 버튼을 비운 채 정상 렌더된다(관용 설계).
+     *
+     * <p>현재는 조우 대사와 {@code 전투} 플레이스홀더 버튼만 표시한다.
+     * 6순위(전투 시스템) 구현 시 {@code 전투} 버튼이 {@code POST /battle/start}로
+     * 교체되어 실제 전투 턴 진입·데미지 계산·드랍 지급 흐름을 시작하게 된다.
+     *
+     * @param monsterId 조우 대상 몬스터 ID
+     * @param model     Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/monster-response"}
+     */
+    @PostMapping("/monster/encounter")
+    public String encounterMonster(@RequestParam final String monsterId,
+                                   final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final String currentNodeId = progress.getCurrentNodeId();
+
+        final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
+        final List<Monster> monstersOnNode = monsterService.byNode(currentNodeId);
+        final List<InteractionItem> interactions =
+                playScreenViewHelper.buildInteractions(npcsOnNode, monstersOnNode);
+
+        final Optional<Monster> targetMonster = monsterService.byId(monsterId);
+
+        final TalkTarget talkTarget;
+        if (targetMonster.isPresent()) {
+            final Monster monster = targetMonster.get();
+            final String dialogue = monsterDialogueService.selectLine(monster);
+            actionLog.add(monster.name() + "와(과) 마주쳤다.", COMBAT_TYPE);
+            talkTarget = TalkTarget.ofMonster(monster, dialogue);
+        } else {
+            talkTarget = TalkTarget.EMPTY;
+        }
+
+        final MapNode currentNode = mapService.node(currentNodeId);
+        final MinimapView minimap = mapService.minimap(currentNodeId);
+        final FullMapView fullMap = mapService.fullMap(currentNodeId);
+        final String ambience = ambienceService.ambience(currentNode);
+        final List<ActionLogEntry> logs = actionLog.getEntries();
+
+        final PlayScreenView view = playScreenViewHelper.buildPlayScreen(
+                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, null);
+        model.addAttribute("view", view);
+        return "fragments/monster-response";
     }
 
     /**
@@ -343,7 +421,9 @@ public class PlayScreenController {
         final List<ActionLogEntry> logs = actionLog.getEntries();
 
         final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
-        final List<InteractionItem> interactions = playScreenViewHelper.buildInteractions(npcsOnNode);
+        final List<Monster> monstersOnNode = monsterService.byNode(currentNodeId);
+        final List<InteractionItem> interactions =
+                playScreenViewHelper.buildInteractions(npcsOnNode, monstersOnNode);
 
         final RebirthStatus status = progressionService.rebirthStatus(progress);
         final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);

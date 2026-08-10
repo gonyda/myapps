@@ -15,7 +15,7 @@ import net.jqwik.api.Provide;
 import org.mockito.Mockito;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
-import com.myapps.web.myrpg.application.dto.NpcActionButton;
+import com.myapps.web.myrpg.application.dto.ActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
@@ -76,12 +76,12 @@ class NpcActionButtonsPropertyTest {
                 progress, null, null, null, null, npc, null, List.of());
 
         // Then
-        final List<NpcActionButton> npcActions = view.npcActions();
+        final List<ActionButton> npcActions = view.npcActions();
         assertThat(npcActions).isNotNull();
         assertThat(npcActions).hasSize(expectedLabels.size());
 
         final List<String> actualLabels = npcActions.stream()
-                .map(NpcActionButton::label)
+                .map(ActionButton::label)
                 .toList();
         assertThat(actualLabels).isEqualTo(expectedLabels);
     }

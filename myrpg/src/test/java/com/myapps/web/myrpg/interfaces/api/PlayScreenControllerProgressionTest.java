@@ -23,6 +23,9 @@ import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
+import com.myapps.web.myrpg.application.service.MonsterDialogueService;
+import com.myapps.web.myrpg.application.service.MonsterEncounterService;
+import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
@@ -87,6 +90,15 @@ class PlayScreenControllerProgressionTest {
 
     @MockitoBean
     private PlayScreenViewHelper playScreenViewHelper;
+
+    @MockitoBean
+    private MonsterService monsterService;
+
+    @MockitoBean
+    private MonsterDialogueService monsterDialogueService;
+
+    @MockitoBean
+    private MonsterEncounterService monsterEncounterService;
 
     /**
      * GET / 정보 팝업 상/중/하 영역이 올바르게 렌더링되는지 검증한다.
@@ -387,7 +399,8 @@ class PlayScreenControllerProgressionTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());
@@ -405,7 +418,8 @@ class PlayScreenControllerProgressionTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());

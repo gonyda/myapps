@@ -198,6 +198,12 @@ function move(dx, dy) {
                     oldGrid.innerHTML = newGrid.innerHTML;
                 }
             }
+
+            // 선공 판정 신호 확인
+            var preemptiveEl = container.querySelector("#preemptiveSignal");
+            if (preemptiveEl) {
+                alert("몬스터 선공 발동");
+            }
         });
 }
 
@@ -214,17 +220,56 @@ function talkToNpc(npcId) {
             if (!html) {
                 return;
             }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newCenter = container.querySelector(".center");
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
+            swapCenter(html);
         });
+}
+
+// ===== center 영역 교체 공통 함수 =====
+function swapCenter(html) {
+    var container = document.createElement("div");
+    container.innerHTML = html;
+    var newCenter = container.querySelector(".center");
+    if (newCenter) {
+        var oldCenter = document.querySelector(".center");
+        if (oldCenter) {
+            oldCenter.replaceWith(newCenter);
+        }
+    }
+}
+
+// ===== 상호작용 버튼 클릭 분기 (NPC/몬스터) =====
+function onInteractionClick(el) {
+    var npcId = el.getAttribute("data-npc-id");
+    var monsterId = el.getAttribute("data-monster-id");
+    if (npcId) {
+        talkToNpc(npcId);
+    } else if (monsterId) {
+        encounterMonster(monsterId);
+    }
+}
+
+// ===== 몬스터 조우: POST /monster/encounter 호출 + .center swap =====
+function encounterMonster(monsterId) {
+    fetch("/monster/encounter?monsterId=" + encodeURIComponent(monsterId), { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) {
+                return;
+            }
+            swapCenter(html);
+        });
+}
+
+// ===== 몬스터 행동 버튼 (6순위 전투 seam - 현재 placeholder) =====
+// 6순위(전투 시스템) 구현 시 이 함수의 alert를 POST /battle/start 호출로 교체한다.
+// 그때 전투 턴 진입·데미지 계산·드랍 지급·HP 감소 흐름이 시작된다.
+function monsterAction(label) {
+    alert("구현 예정입니다");
 }
 
 // ===== NPC 행동 버튼 (라벨에 따라 분기) =====

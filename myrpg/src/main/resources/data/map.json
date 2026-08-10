@@ -49,7 +49,8 @@
       "type": "field",
       "x": 0,
       "y": 1,
-      "links": ["tir-chonaill", "dugald-south"]
+      "links": ["tir-chonaill", "dugald-south"],
+      "monsters": ["raccoon"]
     },
     {
       "id": "dugald-south",

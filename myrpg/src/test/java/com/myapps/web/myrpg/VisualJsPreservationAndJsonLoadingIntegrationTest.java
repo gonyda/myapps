@@ -45,7 +45,8 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
             "templates/fragments/action-log.html",
             "templates/fragments/panel-popup.html",
             "templates/fragments/full-map.html",
-            "templates/fragments/move-response.html"
+            "templates/fragments/move-response.html",
+            "templates/fragments/monster-response.html"
     );
 
     private static final List<String> CSS_DESIGN_TOKENS = List.of(
@@ -60,6 +61,15 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
 
     private static final List<String> JS_POPUP_FUNCTIONS = List.of(
             "openPanel", "closePanel", "openMap", "closeMap"
+    );
+
+    private static final List<String> JS_MONSTER_FUNCTIONS = List.of(
+            "swapCenter", "onInteractionClick", "encounterMonster", "monsterAction"
+    );
+
+    private static final List<String> CENTER_MONSTER_MARKERS = List.of(
+            "monster-name", "monster-meta", "monster-actions",
+            "monsterAction", "onInteractionClick", "data-monster-id"
     );
 
     // ========== Req 1.2: CSS 디자인 토큰 보존 ==========
@@ -106,6 +116,38 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
             assertThat(js)
                     .as("팝업 함수 '%s' 존재 확인", function)
                     .contains(function);
+        }
+    }
+
+    // ========== Req 007: 몬스터 시스템 JS 함수 보존 ==========
+
+    /**
+     * JS 파일이 몬스터 시스템 관련 함수를 포함하는지 검증한다.
+     */
+    @Test
+    void should_containMonsterFunctions_when_jsMyrpgLoaded() throws IOException {
+        final String js = loadClasspathResource(JS_PATH);
+
+        for (final String function : JS_MONSTER_FUNCTIONS) {
+            assertThat(js)
+                    .as("몬스터 JS 함수 '%s' 존재 확인", function)
+                    .contains(function);
+        }
+    }
+
+    // ========== Req 007: center.html 몬스터 마크업 보존 ==========
+
+    /**
+     * center.html이 몬스터 대사·행동 관련 마크업을 포함하는지 검증한다.
+     */
+    @Test
+    void should_containMonsterMarkup_when_centerHtmlLoaded() throws IOException {
+        final String centerHtml = loadClasspathResource("templates/fragments/center.html");
+
+        for (final String marker : CENTER_MONSTER_MARKERS) {
+            assertThat(centerHtml)
+                    .as("center.html 몬스터 마커 '%s' 존재 확인", marker)
+                    .contains(marker);
         }
     }
 

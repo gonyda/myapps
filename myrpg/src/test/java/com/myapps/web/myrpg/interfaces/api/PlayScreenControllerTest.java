@@ -1,6 +1,7 @@
 package com.myapps.web.myrpg.interfaces.api;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
+import com.myapps.web.myrpg.application.service.MonsterDialogueService;
+import com.myapps.web.myrpg.application.service.MonsterEncounterService;
+import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
@@ -83,6 +87,15 @@ class PlayScreenControllerTest {
     @MockitoBean
     private PlayScreenViewHelper playScreenViewHelper;
 
+    @MockitoBean
+    private MonsterService monsterService;
+
+    @MockitoBean
+    private MonsterDialogueService monsterDialogueService;
+
+    @MockitoBean
+    private MonsterEncounterService monsterEncounterService;
+
     /**
      * GET / 요청 시 play 뷰가 반환되는지 검증한다.
      */
@@ -99,7 +112,9 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -134,7 +149,9 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("새로운 장소");
         when(actionLog.getEntries()).thenReturn(List.of(logEntry));
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -170,7 +187,9 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -206,7 +225,9 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -250,7 +271,8 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -286,7 +308,8 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
@@ -319,7 +342,8 @@ class PlayScreenControllerTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList())).thenReturn(List.of());
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());

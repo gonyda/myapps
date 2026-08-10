@@ -1,5 +1,6 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -10,16 +11,18 @@ import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
-import com.myapps.web.myrpg.application.dto.NpcActionButton;
+import com.myapps.web.myrpg.application.dto.ActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
+import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
+import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
@@ -135,7 +138,7 @@ public class PlayScreenViewHelper {
      *
      * <p>{@code talkingNpc}가 {@code null}이면 NPC 이름·대사·행동 버튼을 모두 비운다.
      * {@code talkingNpc}가 존재하면 이름·대사를 채우고, 해당 타입의 행동 라벨을
-     * 정의 순서대로 {@link NpcActionButton}으로 변환한다.
+     * 정의 순서대로 {@link ActionButton}으로 변환한다.
      *
      * @param progress     캐릭터 진행상황
      * @param minimap      미니맵 뷰 모델
@@ -163,7 +166,8 @@ public class PlayScreenViewHelper {
      *
      * <p>{@code talkingNpc}가 {@code null}이면 NPC 이름·대사·행동 버튼을 모두 비운다.
      * {@code talkingNpc}가 존재하면 이름·대사를 채우고, 해당 타입의 행동 라벨을
-     * 정의 순서대로 {@link NpcActionButton}으로 변환한다.
+     * 정의 순서대로 {@link ActionButton}으로 변환한다.
+     * 내부적으로 {@link TalkTarget} 기반 오버로드에 위임한다.
      *
      * @param progress     캐릭터 진행상황
      * @param minimap      미니맵 뷰 모델
@@ -185,11 +189,64 @@ public class PlayScreenViewHelper {
                                           final String dialogue,
                                           final List<ActionLogEntry> logs,
                                           final InfoPopupView info) {
+        final TalkTarget talkTarget = talkingNpc != null
+                ? TalkTarget.ofNpc(talkingNpc, dialogue)
+                : TalkTarget.EMPTY;
+        return buildPlayScreen(progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+    }
+
+    /**
+     * 플레이 화면 전체 뷰를 집계한다 ({@link TalkTarget} 기반 통합 오버로드).
+     *
+     * <p>{@code talkTarget}의 NPC가 존재하면 NPC 슬롯(이름·대사·행동 버튼)을 채우고
+     * 몬스터 슬롯을 비운다. 몬스터가 존재하면 몬스터 슬롯(이름·대사·레벨·최대HP·행동 버튼)을
+     * 채우고 NPC 슬롯을 비운다. 대상이 없으면({@link TalkTarget#EMPTY}) 양쪽 모두 비운다.
+     *
+     * @param progress     캐릭터 진행상황
+     * @param minimap      미니맵 뷰 모델
+     * @param fullMap      전체지도 뷰 모델
+     * @param ambience     상황 멘트 텍스트
+     * @param interactions 상호작용 대상 목록
+     * @param talkTarget   대사 대상 묶음 (NPC 또는 몬스터 또는 없음)
+     * @param logs         행동 로그 항목 목록
+     * @param info         정보 팝업 뷰 모델 (없으면 {@code null})
+     * @return 플레이 화면 전체 뷰 모델
+     */
+    public PlayScreenView buildPlayScreen(final CharacterProgress progress,
+                                          final MinimapView minimap,
+                                          final FullMapView fullMap,
+                                          final String ambience,
+                                          final List<InteractionItem> interactions,
+                                          final TalkTarget talkTarget,
+                                          final List<ActionLogEntry> logs,
+                                          final InfoPopupView info) {
         final TopBarView topBar = buildTopBar(progress);
-        final String npcName = talkingNpc != null ? talkingNpc.name() : null;
-        final String npcDialogue = talkingNpc != null ? dialogue : null;
-        final List<NpcActionButton> npcActions = buildNpcActions(talkingNpc);
-        return new PlayScreenView(topBar, minimap, fullMap, ambience, npcName, npcDialogue, interactions, npcActions, logs, info);
+
+        String npcName = null;
+        String npcDialogue = null;
+        List<ActionButton> npcActions = null;
+        String monsterName = null;
+        String monsterDialogue = null;
+        Integer monsterLevel = null;
+        Integer monsterMaxHp = null;
+        List<ActionButton> monsterActions = null;
+
+        if (talkTarget.npc() != null) {
+            npcName = talkTarget.npc().name();
+            npcDialogue = talkTarget.dialogue();
+            npcActions = buildNpcActions(talkTarget.npc());
+        } else if (talkTarget.monster() != null) {
+            monsterName = talkTarget.monster().name();
+            monsterDialogue = talkTarget.dialogue();
+            monsterLevel = talkTarget.monster().level();
+            monsterMaxHp = talkTarget.monster().maxHp();
+            monsterActions = buildMonsterActions(talkTarget.monster());
+        }
+
+        return new PlayScreenView(topBar, minimap, fullMap, ambience,
+                npcName, npcDialogue, interactions, npcActions,
+                monsterName, monsterDialogue, monsterLevel, monsterMaxHp, monsterActions,
+                logs, info);
     }
 
     /**
@@ -197,14 +254,36 @@ public class PlayScreenViewHelper {
      *
      * <p>각 NPC의 라벨은 {@code "name emoji"} 형식이며, {@code npc=true}로 표시된다.
      * 반환 목록은 입력 NPC 목록의 정의 순서를 보존한다.
+     * 내부적으로 몬스터 빈 목록과 함께 2인자 버전에 위임한다.
      *
      * @param npcs NPC 목록 (정의 순서)
      * @return 상호작용 항목 목록
      */
     public List<InteractionItem> buildInteractions(final List<Npc> npcs) {
-        return npcs.stream()
+        return buildInteractions(npcs, List.of());
+    }
+
+    /**
+     * NPC와 몬스터 목록을 하나의 상호작용 항목 목록으로 합친다.
+     *
+     * <p>NPC 항목이 먼저 배치되고({@code npc=true}), 이어서 몬스터 항목({@code npc=false})이
+     * 각 입력 목록의 정의 순서를 보존하며 합류한다.
+     *
+     * @param npcs     NPC 목록 (정의 순서)
+     * @param monsters 몬스터 목록 (정의 순서)
+     * @return NPC + 몬스터 상호작용 항목 합류 목록
+     */
+    public List<InteractionItem> buildInteractions(final List<Npc> npcs, final List<Monster> monsters) {
+        final List<InteractionItem> npcItems = npcs.stream()
                 .map(this::toInteractionItem)
                 .toList();
+        final List<InteractionItem> monsterItems = monsters.stream()
+                .map(this::toMonsterInteractionItem)
+                .toList();
+        final ArrayList<InteractionItem> combined = new ArrayList<>(npcItems.size() + monsterItems.size());
+        combined.addAll(npcItems);
+        combined.addAll(monsterItems);
+        return List.copyOf(combined);
     }
 
     /**
@@ -329,18 +408,31 @@ public class PlayScreenViewHelper {
         );
     }
 
-    private List<NpcActionButton> buildNpcActions(final Npc talkingNpc) {
+    private List<ActionButton> buildNpcActions(final Npc talkingNpc) {
         if (talkingNpc == null) {
             return null;
         }
         return talkingNpc.type().actionLabels().stream()
-                .map(NpcActionButton::new)
+                .map(ActionButton::new)
                 .toList();
     }
 
     private InteractionItem toInteractionItem(final Npc npc) {
         final String label = npc.name() + " " + npc.type().emoji();
         return new InteractionItem(npc.id(), label, true);
+    }
+
+    private InteractionItem toMonsterInteractionItem(final Monster monster) {
+        return new InteractionItem(monster.id(), monster.buttonLabel(), false);
+    }
+
+    private List<ActionButton> buildMonsterActions(final Monster monster) {
+        if (monster == null) {
+            return null;
+        }
+        return monster.type().actionLabels().stream()
+                .map(ActionButton::new)
+                .toList();
     }
 
     private int calculatePercent(final int current, final int max) {

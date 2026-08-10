@@ -16,13 +16,16 @@ import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
-import com.myapps.web.myrpg.application.dto.NpcActionButton;
+import com.myapps.web.myrpg.application.dto.ActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
+import com.myapps.web.myrpg.application.service.MonsterDialogueService;
+import com.myapps.web.myrpg.application.service.MonsterEncounterService;
+import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.application.service.MovementService;
 import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
@@ -38,6 +41,7 @@ import com.myapps.web.myrpg.domain.model.NpcType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -87,6 +91,15 @@ class PlayScreenControllerNpcTest {
     @MockitoBean
     private PlayScreenViewHelper playScreenViewHelper;
 
+    @MockitoBean
+    private MonsterService monsterService;
+
+    @MockitoBean
+    private MonsterDialogueService monsterDialogueService;
+
+    @MockitoBean
+    private MonsterEncounterService monsterEncounterService;
+
     /**
      * GET / 요청 시 NPC가 있는 노드에서 interactions에 NPC 버튼이 노출되고
      * npc-talk 영역(npcName/npcDialogue)이 비어 있으며 npcActions가 null인지 검증한다.
@@ -124,7 +137,9 @@ class PlayScreenControllerNpcTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(npcs);
-        when(playScreenViewHelper.buildInteractions(npcs)).thenReturn(interactions);
+        when(monsterService.byNode(nodeId)).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(npcs, List.of())).thenReturn(interactions);
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class)))
                 .thenReturn(new RebirthStatus(true, false, null, null));
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
@@ -166,9 +181,9 @@ class PlayScreenControllerNpcTest {
                 new InteractionItem("neris", "네리스 (대장간)", true)
         );
 
-        final List<NpcActionButton> npcActions = List.of(
-                new NpcActionButton("상점"),
-                new NpcActionButton("수리")
+        final List<ActionButton> npcActions = List.of(
+                new ActionButton("상점"),
+                new ActionButton("수리")
         );
 
         final PlayScreenView talkView = new PlayScreenView(
@@ -251,7 +266,9 @@ class PlayScreenControllerNpcTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("활기찬 도시");
         when(actionLog.getEntries()).thenReturn(List.of(logEntry));
         when(npcService.byNode(anyString())).thenReturn(newNodeNpcs);
-        when(playScreenViewHelper.buildInteractions(newNodeNpcs)).thenReturn(newInteractions);
+        when(monsterService.byNode(anyString())).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(newNodeNpcs, List.of())).thenReturn(newInteractions);
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class)))
                 .thenReturn(new RebirthStatus(true, false, null, null));
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
@@ -305,7 +322,9 @@ class PlayScreenControllerNpcTest {
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(List.of())).thenReturn(List.of());
+        when(monsterService.byNode(nodeId)).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(List.of(), List.of())).thenReturn(List.of());
+        when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
         when(progressionService.rebirthStatus(any(CharacterProgress.class)))
                 .thenReturn(new RebirthStatus(true, false, null, null));
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))

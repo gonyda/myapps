@@ -1755,3 +1755,43 @@
         .bank-modal-cancel:active {
             background: #444;
         }
+
+        /* ===== 몬스터 대사 영역 ===== */
+        .monster-name {
+            display: inline;
+            font-weight: bold;
+        }
+
+        .monster-meta {
+            display: inline;
+            font-size: 0.85em;
+            margin-left: 0.5em;
+            color: #888;
+        }
+
+        .monster-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: calc(var(--gap) * 0.5);
+            flex-shrink: 0;
+        }
+
+        .monster-actions button {
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            padding: 0.4em 1em;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin: 0.2em;
+            min-height: calc(var(--touch) * 0.7);
+            font-size: var(--fs-sm);
+        }
+
+        .monster-actions button:hover {
+            background-color: #a93226;
+        }
+
+        .monster-actions button:active {
+            background-color: #a93226;
+        }

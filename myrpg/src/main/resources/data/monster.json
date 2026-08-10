@@ -1,0 +1,30 @@
+[
+  {
+    "id": "raccoon",
+    "name": "너구리",
+    "type": "normal",
+    "level": 1,
+    "maxHp": 25,
+    "attackPower": 4,
+    "defense": 1,
+    "critical": 10,
+    "experience": 15,
+    "goldDrop": {
+      "min": 3,
+      "max": 10
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_50",
+        "chancePercent": 15,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "lines": [
+      "크르릉… 쉭, 쉭!",
+      "(너구리가 몸을 잔뜩 웅크린 채 경계 태세를 갖춘다.)",
+      "(너구리가 이빨을 드러내며 앞발을 천천히 들어올린다.)"
+    ]
+  }
+]

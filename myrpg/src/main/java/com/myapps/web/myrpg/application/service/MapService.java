@@ -163,22 +163,24 @@ public class MapService {
                 ? nodeJson.get("dungeonId").asText() : null;
         final String theme = nodeJson.has("theme")
                 ? nodeJson.get("theme").asText() : null;
-        final List<String> links = parseLinks(nodeJson);
+        final List<String> links = parseStringArray(nodeJson, "links");
+        final List<String> monsters = nodeJson.has("monsters")
+                ? parseStringArray(nodeJson, "monsters") : List.of();
 
-        return new MapNode(id, name, type, nodeType, x, y, dungeonId, theme, links);
+        return new MapNode(id, name, type, nodeType, x, y, dungeonId, theme, links, monsters);
     }
 
-    private List<String> parseLinks(final JsonNode nodeJson) {
-        final JsonNode linksArray = nodeJson.get("links");
-        if (linksArray == null || !linksArray.isArray()) {
+    private List<String> parseStringArray(final JsonNode nodeJson, final String fieldName) {
+        final JsonNode array = nodeJson.get(fieldName);
+        if (array == null || !array.isArray()) {
             return List.of();
         }
 
-        final List<String> links = new ArrayList<>();
-        for (final JsonNode linkNode : linksArray) {
-            links.add(linkNode.asText());
+        final List<String> result = new ArrayList<>();
+        for (final JsonNode element : array) {
+            result.add(element.asText());
         }
-        return List.copyOf(links);
+        return List.copyOf(result);
     }
 
     private List<Dungeon> parseDungeons(final JsonNode root) {
