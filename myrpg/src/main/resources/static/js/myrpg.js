@@ -266,8 +266,11 @@ function equipItem(ownedItemId) {
     fetch('/inventory/equip?ownedItemId=' + ownedItemId, { method: 'POST' })
         .then(function (r) {
             if (!r.ok) {
-                return r.text().then(function (text) {
-                    alert(text || '착용 할 수 없습니다');
+                return r.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-container p');
+                    alert(msg ? msg.textContent : '착용 할 수 없습니다');
                     return null;
                 });
             }
