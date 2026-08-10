@@ -258,6 +258,16 @@ function usePotion(ownedItemId) {
             if (html) {
                 document.getElementById('inventoryListArea').innerHTML = html;
             }
+            // 상단바 HP 게이지 갱신
+            fetch('/').then(function (r) { return r.text(); }).then(function (page) {
+                var tmp = document.createElement('div');
+                tmp.innerHTML = page;
+                var newTopBar = tmp.querySelector('.top-bar');
+                if (newTopBar) {
+                    var oldTopBar = document.querySelector('.top-bar');
+                    if (oldTopBar) { oldTopBar.replaceWith(newTopBar); }
+                }
+            });
         });
 }
 
