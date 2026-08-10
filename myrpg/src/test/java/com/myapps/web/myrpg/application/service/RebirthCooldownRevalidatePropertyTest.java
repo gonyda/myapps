@@ -82,7 +82,7 @@ class RebirthCooldownRevalidatePropertyTest {
                 mpCurrent,
                 staminaCurrent,
                 "tir-chonaill",
-                abilityPoints
+                abilityPoints, 0L
         );
 
         // Precondition: available == false 확인

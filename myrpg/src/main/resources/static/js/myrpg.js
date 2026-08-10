@@ -227,9 +227,277 @@ function talkToNpc(npcId) {
         });
 }
 
-// ===== NPC 행동 버튼 (미구현 플레이스홀더) =====
-function npcAction() {
-    alert("구현 예정입니다");
+// ===== NPC 행동 버튼 (라벨에 따라 분기) =====
+function npcAction(label) {
+    if (label === '은행') {
+        openBank();
+    } else {
+        alert("구현 예정입니다");
+    }
+}
+
+// ===== 인벤토리 팝업 열기/닫기 =====
+function openInventory() {
+    fetch('/inventory')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('inventoryListArea').innerHTML = html;
+            document.getElementById('inventoryOverlay').classList.add('open');
+        });
+}
+
+function closeInventory() {
+    document.getElementById('inventoryOverlay').classList.remove('open');
+}
+
+// ===== 인벤토리 아이템 사용 =====
+function usePotion(ownedItemId) {
+    fetch('/inventory/use?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('inventoryListArea').innerHTML = html;
+            }
+        });
+}
+
+// ===== 인벤토리 장비 착용 =====
+function equipItem(ownedItemId) {
+    fetch('/inventory/equip?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (r) {
+            if (!r.ok) {
+                return r.text().then(function (text) {
+                    alert(text || '착용 할 수 없습니다');
+                    return null;
+                });
+            }
+            return r.text();
+        })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('inventoryListArea').innerHTML = html;
+            }
+        });
+}
+
+// ===== 인벤토리 장비 해제 =====
+function unequipItem(ownedItemId) {
+    fetch('/inventory/unequip?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('inventoryListArea').innerHTML = html;
+            }
+        });
+}
+
+// ===== 아이템 상세 모달 열기/닫기 (임베드 데이터 활용) =====
+function openItemDetail(element) {
+    var detailData = element.getAttribute('data-detail');
+    var itemName = element.querySelector('.item-name').textContent;
+
+    document.getElementById('itemDetailTitle').textContent = itemName;
+
+    var body = document.getElementById('itemDetailBody');
+    body.innerHTML = '';
+
+    if (detailData) {
+        var lines = detailData.split('||');
+        for (var i = 0; i < lines.length; i++) {
+            var p = document.createElement('p');
+            p.textContent = lines[i];
+            body.appendChild(p);
+        }
+    }
+
+    document.getElementById('itemDetailOverlay').classList.add('open');
+}
+
+function closeItemDetail() {
+    document.getElementById('itemDetailOverlay').classList.remove('open');
+}
+
+// ===== 인벤토리 클라이언트 정렬 =====
+function sortInventory(criteria) {
+    var list = document.getElementById('inventoryList');
+    if (!list) { return; }
+
+    var items = Array.prototype.slice.call(list.querySelectorAll('.inventory-item'));
+    if (items.length === 0) { return; }
+
+    // 정렬 버튼 활성 상태 전환
+    var buttons = document.querySelectorAll('.sort-btn');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+        if (buttons[i].getAttribute('data-sort') === criteria) {
+            buttons[i].classList.add('active');
+        }
+    }
+
+    items.sort(function (a, b) {
+        if (criteria === 'name') {
+            var nameA = a.getAttribute('data-name') || '';
+            var nameB = b.getAttribute('data-name') || '';
+            return nameA.localeCompare(nameB, 'ko');
+        } else if (criteria === 'type') {
+            var typeA = a.getAttribute('data-type') || '';
+            var typeB = b.getAttribute('data-type') || '';
+            if (typeA !== typeB) {
+                return typeA.localeCompare(typeB);
+            }
+            var nameA2 = a.getAttribute('data-name') || '';
+            var nameB2 = b.getAttribute('data-name') || '';
+            return nameA2.localeCompare(nameB2, 'ko');
+        }
+        // 'default' - 획득순 (DOM 순서 = 서버 id asc)
+        var idA = parseInt(a.getAttribute('data-owned-id'), 10) || 0;
+        var idB = parseInt(b.getAttribute('data-owned-id'), 10) || 0;
+        return idA - idB;
+    });
+
+    for (var j = 0; j < items.length; j++) {
+        list.appendChild(items[j]);
+    }
+}
+
+// ===== 임시 골드 버튼 =====
+function goldGain() {
+    fetch('/gold/gain', { method: 'POST' })
+        .then(function (r) {
+            if (!r.ok) { return; }
+            return r.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+function goldSpend() {
+    fetch('/gold/spend', { method: 'POST' })
+        .then(function (r) {
+            if (!r.ok) { return; }
+            return r.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+// ===== 은행 팝업 열기/닫기 =====
+function openBank() {
+    fetch('/bank')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('bankContent').innerHTML = html;
+            document.getElementById('bankOverlay').classList.add('open');
+        });
+}
+
+function closeBank() {
+    document.getElementById('bankOverlay').classList.remove('open');
+    closeBankModal();
+}
+
+// ===== 은행 입금/출금 소형 모달 =====
+var bankModalMode = 'deposit';
+
+function openDepositModal() {
+    bankModalMode = 'deposit';
+    document.getElementById('bankModalTitle').textContent = '입금';
+    document.getElementById('bankModalAmount').value = '';
+    document.getElementById('bankModalOverlay').style.display = 'flex';
+}
+
+function openWithdrawModal() {
+    bankModalMode = 'withdraw';
+    document.getElementById('bankModalTitle').textContent = '출금';
+    document.getElementById('bankModalAmount').value = '';
+    document.getElementById('bankModalOverlay').style.display = 'flex';
+}
+
+function closeBankModal() {
+    var overlay = document.getElementById('bankModalOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+function confirmBankModal() {
+    var amountInput = document.getElementById('bankModalAmount');
+    var amount = parseInt(amountInput.value, 10);
+    if (!amount || amount < 1) {
+        alert('1 이상의 금액을 입력해주세요.');
+        return;
+    }
+    var url = bankModalMode === 'deposit'
+        ? '/bank/deposit?amount=' + amount
+        : '/bank/withdraw?amount=' + amount;
+
+    fetch(url, { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '골드가 부족합니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            refreshBankPopup(html);
+            closeBankModal();
+        });
+}
+
+// ===== 아이템 맡기기/찾기 =====
+function depositItem(ownedItemId) {
+    fetch('/bank/item/deposit?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '요청을 처리할 수 없습니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            refreshBankPopup(html);
+        });
+}
+
+function withdrawItem(ownedItemId) {
+    fetch('/bank/item/withdraw?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '요청을 처리할 수 없습니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            refreshBankPopup(html);
+        });
+}
+
+function refreshBankPopup(html) {
+    document.getElementById('bankContent').innerHTML = html;
 }
 
 // 페이지 로드 시 행동 로그를 맨 아래로 스크롤

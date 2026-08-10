@@ -71,7 +71,7 @@ class LevelUpFullRecoveryPropertyTest {
                 mpCurrent,
                 staCurrent,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // 최소 1회 레벨업을 보장하는 획득량: requiredForNext(level) + extraAmount

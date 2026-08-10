@@ -88,7 +88,7 @@ class NpcTypeTest {
     }
 
     /**
-     * bank 타입의 라벨은 "은행"이고 행동 라벨은 ["아이템 보관", "골드 입/출금"]임을 검증한다.
+     * bank 타입의 라벨은 "은행"이고 행동 라벨은 ["은행"]임을 검증한다.
      */
     @Test
     void should_returnCorrectLabelAndActions_when_bank() {
@@ -98,7 +98,7 @@ class NpcTypeTest {
         final NpcType npcType = result.get();
         assertThat(npcType).isEqualTo(NpcType.BANK);
         assertThat(npcType.label()).isEqualTo("은행");
-        assertThat(npcType.actionLabels()).isEqualTo(List.of("아이템 보관", "골드 입/출금"));
+        assertThat(npcType.actionLabels()).isEqualTo(List.of("은행"));
     }
 
     /**

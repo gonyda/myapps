@@ -4,12 +4,15 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.IntRange;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.service.SkillService;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Critical 표시 포맷 프로퍼티 테스트.
@@ -23,8 +26,14 @@ import static org.mockito.Mockito.mock;
  */
 class CriticalFormatPropertyTest {
 
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            new ExperiencePolicy(), new StatProgression(), mock(SkillService.class));
+    private final PlayScreenViewHelper helper;
+
+    CriticalFormatPropertyTest() {
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(
+                new ExperiencePolicy(), new StatProgression(), mock(SkillService.class), inventoryService);
+    }
 
     /**
      * 임의의 t(0~9999)에서 formatCritical(t)이 "{t/10}.{t%10}%" 형식임을 검증한다.

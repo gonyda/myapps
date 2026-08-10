@@ -47,7 +47,9 @@ class CharacterServiceDefaultCreationPropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final SkillService mockSkillService = mock(SkillService.class);
-        final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
+        final InventoryService mockInventoryService = mock(InventoryService.class);
+        final CharacterService characterService = new CharacterService(
+                mockRepository, mockSkillService, mockInventoryService);
 
         // When: loadOrCreateDefault 호출
         final CharacterProgress result = characterService.loadOrCreateDefault();

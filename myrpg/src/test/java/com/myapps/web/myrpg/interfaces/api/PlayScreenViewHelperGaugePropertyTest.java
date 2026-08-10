@@ -4,8 +4,10 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.IntRange;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -14,6 +16,7 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * 게이지 계산과 수치 오버레이 프로퍼티 테스트.
@@ -30,8 +33,14 @@ class PlayScreenViewHelperGaugePropertyTest {
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
     private final StatProgression statProgression = new StatProgression();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            experiencePolicy, statProgression, mock(SkillService.class));
+    private final PlayScreenViewHelper helper;
+
+    PlayScreenViewHelperGaugePropertyTest() {
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(
+                experiencePolicy, statProgression, mock(SkillService.class), inventoryService);
+    }
 
     /**
      * 임의의 current(0~max)와 max(1~10000)에 대해 퍼센트가
@@ -95,7 +104,7 @@ class PlayScreenViewHelperGaugePropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         final TopBarView topBar = helper.buildTopBar(progress);

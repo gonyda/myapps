@@ -113,7 +113,7 @@ class AbilityPointSpendGuardPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                abilityPoints
+                abilityPoints, 0L
         );
     }
 }

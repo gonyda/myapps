@@ -81,7 +81,7 @@ class RebirthTalentEffectPropertyTest {
                 50,
                 50,
                 "tir-chonaill",
-                abilityPoints
+                abilityPoints, 0L
         );
 
         final int beforeAccLevel = progress.getAccumulatedLevel();

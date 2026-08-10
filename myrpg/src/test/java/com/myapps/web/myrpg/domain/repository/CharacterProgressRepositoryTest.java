@@ -116,13 +116,13 @@ class CharacterProgressRepositoryTest {
                 talents, vitalCurrents, vitalCurrents, vitalCurrents
         ).as((nickname, level, accumulated, exp, talent, hp, mp, stamina) ->
                 new CharacterProgress(nickname, level, accumulated, exp, talent, null,
-                        hp, mp, stamina, "tir-chonaill", 0)
+                        hp, mp, stamina, "tir-chonaill", 0, 0L)
         ).flatMap(base -> nodeIds.map(nodeId ->
                 new CharacterProgress(base.getNickname(), base.getCurrentLevel(),
                         base.getAccumulatedLevel(), base.getExperience(),
                         base.getTalent(), null,
                         base.getHpCurrent(), base.getMpCurrent(), base.getStaminaCurrent(),
-                        nodeId, 0)
+                        nodeId, 0, 0L)
         ));
     }
 }

@@ -82,7 +82,7 @@ class AbilityPointsPersistencePropertyTest {
         final CharacterProgress progress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
                 talent, null, hpCurrent, mpCurrent, staminaCurrent,
-                currentNodeId, abilityPoints);
+                currentNodeId, abilityPoints, 0L);
 
         entityManager.persistAndFlush(progress);
         final Long savedId = progress.getId();
@@ -140,7 +140,7 @@ class AbilityPointsPersistencePropertyTest {
         final CharacterProgress progress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
                 talent, lastRebirthAt, hpCurrent, mpCurrent, staminaCurrent,
-                currentNodeId, abilityPoints);
+                currentNodeId, abilityPoints, 0L);
 
         entityManager.persistAndFlush(progress);
         final Long savedId = progress.getId();

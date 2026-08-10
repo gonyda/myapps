@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 아이템 상세 모달 (인벤토리·은행 공용, 모달 위 모달) -->
+<div class="overlay item-detail-overlay" id="itemDetailOverlay" th:fragment="item-detail">
+    <div class="item-detail-modal">
+        <header class="item-detail-header">
+            <h4 id="itemDetailTitle">아이템 상세</h4>
+            <button class="panel-close" onclick="closeItemDetail()" aria-label="닫기">✕</button>
+        </header>
+        <div class="item-detail-body" id="itemDetailBody">
+            <!-- JS가 data-detail 속성에서 읽어 렌더 -->
+        </div>
+    </div>
+</div>
+</body>
+</html>

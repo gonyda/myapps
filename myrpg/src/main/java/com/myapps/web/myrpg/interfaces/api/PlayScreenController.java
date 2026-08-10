@@ -20,6 +20,7 @@ import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -49,6 +50,7 @@ public class PlayScreenController {
     private static final String NOTIFICATION_TYPE = "system";
     private static final String GROWTH_TYPE = "growth";
     private static final long TEST_EXP_AMOUNT = 500L;
+    private static final long TEST_GOLD_AMOUNT = 100L;
     private static final long MINUTES_PER_HOUR = 60;
 
     private final CharacterService characterService;
@@ -267,6 +269,55 @@ public class PlayScreenController {
             final long hours = remaining.toHours();
             final long minutes = remaining.toMinutes() % MINUTES_PER_HOUR;
             actionLog.add("환생까지 " + hours + "시간 " + minutes + "분 남았습니다", NOTIFICATION_TYPE);
+        }
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
+     * 골드 획득(임시 버튼)을 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>실제 획득/소모 경로(몬스터 5·6순위, 아이템 판매/상점 7순위) 구현 시 제거될 임시 엔드포인트.
+     * 고정 획득량({@code TEST_GOLD_AMOUNT}) 만큼 골드를 획득하고 행동 로그에 기록한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/gold/gain")
+    public String goldGain(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        progress.gainGold(TEST_GOLD_AMOUNT);
+        characterService.saveTurn(progress);
+
+        actionLog.add("골드 " + TEST_GOLD_AMOUNT + " 획득", GROWTH_TYPE);
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
+     * 골드 소모(임시 버튼)를 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>실제 획득/소모 경로(몬스터 5·6순위, 아이템 판매/상점 7순위) 구현 시 제거될 임시 엔드포인트.
+     * 고정 소모량({@code TEST_GOLD_AMOUNT}) 만큼 골드를 차감하고 행동 로그에 기록한다.
+     * 소지금이 부족하면 차감하지 않고 부족 안내를 로그에 기록한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/gold/spend")
+    public String goldSpend(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+
+        try {
+            progress.spendGold(TEST_GOLD_AMOUNT);
+            characterService.saveTurn(progress);
+            actionLog.add("골드 " + TEST_GOLD_AMOUNT + " 소모", GROWTH_TYPE);
+        } catch (InsufficientGoldException e) {
+            actionLog.add("골드가 부족합니다", NOTIFICATION_TYPE);
         }
 
         final PlayScreenView view = buildViewFromProgress(progress);

@@ -72,7 +72,7 @@ class GainExperienceLevelUpPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 경험치 획득

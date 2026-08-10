@@ -1,0 +1,49 @@
+[
+  {
+    "id": "hp_potion_50",
+    "name": "생명력 50 포션",
+    "type": "potion",
+    "healHp": 50,
+    "buyPrice": 30
+  },
+  {
+    "id": "beginner_one_hand_sword",
+    "name": "초보자용 한손검",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      { "target": "STR", "amount": 5 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_two_hand_sword",
+    "name": "초보자용 양손검",
+    "type": "weapon",
+    "kind": "two_handed_sword",
+    "bonuses": [
+      { "target": "STR", "amount": 10 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_shield",
+    "name": "초보자용 방패",
+    "type": "armor",
+    "kind": "shield",
+    "bonuses": [
+      { "target": "DEF", "amount": 5 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_armor",
+    "name": "초보자용 갑옷",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      { "target": "DEF", "amount": 10 }
+    ],
+    "maxDurability": 20
+  }
+]

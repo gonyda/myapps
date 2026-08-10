@@ -14,8 +14,10 @@ import net.jqwik.api.Provide;
 
 import org.mockito.Mockito;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -47,8 +49,14 @@ class NpcActionButtonsPropertyTest {
     private static final int MAX_LINE_LENGTH = 20;
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            experiencePolicy, new StatProgression(), mock(SkillService.class));
+    private final PlayScreenViewHelper helper;
+
+    NpcActionButtonsPropertyTest() {
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(
+                experiencePolicy, new StatProgression(), mock(SkillService.class), inventoryService);
+    }
 
     /**
      * 임의 Npc를 talkingNpc로 전달했을 때, 반환되는 {@code npcActions} 라벨 목록이

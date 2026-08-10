@@ -1,0 +1,752 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 InsufficientGoldException + CharacterProgress.gold 구현": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121291
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281164425
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281618981
+      }
+    ],
+    "1.2 골드 증감 프로퍼티/단위 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121427
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281630902
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282004502
+      }
+    ],
+    "2.1 Bank 엔티티 + 리포지토리": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121472
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281631576
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282005300
+      }
+    ],
+    "2.2 BankService (loadOrCreateDefault·입출금)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121508
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282012084
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283062672
+      }
+    ],
+    "2.3 은행 입출금·영속 프로퍼티/단위 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121540
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283068921
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283422622
+      }
+    ],
+    "2.4 골드 사망/환생 불변 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121575
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283069769
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283423435
+      }
+    ],
+    "3. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121620
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283440857
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283969138
+      }
+    ],
+    "4.1 ItemType / EquipSlot / StorageKind enum 구현": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121657
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281165476
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281619810
+      }
+    ],
+    "4.2 EquipmentKind enum 구현": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121690
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281632279
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282006215
+      }
+    ],
+    "4.3 값 enum 프로퍼티/단위 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121762
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282012877
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283060119
+      }
+    ],
+    "5.1 Item sealed + record + EquipBonus 구현": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121796
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281166560
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281620952
+      }
+    ],
+    "6.1 OwnedItem 엔티티 + 리포지토리": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121836
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281633133
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282006943
+      }
+    ],
+    "6.2 내구도 도메인 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121874
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282013634
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283060901
+      }
+    ],
+    "6.3 영속 라운드트립 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121907
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282014467
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283061718
+      }
+    ],
+    "7.1 item.json 카탈로그 리소스": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121940
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282015332
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283063500
+      }
+    ],
+    "7.2 ItemDataException + ItemCatalogService 구현": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281121973
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283070569
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283424272
+      }
+    ],
+    "7.3 카탈로그 검증 프로퍼티/통합 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122005
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283441773
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283970019
+      }
+    ],
+    "8. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122036
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284748303
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284757370
+      }
+    ],
+    "9.1 EquipConflictException + InventoryFullException + InventoryService 핵심": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122073
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283442518
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283971114
+      }
+    ],
+    "9.2 착용 규칙 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122106
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283976410
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284725054
+      }
+    ],
+    "9.3 스택·용량·이동 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122138
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283977232
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284725859
+      }
+    ],
+    "9.4 보너스 합산·포션 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122170
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283977862
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284726733
+      }
+    ],
+    "9.5 상세 생성·정렬 프로퍼티 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122207
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283978670
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284727478
+      }
+    ],
+    "9.6 기본 지급 프로퍼티/단위 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122276
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283979602
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284728330
+      }
+    ],
+    "10. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122306
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284749150
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284758212
+      }
+    ],
+    "11.1 CharacterService 기본 아이템 시드": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122344
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284749911
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285403516
+      }
+    ],
+    "11.2 PlayScreenViewHelper 장비 보너스 합산": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122374
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284750719
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285404163
+      }
+    ],
+    "11.3 NpcType BANK 라벨 통합 + GlobalExceptionHandler 확장": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122406
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284751612
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285405088
+      }
+    ],
+    "12. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122440
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285416228
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285423350
+      }
+    ],
+    "13.1 뷰 모델 + InventoryService 뷰 조립": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122474
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285417113
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285723388
+      }
+    ],
+    "13.2 PlayScreenController 임시 골드 엔드포인트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122506
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285417901
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285722315
+      }
+    ],
+    "14.1 InventoryController + inventory-popup.html + item-detail.html": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122540
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285729860
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286306509
+      }
+    ],
+    "14.2 left-sidebar.html + myrpg.js/css (인벤토리·상세·정렬·골드 버튼)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122585
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285730805
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286308066
+      }
+    ],
+    "14.3 인벤토리 컨트롤러 슬라이스 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122648
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286317445
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286501142
+      }
+    ],
+    "15.1 BankController + bank-popup.html + center.html 배선": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122703
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285731621
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286308861
+      }
+    ],
+    "15.2 은행 컨트롤러 슬라이스 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122736
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286318095
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286501874
+      }
+    ],
+    "16.1 로컬 H2 세이브 초기화": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122770
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286508969
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286687807
+      }
+    ],
+    "16.2 컨텍스트 로드 스모크 테스트": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122807
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286508208
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286687184
+      }
+    ],
+    "17. 최종 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281122839
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286693805
+      },
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286778280
+      }
+    ],
+    "5. 카탈로그 모델 (순수 record, 기존 빌드 무영향)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786281620997
+      }
+    ],
+    "1. 골드 소지금 (CharacterProgress 확장)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786282004562
+      }
+    ],
+    "4. 아이템 분류 값 타입 (신규, 기존 빌드 무영향)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283060200
+      }
+    ],
+    "6. 영속 모델 (OwnedItem)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283061769
+      }
+    ],
+    "2. 은행 통합 금고 (Bank 엔티티·서비스)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283423473
+      }
+    ],
+    "7. 카탈로그 리소스 + 로더 (신규)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786283970050
+      }
+    ],
+    "9. 인벤토리 애플리케이션 서비스 (착용/사용/이동/보너스/상세/시드)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786284728415
+      }
+    ],
+    "11. 기존 산출물 확장": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285405132
+      }
+    ],
+    "13. 임시 골드 버튼 + 뷰 모델": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786285723434
+      }
+    ],
+    "14. 인벤토리 팝업 (리스트·정렬·상세)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286501185
+      }
+    ],
+    "15. 은행 팝업 (리스트·골드·아이템 이동)": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286501975
+      }
+    ],
+    "16. 통합·스모크·로컬 세이브 초기화": [
+      {
+        "executionId": "da3a9a96-9964-4a12-b744-279e8bc8f05d",
+        "chatSessionId": "sess_522ae2d0-96c0-4dd4-af8f-2e259ff31ff9",
+        "timestamp": 1786286687852
+      }
+    ]
+  }
+}

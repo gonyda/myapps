@@ -29,7 +29,7 @@ public enum NpcType {
     HEALER("healer", "힐러집", "🏥", List.of("상점", "치료받기")),
 
     /** 은행 NPC. */
-    BANK("bank", "은행", "🏦", List.of("아이템 보관", "골드 입/출금"));
+    BANK("bank", "은행", "🏦", List.of("은행"));
 
     private final String typeString;
     private final String label;

@@ -231,7 +231,7 @@ class SkillServiceViewTest {
 
     private CharacterProgress createProgressWithAp(final int ap) {
         return new CharacterProgress("고니", 1, 1, 0L, TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", ap);
+                null, 100, 100, 100, "tir-chonaill", ap, 0L);
     }
 
     private DamageSkill createWindmill() {

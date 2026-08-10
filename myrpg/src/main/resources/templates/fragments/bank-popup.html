@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="overlay" id="bankOverlay" th:fragment="bank-popup">
+    <div class="panel bank-panel">
+        <header class="panel-header">
+            <h3>은행</h3>
+            <button class="panel-close" onclick="closeBank()" aria-label="닫기">✕</button>
+        </header>
+        <div class="panel-body bank-body" id="bankContent">
+            <!-- 은행 내용은 openBank() fetch로 채워짐 -->
+        </div>
+    </div>
+
+    <!-- 입금/출금 소형 모달 -->
+    <div class="bank-modal-overlay" id="bankModalOverlay" style="display:none;">
+        <div class="bank-modal">
+            <h4 id="bankModalTitle">입금</h4>
+            <input type="number" id="bankModalAmount" min="1" placeholder="금액 입력" class="bank-modal-input">
+            <div class="bank-modal-actions">
+                <button class="bank-modal-confirm" id="bankModalConfirm" onclick="confirmBankModal()">확인</button>
+                <button class="bank-modal-cancel" onclick="closeBankModal()">취소</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 은행 내용 fragment (fetch 응답용) -->
+<div th:fragment="bank-content" th:if="${bank != null}">
+    <!-- 골드 영역 -->
+    <div class="bank-gold-area">
+        <div class="bank-gold-slot">
+            <span class="gold-label">은행 골드</span>
+            <span class="gold-value" id="bankGoldValue" th:text="${bank.bankGold}">0</span>
+        </div>
+        <div class="bank-gold-slot">
+            <span class="gold-label">소지 골드</span>
+            <span class="gold-value" id="playerGoldValue" th:text="${bank.playerGold}">0</span>
+        </div>
+        <div class="bank-gold-actions">
+            <button class="bank-gold-btn" onclick="openDepositModal()">입금</button>
+            <button class="bank-gold-btn" onclick="openWithdrawModal()">출금</button>
+        </div>
+    </div>
+
+    <!-- 아이템 목록 (좌: 은행 / 우: 소지품) -->
+    <div class="bank-lists">
+        <!-- 은행 보관 목록 -->
+        <div class="bank-list-section">
+            <h4 class="bank-list-title">은행 보관</h4>
+            <div class="bank-item-list" id="bankItemList">
+                <th:block th:if="${bank.bankItems.isEmpty()}">
+                    <div class="bank-empty">보관 아이템 없음</div>
+                </th:block>
+                <div th:each="item : ${bank.bankItems}" class="bank-item-row">
+                    <span class="item-name" th:text="${item.name}">아이템</span>
+                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+                    <span class="item-qty" th:if="${item.quantity > 1}" th:text="'x' + ${item.quantity}"></span>
+                    <button class="item-detail-btn"
+                            th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                            th:data-name="${item.name}"
+                            onclick="openItemDetail(this)">🔍</button>
+                    <button class="item-action-btn withdraw-btn"
+                            th:data-id="${item.ownedItemId}"
+                            onclick="withdrawItem(this.dataset.id)">찾기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 소지품 목록 -->
+        <div class="bank-list-section">
+            <h4 class="bank-list-title">소지품</h4>
+            <div class="bank-item-list" id="inventoryItemList">
+                <th:block th:if="${bank.inventoryItems.isEmpty()}">
+                    <div class="bank-empty">보유 아이템 없음</div>
+                </th:block>
+                <div th:each="item : ${bank.inventoryItems}" class="bank-item-row">
+                    <span class="item-name">
+                        <span th:text="${item.name}">아이템</span>
+                        <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+                    </span>
+                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+                    <span class="item-qty" th:if="${item.quantity > 1}" th:text="'x' + ${item.quantity}"></span>
+                    <button class="item-detail-btn"
+                            th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                            th:data-name="${item.name}"
+                            onclick="openItemDetail(this)">🔍</button>
+                    <button class="item-action-btn deposit-btn"
+                            th:data-id="${item.ownedItemId}"
+                            onclick="depositItem(this.dataset.id)">맡기기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

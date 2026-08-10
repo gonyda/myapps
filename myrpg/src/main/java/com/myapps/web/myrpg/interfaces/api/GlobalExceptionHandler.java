@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.myapps.web.myrpg.application.exception.CharacterCreationException;
+import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
+import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
+import com.myapps.web.myrpg.application.exception.InventoryFullException;
 import com.myapps.web.myrpg.application.exception.MapViewGenerationException;
 import com.myapps.web.myrpg.application.exception.NodeNotFoundException;
 
@@ -84,6 +87,63 @@ public class GlobalExceptionHandler {
                                                   final Model model) {
         LOG.warn("AP 부족으로 승급 거부: {}", exception.getMessage());
         model.addAttribute("message", "AP가 부족하여 승급할 수 없습니다.");
+        return "error";
+    }
+
+    /**
+     * {@link InsufficientGoldException} 발생 시 골드 부족 안내를 반환한다.
+     *
+     * <p>소지금 또는 은행 잔액이 부족하여 동작이 거부되었음을 사용자에게 안내하며,
+     * 골드 상태는 변경되지 않는다.
+     *
+     * @param exception 발생한 예외
+     * @param model     Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(InsufficientGoldException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleInsufficientGold(final InsufficientGoldException exception,
+                                         final Model model) {
+        LOG.warn("골드 부족으로 동작 거부: {}", exception.getMessage());
+        model.addAttribute("message", exception.getMessage());
+        return "error";
+    }
+
+    /**
+     * {@link EquipConflictException} 발생 시 착용 충돌 안내를 반환한다.
+     *
+     * <p>장비 슬롯 충돌로 착용이 거부되었음을 사용자에게 안내하며,
+     * 장착 상태는 변경되지 않는다.
+     *
+     * @param exception 발생한 예외
+     * @param model     Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(EquipConflictException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleEquipConflict(final EquipConflictException exception,
+                                      final Model model) {
+        LOG.warn("장비 착용 충돌: {}", exception.getMessage());
+        model.addAttribute("message", exception.getMessage());
+        return "error";
+    }
+
+    /**
+     * {@link InventoryFullException} 발생 시 저장소 용량 초과 안내를 반환한다.
+     *
+     * <p>인벤토리 또는 은행 용량(30)을 초과하여 동작이 거부되었음을 사용자에게 안내하며,
+     * 저장소 상태는 변경되지 않는다.
+     *
+     * @param exception 발생한 예외
+     * @param model     Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(InventoryFullException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleInventoryFull(final InventoryFullException exception,
+                                      final Model model) {
+        LOG.warn("저장소 용량 초과: {}", exception.getMessage());
+        model.addAttribute("message", exception.getMessage());
         return "error";
     }
 }

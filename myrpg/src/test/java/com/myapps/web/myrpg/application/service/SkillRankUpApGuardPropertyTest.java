@@ -143,7 +143,7 @@ class SkillRankUpApGuardPropertyTest {
         return new CharacterProgress(
                 "테스트", 1, 1, 0L,
                 TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", abilityPoints);
+                null, 100, 100, 100, "tir-chonaill", abilityPoints, 0L);
     }
 
     private void setId(final CharacterProgress progress, final Long id) {

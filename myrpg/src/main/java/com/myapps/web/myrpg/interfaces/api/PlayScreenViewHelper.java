@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
@@ -14,6 +15,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -46,6 +48,7 @@ public class PlayScreenViewHelper {
     private final ExperiencePolicy experiencePolicy;
     private final StatProgression statProgression;
     private final SkillService skillService;
+    private final InventoryService inventoryService;
 
     /**
      * PlayScreenViewHelper를 생성한다.
@@ -53,13 +56,16 @@ public class PlayScreenViewHelper {
      * @param experiencePolicy 경험치 정책 (EXP 게이지 최대값 산출용)
      * @param statProgression  스탯 진행 정책 (HP/MP/Stamina 최대값 산출용)
      * @param skillService     스킬 서비스 (랭크업 영구 보너스 합산용)
+     * @param inventoryService 인벤토리 서비스 (장비 보너스 합산용)
      */
     public PlayScreenViewHelper(final ExperiencePolicy experiencePolicy,
                                 final StatProgression statProgression,
-                                final SkillService skillService) {
+                                final SkillService skillService,
+                                final InventoryService inventoryService) {
         this.experiencePolicy = experiencePolicy;
         this.statProgression = statProgression;
         this.skillService = skillService;
+        this.inventoryService = inventoryService;
     }
 
     /**
@@ -91,7 +97,12 @@ public class PlayScreenViewHelper {
     public TopBarView buildTopBar(final CharacterProgress progress) {
         final int level = progress.getCurrentLevel();
         final GaugeView exp = buildExpGauge(progress, level);
-        final VitalMax vitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
+        final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
+        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final VitalMax vitalMax = baseVitalMax
+                .withHpDelta(equipBonus.vitalBonus().hp())
+                .withMpDelta(equipBonus.vitalBonus().mp())
+                .withStaminaDelta(equipBonus.vitalBonus().stamina());
         final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
         final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
         final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
@@ -211,14 +222,20 @@ public class PlayScreenViewHelper {
                                    final RebirthStatus rebirthStatus) {
         final int level = progress.getCurrentLevel();
         final TalentType talent = progress.getTalent();
-        final VitalMax vitalMax = statProgression.vitalMaxFor(level, talent);
+        final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, talent);
+        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final VitalMax vitalMax = baseVitalMax
+                .withHpDelta(equipBonus.vitalBonus().hp())
+                .withMpDelta(equipBonus.vitalBonus().mp())
+                .withStaminaDelta(equipBonus.vitalBonus().stamina());
         final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
         final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
         final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
 
         final Stats levelStats = statProgression.levelStatsFor(level, talent);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
-        final List<StatLine> stats = buildStatLines(levelStats, skillBonus);
+        final Stats equipStatBonus = equipBonus.statBonus();
+        final List<StatLine> stats = buildStatLines(levelStats, skillBonus, equipStatBonus);
 
         final String elapsedText = rebirthElapsedText(rebirthStatus);
 
@@ -293,13 +310,22 @@ public class PlayScreenViewHelper {
         return buildGauge((int) progress.getExperience(), (int) requiredExp);
     }
 
-    private List<StatLine> buildStatLines(final Stats levelStats, final Stats skillBonus) {
+    private List<StatLine> buildStatLines(final Stats levelStats,
+                                          final Stats skillBonus,
+                                          final Stats equipStatBonus) {
+        final Stats totalBonus = new Stats(
+                skillBonus.str() + equipStatBonus.str(),
+                skillBonus.dex() + equipStatBonus.dex(),
+                skillBonus.intelligence() + equipStatBonus.intelligence(),
+                skillBonus.critical() + equipStatBonus.critical(),
+                skillBonus.defense() + equipStatBonus.defense()
+        );
         return List.of(
-                new StatLine("STR", String.valueOf(levelStats.str()), "+" + skillBonus.str()),
-                new StatLine("DEX", String.valueOf(levelStats.dex()), "+" + skillBonus.dex()),
-                new StatLine("INT", String.valueOf(levelStats.intelligence()), "+" + skillBonus.intelligence()),
-                new StatLine("CRIT", formatCritical(levelStats.critical()), formatCriticalDelta(skillBonus.critical())),
-                new StatLine("DEF", String.valueOf(levelStats.defense()), "+" + skillBonus.defense())
+                new StatLine("STR", String.valueOf(levelStats.str()), "+" + totalBonus.str()),
+                new StatLine("DEX", String.valueOf(levelStats.dex()), "+" + totalBonus.dex()),
+                new StatLine("INT", String.valueOf(levelStats.intelligence()), "+" + totalBonus.intelligence()),
+                new StatLine("CRIT", formatCritical(levelStats.critical()), formatCriticalDelta(totalBonus.critical())),
+                new StatLine("DEF", String.valueOf(levelStats.defense()), "+" + totalBonus.defense())
         );
     }
 

@@ -113,7 +113,7 @@ class AbilityPointGrantPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                accumulatedLevel - 1
+                accumulatedLevel - 1, 0L
         );
 
         final int apBefore = progress.getAbilityPoints();

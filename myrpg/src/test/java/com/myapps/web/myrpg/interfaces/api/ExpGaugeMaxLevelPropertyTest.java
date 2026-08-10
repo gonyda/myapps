@@ -5,8 +5,10 @@ import net.jqwik.api.Property;
 import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.LongRange;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
@@ -14,6 +16,7 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * EXP 게이지와 최대레벨 표기 프로퍼티 테스트.
@@ -31,8 +34,14 @@ class ExpGaugeMaxLevelPropertyTest {
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
     private final StatProgression statProgression = new StatProgression();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            experiencePolicy, statProgression, mock(SkillService.class));
+    private final PlayScreenViewHelper helper;
+
+    ExpGaugeMaxLevelPropertyTest() {
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(
+                experiencePolicy, statProgression, mock(SkillService.class), inventoryService);
+    }
 
     /**
      * 레벨이 100 미만일 때 EXP 게이지의 percent와 overlay가
@@ -60,7 +69,7 @@ class ExpGaugeMaxLevelPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         final TopBarView topBar = helper.buildTopBar(progress);
@@ -93,7 +102,7 @@ class ExpGaugeMaxLevelPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         final TopBarView topBar = helper.buildTopBar(progress);

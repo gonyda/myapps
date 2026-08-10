@@ -66,7 +66,7 @@ class RebirthCooldownPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 환생 상태 조회
@@ -109,7 +109,7 @@ class RebirthCooldownPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 환생 상태 조회
@@ -153,7 +153,7 @@ class RebirthCooldownPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 환생 상태 조회
@@ -207,7 +207,7 @@ class RebirthCooldownPropertyTest {
                 mpCurrent,
                 staminaCurrent,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 환생 시도

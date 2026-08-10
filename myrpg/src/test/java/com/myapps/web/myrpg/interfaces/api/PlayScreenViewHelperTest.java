@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
@@ -13,6 +14,7 @@ import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.NpcActionButton;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -39,7 +41,9 @@ class PlayScreenViewHelperTest {
     void setUp() {
         final SkillService skillService = mock(SkillService.class);
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService);
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
     }
 
     @Test

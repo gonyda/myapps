@@ -69,7 +69,7 @@ class SkillApInvariantPropertyTest {
         final int initialAp = accumulatedLevel - 1;
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", 1, accumulatedLevel, 0L,
-                TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", initialAp);
+                TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", initialAp, 0L);
         setId(progress, CHARACTER_ID);
 
         // CharacterSkill: F 랭크에서 시작
@@ -150,7 +150,7 @@ class SkillApInvariantPropertyTest {
         final int initialAp = accumulatedLevel - 1;
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", 1, accumulatedLevel, 0L,
-                TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", initialAp);
+                TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", initialAp, 0L);
         setId(progress, CHARACTER_ID);
 
         // 두 스킬: 각각 F 랭크에서 시작

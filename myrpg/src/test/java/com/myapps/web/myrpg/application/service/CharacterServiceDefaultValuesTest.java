@@ -40,7 +40,9 @@ class CharacterServiceDefaultValuesTest {
 
     private final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
     private final SkillService mockSkillService = mock(SkillService.class);
-    private final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
+    private final InventoryService mockInventoryService = mock(InventoryService.class);
+    private final CharacterService characterService = new CharacterService(
+            mockRepository, mockSkillService, mockInventoryService);
 
     /**
      * 빈 저장소에서 생성된 캐릭터의 레벨/누적레벨/경험치가 Lv1/누적1/EXP0인지 검증한다.
@@ -194,6 +196,28 @@ class CharacterServiceDefaultValuesTest {
     }
 
     /**
+     * 신규 캐릭터 생성 시 기본 아이템 시드를 위해 inventoryService.seedDefault가 호출되는지 검증한다.
+     */
+    @Test
+    @DisplayName("Req 18.1: 신규 캐릭터 생성 시 inventoryService.seedDefault 호출")
+    void should_callInventorySeedDefault_when_newCharacterCreated() {
+        // Given
+        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
+        when(mockRepository.save(any(CharacterProgress.class)))
+                .thenAnswer(invocation -> {
+                    final CharacterProgress saved = invocation.getArgument(0);
+                    setId(saved, SAVED_CHARACTER_ID);
+                    return saved;
+                });
+
+        // When
+        characterService.loadOrCreateDefault();
+
+        // Then
+        verify(mockInventoryService).seedDefault();
+    }
+
+    /**
      * 기존 캐릭터가 이미 존재할 때에는 seedDefault가 호출되지 않는지 검증한다.
      */
     @Test
@@ -209,6 +233,24 @@ class CharacterServiceDefaultValuesTest {
 
         // Then
         verify(mockSkillService, never()).seedDefault(any());
+    }
+
+    /**
+     * 기존 캐릭터가 이미 존재할 때에는 inventoryService.seedDefault가 호출되지 않는지 검증한다.
+     */
+    @Test
+    @DisplayName("Req 18.1: 기존 캐릭터 로드 시 inventoryService.seedDefault 미호출")
+    void should_notCallInventorySeedDefault_when_existingCharacterLoaded() {
+        // Given
+        final CharacterProgress existing = CharacterProgress.createDefault();
+        setId(existing, SAVED_CHARACTER_ID);
+        when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+
+        // When
+        characterService.loadOrCreateDefault();
+
+        // Then
+        verify(mockInventoryService, never()).seedDefault();
     }
 
     /**

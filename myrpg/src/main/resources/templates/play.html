@@ -38,6 +38,12 @@
     <!-- 전체 맵 팝업 -->
     <div th:replace="~{fragments/full-map :: full-map}"></div>
 
+    <!-- 인벤토리 팝업 -->
+    <div th:replace="~{fragments/inventory-popup :: inventory-popup}"></div>
+
+    <!-- 아이템 상세 모달 (인벤토리·은행 공용, 목록 위에 뜨는 별도 오버레이) -->
+    <div th:replace="~{fragments/item-detail :: item-detail}"></div>
+
     <!-- 스킬 팝업 (목록 + 승급 모달) -->
     <div class="overlay" id="skillOverlay">
         <div class="panel">
@@ -58,6 +64,9 @@
             <div id="rankupModalArea"></div>
         </div>
     </div>
+
+    <!-- 은행 팝업 -->
+    <div th:replace="~{fragments/bank-popup :: bank-popup}"></div>
 
     <script th:src="@{/js/myrpg.js}"></script>
 </body>

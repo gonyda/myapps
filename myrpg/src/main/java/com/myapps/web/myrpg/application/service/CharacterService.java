@@ -13,7 +13,7 @@ import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
  * 캐릭터 진행상황 관리 서비스.
  *
  * <p>저장소에서 기존 진행상황을 로드하거나, 비어 있을 때 기본 캐릭터를 생성합니다.
- * 신규 캐릭터 생성 시 기본 스킬(windmill F)을 시드합니다.
+ * 신규 캐릭터 생성 시 기본 스킬(windmill F)과 기본 아이템(초보자 장비 4종 + 포션)을 시드합니다.
  * 턴 종료 시 변경된 진행상황을 저장하는 기능도 제공합니다.
  */
 @Service
@@ -23,17 +23,21 @@ public class CharacterService {
 
     private final CharacterProgressRepository characterProgressRepository;
     private final SkillService skillService;
+    private final InventoryService inventoryService;
 
     /**
      * CharacterService를 생성합니다.
      *
      * @param characterProgressRepository 캐릭터 진행상황 리포지토리
      * @param skillService                스킬 시스템 서비스 (신규 캐릭터 시드용)
+     * @param inventoryService            인벤토리 서비스 (신규 캐릭터 기본 아이템 시드용)
      */
     public CharacterService(final CharacterProgressRepository characterProgressRepository,
-                            final SkillService skillService) {
+                            final SkillService skillService,
+                            final InventoryService inventoryService) {
         this.characterProgressRepository = characterProgressRepository;
         this.skillService = skillService;
+        this.inventoryService = inventoryService;
     }
 
     /**
@@ -74,6 +78,7 @@ public class CharacterService {
         try {
             final CharacterProgress saved = characterProgressRepository.save(defaultCharacter);
             skillService.seedDefault(saved.getId());
+            inventoryService.seedDefault();
             return saved;
         } catch (final Exception exception) {
             LOG.error("기본 캐릭터 저장 실패: {}", exception.getMessage(), exception);

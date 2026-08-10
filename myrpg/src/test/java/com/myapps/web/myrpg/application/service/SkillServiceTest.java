@@ -318,7 +318,7 @@ class SkillServiceTest {
         final CharacterProgress progress = new CharacterProgress(
                 "테스트", 1, 1, 0L,
                 com.myapps.web.myrpg.domain.model.TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", abilityPoints);
+                null, 100, 100, 100, "tir-chonaill", abilityPoints, 0L);
         setId(progress, CHARACTER_ID);
         return progress;
     }

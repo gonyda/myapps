@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -35,12 +37,15 @@ class PlayScreenViewHelperInfoTest {
 
     private PlayScreenViewHelper helper;
     private SkillService skillService;
+    private InventoryService inventoryService;
 
     @BeforeEach
     void setUp() {
         skillService = mock(SkillService.class);
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService);
+        inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
     }
 
     @Test
@@ -75,7 +80,7 @@ class PlayScreenViewHelperInfoTest {
                 190,
                 190,
                 "tir-chonaill",
-                0
+                0, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -112,7 +117,7 @@ class PlayScreenViewHelperInfoTest {
                 140,
                 140,
                 "tir-chonaill",
-                0
+                0, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -169,7 +174,7 @@ class PlayScreenViewHelperInfoTest {
                 240,
                 240,
                 "dunbarton",
-                0
+                0, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -195,7 +200,7 @@ class PlayScreenViewHelperInfoTest {
                 100,
                 140,
                 "tir-chonaill",
-                0
+                0, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -229,7 +234,7 @@ class PlayScreenViewHelperInfoTest {
                 190,
                 190,
                 "tir-chonaill",
-                14
+                14, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -257,7 +262,7 @@ class PlayScreenViewHelperInfoTest {
                 140,
                 140,
                 "dunbarton",
-                4
+                4, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -289,7 +294,7 @@ class PlayScreenViewHelperInfoTest {
                 190,
                 190,
                 "tir-chonaill",
-                9
+                9, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -327,7 +332,7 @@ class PlayScreenViewHelperInfoTest {
                 200,
                 150,
                 "dunbarton",
-                9
+                9, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -364,7 +369,7 @@ class PlayScreenViewHelperInfoTest {
                 190,
                 190,
                 "tir-chonaill",
-                9
+                9, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -421,7 +426,7 @@ class PlayScreenViewHelperInfoTest {
                 190,
                 190,
                 "tir-chonaill",
-                6
+                6, 0L
         );
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
@@ -433,5 +438,119 @@ class PlayScreenViewHelperInfoTest {
         assertThat(stats.get(2).bonus()).isEqualTo("+0");
         assertThat(stats.get(3).bonus()).isEqualTo("+0.0%");
         assertThat(stats.get(4).bonus()).isEqualTo("+2");
+    }
+
+    /**
+     * 기본 장착 장비(한손검 STR+5, 방패 DEF+5, 갑옷 DEF+10)의 STAT 보너스가
+     * StatLine 보너스에 합산되어 반영됨을 검증한다.
+     *
+     * <p>스킬 보너스 0 + 장비 STAT 보너스(STR+5, DEF+15) → "+5"/"+15" 표시.
+     *
+     * <p><b>Validates: Requirements 10.3, 10.4, 10.5</b>
+     */
+    @Test
+    void should_reflectEquipStatBonus_when_defaultSeedEquipment() {
+        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 15);
+        final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
+        when(inventoryService.equippedBonus()).thenReturn(
+                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        final List<StatLine> stats = info.stats();
+        assertThat(stats.get(0)).isEqualTo(new StatLine("STR", "10", "+5"));
+        assertThat(stats.get(1)).isEqualTo(new StatLine("DEX", "10", "+0"));
+        assertThat(stats.get(2)).isEqualTo(new StatLine("INT", "10", "+0"));
+        assertThat(stats.get(3)).isEqualTo(new StatLine("CRIT", "5.0%", "+0.0%"));
+        assertThat(stats.get(4)).isEqualTo(new StatLine("DEF", "5", "+15"));
+    }
+
+    /**
+     * 스킬 랭크업 보너스와 장비 STAT 보너스가 합산되어 StatLine에 반영됨을 검증한다.
+     *
+     * <p>스킬 보너스(STR+3, DEF+2) + 장비 보너스(STR+5, DEF+15) → STR "+8", DEF "+17".
+     *
+     * <p><b>Validates: Requirements 10.3, 10.4</b>
+     */
+    @Test
+    void should_sumSkillAndEquipBonus_when_bothPresent() {
+        final Stats skillBonus = new Stats(3, 0, 0, 0, 2);
+        when(skillService.rankupBonus(any())).thenReturn(skillBonus);
+
+        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 15);
+        final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
+        when(inventoryService.equippedBonus()).thenReturn(
+                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+
+        final CharacterProgress progress = new CharacterProgress(
+                "전사",
+                10,
+                10,
+                0L,
+                TalentType.MELEE,
+                null,
+                190,
+                190,
+                190,
+                "tir-chonaill",
+                6, 0L
+        );
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        final List<StatLine> stats = info.stats();
+        assertThat(stats.get(0).bonus()).isEqualTo("+8");
+        assertThat(stats.get(1).bonus()).isEqualTo("+0");
+        assertThat(stats.get(2).bonus()).isEqualTo("+0");
+        assertThat(stats.get(3).bonus()).isEqualTo("+0.0%");
+        assertThat(stats.get(4).bonus()).isEqualTo("+17");
+    }
+
+    /**
+     * 장비 VITAL 보너스가 게이지 최대값에 합산됨을 검증한다.
+     *
+     * <p>Lv.1 MELEE: 기본 HP=100, MP=100, Stamina=100.
+     * 장비 VITAL 보너스(HP+20, MP+10, Stamina+5) → HP max=120, MP max=110, Stamina max=105.
+     *
+     * <p><b>Validates: Requirements 10.4, 10.5</b>
+     */
+    @Test
+    void should_addVitalBonusToGaugeMax_when_equipmentHasVitalBonus() {
+        final Stats equipStatBonus = Stats.ZERO;
+        final VitalMax equipVitalBonus = new VitalMax(20, 10, 5);
+        when(inventoryService.equippedBonus()).thenReturn(
+                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        // Lv1 MELEE: base HP=100, MP=100, Stamina=100
+        assertThat(info.hp().max()).isEqualTo(120);
+        assertThat(info.mp().max()).isEqualTo(110);
+        assertThat(info.stamina().max()).isEqualTo(105);
+    }
+
+    /**
+     * 장비 보너스가 없을 때(미장착) 기존 계산과 동일한 결과를 확인한다.
+     *
+     * <p><b>Validates: Requirements 10.4</b>
+     */
+    @Test
+    void should_showBaseVitalMax_when_noEquipmentBonus() {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final RebirthStatus status = new RebirthStatus(true, false, null, null);
+
+        final InfoPopupView info = helper.buildInfo(progress, status);
+
+        // Lv1 MELEE: base HP=100, MP=100, Stamina=100 (no equip bonus)
+        assertThat(info.hp().max()).isEqualTo(100);
+        assertThat(info.mp().max()).isEqualTo(100);
+        assertThat(info.stamina().max()).isEqualTo(100);
     }
 }

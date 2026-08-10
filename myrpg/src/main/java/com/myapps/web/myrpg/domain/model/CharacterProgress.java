@@ -2,6 +2,8 @@ package com.myapps.web.myrpg.domain.model;
 
 import java.time.LocalDateTime;
 
+import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -69,6 +71,9 @@ public class CharacterProgress {
     @Column(name = "ability_points", nullable = false)
     private int abilityPoints;
 
+    @Column(nullable = false)
+    private long gold;
+
     /**
      * JPA 전용 기본 생성자.
      */
@@ -89,6 +94,7 @@ public class CharacterProgress {
      * @param staminaCurrent   Stamina 현재값
      * @param currentNodeId    현재 맵 노드 id
      * @param abilityPoints    보유 어빌리티 포인트
+     * @param gold             보유 골드
      */
     public CharacterProgress(final String nickname,
                              final int currentLevel,
@@ -100,7 +106,8 @@ public class CharacterProgress {
                              final int mpCurrent,
                              final int staminaCurrent,
                              final String currentNodeId,
-                             final int abilityPoints) {
+                             final int abilityPoints,
+                             final long gold) {
         this.nickname = nickname;
         this.currentLevel = currentLevel;
         this.accumulatedLevel = accumulatedLevel;
@@ -112,6 +119,7 @@ public class CharacterProgress {
         this.staminaCurrent = staminaCurrent;
         this.currentNodeId = currentNodeId;
         this.abilityPoints = abilityPoints;
+        this.gold = gold;
     }
 
     /**
@@ -135,7 +143,8 @@ public class CharacterProgress {
                 DEFAULT_VITAL_CURRENT,
                 DEFAULT_VITAL_CURRENT,
                 DEFAULT_START_NODE,
-                0
+                0,
+                0L
         );
     }
 
@@ -249,6 +258,15 @@ public class CharacterProgress {
         return abilityPoints;
     }
 
+    /**
+     * 보유 골드를 반환한다.
+     *
+     * @return 보유 골드 (0 이상)
+     */
+    public long getGold() {
+        return gold;
+    }
+
     // ─── Mutators ───────────────────────────────────────────────────────────
 
     /**
@@ -357,5 +375,41 @@ public class CharacterProgress {
      */
     public void updateCurrentNodeId(final String currentNodeId) {
         this.currentNodeId = currentNodeId;
+    }
+
+    /**
+     * 소지금을 지정된 양만큼 증가시킨다.
+     *
+     * <p>몬스터 드랍, 아이템 판매, 은행 출금 등으로 골드를 획득할 때 사용한다.
+     *
+     * @param amount 증가시킬 양 (양수)
+     * @throws IllegalArgumentException amount가 0 이하일 경우
+     */
+    public void gainGold(final long amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("골드 획득량은 양수여야 합니다: " + amount);
+        }
+        this.gold += amount;
+    }
+
+    /**
+     * 소지금을 지정된 양만큼 차감한다.
+     *
+     * <p>상점 구매, 수리, 은행 입금 등으로 골드를 소모할 때 사용한다.
+     * 소모량이 보유 골드를 초과하면 소지금을 변경하지 않고 예외를 던진다.
+     *
+     * @param amount 소모할 양 (양수)
+     * @throws IllegalArgumentException      amount가 0 이하일 경우
+     * @throws InsufficientGoldException     소모량이 보유 골드를 초과할 경우
+     */
+    public void spendGold(final long amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("골드 소모량은 양수여야 합니다: " + amount);
+        }
+        if (amount > this.gold) {
+            throw new InsufficientGoldException(
+                    "골드 부족: 소모 요청 " + amount + ", 보유 " + this.gold);
+        }
+        this.gold -= amount;
     }
 }

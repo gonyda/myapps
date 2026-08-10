@@ -66,7 +66,7 @@ class DeathPenaltyAbilityPointPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                abilityPoints
+                abilityPoints, 0L
         );
 
         final int apBefore = progress.getAbilityPoints();
@@ -103,7 +103,7 @@ class DeathPenaltyAbilityPointPropertyTest {
                 100,
                 100,
                 "tir-chonaill",
-                abilityPoints
+                abilityPoints, 0L
         );
 
         final int apBefore = progress.getAbilityPoints();

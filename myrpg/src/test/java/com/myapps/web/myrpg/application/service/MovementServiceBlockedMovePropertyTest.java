@@ -68,7 +68,7 @@ class MovementServiceBlockedMovePropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
-                currentNodeId, 0);
+                currentNodeId, 0, 0L);
 
         // When
         final MovementResult result = movementService.move(progress, dx, dy);
@@ -107,7 +107,7 @@ class MovementServiceBlockedMovePropertyTest {
 
         final CharacterProgress progress = new CharacterProgress(
                 "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
-                currentNodeId, 0);
+                currentNodeId, 0, 0L);
 
         // When
         final MovementResult result = movementService.move(progress, dx, dy);

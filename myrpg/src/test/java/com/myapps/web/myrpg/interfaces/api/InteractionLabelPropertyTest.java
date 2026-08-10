@@ -12,7 +12,9 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
+import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Npc;
@@ -23,6 +25,7 @@ import com.myapps.web.myrpg.domain.model.TimeOfDay;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * 상호작용 버튼 라벨 형식 프로퍼티 테스트.
@@ -41,8 +44,14 @@ class InteractionLabelPropertyTest {
     private static final int MAX_LINE_LENGTH = 20;
 
     private final ExperiencePolicy experiencePolicy = new ExperiencePolicy();
-    private final PlayScreenViewHelper helper = new PlayScreenViewHelper(
-            experiencePolicy, new StatProgression(), mock(SkillService.class));
+    private final PlayScreenViewHelper helper;
+
+    InteractionLabelPropertyTest() {
+        final InventoryService inventoryService = mock(InventoryService.class);
+        when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
+        helper = new PlayScreenViewHelper(
+                experiencePolicy, new StatProgression(), mock(SkillService.class), inventoryService);
+    }
 
     /**
      * 임의 Npc에 대해 {@code buildInteractions}로 생성된 라벨이

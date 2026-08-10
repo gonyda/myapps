@@ -80,7 +80,7 @@ class FullRecoveryVitalMaxPropertyTest {
                 mpCurrent,
                 staCurrent,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // 최소 1회 레벨업 보장 획득량
@@ -144,7 +144,7 @@ class FullRecoveryVitalMaxPropertyTest {
                 mpCurrent,
                 staCurrent,
                 "tir-chonaill",
-                0
+                0, 0L
         );
 
         // When: 선택 재능으로 환생

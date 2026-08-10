@@ -56,13 +56,15 @@ class CharacterServiceLoadExistingPropertyTest {
         // Given: 저장소에 이미 존재하는 CharacterProgress
         final CharacterProgress existingProgress = new CharacterProgress(
                 nickname, currentLevel, accumulatedLevel, experience,
-                TalentType.MELEE, null, hpCurrent, mpCurrent, staminaCurrent, "tir-chonaill", 0);
+                TalentType.MELEE, null, hpCurrent, mpCurrent, staminaCurrent, "tir-chonaill", 0, 0L);
 
         final CharacterProgressRepository mockRepository = mock(CharacterProgressRepository.class);
         when(mockRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existingProgress));
 
         final SkillService mockSkillService = mock(SkillService.class);
-        final CharacterService characterService = new CharacterService(mockRepository, mockSkillService);
+        final InventoryService mockInventoryService = mock(InventoryService.class);
+        final CharacterService characterService = new CharacterService(
+                mockRepository, mockSkillService, mockInventoryService);
 
         // When: loadOrCreateDefault 호출
         final CharacterProgress result = characterService.loadOrCreateDefault();
