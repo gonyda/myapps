@@ -7,12 +7,10 @@
         맵 데이터를 불러오는 중...
     </div>
 
-    <!-- NPC 멘트 + 행동 버튼 (스크롤 영역) -->
-    <div class="npc-talk" id="npcTalk">
-        <th:block th:if="${view.npcName != null}">
-            <span class="npc-name" th:text="${view.npcName}"></span>
-            <p th:text="${view.npcDialogue}"></p>
-        </th:block>
+    <!-- NPC 멘트 + 행동 버튼 (NPC 대상일 때만 표시) -->
+    <div class="npc-talk" id="npcTalk" th:if="${view.npcName != null}">
+        <span class="npc-name" th:text="${view.npcName}"></span>
+        <p th:text="${view.npcDialogue}"></p>
         <!-- NPC 행동 버튼 (멘트 하단) -->
         <div class="npc-actions" id="npcActions"
              th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
@@ -23,17 +21,18 @@
         </div>
     </div>
 
-    <!-- 몬스터 멘트 + 레벨/HP + 행동 버튼 -->
+    <!-- 몬스터 멘트 + 레벨/HP + 행동 버튼 (몬스터 대상일 때만 표시) -->
     <div class="npc-talk" th:if="${view.monsterName}">
         <span class="monster-name" th:text="${view.monsterName}">몬스터</span>
         <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
         <p th:text="${view.monsterDialogue}">대사</p>
-    </div>
-    <div class="monster-actions" th:if="${view.monsterActions != null and !view.monsterActions.isEmpty()}">
-        <button th:each="action : ${view.monsterActions}"
-                th:text="${action.label()}"
-                th:attr="onclick='monsterAction(\'' + ${action.label()} + '\')'"
-                class="monster-action-btn">전투</button>
+        <!-- 몬스터 행동 버튼 (멘트 하단, NPC 행동 버튼과 동일 위치) -->
+        <div class="npc-actions" th:if="${view.monsterActions != null and !view.monsterActions.isEmpty()}">
+            <button th:each="action : ${view.monsterActions}"
+                    th:text="${action.label()}"
+                    th:attr="onclick='monsterAction(\'' + ${action.label()} + '\')'"
+                    class="monster-action-btn">전투</button>
+        </div>
     </div>
 
     <!-- 상호작용 버튼 -->
