@@ -494,14 +494,14 @@ public class InventoryService {
 
     private String bonusTargetLabel(final BonusTarget target) {
         return switch (target) {
-            case STR -> "힘";
-            case DEX -> "민첩";
-            case INT -> "지능";
-            case CRITICAL -> "치명타";
-            case DEF -> "방어력";
-            case HP -> "체력";
-            case MP -> "마나";
-            case STAMINA -> "기력";
+            case STR -> "STR";
+            case DEX -> "DEX";
+            case INT -> "INT";
+            case CRITICAL -> "CRIT";
+            case DEF -> "DEF";
+            case HP -> "HP";
+            case MP -> "MP";
+            case STAMINA -> "Stamina";
         };
     }
 

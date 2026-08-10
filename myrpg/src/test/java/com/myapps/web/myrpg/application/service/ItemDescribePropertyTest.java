@@ -266,21 +266,21 @@ class ItemDescribePropertyTest {
      */
     private static String bonusTargetLabel(final BonusTarget target) {
         if (target == BonusTarget.STR) {
-            return "힘";
+            return "STR";
         } else if (target == BonusTarget.DEX) {
-            return "민첩";
+            return "DEX";
         } else if (target == BonusTarget.INT) {
-            return "지능";
+            return "INT";
         } else if (target == BonusTarget.CRITICAL) {
-            return "치명타";
+            return "CRIT";
         } else if (target == BonusTarget.DEF) {
-            return "방어력";
+            return "DEF";
         } else if (target == BonusTarget.HP) {
-            return "체력";
+            return "HP";
         } else if (target == BonusTarget.MP) {
-            return "마나";
+            return "MP";
         } else if (target == BonusTarget.STAMINA) {
-            return "기력";
+            return "Stamina";
         }
         return target.name();
     }

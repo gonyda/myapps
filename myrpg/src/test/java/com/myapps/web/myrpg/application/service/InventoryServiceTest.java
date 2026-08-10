@@ -242,7 +242,7 @@ class InventoryServiceTest {
 
         final List<String> lines = inventoryService.describe(swordCatalog, sword);
 
-        assertThat(lines).anyMatch(line -> line.contains("힘") && line.contains("+5"));
+        assertThat(lines).anyMatch(line -> line.contains("STR") && line.contains("+5"));
         assertThat(lines).anyMatch(line -> line.contains("18") && line.contains("/" + MAX_DURABILITY));
     }
 
