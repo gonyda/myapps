@@ -27,22 +27,6 @@
 
 <!-- 은행 내용 fragment (fetch 응답용) -->
 <div th:fragment="bank-content" th:if="${bank != null}">
-    <!-- 골드 영역 -->
-    <div class="bank-gold-area">
-        <div class="bank-gold-slot">
-            <span class="gold-label">은행 골드</span>
-            <span class="gold-value" id="bankGoldValue" th:text="${bank.bankGold}">0</span>
-        </div>
-        <div class="bank-gold-slot">
-            <span class="gold-label">소지 골드</span>
-            <span class="gold-value" id="playerGoldValue" th:text="${bank.playerGold}">0</span>
-        </div>
-        <div class="bank-gold-actions">
-            <button class="bank-gold-btn" onclick="openDepositModal()">입금</button>
-            <button class="bank-gold-btn" onclick="openWithdrawModal()">출금</button>
-        </div>
-    </div>
-
     <!-- 아이템 목록 (좌: 은행 / 우: 소지품) -->
     <div class="bank-lists">
         <!-- 은행 보관 목록 -->
@@ -92,6 +76,23 @@
             </div>
         </div>
     </div>
+
+    <!-- 골드 영역 -->
+    <div class="bank-gold-area">
+        <div class="bank-gold-slot">
+            <span class="gold-label">은행 골드</span>
+            <span class="gold-value" id="bankGoldValue" th:text="${bank.bankGold}">0</span>
+        </div>
+        <div class="bank-gold-slot">
+            <span class="gold-label">소지 골드</span>
+            <span class="gold-value" id="playerGoldValue" th:text="${bank.playerGold}">0</span>
+        </div>
+        <div class="bank-gold-actions">
+            <button class="bank-gold-btn" onclick="openDepositModal()">입금</button>
+            <button class="bank-gold-btn" onclick="openWithdrawModal()">출금</button>
+        </div>
+    </div>
+
 </div>
 </body>
 </html>
