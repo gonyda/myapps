@@ -297,7 +297,8 @@ function unequipItem(ownedItemId) {
 // ===== 아이템 상세 모달 열기/닫기 (임베드 데이터 활용) =====
 function openItemDetail(element) {
     var detailData = element.getAttribute('data-detail');
-    var itemName = element.querySelector('.item-name').textContent;
+    var nameEl = element.querySelector('.item-name');
+    var itemName = nameEl ? nameEl.textContent : (element.getAttribute('data-name') || '아이템 상세');
 
     document.getElementById('itemDetailTitle').textContent = itemName;
 
