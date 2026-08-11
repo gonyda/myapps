@@ -1,10 +1,10 @@
 [
   {
-    "id": "hp_potion_50",
-    "name": "생명력 50 포션",
+    "id": "hp_potion_30",
+    "name": "생명력 30 포션",
     "type": "potion",
-    "healHp": 50,
-    "buyPrice": 30
+    "healHp": 30,
+    "buyPrice": 50
   },
   {
     "id": "beginner_one_hand_sword",
@@ -42,7 +42,68 @@
     "type": "armor",
     "kind": "armor_body",
     "bonuses": [
-      { "target": "DEF", "amount": 10 }
+      { "target": "DEF", "amount": 5 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_bow",
+    "name": "초보자용 활",
+    "type": "weapon",
+    "kind": "bow",
+    "bonuses": [
+      { "target": "DEX", "amount": 10 },
+      { "target": "CRITICAL", "amount": 10 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_wand",
+    "name": "초보자용 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      { "target": "INT", "amount": 5 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_staff",
+    "name": "초보자용 스태프",
+    "type": "weapon",
+    "kind": "staff",
+    "bonuses": [
+      { "target": "INT", "amount": 10 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_helmet",
+    "name": "초보자용 투구",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      { "target": "DEF", "amount": 3 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_gloves",
+    "name": "초보자용 장갑",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      { "target": "DEF", "amount": 2 }
+    ],
+    "maxDurability": 20
+  },
+  {
+    "id": "beginner_boots",
+    "name": "초보자용 부츠",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      { "target": "DEF", "amount": 2 }
     ],
     "maxDurability": 20
   }

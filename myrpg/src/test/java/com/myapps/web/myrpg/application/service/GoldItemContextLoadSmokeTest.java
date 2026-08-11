@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Spring Boot 전체 컨텍스트를 기동하여 006 스펙 핵심 빈
  * ({@link ItemCatalogService}, {@link InventoryService}, {@link BankService})이
- * 정상 로딩되는지, 카탈로그 5종 로드, 장비 보너스 경로, 상단바 골드 미표시를 검증한다.
+ * 정상 로딩되는지, 카탈로그 11종 로드, 장비 보너스 경로, 상단바 골드 미표시를 검증한다.
  *
  * <p>Validates: Requirements 5.1, 10.3, 20.5
  */
@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class GoldItemContextLoadSmokeTest {
 
-    private static final int EXPECTED_ITEM_COUNT = 5;
+    private static final int EXPECTED_ITEM_COUNT = 11;
 
     private final ItemCatalogService itemCatalogService;
     private final InventoryService inventoryService;
@@ -46,10 +46,10 @@ class GoldItemContextLoadSmokeTest {
     }
 
     /**
-     * ItemCatalogService가 기동 시 5종 아이템을 로드하는지 검증한다.
+     * ItemCatalogService가 기동 시 11종 아이템을 로드하는지 검증한다.
      */
     @Test
-    void should_loadFiveItems_onStartup() {
+    void should_loadAllItems_onStartup() {
         assertThat(itemCatalogService.all()).hasSize(EXPECTED_ITEM_COUNT);
     }
 

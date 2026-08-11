@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 실제 {@code data/item.json} 로딩 통합 테스트.
  *
  * <p>Spring Boot 컨텍스트 전체를 기동하여 {@link ItemCatalogService}가
- * 클래스패스 리소스를 정상 로드하고, 5종 아이템·유일 id·장비 maxDurability 완비를 검증한다.
+ * 클래스패스 리소스를 정상 로드하고, 11종 아이템·유일 id·장비 maxDurability 완비를 검증한다.
  *
  * <p>Validates: Requirements 5.1, 5.9
  */
@@ -26,13 +26,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class ItemCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_ITEM_COUNT = 5;
+    private static final int TOTAL_ITEM_COUNT = 11;
     private static final Set<String> KNOWN_ITEM_IDS = Set.of(
-            "hp_potion_50",
+            "hp_potion_30",
             "beginner_one_hand_sword",
             "beginner_two_hand_sword",
             "beginner_shield",
-            "beginner_armor");
+            "beginner_armor",
+            "beginner_bow",
+            "beginner_wand",
+            "beginner_staff",
+            "beginner_helmet",
+            "beginner_gloves",
+            "beginner_boots");
 
     private final ItemCatalogService itemCatalogService;
 
@@ -41,10 +47,10 @@ class ItemCatalogLoadIntegrationTest {
     }
 
     /**
-     * 전체 아이템 수가 5개인지 검증한다.
+     * 전체 아이템 수가 11개인지 검증한다.
      */
     @Test
-    void should_loadFiveItems_when_applicationStarts() {
+    void should_loadAllItems_when_applicationStarts() {
         final List<Item> allItems = itemCatalogService.all();
 
         assertThat(allItems).hasSize(TOTAL_ITEM_COUNT);
@@ -87,7 +93,7 @@ class ItemCatalogLoadIntegrationTest {
     }
 
     /**
-     * 알려진 5개 아이템 id가 모두 로드되었는지 검증한다.
+     * 알려진 아이템 id가 모두 로드되었는지 검증한다.
      */
     @Test
     void should_containAllKnownItemIds_when_loaded() {

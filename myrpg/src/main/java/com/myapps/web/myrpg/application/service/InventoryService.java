@@ -47,11 +47,17 @@ public class InventoryService {
     private static final int DEFAULT_POTION_QUANTITY = 5;
     private static final int EQUIPMENT_MAX_DURABILITY = 20;
 
-    private static final String SEED_POTION_ID = "hp_potion_50";
+    private static final String SEED_POTION_ID = "hp_potion_30";
     private static final String SEED_ONE_HAND_SWORD_ID = "beginner_one_hand_sword";
     private static final String SEED_TWO_HAND_SWORD_ID = "beginner_two_hand_sword";
+    private static final String SEED_BOW_ID = "beginner_bow";
+    private static final String SEED_WAND_ID = "beginner_wand";
+    private static final String SEED_STAFF_ID = "beginner_staff";
     private static final String SEED_SHIELD_ID = "beginner_shield";
     private static final String SEED_ARMOR_ID = "beginner_armor";
+    private static final String SEED_HELMET_ID = "beginner_helmet";
+    private static final String SEED_GLOVES_ID = "beginner_gloves";
+    private static final String SEED_BOOTS_ID = "beginner_boots";
 
     private final OwnedItemRepository ownedItemRepository;
     private final ItemCatalogService itemCatalogService;
@@ -294,35 +300,48 @@ public class InventoryService {
     }
 
     /**
-     * 신규 캐릭터에 기본 아이템을 지급하고 기본 장비를 장착한다.
+     * 신규 캐릭터에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다.
      *
-     * <p>초보자 한손검·양손검·방패·갑옷 각 1개(내구도 20)와
-     * 생명력 50 포션 5개를 인벤토리에 생성한다.
-     * 한손검·방패·갑옷만 기본 장착하고 양손검은 미장착 상태로 둔다.
+     * <p>초보자 무기 5종(한손검·양손검·활·완드·스태프)과 방어구 5종
+     * (방패·갑옷·투구·장갑·부츠) 각 1개(내구도 20), 생명력 30 포션 5개를 인벤토리에 생성한다.
+     * 이 중 한손검·방패·갑옷만 기본 장착하고 나머지는 미장착 상태로 지급한다.
      */
     @Transactional
     public void seedDefault() {
         ownedItemRepository.save(new OwnedItem(
                 SEED_POTION_ID, DEFAULT_POTION_QUANTITY, StorageKind.INVENTORY, false, 0));
 
-        ownedItemRepository.save(new OwnedItem(
-                SEED_ONE_HAND_SWORD_ID, 1, StorageKind.INVENTORY, true, EQUIPMENT_MAX_DURABILITY));
+        // 무기 5종: 한손검만 기본 장착, 나머지는 인벤토리 보유
+        seedEquipment(SEED_ONE_HAND_SWORD_ID, true);
+        seedEquipment(SEED_TWO_HAND_SWORD_ID, false);
+        seedEquipment(SEED_BOW_ID, false);
+        seedEquipment(SEED_WAND_ID, false);
+        seedEquipment(SEED_STAFF_ID, false);
 
-        ownedItemRepository.save(new OwnedItem(
-                SEED_TWO_HAND_SWORD_ID, 1, StorageKind.INVENTORY, false, EQUIPMENT_MAX_DURABILITY));
+        // 방어구 5종: 방패·갑옷 기본 장착, 투구·장갑·부츠는 인벤토리 보유
+        seedEquipment(SEED_SHIELD_ID, true);
+        seedEquipment(SEED_ARMOR_ID, true);
+        seedEquipment(SEED_HELMET_ID, false);
+        seedEquipment(SEED_GLOVES_ID, false);
+        seedEquipment(SEED_BOOTS_ID, false);
+    }
 
+    /**
+     * 초보자용 장비 1개를 최대 내구도로 인벤토리에 지급한다.
+     *
+     * @param itemId   지급할 장비 아이템 id
+     * @param equipped 기본 장착 여부
+     */
+    private void seedEquipment(final String itemId, final boolean equipped) {
         ownedItemRepository.save(new OwnedItem(
-                SEED_SHIELD_ID, 1, StorageKind.INVENTORY, true, EQUIPMENT_MAX_DURABILITY));
-
-        ownedItemRepository.save(new OwnedItem(
-                SEED_ARMOR_ID, 1, StorageKind.INVENTORY, true, EQUIPMENT_MAX_DURABILITY));
+                itemId, 1, StorageKind.INVENTORY, equipped, EQUIPMENT_MAX_DURABILITY));
     }
 
     /**
      * 아이템 상세 설명을 자동 생성한다.
      *
      * <p>포션이면 회복량 문구를 포함하고, 장비이면 보너스 한 줄씩·장비 종류·
-     * 내구도·양손검 배타 안내를 포함한다.
+     * 내구도·양손 무기 배타 안내를 포함한다.
      *
      * @param item  카탈로그 아이템
      * @param owned 보유 아이템 인스턴스
@@ -340,7 +359,8 @@ public class InventoryService {
                 lines.add(formatBonus(bonus));
             }
 
-            if (equipItem.kind() == EquipmentKind.TWO_HANDED_SWORD) {
+            if (equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
+                    && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
                 lines.add("방패와 함께 착용할 수 없습니다.");
             }
 

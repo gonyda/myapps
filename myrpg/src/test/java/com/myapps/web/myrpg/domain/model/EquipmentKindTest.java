@@ -129,10 +129,10 @@ class EquipmentKindTest {
     }
 
     /**
-     * EquipmentKind 상수가 정확히 4개임을 검증한다.
+     * EquipmentKind 상수가 정확히 10개임을 검증한다.
      */
     @Test
-    void should_haveExactlyFourConstants() {
-        assertThat(EquipmentKind.values()).hasSize(4);
+    void should_haveExactlyTenConstants() {
+        assertThat(EquipmentKind.values()).hasSize(10);
     }
 }

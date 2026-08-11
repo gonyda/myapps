@@ -189,10 +189,18 @@ class EquipSlotUniquenessPropertyTest {
             }
         }
 
+        final Set<EquipSlot> defaultOccupiedSlots =
+                Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND, EquipSlot.BODY);
         for (final EquipSlot slot : EquipSlot.values()) {
-            assertThat(slotCount.get(slot))
-                    .as("기본 장착 시 슬롯 %s는 정확히 1개 점유", slot)
-                    .isEqualTo(1);
+            if (defaultOccupiedSlots.contains(slot)) {
+                assertThat(slotCount.get(slot))
+                        .as("기본 장착 시 슬롯 %s는 정확히 1개 점유", slot)
+                        .isEqualTo(1);
+            } else {
+                assertThat(slotCount.get(slot))
+                        .as("기본 장착에 쓰이지 않는 슬롯 %s는 0 점유", slot)
+                        .isZero();
+            }
         }
 
         // 모든 장착 장비가 INVENTORY

@@ -27,13 +27,13 @@ class MonsterServiceLoadIntegrationTest {
     private static final String RACCOON_ID = "raccoon";
     private static final String RACCOON_NAME = "너구리";
     private static final int RACCOON_LEVEL = 1;
-    private static final int RACCOON_MAX_HP = 25;
-    private static final int RACCOON_ATTACK_POWER = 4;
-    private static final int RACCOON_DEFENSE = 1;
-    private static final int RACCOON_CRITICAL = 10;
-    private static final long RACCOON_EXPERIENCE = 15L;
-    private static final int RACCOON_GOLD_DROP_MIN = 3;
-    private static final int RACCOON_GOLD_DROP_MAX = 10;
+    private static final int RACCOON_MAX_HP = 45;
+    private static final int RACCOON_ATTACK_POWER = 48;
+    private static final int RACCOON_DEFENSE = 3;
+    private static final int RACCOON_CRITICAL = 30;
+    private static final long RACCOON_EXPERIENCE = 22L;
+    private static final int RACCOON_GOLD_DROP_MIN = 6;
+    private static final int RACCOON_GOLD_DROP_MAX = 16;
     private static final int RACCOON_ITEM_DROPS_COUNT = 1;
     private static final int RACCOON_LINES_COUNT = 3;
     private static final String DUGALD_NORTH_NODE_ID = "dugald-north";
@@ -74,7 +74,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(raccoon.goldDrop().min()).isEqualTo(RACCOON_GOLD_DROP_MIN);
         assertThat(raccoon.goldDrop().max()).isEqualTo(RACCOON_GOLD_DROP_MAX);
         assertThat(raccoon.itemDrops()).hasSize(RACCOON_ITEM_DROPS_COUNT);
-        assertThat(raccoon.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_50");
+        assertThat(raccoon.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
         assertThat(raccoon.lines()).hasSize(RACCOON_LINES_COUNT);
     }
 

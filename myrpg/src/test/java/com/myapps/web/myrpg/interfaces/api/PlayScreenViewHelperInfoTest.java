@@ -441,16 +441,16 @@ class PlayScreenViewHelperInfoTest {
     }
 
     /**
-     * 기본 장착 장비(한손검 STR+5, 방패 DEF+5, 갑옷 DEF+10)의 STAT 보너스가
+     * 기본 장착 장비(한손검 STR+5, 방패 DEF+5, 갑옷 DEF+5)의 STAT 보너스가
      * StatLine 보너스에 합산되어 반영됨을 검증한다.
      *
-     * <p>스킬 보너스 0 + 장비 STAT 보너스(STR+5, DEF+15) → "+5"/"+15" 표시.
+     * <p>스킬 보너스 0 + 장비 STAT 보너스(STR+5, DEF+10) → "+5"/"+10" 표시.
      *
      * <p><b>Validates: Requirements 10.3, 10.4, 10.5</b>
      */
     @Test
     void should_reflectEquipStatBonus_when_defaultSeedEquipment() {
-        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 15);
+        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 10);
         final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
         when(inventoryService.equippedBonus()).thenReturn(
                 new EquippedBonusResult(equipStatBonus, equipVitalBonus));
@@ -465,13 +465,13 @@ class PlayScreenViewHelperInfoTest {
         assertThat(stats.get(1)).isEqualTo(new StatLine("DEX", "10", "+0"));
         assertThat(stats.get(2)).isEqualTo(new StatLine("INT", "10", "+0"));
         assertThat(stats.get(3)).isEqualTo(new StatLine("CRIT", "5.0%", "+0.0%"));
-        assertThat(stats.get(4)).isEqualTo(new StatLine("DEF", "5", "+15"));
+        assertThat(stats.get(4)).isEqualTo(new StatLine("DEF", "5", "+10"));
     }
 
     /**
      * 스킬 랭크업 보너스와 장비 STAT 보너스가 합산되어 StatLine에 반영됨을 검증한다.
      *
-     * <p>스킬 보너스(STR+3, DEF+2) + 장비 보너스(STR+5, DEF+15) → STR "+8", DEF "+17".
+     * <p>스킬 보너스(STR+3, DEF+2) + 장비 보너스(STR+5, DEF+10) → STR "+8", DEF "+12".
      *
      * <p><b>Validates: Requirements 10.3, 10.4</b>
      */
@@ -480,7 +480,7 @@ class PlayScreenViewHelperInfoTest {
         final Stats skillBonus = new Stats(3, 0, 0, 0, 2);
         when(skillService.rankupBonus(any())).thenReturn(skillBonus);
 
-        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 15);
+        final Stats equipStatBonus = new Stats(5, 0, 0, 0, 10);
         final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
         when(inventoryService.equippedBonus()).thenReturn(
                 new EquippedBonusResult(equipStatBonus, equipVitalBonus));
@@ -507,7 +507,7 @@ class PlayScreenViewHelperInfoTest {
         assertThat(stats.get(1).bonus()).isEqualTo("+0");
         assertThat(stats.get(2).bonus()).isEqualTo("+0");
         assertThat(stats.get(3).bonus()).isEqualTo("+0.0%");
-        assertThat(stats.get(4).bonus()).isEqualTo("+17");
+        assertThat(stats.get(4).bonus()).isEqualTo("+12");
     }
 
     /**

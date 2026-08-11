@@ -14,5 +14,14 @@ public enum EquipSlot {
     OFF_HAND,
 
     /** 몸통 슬롯 (갑옷). */
-    BODY
+    BODY,
+
+    /** 머리 슬롯 (투구). */
+    HEAD,
+
+    /** 손 슬롯 (장갑). */
+    HANDS,
+
+    /** 발 슬롯 (부츠). */
+    FEET
 }

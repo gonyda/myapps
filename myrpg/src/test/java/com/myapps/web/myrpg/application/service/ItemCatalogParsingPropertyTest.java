@@ -311,7 +311,7 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<String> invalidKindString() {
-        return Arbitraries.of("invalid_kind", "UNKNOWN", "dagger", "bow", "staff");
+        return Arbitraries.of("invalid_kind", "UNKNOWN", "dagger", "spear", "crossbow");
     }
 
     /**

@@ -4,18 +4,18 @@
     "name": "너구리",
     "type": "normal",
     "level": 1,
-    "maxHp": 25,
-    "attackPower": 4,
-    "defense": 1,
-    "critical": 10,
-    "experience": 15,
+    "maxHp": 45,
+    "attackPower": 48,
+    "defense": 3,
+    "critical": 30,
+    "experience": 22,
     "goldDrop": {
-      "min": 3,
-      "max": 10
+      "min": 6,
+      "max": 16
     },
     "itemDrops": [
       {
-        "itemId": "hp_potion_50",
+        "itemId": "hp_potion_30",
         "chancePercent": 15,
         "minQuantity": 1,
         "maxQuantity": 1

@@ -35,10 +35,10 @@ import static org.mockito.Mockito.when;
  *
  * <p>신규 캐릭터 시드({@code seedDefault()})에 대해:
  * <ul>
- *   <li>INVENTORY에 초보자 장비 4종 + 포션 1스택(수량 5)이 생성되고</li>
+ *   <li>INVENTORY에 초보자 장비 10종 + 포션 1스택(수량 5)이 생성되고</li>
  *   <li>한손검·방패·갑옷만 {@code equipped=true}(양손검 false)이며</li>
  *   <li>모든 지급 장비의 {@code currentDurability == maxDurability(20)}이고</li>
- *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+15이다</li>
+ *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+10이다</li>
  * </ul>
  *
  * <p>Feature: 006-gold-item-inventory, Property 18: 기본 지급 결과
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
  */
 class SeedDefaultItemsPropertyTest {
 
-    private static final String POTION_ID = "hp_potion_50";
+    private static final String POTION_ID = "hp_potion_30";
     private static final String ONE_HAND_SWORD_ID = "beginner_one_hand_sword";
     private static final String TWO_HAND_SWORD_ID = "beginner_two_hand_sword";
     private static final String SHIELD_ID = "beginner_shield";
@@ -58,15 +58,15 @@ class SeedDefaultItemsPropertyTest {
     // Feature: 006-gold-item-inventory, Property 18: 기본 지급 결과
 
     /**
-     * seedDefault()가 정확히 5개 아이템을 저장함을 검증한다.
+     * seedDefault()가 정확히 11개 아이템(장비 10 + 포션 1스택)을 저장함을 검증한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_saveExactlyFiveItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
+    void should_saveExactlyElevenItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        assertThat(savedItems).hasSize(5);
+        assertThat(savedItems).hasSize(11);
     }
 
     /**
@@ -135,22 +135,22 @@ class SeedDefaultItemsPropertyTest {
                 .filter(item -> !POTION_ID.equals(item.getItemId()))
                 .toList();
 
-        assertThat(equipmentItems).hasSize(4);
+        assertThat(equipmentItems).hasSize(10);
         for (final OwnedItem equipment : equipmentItems) {
             assertThat(equipment.getCurrentDurability()).isEqualTo(MAX_DURABILITY);
         }
     }
 
     /**
-     * 기본 장착 장비의 보너스 합산이 STR+5, DEF+15임을 검증한다.
+     * 기본 장착 장비의 보너스 합산이 STR+5, DEF+10임을 검증한다.
      *
-     * <p>한손검(STR+5) + 방패(DEF+5) + 갑옷(DEF+10)이 장착되어
-     * equippedBonus의 STAT 보너스가 STR+5, DEF+15이어야 한다.
+     * <p>한손검(STR+5) + 방패(DEF+5) + 갑옷(DEF+5)이 장착되어
+     * equippedBonus의 STAT 보너스가 STR+5, DEF+10이어야 한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_yieldStatBonusStrFiveDefFifteen_when_equippedBonusAfterSeed(
+    void should_yieldStatBonusStrFiveDefTen_when_equippedBonusAfterSeed(
             @ForAll("dummyInt") final int dummy) {
 
         final List<OwnedItem> savedItems = executeSeedAndCapture();
@@ -174,7 +174,7 @@ class SeedDefaultItemsPropertyTest {
         final EquippedBonusResult result = bonusService.equippedBonus();
 
         assertThat(result.statBonus().str()).isEqualTo(5);
-        assertThat(result.statBonus().defense()).isEqualTo(15);
+        assertThat(result.statBonus().defense()).isEqualTo(10);
         assertThat(result.statBonus().dex()).isZero();
         assertThat(result.statBonus().intelligence()).isZero();
         assertThat(result.statBonus().critical()).isZero();
@@ -240,7 +240,7 @@ class SeedDefaultItemsPropertyTest {
         final EquipmentItem armor = new EquipmentItem(
                 ARMOR_ID, "초보자용 갑옷", ItemType.ARMOR,
                 EquipmentKind.ARMOR_BODY,
-                List.of(new EquipBonus(BonusTarget.DEF, 10)),
+                List.of(new EquipBonus(BonusTarget.DEF, 5)),
                 null, MAX_DURABILITY);
 
         when(mockCatalog.byId(ONE_HAND_SWORD_ID)).thenReturn(Optional.of(oneHandSword));
