@@ -7,32 +7,35 @@
         맵 데이터를 불러오는 중...
     </div>
 
-    <!-- NPC 멘트 + 행동 버튼 (NPC 대상일 때만 표시) -->
-    <div class="npc-talk" id="npcTalk" th:if="${view.npcName != null}">
-        <span class="npc-name" th:text="${view.npcName}"></span>
-        <p th:text="${view.npcDialogue}"></p>
-        <!-- NPC 행동 버튼 (멘트 하단) -->
-        <div class="npc-actions" id="npcActions"
-             th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
-            <button th:each="action : ${view.npcActions}"
-                    th:text="${action.label}"
-                    onclick="npcAction(this.textContent)">
-            </button>
-        </div>
-    </div>
+    <!-- 대화 영역: 항상 표시, 상태에 따라 NPC(초록)/몬스터(빨강)/빈(회색) -->
+    <div class="npc-talk" id="npcTalk"
+         th:classappend="${view.npcName != null} ? ' active-npc' : (${view.monsterName != null} ? ' active-monster' : '')">
 
-    <!-- 몬스터 멘트 + 레벨/HP + 행동 버튼 (몬스터 대상일 때만 표시) -->
-    <div class="npc-talk" th:if="${view.monsterName}">
-        <span class="monster-name" th:text="${view.monsterName}">몬스터</span>
-        <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
-        <p th:text="${view.monsterDialogue}">대사</p>
-        <!-- 몬스터 행동 버튼 (멘트 하단, NPC 행동 버튼과 동일 위치) -->
-        <div class="npc-actions" th:if="${view.monsterActions != null and !view.monsterActions.isEmpty()}">
-            <button th:each="action : ${view.monsterActions}"
-                    th:text="${action.label()}"
-                    th:attr="onclick='monsterAction(\'' + ${action.label()} + '\')'"
-                    class="monster-action-btn">전투</button>
-        </div>
+        <!-- NPC 대사 (NPC 클릭 시) -->
+        <th:block th:if="${view.npcName != null}">
+            <span class="npc-name" th:text="${view.npcName}"></span>
+            <p th:text="${view.npcDialogue}"></p>
+            <div class="npc-actions" id="npcActions"
+                 th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
+                <button th:each="action : ${view.npcActions}"
+                        th:text="${action.label}"
+                        onclick="npcAction(this.textContent)">
+                </button>
+            </div>
+        </th:block>
+
+        <!-- 몬스터 대사 (몬스터 클릭 시) -->
+        <th:block th:if="${view.monsterName != null}">
+            <span class="monster-name" th:text="${view.monsterName}">몬스터</span>
+            <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
+            <p th:text="${view.monsterDialogue}">대사</p>
+            <div class="monster-actions">
+                <button th:each="action : ${view.monsterActions}"
+                        th:text="${action.label()}"
+                        th:attr="onclick='monsterAction(\'' + ${action.label()} + '\')'"
+                        class="monster-action-btn">전투</button>
+            </div>
+        </th:block>
     </div>
 
     <!-- 상호작용 버튼 -->

@@ -68,7 +68,7 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     );
 
     private static final List<String> CENTER_MONSTER_MARKERS = List.of(
-            "monster-name", "monster-meta", "monster-action-btn",
+            "monster-name", "monster-meta", "monster-actions",
             "monsterAction", "onInteractionClick", "data-monster-id"
     );
 

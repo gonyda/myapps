@@ -208,10 +208,10 @@
             overflow-y: auto;
         }
 
-        /* NPC 멘트 (텍스트 길어지면 스크롤) */
+        /* 대사 영역: 기본 회색(빈 상태), NPC 초록, 몬스터 빨강 */
         .npc-talk {
-            background: #23281f;
-            border: 1px solid #4a6a4a;
+            background: #1e1e1e;
+            border: 1px solid #444;
             border-radius: var(--radius);
             padding: var(--pad);
             font-size: var(--fs-md);
@@ -219,6 +219,16 @@
             flex: 0 0 auto;
             height: clamp(64px, 12dvh, 120px);
             overflow-y: auto;
+        }
+
+        .npc-talk.active-npc {
+            background: #23281f;
+            border-color: #4a6a4a;
+        }
+
+        .npc-talk.active-monster {
+            background: #281f1f;
+            border-color: #6a4a4a;
         }
 
         .npc-talk .npc-name {
@@ -1760,6 +1770,7 @@
         .monster-name {
             display: inline;
             font-weight: bold;
+            color: #d19a9a;
         }
 
         .monster-meta {
