@@ -11,13 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
-import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
-import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.BattleView;
@@ -70,6 +68,7 @@ public class PlayScreenController {
     private final BattleService battleService;
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
+    private final NodeViewAssembler nodeViewAssembler;
 
     /**
      * PlayScreenController를 생성한다.
@@ -87,6 +86,7 @@ public class PlayScreenController {
      * @param battleService             전투 오케스트레이션 서비스
      * @param actionLog                 세션 보관 행동 로그
      * @param playScreenViewHelper      뷰 모델 조립 헬퍼
+     * @param nodeViewAssembler         현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
      */
     public PlayScreenController(final CharacterService characterService,
                                 final MapService mapService,
@@ -100,7 +100,8 @@ public class PlayScreenController {
                                 final MonsterEncounterService monsterEncounterService,
                                 final BattleService battleService,
                                 final ActionLog actionLog,
-                                final PlayScreenViewHelper playScreenViewHelper) {
+                                final PlayScreenViewHelper playScreenViewHelper,
+                                final NodeViewAssembler nodeViewAssembler) {
         this.characterService = characterService;
         this.mapService = mapService;
         this.ambienceService = ambienceService;
@@ -114,6 +115,7 @@ public class PlayScreenController {
         this.battleService = battleService;
         this.actionLog = actionLog;
         this.playScreenViewHelper = playScreenViewHelper;
+        this.nodeViewAssembler = nodeViewAssembler;
     }
 
     /**
@@ -350,29 +352,13 @@ public class PlayScreenController {
     /**
      * 캐릭터 진행상황으로부터 플레이 화면 전체 뷰 모델을 조립한다.
      *
-     * <p>현재 노드의 NPC 목록을 조회하여 상호작용 버튼을 구성하고,
-     * 환생 상태를 조회하여 정보 팝업을 조립한 뒤 뷰를 반환한다.
+     * <p>현재 노드 기준 상호작용·상황 멘트·정보 팝업 조립은 {@link NodeViewAssembler}에
+     * 위임하여 전투 종료 후 화면 복원과 동일한 뷰를 공유한다.
      *
      * @param progress 캐릭터 진행상황
      * @return 플레이 화면 뷰 모델
      */
     private PlayScreenView buildViewFromProgress(final CharacterProgress progress) {
-        final String currentNodeId = progress.getCurrentNodeId();
-        final MapNode currentNode = mapService.node(currentNodeId);
-        final MinimapView minimap = mapService.minimap(currentNodeId);
-        final FullMapView fullMap = mapService.fullMap(currentNodeId);
-        final String ambience = ambienceService.ambience(currentNode);
-        final List<ActionLogEntry> logs = actionLog.getEntries();
-
-        final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
-        final List<Monster> monstersOnNode = monsterService.byNode(currentNodeId);
-        final List<InteractionItem> interactions =
-                playScreenViewHelper.buildInteractions(npcsOnNode, monstersOnNode);
-
-        final RebirthStatus status = progressionService.rebirthStatus(progress);
-        final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
-
-        return playScreenViewHelper.buildPlayScreen(
-                progress, minimap, fullMap, ambience, interactions, null, null, logs, info);
+        return nodeViewAssembler.fromProgress(progress);
     }
 }

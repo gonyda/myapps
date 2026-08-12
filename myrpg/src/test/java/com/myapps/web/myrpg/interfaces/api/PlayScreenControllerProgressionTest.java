@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -57,6 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * POST /rebirth 가능/쿨다운 분기를 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
+@Import(NodeViewAssembler.class)
 class PlayScreenControllerProgressionTest {
 
     @Autowired

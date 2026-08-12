@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -56,6 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 이동 성공/거부 시 프래그먼트 반환 및 상태 저장을 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
+@Import(NodeViewAssembler.class)
 class PlayScreenControllerTest {
 
     @Autowired

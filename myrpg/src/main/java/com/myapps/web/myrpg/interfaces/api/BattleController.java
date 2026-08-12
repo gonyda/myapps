@@ -49,6 +49,7 @@ public class BattleController {
     private final MapService mapService;
     private final PlayScreenViewHelper playScreenViewHelper;
     private final ActionLog actionLog;
+    private final NodeViewAssembler nodeViewAssembler;
 
     /**
      * BattleController를 생성한다.
@@ -59,19 +60,22 @@ public class BattleController {
      * @param mapService           맵 데이터 서비스 (미니맵 렌더용)
      * @param playScreenViewHelper 뷰 모델 조립 헬퍼
      * @param actionLog            세션 보관 행동 로그
+     * @param nodeViewAssembler    현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
      */
     public BattleController(final BattleService battleService,
                             final CharacterService characterService,
                             final MonsterService monsterService,
                             final MapService mapService,
                             final PlayScreenViewHelper playScreenViewHelper,
-                            final ActionLog actionLog) {
+                            final ActionLog actionLog,
+                            final NodeViewAssembler nodeViewAssembler) {
         this.battleService = battleService;
         this.characterService = characterService;
         this.monsterService = monsterService;
         this.mapService = mapService;
         this.playScreenViewHelper = playScreenViewHelper;
         this.actionLog = actionLog;
+        this.nodeViewAssembler = nodeViewAssembler;
     }
 
     /**
@@ -235,11 +239,7 @@ public class BattleController {
                                           final String monsterId,
                                           final Model model,
                                           final BattleTurnResult result) {
-        final TopBarView topBar = playScreenViewHelper.buildTopBar(progress);
-        final MinimapView minimap = mapService.minimap(progress.getCurrentNodeId());
-        final List<ActionLogEntry> logs = actionLog.getEntries();
-
-        model.addAttribute("view", buildViewShell(topBar, minimap, logs));
+        model.addAttribute("view", nodeViewAssembler.fromProgress(progress));
         model.addAttribute("turnResult", result);
         model.addAttribute("battleEnded", true);
         model.addAttribute("outcome", result.outcome());
@@ -248,10 +248,7 @@ public class BattleController {
     }
 
     private String returnCenterFragment(final CharacterProgress progress, final Model model) {
-        final TopBarView topBar = playScreenViewHelper.buildTopBar(progress);
-        final MinimapView minimap = mapService.minimap(progress.getCurrentNodeId());
-        final List<ActionLogEntry> logs = actionLog.getEntries();
-        model.addAttribute("view", buildViewShell(topBar, minimap, logs));
+        model.addAttribute("view", nodeViewAssembler.fromProgress(progress));
         return "fragments/center :: center";
     }
 

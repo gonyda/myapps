@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -62,6 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 미지 몬스터 ID 관용 처리, NPC·몬스터 슬롯 배타성을 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
+@Import(NodeViewAssembler.class)
 class PlayScreenControllerMonsterTest {
 
     @Autowired

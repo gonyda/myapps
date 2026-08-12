@@ -11,7 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.GaugeView;
+import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
+import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
@@ -28,12 +30,14 @@ import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.SkillType;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -79,6 +83,9 @@ class BattleControllerTest {
 
     @MockitoBean
     private ActionLog actionLog;
+
+    @MockitoBean
+    private NodeViewAssembler nodeViewAssembler;
 
     /**
      * POST /battle/start 요청 시 전투 뷰 프래그먼트가 200으로 반환되는지 검증한다.
@@ -136,7 +143,7 @@ class BattleControllerTest {
      * POST /battle/turn에서 전투 종료(승리) 시 battle-response 프래그먼트와 battleEnded 속성이 반환되는지 검증한다.
      */
     @Test
-    void should_returnBattleEndResponse_when_turnResultsInVictory() throws Exception {
+    void should_restoreMonsterInteractionButton_when_turnResultsInVictory() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         final BattleTurnResult victoryResult = createVictoryTurnResult();
@@ -145,9 +152,8 @@ class BattleControllerTest {
         when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.of(state));
         when(battleService.takeTurn(any(CharacterProgress.class), any(BattleState.class), eq(SKILL_ID)))
                 .thenReturn(victoryResult);
-        when(playScreenViewHelper.buildTopBar(any(CharacterProgress.class))).thenReturn(createTestTopBar());
-        when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
-        when(actionLog.getEntries()).thenReturn(List.of());
+        when(nodeViewAssembler.fromProgress(any(CharacterProgress.class)))
+                .thenReturn(createRestoredView());
 
         mockMvc.perform(post("/battle/turn").param("skillId", SKILL_ID))
                 .andExpect(status().isOk())
@@ -155,7 +161,8 @@ class BattleControllerTest {
                 .andExpect(model().attributeExists("view"))
                 .andExpect(model().attributeExists("turnResult"))
                 .andExpect(model().attribute("battleEnded", true))
-                .andExpect(model().attribute("outcome", Outcome.WIN));
+                .andExpect(model().attribute("outcome", Outcome.WIN))
+                .andExpect(content().string(containsString("data-monster-id=\"raccoon\"")));
     }
 
     /**
@@ -171,15 +178,15 @@ class BattleControllerTest {
         when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.of(state));
         when(battleService.flee(any(CharacterProgress.class), any(BattleState.class)))
                 .thenReturn(fleeSuccessResult);
-        when(playScreenViewHelper.buildTopBar(any(CharacterProgress.class))).thenReturn(createTestTopBar());
-        when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
-        when(actionLog.getEntries()).thenReturn(List.of());
+        when(nodeViewAssembler.fromProgress(any(CharacterProgress.class)))
+                .thenReturn(createRestoredView());
 
         mockMvc.perform(post("/battle/flee"))
                 .andExpect(status().isOk())
                 .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
                 .andExpect(model().attribute("battleEnded", true))
-                .andExpect(model().attribute("outcome", Outcome.FLED));
+                .andExpect(model().attribute("outcome", Outcome.FLED))
+                .andExpect(content().string(containsString("data-monster-id=\"raccoon\"")));
     }
 
     /**
@@ -251,6 +258,16 @@ class BattleControllerTest {
 
     private MinimapView createTestMinimap() {
         return new MinimapView("티르코네일", List.of());
+    }
+
+    private PlayScreenView createRestoredView() {
+        final List<InteractionItem> interactions =
+                List.of(new InteractionItem(MONSTER_ID, MONSTER_NAME, false));
+        return new PlayScreenView(
+                createTestTopBar(), createTestMinimap(), null, "숲 속 공터",
+                null, null, interactions, null,
+                null, null, null, null, null,
+                List.of(), null);
     }
 
     private BattleTurnResult createOngoingTurnResult() {

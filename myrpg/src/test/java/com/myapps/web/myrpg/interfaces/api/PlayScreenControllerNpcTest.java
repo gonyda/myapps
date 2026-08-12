@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -60,6 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 노드 이동 시 상호작용 재구성, NPC가 없는 노드 시나리오를 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
+@Import(NodeViewAssembler.class)
 class PlayScreenControllerNpcTest {
 
     @Autowired

@@ -8,6 +8,7 @@ import java.util.Random;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.myapps.web.myrpg.application.dto.BattleLogInput;
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.DropResult;
@@ -70,7 +71,6 @@ public class BattleService {
     private static final int MONSTER_HEAVY_MULTIPLIER = 150;
     private static final int PERCENT_DIVISOR = 100;
     private static final String LOG_TYPE_COMBAT = "combat";
-    private static final String LOG_TYPE_REWARD = "reward";
 
     private final BattleStateRepository battleStateRepository;
     private final BattleResolver resolver;
@@ -79,6 +79,7 @@ public class BattleService {
     private final MonsterRewardService monsterRewardService;
     private final SkillService skillService;
     private final SkillDamagePolicy skillDamagePolicy;
+    private final BattleLogFormatter logFormatter;
     private final InventoryService inventoryService;
     private final ProgressionService progressionService;
     private final CharacterService characterService;
@@ -130,6 +131,7 @@ public class BattleService {
         this.monsterRewardService = monsterRewardService;
         this.skillService = skillService;
         this.skillDamagePolicy = new SkillDamagePolicy();
+        this.logFormatter = new BattleLogFormatter();
         this.inventoryService = inventoryService;
         this.progressionService = progressionService;
         this.characterService = characterService;
@@ -245,8 +247,10 @@ public class BattleService {
         }
 
         applyDamage(progress, state, playerDamage, monsterDamage);
-        buildCombatLog(logLines, skill, monster, playerDamage, monsterDamage,
-                playerCritical, blocked, countered, firstStrike, castFailure, monsterAction);
+        final BattleLogInput logInput = new BattleLogInput(
+                skill.label(), skill.type(), monster.name(), monsterAction,
+                playerDamage, monsterDamage, playerCritical, firstStrike, castFailure);
+        logLines.addAll(logFormatter.combatLines(logInput));
 
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
         skillService.onSkillUsed(progress.getId(), skillId);
@@ -682,67 +686,6 @@ public class BattleService {
                 false, false, false, null,
                 outcome != Outcome.NONE, outcome,
                 null, 0, logLines);
-    }
-
-    // ─── Private: combat log ────────────────────────────────────────────────
-
-    private void buildCombatLog(final List<String> logLines,
-                                final Skill skill,
-                                final Monster monster,
-                                final int playerDamage,
-                                final int monsterDamage,
-                                final boolean playerCritical,
-                                final boolean blocked,
-                                final boolean countered,
-                                final boolean firstStrike,
-                                final boolean castFailure,
-                                final SkillType monsterAction) {
-        if (castFailure) {
-            buildMonsterLogLine(logLines, monster, monsterDamage, monsterAction, false);
-            return;
-        }
-        if (firstStrike) {
-            logLines.add("선제 사격! " + monster.name() + "에게 " + playerDamage + " 피해");
-            return;
-        }
-        buildPlayerLogLine(logLines, skill, monster, playerDamage, playerCritical, countered);
-        buildMonsterLogLine(logLines, monster, monsterDamage, monsterAction, blocked);
-    }
-
-    private void buildPlayerLogLine(final List<String> logLines,
-                                    final Skill skill,
-                                    final Monster monster,
-                                    final int playerDamage,
-                                    final boolean critical,
-                                    final boolean countered) {
-        if (countered && skill.type() == SkillType.DEFENSE) {
-            final String line = skill.label() + "(" + skill.type().label()
-                    + ")로 방어로 " + playerDamage + " 피해 (반격)";
-            logLines.add(line);
-        } else if (critical) {
-            logLines.add(skill.label() + "(" + skill.type().label()
-                    + ")로 " + monster.name() + "에게 " + playerDamage + " 피해 (크리티컬!)");
-        } else {
-            logLines.add(skill.label() + "(" + skill.type().label()
-                    + ")로 " + monster.name() + "에게 " + playerDamage + " 피해");
-        }
-    }
-
-    private void buildMonsterLogLine(final List<String> logLines,
-                                     final Monster monster,
-                                     final int monsterDamage,
-                                     final SkillType monsterAction,
-                                     final boolean blocked) {
-        if (monsterDamage == 0 && monsterAction == SkillType.DEFENSE) {
-            return;
-        }
-        if (blocked) {
-            logLines.add(monster.name() + "의 " + monsterAction.label()
-                    + "공격을 방어 (" + monsterDamage + " 피해)");
-        } else if (monsterDamage > 0) {
-            logLines.add(monster.name() + "의 " + monsterAction.label()
-                    + "공격, " + monsterDamage + " 피해를 입음");
-        }
     }
 
     // ─── Private: safe terminate / no-op results ────────────────────────────
