@@ -22,6 +22,7 @@ import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -101,6 +102,16 @@ class PlayScreenControllerMonsterTest {
 
     @MockitoBean
     private MonsterEncounterService monsterEncounterService;
+
+    @MockitoBean
+    private BattleService battleService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpBattleServiceDefault() {
+        org.mockito.Mockito.when(battleService.resumeIfActive(
+                org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
+                .thenReturn(java.util.Optional.empty());
+    }
 
     /**
      * POST /monster/encounter 요청 시 몬스터가 존재하면 monster-response 뷰가 반환되고

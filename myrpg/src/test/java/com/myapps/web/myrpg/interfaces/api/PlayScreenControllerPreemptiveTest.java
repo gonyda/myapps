@@ -20,6 +20,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -52,10 +53,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 /**
- * {@link PlayScreenController}의 몬스터 선공 판정 관련 웹 슬라이스 테스트.
+ * {@link PlayScreenController}의 몬스터 기습(강제 전투 돌입) 판정 관련 웹 슬라이스 테스트.
  *
- * <p>{@code POST /move} 요청 시 선공 발동/미발동에 따른
- * {@code preemptiveMonsterName} 모델 속성 설정 및 행동 로그 기록을 검증한다.
+ * <p>{@code POST /move} 요청 시 기습 발동/미발동에 따른
+ * {@code ambushMonsterName} 모델 속성 설정 및 전투 자동 시작을 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
 class PlayScreenControllerPreemptiveTest {
@@ -99,12 +100,20 @@ class PlayScreenControllerPreemptiveTest {
     @MockitoBean
     private MonsterEncounterService monsterEncounterService;
 
+    @MockitoBean
+    private BattleService battleService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpBattleServiceDefault() {
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(java.util.Optional.empty());
+    }
+
     /**
-     * POST /move 이동 성공 시 선공이 발동하면 preemptiveMonsterName이 모델에 설정되고
-     * combat 로그가 기록되는지 검증한다.
+     * POST /move 이동 성공 시 기습이 발동하면 ambushMonsterName이 모델에 설정되고
+     * battleService.start가 호출되는지 검증한다.
      */
     @Test
-    void should_setPreemptiveMonsterNameAndLog_when_preemptiveStrikeTriggered() throws Exception {
+    void should_setAmbushMonsterNameAndStartBattle_when_preemptiveStrikeTriggered() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode("dugald-north");
         final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
@@ -129,6 +138,7 @@ class PlayScreenControllerPreemptiveTest {
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.empty());
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(moved);
         when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
         when(mapService.node(anyString())).thenReturn(targetNode);
@@ -154,21 +164,21 @@ class PlayScreenControllerPreemptiveTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"))
                 .andExpect(model().attributeExists("view"))
-                .andExpect(model().attributeExists("preemptiveMonsterName"))
+                .andExpect(model().attributeExists("ambushMonsterName"))
                 .andReturn();
 
-        final String preemptiveName = (String) result.getModelAndView().getModel().get("preemptiveMonsterName");
-        assertThat(preemptiveName).isEqualTo("너구리");
+        final String ambushName = (String) result.getModelAndView().getModel().get("ambushMonsterName");
+        assertThat(ambushName).isEqualTo("너구리");
 
-        verify(actionLog).add("너구리 선공!", "combat");
+        verify(battleService).start(any(CharacterProgress.class), org.mockito.ArgumentMatchers.eq("raccoon"), org.mockito.ArgumentMatchers.eq(true));
     }
 
     /**
-     * POST /move 이동 성공 시 선공이 발동하지 않으면 preemptiveMonsterName이 모델에 없고
-     * combat 로그가 기록되지 않는지 검증한다.
+     * POST /move 이동 성공 시 기습이 발동하지 않으면 ambushMonsterName이 모델에 없고
+     * battleService.start가 호출되지 않는지 검증한다.
      */
     @Test
-    void should_notSetPreemptiveMonsterName_when_preemptiveStrikeNotTriggered() throws Exception {
+    void should_notSetAmbushMonsterName_when_preemptiveStrikeNotTriggered() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode("dugald-north");
         final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
@@ -193,6 +203,7 @@ class PlayScreenControllerPreemptiveTest {
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.empty());
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(moved);
         when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
         when(mapService.node(anyString())).thenReturn(targetNode);
@@ -218,14 +229,14 @@ class PlayScreenControllerPreemptiveTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"))
                 .andExpect(model().attributeExists("view"))
-                .andExpect(model().attributeDoesNotExist("preemptiveMonsterName"))
+                .andExpect(model().attributeDoesNotExist("ambushMonsterName"))
                 .andReturn();
 
-        verify(actionLog, never()).add("너구리 선공!", "combat");
+        verify(battleService, never()).start(any(), anyString(), org.mockito.ArgumentMatchers.eq(true));
     }
 
     /**
-     * POST /move 이동이 거부(Blocked)되면 선공 판정이 수행되지 않는지 검증한다.
+     * POST /move 이동이 거부(Blocked)되면 기습 판정이 수행되지 않는지 검증한다.
      */
     @Test
     void should_notRollPreemptive_when_moveBlocked() throws Exception {
@@ -246,6 +257,7 @@ class PlayScreenControllerPreemptiveTest {
         );
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.empty());
         when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(blocked);
         when(mapService.node(anyString())).thenReturn(dummyNode("test-node"));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
@@ -269,10 +281,10 @@ class PlayScreenControllerPreemptiveTest {
                         .param("dy", "-1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"))
-                .andExpect(model().attributeDoesNotExist("preemptiveMonsterName"));
+                .andExpect(model().attributeDoesNotExist("ambushMonsterName"));
 
         verify(monsterEncounterService, never()).rollPreemptiveStrike(anyList());
-        verify(actionLog, never()).add("너구리 선공!", "combat");
+        verify(battleService, never()).start(any(), anyString(), org.mockito.ArgumentMatchers.eq(true));
     }
 
     private Monster createRaccoon() {

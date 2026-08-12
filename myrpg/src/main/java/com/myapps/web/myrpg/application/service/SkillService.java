@@ -29,7 +29,7 @@ import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 /**
  * 스킬 시스템 핵심 애플리케이션 서비스.
  *
- * <p>스킬 랭크업·보너스 합산·습득·시드·카운팅 훅·임시 드라이버·뷰 조립을 오케스트레이션한다.
+ * <p>스킬 랭크업·보너스 합산·습득·시드·카운팅 훅·뷰 조립을 오케스트레이션한다.
  * 카탈로그 조회({@link SkillCatalogService}), 영속({@link CharacterSkillRepository}),
  * 순수 정책({@link SkillRankPolicy}, {@link SkillRankupBonus}, {@link SkillDamagePolicy})을 조합한다.
  *
@@ -287,53 +287,10 @@ public class SkillService {
     }
 
     /**
-     * 스킬 사용 횟수를 현재 랭크의 요구치까지 즉시 설정한다 (임시 드라이버).
-     *
-     * <p>전투(7순위)의 실제 사용 이벤트({@code onSkillUsed})가 구현되면
-     * 이 메서드를 호출하는 임시 엔드포인트({@code POST /skills/{id}/dev/fill-usage})는
-     * 제거된다. 전투 스펙이 실제 카운팅 이벤트로 교체한다.
-     *
-     * @param characterId 캐릭터 ID
-     * @param skillId     대상 스킬 ID
-     */
-    @Transactional
-    public void fillUsageToRequirement(final Long characterId, final String skillId) {
-        final CharacterSkill skill = findSkill(characterId, skillId);
-        if (skill.getRank().isMax()) {
-            return;
-        }
-        final RankUpRequirement requirement = skillRankPolicy.requirement(skill.getRank()).orElseThrow();
-        skill.setUsageCount(requirement.requiredUsage());
-        characterSkillRepository.save(skill);
-    }
-
-    /**
-     * 막타 처치 수를 현재 랭크의 요구치까지 즉시 설정한다 (임시 드라이버).
-     *
-     * <p>전투(7순위)의 실제 막타 이벤트({@code onSkillKill})가 구현되면
-     * 이 메서드를 호출하는 임시 엔드포인트({@code POST /skills/{id}/dev/fill-kill})는
-     * 제거된다. 전투 스펙이 실제 카운팅 이벤트로 교체한다.
-     *
-     * @param characterId 캐릭터 ID
-     * @param skillId     대상 스킬 ID
-     */
-    @Transactional
-    public void fillKillToRequirement(final Long characterId, final String skillId) {
-        final CharacterSkill skill = findSkill(characterId, skillId);
-        if (skill.getRank().isMax()) {
-            return;
-        }
-        final RankUpRequirement requirement = skillRankPolicy.requirement(skill.getRank()).orElseThrow();
-        skill.setKillCount(requirement.requiredKills());
-        characterSkillRepository.save(skill);
-    }
-
-    /**
      * 스킬 사용 이벤트를 처리한다 (사용 횟수 +1).
      *
-     * <p>전투(7순위)가 호출하는 진입점. 현재는 임시 드라이버({@code dev/fill-usage})가
-     * 대체 역할을 하며, 전투 스펙 구현 시 실제 전투 이벤트에서 호출된다.
-     * 전투 스펙 구현 후 임시 드라이버는 제거된다.
+     * <p>전투에서 스킬을 사용할 때마다 호출되며, 사용 횟수를 1 증가시킨다.
+     * 승급 조건의 사용 횟수 요구치 달성에 기여한다.
      *
      * @param characterId 캐릭터 ID
      * @param skillId     사용된 스킬 ID
@@ -348,9 +305,8 @@ public class SkillService {
     /**
      * 스킬 막타 처치 이벤트를 처리한다 (막타 처치 수 +1).
      *
-     * <p>전투(7순위)가 호출하는 진입점. 현재는 임시 드라이버({@code dev/fill-kill})가
-     * 대체 역할을 하며, 전투 스펙 구현 시 실제 전투 이벤트에서 호출된다.
-     * 전투 스펙 구현 후 임시 드라이버는 제거된다.
+     * <p>전투에서 스킬로 몬스터를 처치할 때 호출되며, 막타 처치 수를 1 증가시킨다.
+     * 승급 조건의 막타 처치 요구치 달성에 기여한다.
      *
      * @param characterId 캐릭터 ID
      * @param skillId     막타 처치된 스킬 ID

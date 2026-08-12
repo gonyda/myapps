@@ -54,7 +54,10 @@ class ItemDescribePropertyTest {
         final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
         this.inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
     }
 
     // Feature: 006-gold-item-inventory, Property 15: 상세 자동 생성

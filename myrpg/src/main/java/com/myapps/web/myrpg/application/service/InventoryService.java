@@ -9,14 +9,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.myapps.web.myrpg.application.dto.BankView;
+import com.myapps.web.myrpg.application.dto.BattleSkillButton;
+import com.myapps.web.myrpg.application.dto.DropResult;
+import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.InventoryView;
 import com.myapps.web.myrpg.application.dto.OwnedItemView;
 import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.application.exception.InventoryFullException;
+import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BonusKind;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.EquipBonus;
 import com.myapps.web.myrpg.domain.model.EquipSlot;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
@@ -25,11 +30,14 @@ import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.PotionItem;
+import com.myapps.web.myrpg.domain.model.Skill;
+import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
+import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 
 /**
@@ -59,10 +67,15 @@ public class InventoryService {
     private static final String SEED_GLOVES_ID = "beginner_gloves";
     private static final String SEED_BOOTS_ID = "beginner_boots";
 
+    private static final String LOG_TYPE_ITEM = "item";
+
     private final OwnedItemRepository ownedItemRepository;
     private final ItemCatalogService itemCatalogService;
     private final CharacterProgressRepository characterProgressRepository;
     private final StatProgression statProgression;
+    private final ActionLog actionLog;
+    private final SkillCatalogService skillCatalogService;
+    private final CharacterSkillRepository characterSkillRepository;
 
     /**
      * InventoryService를 생성한다.
@@ -71,15 +84,24 @@ public class InventoryService {
      * @param itemCatalogService          아이템 카탈로그 서비스
      * @param characterProgressRepository 캐릭터 진행상황 리포지토리
      * @param statProgression             스탯/바이탈 계산 정책
+     * @param actionLog                   활동 로그 (세션 스코프)
+     * @param skillCatalogService         스킬 카탈로그 서비스
+     * @param characterSkillRepository    캐릭터 보유 스킬 리포지토리
      */
     public InventoryService(final OwnedItemRepository ownedItemRepository,
                             final ItemCatalogService itemCatalogService,
                             final CharacterProgressRepository characterProgressRepository,
-                            final StatProgression statProgression) {
+                            final StatProgression statProgression,
+                            final ActionLog actionLog,
+                            final SkillCatalogService skillCatalogService,
+                            final CharacterSkillRepository characterSkillRepository) {
         this.ownedItemRepository = ownedItemRepository;
         this.itemCatalogService = itemCatalogService;
         this.characterProgressRepository = characterProgressRepository;
         this.statProgression = statProgression;
+        this.actionLog = actionLog;
+        this.skillCatalogService = skillCatalogService;
+        this.characterSkillRepository = characterSkillRepository;
     }
 
     /**
@@ -338,6 +360,79 @@ public class InventoryService {
     }
 
     /**
+     * 몬스터 처치 드랍 결과를 인벤토리에 적재한다.
+     *
+     * <p>골드는 항상 {@code gainGold}로 가산하고, 아이템은 각각 인벤토리에 추가한다.
+     * 인벤토리 용량(30)을 초과하는 아이템은 소실시키고 활동 로그에 실패 메시지를 남기며,
+     * 나머지 아이템과 골드 처리는 계속한다.
+     *
+     * @param progress 캐릭터 진행상황 (골드 가산 대상)
+     * @param drop     드랍 결과 (골드 + 아이템 목록)
+     */
+    @Transactional
+    public void acquire(final CharacterProgress progress, final DropResult drop) {
+        if (drop.gold() > 0) {
+            progress.gainGold(drop.gold());
+        }
+
+        for (final DroppedItem droppedItem : drop.items()) {
+            acquireSingleItem(progress, droppedItem);
+        }
+    }
+
+    /**
+     * 현재 착용 무기의 재능에 해당하는 전투 스킬 목록을 조회한다.
+     *
+     * <p>착용 무기 재능에 해당하는 스킬과 공통(COMMON) 스킬 중
+     * 캐릭터가 습득(보유)한 스킬만 {@link BattleSkillButton}으로 반환한다.
+     * 무기를 장착하지 않은 경우 공통 스킬(방어)만 반환한다.
+     *
+     * @param progress 캐릭터 진행상황 (보유 스킬·착용 장비 조회용)
+     * @return 전투에서 사용 가능한 스킬 버튼 목록
+     */
+    public List<BattleSkillButton> combatSkills(final CharacterProgress progress) {
+        final SkillTalent weaponTalent = resolveEquippedWeaponTalent();
+        final List<CharacterSkill> ownedSkills =
+                characterSkillRepository.findByCharacterId(progress.getId());
+
+        final List<BattleSkillButton> buttons = new ArrayList<>();
+        for (final CharacterSkill characterSkill : ownedSkills) {
+            buildCombatButton(characterSkill, weaponTalent).ifPresent(buttons::add);
+        }
+        return List.copyOf(buttons);
+    }
+
+    /**
+     * 장착 장비의 내구도를 감소시키고, 0에 도달하면 자동 장착 해제한다.
+     *
+     * <p>6순위 전투에서 공격 턴당 호출되며, 내구도가 0에 도달한 장비는
+     * 자동으로 장착 해제되어 보너스가 소멸된다. 자동 해제 시 활동 로그에
+     * 해제 메시지를 남긴다.
+     *
+     * <p>내구도 수리(대장간)는 7순위 스펙에서 구현되며, 본 스펙에서는
+     * 파손 시 자동 장착 해제까지만 처리한다.
+     *
+     * @param progress 캐릭터 진행상황 (로그 기록용)
+     * @param amount   감소시킬 내구도량 (양수, 전투에서는 0.2)
+     */
+    @Transactional
+    public void reduceDurabilityAndAutoUnequip(final CharacterProgress progress, final double amount) {
+        final List<OwnedItem> equippedItems =
+                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+
+        for (final OwnedItem equipped : equippedItems) {
+            final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
+            if (catalogOpt.isEmpty() || !(catalogOpt.get() instanceof EquipmentItem)) {
+                continue;
+            }
+            equipped.reduceDurability(amount);
+            if (equipped.getCurrentDurability() <= 0.0) {
+                autoUnequipBroken(equipped, catalogOpt.get().name());
+            }
+        }
+    }
+
+    /**
      * 아이템 상세 설명을 자동 생성한다.
      *
      * <p>포션이면 회복량 문구를 포함하고, 장비이면 보너스 한 줄씩·장비 종류·
@@ -530,5 +625,129 @@ public class InventoryService {
             return String.valueOf((int) currentDurability);
         }
         return String.valueOf(currentDurability);
+    }
+
+    // ─── acquire helpers ────────────────────────────────────────────────────
+
+    private void acquireSingleItem(final CharacterProgress progress, final DroppedItem droppedItem) {
+        final Optional<Item> catalogOpt = itemCatalogService.byId(droppedItem.itemId());
+        if (catalogOpt.isEmpty()) {
+            return;
+        }
+        final Item catalogItem = catalogOpt.get();
+        final String itemName = catalogItem.name();
+
+        if (catalogItem.type() == ItemType.POTION) {
+            acquirePotion(droppedItem);
+        } else {
+            acquireEquipment(droppedItem, itemName);
+        }
+    }
+
+    private void acquirePotion(final DroppedItem droppedItem) {
+        final Optional<OwnedItem> existingStack =
+                ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, droppedItem.itemId());
+
+        if (existingStack.isPresent()) {
+            existingStack.get().increaseQuantity(droppedItem.quantity());
+        } else {
+            if (isInventoryFull()) {
+                logItemAcquireFailure(droppedItem.itemId());
+                return;
+            }
+            ownedItemRepository.save(new OwnedItem(
+                    droppedItem.itemId(), droppedItem.quantity(), StorageKind.INVENTORY, false, 0));
+        }
+    }
+
+    private void acquireEquipment(final DroppedItem droppedItem, final String itemName) {
+        if (isInventoryFull()) {
+            actionLog.add(itemName + " 획득 실패!", LOG_TYPE_ITEM);
+            return;
+        }
+        final int maxDurability = resolveMaxDurability(droppedItem.itemId());
+        ownedItemRepository.save(new OwnedItem(
+                droppedItem.itemId(), 1, StorageKind.INVENTORY, false, maxDurability));
+    }
+
+    private boolean isInventoryFull() {
+        return ownedItemRepository.countByStorage(StorageKind.INVENTORY) >= MAX_CAPACITY;
+    }
+
+    private void logItemAcquireFailure(final String itemId) {
+        final String itemName = itemCatalogService.byId(itemId)
+                .map(Item::name)
+                .orElse(itemId);
+        actionLog.add(itemName + " 획득 실패!", LOG_TYPE_ITEM);
+    }
+
+    private int resolveMaxDurability(final String itemId) {
+        final Optional<Item> catalogOpt = itemCatalogService.byId(itemId);
+        if (catalogOpt.isPresent() && catalogOpt.get() instanceof EquipmentItem equipItem) {
+            return equipItem.maxDurability();
+        }
+        return EQUIPMENT_MAX_DURABILITY;
+    }
+
+    // ─── combatSkills helpers ───────────────────────────────────────────────
+
+    private SkillTalent resolveEquippedWeaponTalent() {
+        final List<OwnedItem> equippedItems =
+                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+
+        for (final OwnedItem equipped : equippedItems) {
+            final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
+            if (catalogOpt.isEmpty()) {
+                continue;
+            }
+            final Item catalogItem = catalogOpt.get();
+            if (catalogItem instanceof EquipmentItem equipItem && catalogItem.type() == ItemType.WEAPON) {
+                return mapKindToSkillTalent(equipItem.kind());
+            }
+        }
+        return null;
+    }
+
+    private SkillTalent mapKindToSkillTalent(final EquipmentKind kind) {
+        return switch (kind) {
+            case ONE_HANDED_SWORD, TWO_HANDED_SWORD -> SkillTalent.MELEE;
+            case BOW -> SkillTalent.ARCHERY;
+            case WAND, STAFF -> SkillTalent.MAGIC;
+            default -> SkillTalent.MELEE;
+        };
+    }
+
+    private Optional<BattleSkillButton> buildCombatButton(final CharacterSkill characterSkill,
+                                                           final SkillTalent weaponTalent) {
+        final Optional<Skill> catalogOpt = skillCatalogService.byId(characterSkill.getSkillId());
+        if (catalogOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        final Skill catalog = catalogOpt.get();
+        final SkillTalent skillTalent = catalog.talent();
+
+        if (skillTalent == SkillTalent.COMMON) {
+            return Optional.of(toBattleSkillButton(catalog));
+        }
+        if (weaponTalent != null && skillTalent == weaponTalent) {
+            return Optional.of(toBattleSkillButton(catalog));
+        }
+        return Optional.empty();
+    }
+
+    private BattleSkillButton toBattleSkillButton(final Skill catalog) {
+        return new BattleSkillButton(
+                catalog.id(),
+                catalog.label(),
+                catalog.type(),
+                catalog.talent().resourceKind(),
+                catalog.resourceCost());
+    }
+
+    // ─── durability helpers ─────────────────────────────────────────────────
+
+    private void autoUnequipBroken(final OwnedItem equipped, final String itemName) {
+        equipped.unequip();
+        actionLog.add(itemName + " 내구도 0 — 장착 해제됨", LOG_TYPE_ITEM);
     }
 }

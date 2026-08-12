@@ -9,11 +9,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
-import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
@@ -21,6 +19,7 @@ import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -38,7 +37,6 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
@@ -52,11 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 /**
- * {@link PlayScreenController}의 경험치·환생·정보 팝업 관련 웹 슬라이스 테스트.
+ * {@link PlayScreenController}의 환생·정보 팝업 관련 웹 슬라이스 테스트.
  *
  * <p>GET / 요청의 정보 팝업 상/중/하 렌더링(재능 라벨, StatLine, 환생 버튼 상태),
- * 최대레벨 시 EXP "MAX" 표기, POST /exp/up·/exp/down 갱신,
- * POST /rebirth 가능/쿨다운 분기, 좌측 사이드바 테스트 버튼 노출을 검증한다.
+ * 최대레벨 시 EXP "MAX" 표기,
+ * POST /rebirth 가능/쿨다운 분기를 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
 class PlayScreenControllerProgressionTest {
@@ -99,6 +97,16 @@ class PlayScreenControllerProgressionTest {
 
     @MockitoBean
     private MonsterEncounterService monsterEncounterService;
+
+    @MockitoBean
+    private BattleService battleService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpBattleServiceDefault() {
+        org.mockito.Mockito.when(battleService.resumeIfActive(
+                org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
+                .thenReturn(java.util.Optional.empty());
+    }
 
     /**
      * GET / 정보 팝업 상/중/하 영역이 올바르게 렌더링되는지 검증한다.
@@ -179,52 +187,6 @@ class PlayScreenControllerProgressionTest {
     }
 
     /**
-     * POST /exp/up 요청 시 progress-response 프래그먼트가 반환되고 saveTurn이 호출되는지 검증한다.
-     */
-    @Test
-    void should_returnProgressResponseAndSaveTurn_when_expUp() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final PlayScreenView view = buildDefaultView();
-        final LevelUpResult levelUpResult = new LevelUpResult(1, 2);
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(progressionService.gainExperience(any(CharacterProgress.class), anyLong()))
-                .thenReturn(levelUpResult);
-        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
-        stubBuildViewFromProgress(view);
-
-        mockMvc.perform(post("/exp/up"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/progress-response"))
-                .andExpect(model().attributeExists("view"));
-
-        verify(characterService).saveTurn(progress);
-    }
-
-    /**
-     * POST /exp/down 요청 시 progress-response 프래그먼트가 반환되고 saveTurn이 호출되는지 검증한다.
-     */
-    @Test
-    void should_returnProgressResponseAndSaveTurn_when_expDown() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final PlayScreenView view = buildDefaultView();
-        final DeathResult deathResult = new DeathResult(10);
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(progressionService.applyDeathPenalty(any(CharacterProgress.class)))
-                .thenReturn(deathResult);
-        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
-        stubBuildViewFromProgress(view);
-
-        mockMvc.perform(post("/exp/down"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/progress-response"))
-                .andExpect(model().attributeExists("view"));
-
-        verify(characterService).saveTurn(progress);
-    }
-
-    /**
      * POST /rebirth 환생 성공 시 saveTurn이 호출되고 "환생했습니다" 로그가 추가되는지 검증한다.
      */
     @Test
@@ -268,20 +230,6 @@ class PlayScreenControllerProgressionTest {
 
         verify(characterService, never()).saveTurn(any());
         verify(actionLog).add("환생까지 5시간 30분 남았습니다", "system");
-    }
-
-    /**
-     * GET / 좌측 사이드바에 경험치 업/다운 테스트 버튼이 렌더링되는지 검증한다.
-     */
-    @Test
-    void should_renderSidebarTestButtons_when_rootAccessed() throws Exception {
-        final PlayScreenView view = buildDefaultView();
-        stubCommonForGet(view);
-
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("expUp()")))
-                .andExpect(content().string(containsString("expDown()")));
     }
 
     /**

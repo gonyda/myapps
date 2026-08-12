@@ -1273,23 +1273,6 @@
             cursor: not-allowed;
         }
 
-        .rankup-temp-btn {
-            background: transparent;
-            color: #888;
-            border: 1px dashed #666;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.4) calc(var(--pad) * 0.6);
-            font-size: var(--fs-xs);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .rankup-temp-btn:active {
-            background: #2a2a2a;
-            color: #aaa;
-            border-color: #888;
-        }
-
         /* ===== 인벤토리 리스트 팝업 ===== */
         .inventory-overlay {
             z-index: 1000;
@@ -1805,4 +1788,98 @@
 
         .monster-actions button:active {
             background-color: #a93226;
+        }
+
+        /* ===== 전투 뷰 ===== */
+        .battle-view {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+            padding: var(--pad);
+        }
+
+        .battle-monster-info {
+            display: flex;
+            align-items: baseline;
+            gap: calc(var(--gap) * 0.6);
+            padding: calc(var(--gap) * 0.5) 0;
+        }
+
+        .battle-monster-info .monster-name {
+            display: inline;
+            font-weight: bold;
+            font-size: var(--fs-lg);
+            color: #d19a9a;
+        }
+
+        .battle-monster-info .monster-level {
+            font-size: var(--fs-sm);
+            color: #aaa;
+        }
+
+        .battle-hp-wrap {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--gap) * 0.5);
+        }
+
+        .battle-hp-wrap .label {
+            font-size: var(--fs-xs);
+            color: #aaa;
+            flex-shrink: 0;
+        }
+
+        .battle-hp-wrap .bar.monster-hp {
+            flex: 1;
+            height: var(--bar-h);
+            background: #444;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .battle-hp-wrap .bar.monster-hp > .fill {
+            background: #c0392b;
+        }
+
+        #battleSkills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: calc(var(--gap) * 0.5);
+            padding: calc(var(--gap) * 0.5) 0;
+        }
+
+        .battle-skill-btn {
+            background: #3a2a2a;
+            color: #ffcccc;
+            border: 1px solid #6a4a4a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.8) var(--pad);
+            font-size: var(--fs-md);
+            cursor: pointer;
+            min-height: var(--touch);
+            flex: 0 0 calc(50% - var(--gap) * 0.25);
+            text-align: center;
+        }
+
+        .battle-skill-btn:active {
+            background: #4a3a3a;
+        }
+
+        .flee-btn {
+            background: #2a2a3a;
+            color: #aabbdd;
+            border: 1px solid #4a5a7a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.7) var(--pad);
+            font-size: var(--fs-sm);
+            cursor: pointer;
+            min-height: calc(var(--touch) * 0.8);
+            width: 100%;
+            text-align: center;
+            margin-top: calc(var(--gap) * 0.3);
+        }
+
+        .flee-btn:active {
+            background: #3a3a4a;
         }

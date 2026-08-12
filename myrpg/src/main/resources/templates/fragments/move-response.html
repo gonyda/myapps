@@ -6,8 +6,8 @@
     <section class="center" id="center" th:replace="~{fragments/center :: center}"></section>
     <footer class="action-log" id="actionLog" th:replace="~{fragments/action-log :: action-log}"></footer>
     <div th:replace="~{fragments/full-map :: full-map}"></div>
-    <div id="preemptiveSignal" th:if="${preemptiveMonsterName}"
-         th:attr="data-monster=${preemptiveMonsterName}"
+    <div id="ambushSignal" th:if="${ambushMonsterName}"
+         th:attr="data-monster=${ambushMonsterName}"
          style="display:none"></div>
 </div>
 </body>

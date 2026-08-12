@@ -63,7 +63,10 @@ class UsePotionPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final OwnedItem potionOwned = new OwnedItem(
                 params.potionId(), params.quantity(), StorageKind.INVENTORY, false, 0);
@@ -102,7 +105,10 @@ class UsePotionPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final OwnedItem potionOwned = new OwnedItem(
                 params.potionId(), params.quantity(), StorageKind.INVENTORY, false, 0);
@@ -141,7 +147,10 @@ class UsePotionPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final OwnedItem potionOwned = new OwnedItem(
                 params.potionId(), 1, StorageKind.INVENTORY, false, 0);
@@ -178,7 +187,10 @@ class UsePotionPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final String potionId = "full_hp_potion";
         // HP를 hpMax(레벨 1 기본 100)와 동일하게 설정

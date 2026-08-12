@@ -169,7 +169,10 @@ class SeedDefaultItemsPropertyTest {
         setupCatalogForBonusTest(mockCatalog);
 
         final InventoryService bonusService = new InventoryService(
-                mockRepo, mockCatalog, mockProgressRepo, statProgression);
+                mockRepo, mockCatalog, mockProgressRepo, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final EquippedBonusResult result = bonusService.equippedBonus();
 
@@ -213,7 +216,10 @@ class SeedDefaultItemsPropertyTest {
         });
 
         final InventoryService service = new InventoryService(
-                mockRepo, mockCatalog, mockProgressRepo, statProgression);
+                mockRepo, mockCatalog, mockProgressRepo, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
         service.seedDefault();
 
         return captured;

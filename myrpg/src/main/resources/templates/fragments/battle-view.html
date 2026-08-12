@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 전투 뷰 전체 프래그먼트: .center 교체용 (전투 시작 시 사용) -->
+<section class="center battle-view" th:fragment="battle-view">
+    <!-- 몬스터 정보 -->
+    <div class="battle-monster-info">
+        <span class="monster-name" th:text="${battleView.monsterName}">몬스터</span>
+        <span class="monster-level" th:text="'Lv.' + ${battleView.monsterLevel}">Lv.1</span>
+    </div>
+
+    <!-- 몬스터 HP 바 (기존 .bar 컴포넌트 패턴 재사용) -->
+    <div class="battle-hp-wrap">
+        <span class="label">HP</span>
+        <div class="bar monster-hp">
+            <span class="fill"
+                  th:style="'width:' + ${battleView.monsterMaxHp > 0 ? (battleView.monsterCurrentHp * 100 / battleView.monsterMaxHp) : 0} + '%'"></span>
+            <span class="bar-text"
+                  th:text="${battleView.monsterCurrentHp} + ' / ' + ${battleView.monsterMaxHp}">25 / 25</span>
+        </div>
+    </div>
+
+    <!-- 전투 스킬 버튼 영역 -->
+    <div id="battleSkills" th:fragment="battle-skills">
+        <button th:each="skill : ${skills}"
+                th:text="${skill.label()}"
+                th:attr="data-skill-id=${skill.id()},
+                         data-skill-label=${skill.label()}"
+                class="battle-skill-btn"
+                onclick="battleTurn(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-label'))">
+            스킬
+        </button>
+    </div>
+
+    <!-- 도망 버튼 -->
+    <button th:if="${battleView.fleeAvailable}"
+            class="flee-btn"
+            onclick="flee()">도망</button>
+
+    <!-- 미니맵 -->
+    <div th:replace="~{fragments/minimap :: minimap}"></div>
+</section>
+
+<!-- 전투 응답 프래그먼트: top-bar + battle-view + action-log 교체용 (턴/도망 결과) -->
+<div th:fragment="battle-response">
+    <header class="top-bar" id="topBar" th:replace="~{fragments/top-bar :: top-bar}"></header>
+
+    <!-- 전투 종료 시: center 복원 -->
+    <th:block th:if="${battleEnded}">
+        <section class="center" id="center" th:replace="~{fragments/center :: center}"></section>
+    </th:block>
+
+    <!-- 전투 계속 시: battle-view 유지 -->
+    <th:block th:unless="${battleEnded}">
+        <section class="center battle-view" id="center">
+            <!-- 몬스터 정보 -->
+            <div class="battle-monster-info">
+                <span class="monster-name" th:text="${battleView.monsterName}">몬스터</span>
+                <span class="monster-level" th:text="'Lv.' + ${battleView.monsterLevel}">Lv.1</span>
+            </div>
+
+            <!-- 몬스터 HP 바 -->
+            <div class="battle-hp-wrap">
+                <span class="label">HP</span>
+                <div class="bar monster-hp">
+                    <span class="fill"
+                          th:style="'width:' + ${battleView.monsterMaxHp > 0 ? (battleView.monsterCurrentHp * 100 / battleView.monsterMaxHp) : 0} + '%'"></span>
+                    <span class="bar-text"
+                          th:text="${battleView.monsterCurrentHp} + ' / ' + ${battleView.monsterMaxHp}">25 / 25</span>
+                </div>
+            </div>
+
+            <!-- 전투 스킬 버튼 영역 -->
+            <div id="battleSkills">
+                <button th:each="skill : ${skills}"
+                        th:text="${skill.label()}"
+                        th:attr="data-skill-id=${skill.id()},
+                                 data-skill-label=${skill.label()}"
+                        class="battle-skill-btn"
+                        onclick="battleTurn(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-label'))">
+                    스킬
+                </button>
+            </div>
+
+            <!-- 도망 버튼 -->
+            <button th:if="${battleView.fleeAvailable}"
+                    class="flee-btn"
+                    onclick="flee()">도망</button>
+
+            <!-- 미니맵 -->
+            <div th:replace="~{fragments/minimap :: minimap}"></div>
+        </section>
+    </th:block>
+
+    <footer class="action-log" id="actionLog" th:replace="~{fragments/action-log :: action-log}"></footer>
+
+    <!-- 턴 결과 시그널 (JS에서 alert/battleActive 제어용) -->
+    <div id="turnResultSignal" style="display:none"
+         th:if="${turnResult != null}"
+         th:attr="data-battle-ended=${turnResult.battleEnded()},
+                  data-outcome=${turnResult.outcome()},
+                  data-resource-insufficient=${turnResult.resourceInsufficient()},
+                  data-insufficient-kind=${turnResult.insufficientKind()},
+                  data-monster-name=${battleMonsterName}">
+    </div>
+</div>
+
+</body>
+</html>

@@ -62,7 +62,10 @@ class ItemStackPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final PotionItem potionCatalog = new PotionItem(POTION_ITEM_ID, "HP 포션", 50, 30);
 
@@ -103,7 +106,10 @@ class ItemStackPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final PotionItem potionCatalog = new PotionItem(POTION_ITEM_ID, "HP 포션", 50, 30);
 
@@ -140,7 +146,10 @@ class ItemStackPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final ItemType equipType = (kind == EquipmentKind.SHIELD || kind == EquipmentKind.ARMOR_BODY)
                 ? ItemType.ARMOR : ItemType.WEAPON;

@@ -261,34 +261,6 @@ class SkillServiceTest {
     }
 
     @Test
-    void should_fillUsageToRequirement_set_usage_to_required() {
-        // F→E 요구치: 사용 5
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0);
-        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
-                .thenReturn(Optional.of(skill));
-        when(characterSkillRepository.save(any(CharacterSkill.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        skillService.fillUsageToRequirement(CHARACTER_ID, WINDMILL_ID);
-
-        assertThat(skill.getUsageCount()).isEqualTo(5);
-    }
-
-    @Test
-    void should_fillKillToRequirement_set_kill_to_required() {
-        // F→E 요구치: 막타 1
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0);
-        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
-                .thenReturn(Optional.of(skill));
-        when(characterSkillRepository.save(any(CharacterSkill.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        skillService.fillKillToRequirement(CHARACTER_ID, WINDMILL_ID);
-
-        assertThat(skill.getKillCount()).isEqualTo(1);
-    }
-
-    @Test
     void should_onSkillUsed_increment_usage() {
         final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))

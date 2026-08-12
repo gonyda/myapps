@@ -10,19 +10,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
-import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
-import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
+import com.myapps.web.myrpg.application.dto.BattleSkillButton;
+import com.myapps.web.myrpg.application.dto.BattleView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -34,6 +34,7 @@ import com.myapps.web.myrpg.application.service.NpcService;
 import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
+import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.Monster;
@@ -47,16 +48,13 @@ import com.myapps.web.myrpg.domain.model.TalentType;
  * 상황 멘트, 상호작용 목록, 행동 로그, 정보 팝업을 조합하여 {@code play} 뷰를 렌더링한다.
  * POST /move 요청으로 턴제 이동을 처리하고 갱신된 프래그먼트를 반환한다.
  * POST /npc/talk 요청으로 NPC 대화를 처리하고 센터 프래그먼트를 반환한다.
- * POST /exp/up, /exp/down, /rebirth 요청으로 경험치·사망·환생 진행을 처리한다.
+ * POST /rebirth 요청으로 환생 진행을 처리한다.
  */
 @Controller
 public class PlayScreenController {
 
     private static final String NOTIFICATION_TYPE = "system";
-    private static final String GROWTH_TYPE = "growth";
     private static final String COMBAT_TYPE = "combat";
-    private static final long TEST_EXP_AMOUNT = 500L;
-    private static final long TEST_GOLD_AMOUNT = 100L;
     private static final long MINUTES_PER_HOUR = 60;
 
     private final CharacterService characterService;
@@ -69,6 +67,7 @@ public class PlayScreenController {
     private final MonsterService monsterService;
     private final MonsterDialogueService monsterDialogueService;
     private final MonsterEncounterService monsterEncounterService;
+    private final BattleService battleService;
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
 
@@ -85,6 +84,7 @@ public class PlayScreenController {
      * @param monsterService            몬스터 카탈로그 조회 서비스
      * @param monsterDialogueService    몬스터 조우 대사 선택 서비스
      * @param monsterEncounterService   필드 진입 선공 판정 서비스
+     * @param battleService             전투 오케스트레이션 서비스
      * @param actionLog                 세션 보관 행동 로그
      * @param playScreenViewHelper      뷰 모델 조립 헬퍼
      */
@@ -98,6 +98,7 @@ public class PlayScreenController {
                                 final MonsterService monsterService,
                                 final MonsterDialogueService monsterDialogueService,
                                 final MonsterEncounterService monsterEncounterService,
+                                final BattleService battleService,
                                 final ActionLog actionLog,
                                 final PlayScreenViewHelper playScreenViewHelper) {
         this.characterService = characterService;
@@ -110,6 +111,7 @@ public class PlayScreenController {
         this.monsterService = monsterService;
         this.monsterDialogueService = monsterDialogueService;
         this.monsterEncounterService = monsterEncounterService;
+        this.battleService = battleService;
         this.actionLog = actionLog;
         this.playScreenViewHelper = playScreenViewHelper;
     }
@@ -118,7 +120,8 @@ public class PlayScreenController {
      * 플레이 화면을 렌더링한다.
      *
      * <p>캐릭터 진행상황을 로드(또는 기본 생성)하고,
-     * 현재 노드 기준의 미니맵/전체지도/상황 멘트/행동 로그를 조합하여
+     * 활성 전투가 있으면 전투 뷰를 복원하여 {@code battleActive=true}로 진입시킨다.
+     * 없으면 현재 노드 기준의 미니맵/전체지도/상황 멘트/행동 로그를 조합하여
      * 모델에 추가한 뒤 {@code play} 뷰를 반환한다.
      *
      * @param model Spring MVC 모델
@@ -127,6 +130,27 @@ public class PlayScreenController {
     @GetMapping("/")
     public String playScreen(final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final Optional<BattleState> activeBattle = battleService.resumeIfActive(progress);
+
+        if (activeBattle.isPresent()) {
+            final BattleState state = activeBattle.get();
+            final Optional<Monster> monsterOpt = monsterService.byId(state.getMonsterId());
+            if (monsterOpt.isPresent()) {
+                final Monster monster = monsterOpt.get();
+                final List<BattleSkillButton> skills = battleService.combatSkills(progress);
+                final BattleView battleView = new BattleView(
+                        monster.name(), monster.level(),
+                        state.getMonsterCurrentHp(), monster.maxHp(),
+                        skills, true);
+                final PlayScreenView view = buildViewFromProgress(progress);
+                model.addAttribute("view", view);
+                model.addAttribute("battleView", battleView);
+                model.addAttribute("skills", skills);
+                model.addAttribute("battleActive", true);
+                return "play";
+            }
+        }
+
         final PlayScreenView view = buildViewFromProgress(progress);
         model.addAttribute("view", view);
         return "play";
@@ -152,9 +176,11 @@ public class PlayScreenController {
     /**
      * 턴제 이동을 처리하고 갱신된 HTML 프래그먼트를 반환한다.
      *
-     * <p>이동 성공 시 캐릭터 진행상황을 저장한 뒤 갱신된 top-bar, center,
-     * action-log 프래그먼트를 반환한다. 이동 거부 시 안내 로그만 추가하고
-     * 동일 프래그먼트를 반환한다.
+     * <p>활성 전투가 있으면 이동을 거부(방어적)한다.
+     * 이동 성공 시 캐릭터 진행상황을 저장한 뒤, 해당 노드의 몬스터를 검사하여
+     * 5% 기습 판정을 수행한다. 기습 발동 시 자동으로 전투를 시작하고
+     * {@code #ambushSignal}(몬스터명)을 응답에 포함한다.
+     * 이동 거부 시 안내 로그만 추가하고 동일 프래그먼트를 반환한다.
      *
      * @param dx    X 좌표 오프셋
      * @param dy    Y 좌표 오프셋
@@ -166,6 +192,15 @@ public class PlayScreenController {
                        @RequestParam final int dy,
                        final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
+
+        final Optional<BattleState> activeBattle = battleService.resumeIfActive(progress);
+        if (activeBattle.isPresent()) {
+            actionLog.add("전투 중에는 이동할 수 없습니다.", NOTIFICATION_TYPE);
+            final PlayScreenView view = buildViewFromProgress(progress);
+            model.addAttribute("view", view);
+            return "fragments/move-response";
+        }
+
         final MovementResult result = movementService.move(progress, dx, dy);
 
         if (result instanceof MovementResult.Moved) {
@@ -174,8 +209,8 @@ public class PlayScreenController {
             final List<Monster> monstersOnNode = monsterService.byNode(progress.getCurrentNodeId());
             final Optional<Monster> ambusher = monsterEncounterService.rollPreemptiveStrike(monstersOnNode);
             ambusher.ifPresent(monster -> {
-                actionLog.add(monster.name() + " 선공!", COMBAT_TYPE);
-                model.addAttribute("preemptiveMonsterName", monster.name());
+                battleService.start(progress, monster.id(), true);
+                model.addAttribute("ambushMonsterName", monster.name());
             });
         }
 
@@ -258,6 +293,7 @@ public class PlayScreenController {
             final String dialogue = monsterDialogueService.selectLine(monster);
             actionLog.add(monster.name() + "와(과) 마주쳤다.", COMBAT_TYPE);
             talkTarget = TalkTarget.ofMonster(monster, dialogue);
+            model.addAttribute("encounteredMonsterId", monster.id());
         } else {
             talkTarget = TalkTarget.EMPTY;
         }
@@ -274,52 +310,7 @@ public class PlayScreenController {
         return "fragments/monster-response";
     }
 
-    /**
-     * 경험치 획득(테스트 버튼)을 처리하고 갱신된 프래그먼트를 반환한다.
-     *
-     * <p>고정 획득량({@code TEST_EXP_AMOUNT}) 만큼 경험치를 획득하고,
-     * 레벨업 발생 시 피드백 로그를 추가한 뒤 진행 응답 프래그먼트를 반환한다.
-     *
-     * @param model Spring MVC 모델
-     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
-     */
-    @PostMapping("/exp/up")
-    public String expUp(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final LevelUpResult result = progressionService.gainExperience(progress, TEST_EXP_AMOUNT);
-        characterService.saveTurn(progress);
 
-        actionLog.add("경험치 " + TEST_EXP_AMOUNT + " 획득", GROWTH_TYPE);
-        if (result.levelsGained() > 0) {
-            actionLog.add("레벨업! Lv." + result.newLevel(), GROWTH_TYPE);
-        }
-
-        final PlayScreenView view = buildViewFromProgress(progress);
-        model.addAttribute("view", view);
-        return "fragments/progress-response";
-    }
-
-    /**
-     * 사망 패널티(테스트 버튼)를 처리하고 갱신된 프래그먼트를 반환한다.
-     *
-     * <p>사망 패널티를 적용하여 경험치를 차감하고,
-     * 피드백 로그를 추가한 뒤 진행 응답 프래그먼트를 반환한다.
-     *
-     * @param model Spring MVC 모델
-     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
-     */
-    @PostMapping("/exp/down")
-    public String expDown(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final DeathResult result = progressionService.applyDeathPenalty(progress);
-        characterService.saveTurn(progress);
-
-        actionLog.add("사망 패널티: 경험치 -" + result.experienceLost(), NOTIFICATION_TYPE);
-
-        final PlayScreenView view = buildViewFromProgress(progress);
-        model.addAttribute("view", view);
-        return "fragments/progress-response";
-    }
 
     /**
      * 환생을 처리하고 갱신된 프래그먼트를 반환한다.
@@ -354,54 +345,7 @@ public class PlayScreenController {
         return "fragments/progress-response";
     }
 
-    /**
-     * 골드 획득(임시 버튼)을 처리하고 갱신된 프래그먼트를 반환한다.
-     *
-     * <p>실제 획득/소모 경로(몬스터 5·6순위, 아이템 판매/상점 7순위) 구현 시 제거될 임시 엔드포인트.
-     * 고정 획득량({@code TEST_GOLD_AMOUNT}) 만큼 골드를 획득하고 행동 로그에 기록한다.
-     *
-     * @param model Spring MVC 모델
-     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
-     */
-    @PostMapping("/gold/gain")
-    public String goldGain(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        progress.gainGold(TEST_GOLD_AMOUNT);
-        characterService.saveTurn(progress);
 
-        actionLog.add("골드 " + TEST_GOLD_AMOUNT + " 획득", GROWTH_TYPE);
-
-        final PlayScreenView view = buildViewFromProgress(progress);
-        model.addAttribute("view", view);
-        return "fragments/progress-response";
-    }
-
-    /**
-     * 골드 소모(임시 버튼)를 처리하고 갱신된 프래그먼트를 반환한다.
-     *
-     * <p>실제 획득/소모 경로(몬스터 5·6순위, 아이템 판매/상점 7순위) 구현 시 제거될 임시 엔드포인트.
-     * 고정 소모량({@code TEST_GOLD_AMOUNT}) 만큼 골드를 차감하고 행동 로그에 기록한다.
-     * 소지금이 부족하면 차감하지 않고 부족 안내를 로그에 기록한다.
-     *
-     * @param model Spring MVC 모델
-     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
-     */
-    @PostMapping("/gold/spend")
-    public String goldSpend(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-
-        try {
-            progress.spendGold(TEST_GOLD_AMOUNT);
-            characterService.saveTurn(progress);
-            actionLog.add("골드 " + TEST_GOLD_AMOUNT + " 소모", GROWTH_TYPE);
-        } catch (InsufficientGoldException e) {
-            actionLog.add("골드가 부족합니다", NOTIFICATION_TYPE);
-        }
-
-        final PlayScreenView view = buildViewFromProgress(progress);
-        model.addAttribute("view", view);
-        return "fragments/progress-response";
-    }
 
     /**
      * 캐릭터 진행상황으로부터 플레이 화면 전체 뷰 모델을 조립한다.

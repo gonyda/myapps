@@ -350,7 +350,10 @@ class EquipConflictPropertyTest {
                                            final ItemCatalogService catalog,
                                            final CharacterProgressRepository progressRepo) {
         return new InventoryService(repo, catalog, progressRepo,
-                mock(com.myapps.web.myrpg.domain.model.StatProgression.class));
+                mock(com.myapps.web.myrpg.domain.model.StatProgression.class),
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
     }
 
     /**

@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * {@link SkillController}의 웹 슬라이스 테스트.
  *
  * <p>스킬 목록 팝업(탭 필터 포함), 승급 모달 조회,
- * 랭크업 성공/실패(AP 부족), 임시 드라이버(fill-usage/fill-kill) 엔드포인트를 검증한다.
+ * 랭크업 성공/실패(AP 부족) 엔드포인트를 검증한다.
  */
 @WebMvcTest(SkillController.class)
 class SkillControllerTest {
@@ -137,44 +137,6 @@ class SkillControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(view().name("error"))
                 .andExpect(model().attributeExists("message"));
-    }
-
-    /**
-     * POST /skills/{id}/dev/fill-usage 요청 시 갱신된 승급 모달이 반환되는지 검증한다.
-     */
-    @Test
-    void should_returnUpdatedModal_when_fillUsage() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final SkillRankUpView rankUpView = dummyRankUpView();
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(skillService.buildRankUpView(progress.getId(), SKILL_ID)).thenReturn(rankUpView);
-
-        mockMvc.perform(post("/skills/{id}/dev/fill-usage", SKILL_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_RANKUP_MODAL))
-                .andExpect(model().attributeExists("rankUp"));
-
-        verify(skillService).fillUsageToRequirement(progress.getId(), SKILL_ID);
-    }
-
-    /**
-     * POST /skills/{id}/dev/fill-kill 요청 시 갱신된 승급 모달이 반환되는지 검증한다.
-     */
-    @Test
-    void should_returnUpdatedModal_when_fillKill() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final SkillRankUpView rankUpView = dummyRankUpView();
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(skillService.buildRankUpView(progress.getId(), SKILL_ID)).thenReturn(rankUpView);
-
-        mockMvc.perform(post("/skills/{id}/dev/fill-kill", SKILL_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_RANKUP_MODAL))
-                .andExpect(model().attributeExists("rankUp"));
-
-        verify(skillService).fillKillToRequirement(progress.getId(), SKILL_ID);
     }
 
     private SkillListView dummyListView(final String activeTab) {

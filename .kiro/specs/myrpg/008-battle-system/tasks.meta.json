@@ -1,0 +1,507 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 RockPaperScissors / AffinityResult / BattleResolver 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598248
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459624123
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460460782
+      }
+    ],
+    "1.2 상성·데미지·매트릭스 프로퍼티/단위 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598288
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460471562
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461479529
+      }
+    ],
+    "2.1 CharacterProgress.damageHp / isDead 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598352
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459624942
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460461685
+      }
+    ],
+    "2.2 HP 감소 프로퍼티 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598423
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460472299
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461480543
+      }
+    ],
+    "3.1 Monster defense 상수 + MonsterService optional 파싱": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598462
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459626050
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460464282
+      }
+    ],
+    "3.2 방어 상수 기본값 단위 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598496
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460473184
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461481469
+      }
+    ],
+    "4. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598535
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461494473
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461499430
+      }
+    ],
+    "5.1 BattleState 엔티티/리포지토리 + BattleTurnResult 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598568
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459627615
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460462960
+      }
+    ],
+    "5.2 영속 왕복 리포지토리 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598600
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786460474013
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461482384
+      }
+    ],
+    "6.1 InventoryService.acquire / combatSkills / 내구도 0 자동 해제 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598634
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461500418
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462093426
+      }
+    ],
+    "6.2 드랍 적재·내구도·전투 스킬 목록 프로퍼티 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598670
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462100850
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462882614
+      }
+    ],
+    "7.1 ProgressionService.die 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598712
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461501335
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462094217
+      }
+    ],
+    "7.2 사망 처리 프로퍼티 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598738
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462101687
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462881826
+      }
+    ],
+    "8.1 BattleService.start/takeTurn/flee/resumeIfActive/combatSkills 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598784
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462889707
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786463743140
+      }
+    ],
+    "8.2 전투 오케스트레이션 프로퍼티/통합 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598841
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786463750588
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786464870164
+      }
+    ],
+    "9. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598901
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786464877234
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786464882933
+      }
+    ],
+    "10.1 BattleController + BattleView + battle-view.html 구현": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598950
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786464883498
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786465252558
+      }
+    ],
+    "10.2 전투 컨트롤러 슬라이스 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459598985
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786465259587
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786466208850
+      }
+    ],
+    "11.1 기습 자동 start + GET / 재개 + /move 전투 중 거부": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599017
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786465260314
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786466210598
+      }
+    ],
+    "11.2 기습·재개·이동거부 컨트롤러 테스트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599051
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786466217647
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467117460
+      }
+    ],
+    "12.1 myrpg.js / center / battle-view / css 배선": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599084
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786466218217
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467118448
+      }
+    ],
+    "12.2 정적 리소스 보존 테스트 + 컨텍스트 스모크": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599199
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467125141
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467443791
+      }
+    ],
+    "13. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599232
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467450944
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467458499
+      }
+    ],
+    "14.1 임시 버튼·엔드포인트 제거 + 회귀 테스트 정리": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599268
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467459290
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786468162299
+      }
+    ],
+    "15. 최종 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786459599302
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786468169593
+      },
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786468289366
+      }
+    ],
+    "1. 가위바위보 상성 + 감산형 데미지 공식 (순수)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461479589
+      }
+    ],
+    "2. HP 감소·사망 값 (CharacterProgress 확장)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461480584
+      }
+    ],
+    "3. 몬스터 방어 상수 (Monster 확장 · monster.json)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461481554
+      }
+    ],
+    "5. 전투 상태 영속 (BattleState · Repository · BattleTurnResult)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786461482419
+      }
+    ],
+    "7. 사망 처리 (ProgressionService 확장)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462882450
+      }
+    ],
+    "6. 인벤토리 확장 (드랍 적재 · 전투 스킬 목록 · 내구도 자동 해제)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786462882744
+      }
+    ],
+    "8. 전투 오케스트레이션 (BattleService)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786464870228
+      }
+    ],
+    "10. BattleController + 전투 뷰 프래그먼트": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786466209287
+      }
+    ],
+    "11. PlayScreenController 배선 (기습 자동 전투 · 재개 · 이동 거부)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467117540
+      }
+    ],
+    "12. 정적 리소스 (전투 UI · 이동 차단 · 포션/장비 실시간)": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786467443857
+      }
+    ],
+    "14. 임시 골드·경험치·승급 드라이버 제거 및 회귀 정리": [
+      {
+        "executionId": "f63d8d43-a9ec-4254-a7b3-9384b1a0f0a2",
+        "chatSessionId": "sess_17da2e54-ccec-4931-8afe-08a7bb4318a0",
+        "timestamp": 1786468162767
+      }
+    ]
+  }
+}

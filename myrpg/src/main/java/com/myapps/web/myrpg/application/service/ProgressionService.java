@@ -27,6 +27,7 @@ public class ProgressionService {
     private static final int MAX_LEVEL = 100;
     private static final Duration REBIRTH_COOLDOWN = Duration.ofHours(24);
     private static final double DEATH_PENALTY_RATE = 0.10;
+    private static final String RESPAWN_NODE_ID = "tir-chonaill";
 
     private final ExperiencePolicy experiencePolicy;
     private final StatProgression statProgression;
@@ -112,6 +113,25 @@ public class ProgressionService {
         p.setExperience(newExp);
 
         return new DeathResult(prevExp - newExp);
+    }
+
+    /**
+     * 사망 처리를 수행한다.
+     *
+     * <p>경험치를 10% 감소시키고({@link #applyDeathPenalty}), HP/MP/스태미나를 풀 회복하며,
+     * {@code currentNodeId}를 티르코네일로 강제 이동한다. 골드와 아이템은 불변이다.
+     *
+     * <p>6순위(대장간) 스펙에서 내구도 수리 연동이 추가될 수 있으나,
+     * 본 스펙(008)에서는 경험치 패널티·풀 회복·리스폰 위치 이동까지만 담당한다.
+     *
+     * @param progress 사망 처리할 캐릭터 진행 상태
+     * @return 사망 결과 (실제 차감된 경험치량)
+     */
+    public DeathResult die(final CharacterProgress progress) {
+        final DeathResult deathResult = applyDeathPenalty(progress);
+        progress.fullRecover(statProgression.vitalMaxFor(progress.getCurrentLevel(), progress.getTalent()));
+        progress.updateCurrentNodeId(RESPAWN_NODE_ID);
+        return deathResult;
     }
 
     /**

@@ -20,6 +20,7 @@ import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -95,6 +96,14 @@ class PlayScreenControllerTest {
 
     @MockitoBean
     private MonsterEncounterService monsterEncounterService;
+
+    @MockitoBean
+    private BattleService battleService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpBattleServiceDefault() {
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.empty());
+    }
 
     /**
      * GET / 요청 시 play 뷰가 반환되는지 검증한다.
@@ -252,112 +261,6 @@ class PlayScreenControllerTest {
     void should_returnBadRequest_when_moveParamsMissing() throws Exception {
         mockMvc.perform(post("/move"))
                 .andExpect(status().isBadRequest());
-    }
-
-    /**
-     * POST /gold/gain 시 골드 획득 후 saveTurn이 호출되고 프래그먼트 뷰가 반환되는지 검증한다.
-     */
-    @Test
-    void should_gainGoldAndSaveAndReturnFragment_when_goldGain() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final PlayScreenView view = createDummyView();
-        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
-        when(mapService.node(anyString())).thenReturn(dummyNode());
-        when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
-        when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
-        when(actionLog.getEntries()).thenReturn(List.of());
-        when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(monsterService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
-        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
-                .thenReturn(dummyInfo());
-        when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
-                .thenReturn(view);
-
-        mockMvc.perform(post("/gold/gain"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/progress-response"))
-                .andExpect(model().attributeExists("view"));
-
-        verify(characterService).saveTurn(progress);
-        verify(actionLog).add("골드 100 획득", "growth");
-    }
-
-    /**
-     * POST /gold/spend 시 소지금 충분하면 골드 차감 후 saveTurn이 호출되는지 검증한다.
-     */
-    @Test
-    void should_spendGoldAndSaveAndReturnFragment_when_goldSpendWithSufficientGold() throws Exception {
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, com.myapps.web.myrpg.domain.model.TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", 0, 200L);
-        final PlayScreenView view = createDummyView();
-        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
-        when(mapService.node(anyString())).thenReturn(dummyNode());
-        when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
-        when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
-        when(actionLog.getEntries()).thenReturn(List.of());
-        when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(monsterService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
-        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
-                .thenReturn(dummyInfo());
-        when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
-                .thenReturn(view);
-
-        mockMvc.perform(post("/gold/spend"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/progress-response"))
-                .andExpect(model().attributeExists("view"));
-
-        verify(characterService).saveTurn(progress);
-        verify(actionLog).add("골드 100 소모", "growth");
-    }
-
-    /**
-     * POST /gold/spend 시 소지금 부족하면 saveTurn이 호출되지 않고 부족 안내 로그가 추가되는지 검증한다.
-     */
-    @Test
-    void should_notSaveAndLogInsufficient_when_goldSpendWithInsufficientGold() throws Exception {
-        final CharacterProgress progress = CharacterProgress.createDefault();
-        final PlayScreenView view = createDummyView();
-        final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
-
-        when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(mapService.node(anyString())).thenReturn(dummyNode());
-        when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
-        when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
-        when(actionLog.getEntries()).thenReturn(List.of());
-        when(npcService.byNode(anyString())).thenReturn(List.of());
-        when(monsterService.byNode(anyString())).thenReturn(List.of());
-        when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
-        when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
-                .thenReturn(dummyInfo());
-        when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
-                .thenReturn(view);
-
-        mockMvc.perform(post("/gold/spend"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/progress-response"))
-                .andExpect(model().attributeExists("view"));
-
-        verify(characterService, never()).saveTurn(any());
-        verify(actionLog).add("골드가 부족합니다", "system");
     }
 
     private MapNode dummyNode() {

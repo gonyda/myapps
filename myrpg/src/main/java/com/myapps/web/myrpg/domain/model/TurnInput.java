@@ -1,0 +1,40 @@
+package com.myapps.web.myrpg.domain.model;
+
+/**
+ * 전투 턴 해결에 필요한 입력 값을 담는 레코드.
+ *
+ * <p>{@link com.myapps.web.myrpg.domain.service.BattleResolver#resolve(TurnInput)}에 전달되어
+ * 9칸 매트릭스 기반 양측 피해를 산출하는 데 사용된다. 선후공 로직은 포함하지 않으며,
+ * 순수 데미지 계산에 필요한 수치만 집약한다.
+ *
+ * @param playerType                 플레이어 스킬 타입
+ * @param monsterType                몬스터 스킬 타입
+ * @param playerAttackPower          플레이어 공격력 (주스탯 × 재능계수 결과)
+ * @param monsterAttackPower         몬스터 공격력
+ * @param playerDefense              플레이어 방어력
+ * @param monsterDefense             몬스터 방어력
+ * @param playerMultiplierPercent    플레이어 스킬 배율(%)
+ * @param monsterMultiplierPercent   몬스터 스킬 배율(%) — 일반 100 / 강 150
+ * @param playerBlockRatePercent     플레이어 방어 경감률(%)
+ * @param monsterBlockRatePercent    몬스터 방어 경감률(%) — 기본 40
+ * @param playerCounterPercent       플레이어 반격 배율(%) — 반격 시 공격력의 N%를 피해로 적용
+ * @param monsterCounterPercent      몬스터 반격률(%) — 기본 30
+ * @param playerCritical             플레이어 크리티컬 수치(0.1% 단위, 범위 0~1000)
+ * @param monsterCritical            몬스터 크리티컬 수치(0.1% 단위, 범위 0~1000)
+ */
+public record TurnInput(
+        SkillType playerType,
+        SkillType monsterType,
+        int playerAttackPower,
+        int monsterAttackPower,
+        int playerDefense,
+        int monsterDefense,
+        int playerMultiplierPercent,
+        int monsterMultiplierPercent,
+        int playerBlockRatePercent,
+        int monsterBlockRatePercent,
+        int playerCounterPercent,
+        int monsterCounterPercent,
+        int playerCritical,
+        int monsterCritical) {
+}

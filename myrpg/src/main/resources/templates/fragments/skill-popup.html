@@ -147,10 +147,6 @@
                     th:classappend="${rankUp.rankable()} ? ' rankable' : ' disabled'"
                     th:disabled="${!rankUp.rankable()}"
                     th:attr="onclick=${rankUp.rankable()} ? 'confirmRankUp(\'' + ${rankUp.id()} + '\')' : null">승급</button>
-            <button class="rankup-temp-btn"
-                    th:attr="onclick='fillUsage(\'' + ${rankUp.id()} + '\')'">사용횟수 업</button>
-            <button class="rankup-temp-btn"
-                    th:attr="onclick='fillKill(\'' + ${rankUp.id()} + '\')'">막타 처치 업</button>
         </div>
     </div>
 </div>

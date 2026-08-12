@@ -150,21 +150,23 @@ class SkillRankupBonusPropertyTest {
     @Provide
     Arbitrary<List<SkillEntry>> uniqueSkillEntries() {
         final Arbitrary<Integer> sizeArbitrary = Arbitraries.integers().between(0, 10);
-        return sizeArbitrary.flatMap(size -> {
-            if (size == 0) {
-                return Arbitraries.just(List.of());
+        return sizeArbitrary.flatMap(this::buildEntriesForSize);
+    }
+
+    private Arbitrary<List<SkillEntry>> buildEntriesForSize(final int size) {
+        if (size == 0) {
+            return Arbitraries.just(List.of());
+        }
+        final Arbitrary<List<SkillTalent>> talents = Arbitraries.of(SkillTalent.values())
+                .list().ofSize(size);
+        final Arbitrary<List<SkillRank>> ranks = Arbitraries.of(SkillRank.values())
+                .list().ofSize(size);
+        return Combinators.combine(talents, ranks).as((talentList, rankList) -> {
+            final List<SkillEntry> result = new java.util.ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                result.add(new SkillEntry("skill_" + i, talentList.get(i), rankList.get(i)));
             }
-            Arbitrary<List<SkillTalent>> talents = Arbitraries.of(SkillTalent.values())
-                    .list().ofSize(size);
-            Arbitrary<List<SkillRank>> ranks = Arbitraries.of(SkillRank.values())
-                    .list().ofSize(size);
-            return Combinators.combine(talents, ranks).as((talentList, rankList) -> {
-                final List<SkillEntry> result = new java.util.ArrayList<>();
-                for (int i = 0; i < size; i++) {
-                    result.add(new SkillEntry("skill_" + i, talentList.get(i), rankList.get(i)));
-                }
-                return List.copyOf(result);
-            });
+            return List.copyOf(result);
         });
     }
 

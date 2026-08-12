@@ -16,7 +16,45 @@
             <div th:replace="~{fragments/left-sidebar :: left-sidebar}"></div>
 
             <!-- 가운데 영역 -->
-            <div th:replace="~{fragments/center :: center}"></div>
+            <th:block th:if="${battleView != null}">
+                <section class="center battle-view" id="center">
+                    <!-- 몬스터 정보 -->
+                    <div class="battle-monster-info">
+                        <span class="monster-name" th:text="${battleView.monsterName}">몬스터</span>
+                        <span class="monster-level" th:text="'Lv.' + ${battleView.monsterLevel}">Lv.1</span>
+                    </div>
+                    <!-- 몬스터 HP 바 -->
+                    <div class="battle-hp-wrap">
+                        <span class="label">HP</span>
+                        <div class="bar monster-hp">
+                            <span class="fill"
+                                  th:style="'width:' + ${battleView.monsterMaxHp > 0 ? (battleView.monsterCurrentHp * 100 / battleView.monsterMaxHp) : 0} + '%'"></span>
+                            <span class="bar-text"
+                                  th:text="${battleView.monsterCurrentHp} + ' / ' + ${battleView.monsterMaxHp}">25 / 25</span>
+                        </div>
+                    </div>
+                    <!-- 전투 스킬 버튼 영역 -->
+                    <div id="battleSkills">
+                        <button th:each="skill : ${skills}"
+                                th:text="${skill.label()}"
+                                th:attr="data-skill-id=${skill.id()},
+                                         data-skill-label=${skill.label()}"
+                                class="battle-skill-btn"
+                                onclick="battleTurn(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-label'))">
+                            스킬
+                        </button>
+                    </div>
+                    <!-- 도망 버튼 -->
+                    <button th:if="${battleView.fleeAvailable}"
+                            class="flee-btn"
+                            onclick="flee()">도망</button>
+                    <!-- 미니맵 -->
+                    <div th:replace="~{fragments/minimap :: minimap}"></div>
+                </section>
+            </th:block>
+            <th:block th:if="${battleView == null}">
+                <div th:replace="~{fragments/center :: center}"></div>
+            </th:block>
         </div>
 
         <!-- 하단 행동 로그 -->
@@ -69,5 +107,6 @@
     <div th:replace="~{fragments/bank-popup :: bank-popup}"></div>
 
     <script th:src="@{/js/myrpg.js}"></script>
+    <div id="battleActiveSignal" th:if="${battleActive}" style="display:none"></div>
 </body>
 </html>

@@ -1,5 +1,7 @@
 package com.myapps.web.myrpg.domain.service;
 
+import java.util.Random;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,5 +45,19 @@ public class DomainServiceConfiguration {
     @Bean
     public StatProgression statProgression() {
         return new StatProgression();
+    }
+
+    /**
+     * {@link BattleResolver} 빈을 생성합니다.
+     *
+     * <p>크리티컬 판정·편차 산출에 사용할 {@link Random}을 주입받아
+     * 순수 전투 데미지 계산 도메인 서비스를 생성한다.
+     *
+     * @param random 난수 생성기 빈
+     * @return 전투 데미지 계산 도메인 서비스
+     */
+    @Bean
+    public BattleResolver battleResolver(final Random random) {
+        return new BattleResolver(random);
     }
 }

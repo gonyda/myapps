@@ -32,7 +32,7 @@
             <div class="monster-actions">
                 <button th:each="action : ${view.monsterActions}"
                         th:text="${action.label()}"
-                        th:attr="onclick='monsterAction(\'' + ${action.label()} + '\')'"
+                        th:attr="onclick='startBattle(\'' + ${encounteredMonsterId} + '\')'"
                         class="monster-action-btn">전투</button>
             </div>
         </th:block>

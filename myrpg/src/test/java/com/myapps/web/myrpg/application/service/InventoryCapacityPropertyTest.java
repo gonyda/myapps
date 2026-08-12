@@ -61,7 +61,10 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         // 장비를 인벤토리→은행 이동 시 은행이 가득 참
         final EquipmentItem equipCatalog = new EquipmentItem(
@@ -99,7 +102,10 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final PotionItem potionCatalog = new PotionItem(POTION_ITEM_ID, "HP 포션", 50, 30);
 
@@ -141,7 +147,10 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final EquipmentItem equipCatalog = new EquipmentItem(
                 WEAPON_ITEM_ID, "초보자 한손검", ItemType.WEAPON,
@@ -176,7 +185,10 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         final EquipmentItem equipCatalog = new EquipmentItem(
                 WEAPON_ITEM_ID, "초보자 한손검", ItemType.WEAPON,

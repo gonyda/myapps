@@ -39,6 +39,8 @@ public class MonsterService {
     private static final int REQUIRED_LINES_COUNT = 3;
     private static final int MIN_CHANCE_PERCENT = 1;
     private static final int MAX_CHANCE_PERCENT = 100;
+    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 40;
+    private static final int DEFAULT_DEFENSE_COUNTER_RATE = 30;
 
     private final ObjectMapper objectMapper;
     private final MapService mapService;
@@ -195,8 +197,14 @@ public class MonsterService {
         final List<ItemDrop> itemDrops = parseItemDrops(monsterNode, id);
         final List<String> lines = parseLines(monsterNode, id);
 
+        final int defenseBlockRate = extractOptionalInt(monsterNode, "defenseBlockRate",
+                DEFAULT_DEFENSE_BLOCK_RATE);
+        final int defenseCounterRate = extractOptionalInt(monsterNode, "defenseCounterRate",
+                DEFAULT_DEFENSE_COUNTER_RATE);
+
         return new Monster(id, name, monsterType, level, maxHp, attackPower,
-                defense, critical, experience, goldDrop, itemDrops, lines);
+                defense, critical, experience, goldDrop, itemDrops, lines,
+                defenseBlockRate, defenseCounterRate);
     }
 
     private void validateStatRanges(final String id, final int level, final int maxHp,
@@ -372,5 +380,14 @@ public class MonsterService {
                             + "'이(가) 비어있거나 숫자가 아닙니다.");
         }
         return fieldNode.asLong();
+    }
+
+    private int extractOptionalInt(final JsonNode node, final String fieldName,
+                                   final int defaultValue) {
+        final JsonNode fieldNode = node.get(fieldName);
+        if (fieldNode == null || fieldNode.isNull() || !fieldNode.isNumber()) {
+            return defaultValue;
+        }
+        return fieldNode.asInt();
     }
 }

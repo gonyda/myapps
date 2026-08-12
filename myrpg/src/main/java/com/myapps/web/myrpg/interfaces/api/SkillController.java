@@ -15,7 +15,7 @@ import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 
 /**
- * 스킬 목록 팝업·승급 모달·임시 드라이버 엔드포인트를 제공하는 컨트롤러.
+ * 스킬 목록 팝업·승급 모달 엔드포인트를 제공하는 컨트롤러.
  *
  * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며,
  * 클라이언트(myrpg.js)가 htmx 또는 직접 DOM 교체로 소비한다.
@@ -25,8 +25,6 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
  *   <li>{@code GET /skills} — 스킬 목록 팝업(전체 또는 탭 필터)</li>
  *   <li>{@code GET /skills/{id}/rankup-modal} — 승급 모달</li>
  *   <li>{@code POST /skills/{id}/rankup} — 랭크업 실행 → 갱신된 모달</li>
- *   <li>{@code POST /skills/{id}/dev/fill-usage} — 임시: 사용 100% 충전</li>
- *   <li>{@code POST /skills/{id}/dev/fill-kill} — 임시: 막타 100% 충전</li>
  * </ul>
  */
 @Controller
@@ -113,45 +111,4 @@ public class SkillController {
         return FRAGMENT_RANKUP_MODAL;
     }
 
-    /**
-     * 스킬 사용 횟수를 현재 랭크 요구치까지 즉시 설정하고 모달을 갱신한다 (임시 드라이버).
-     *
-     * <p>전투(7순위)의 실제 사용 이벤트({@code onSkillUsed})가 구현되면
-     * 이 엔드포인트는 제거된다. 전투 스펙이 실제 카운팅 이벤트를 제공하면
-     * 임시 드라이버 엔드포인트는 그 시점에 삭제한다.
-     *
-     * @param id    대상 스킬 ID
-     * @param model Spring MVC 모델
-     * @return 승급 모달 fragment 뷰 이름
-     */
-    @PostMapping("/{id}/dev/fill-usage")
-    public String fillUsage(@PathVariable final String id,
-                            final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        skillService.fillUsageToRequirement(progress.getId(), id);
-        final SkillRankUpView rankUpView = skillService.buildRankUpView(progress.getId(), id);
-        model.addAttribute("rankUp", rankUpView);
-        return FRAGMENT_RANKUP_MODAL;
-    }
-
-    /**
-     * 막타 처치 수를 현재 랭크 요구치까지 즉시 설정하고 모달을 갱신한다 (임시 드라이버).
-     *
-     * <p>전투(7순위)의 실제 막타 이벤트({@code onSkillKill})가 구현되면
-     * 이 엔드포인트는 제거된다. 전투 스펙이 실제 카운팅 이벤트를 제공하면
-     * 임시 드라이버 엔드포인트는 그 시점에 삭제한다.
-     *
-     * @param id    대상 스킬 ID
-     * @param model Spring MVC 모델
-     * @return 승급 모달 fragment 뷰 이름
-     */
-    @PostMapping("/{id}/dev/fill-kill")
-    public String fillKill(@PathVariable final String id,
-                           final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        skillService.fillKillToRequirement(progress.getId(), id);
-        final SkillRankUpView rankUpView = skillService.buildRankUpView(progress.getId(), id);
-        model.addAttribute("rankUp", rankUpView);
-        return FRAGMENT_RANKUP_MODAL;
-    }
 }

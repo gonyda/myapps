@@ -31,6 +31,7 @@ import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -59,7 +60,10 @@ class InventoryServiceTest {
     void setUp() {
         final StatProgression statProgression = new StatProgression();
         inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
     }
 
     // ─── 착용 규칙 테스트 ───────────────────────────────────────────────────

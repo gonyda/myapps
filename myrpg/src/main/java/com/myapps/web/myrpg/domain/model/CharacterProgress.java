@@ -412,4 +412,27 @@ public class CharacterProgress {
         }
         this.gold -= amount;
     }
+
+    /**
+     * HP를 지정된 양만큼 감소시킨다.
+     *
+     * <p>전투 중 피해를 받았을 때 사용한다.
+     * HP는 0 미만으로 내려가지 않으며, 0에 도달하면 사망 상태({@link #isDead()})가 된다.
+     *
+     * @param amount 감소시킬 피해량 (양수)
+     */
+    public void damageHp(final int amount) {
+        this.hpCurrent = Math.max(0, this.hpCurrent - amount);
+    }
+
+    /**
+     * 캐릭터가 사망 상태인지 확인한다.
+     *
+     * <p>HP 현재값이 0이면 사망으로 판정한다.
+     *
+     * @return HP가 0이면 {@code true}, 아니면 {@code false}
+     */
+    public boolean isDead() {
+        return this.hpCurrent == 0;
+    }
 }

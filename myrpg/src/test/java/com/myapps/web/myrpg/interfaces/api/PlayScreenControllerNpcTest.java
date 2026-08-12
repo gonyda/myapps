@@ -21,6 +21,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
+import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
@@ -99,6 +100,16 @@ class PlayScreenControllerNpcTest {
 
     @MockitoBean
     private MonsterEncounterService monsterEncounterService;
+
+    @MockitoBean
+    private BattleService battleService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpBattleServiceDefault() {
+        org.mockito.Mockito.when(battleService.resumeIfActive(
+                org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
+                .thenReturn(java.util.Optional.empty());
+    }
 
     /**
      * GET / 요청 시 NPC가 있는 노드에서 interactions에 NPC 버튼이 노출되고

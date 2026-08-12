@@ -21,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 시각/JS 보존 및 JSON 로딩 통합 테스트.
  *
  * <p>CSS 디자인 토큰(Req 1.2), JavaScript 줌/팬/팝업 함수(Req 1.3),
+ * 전투 시스템 JS 함수(008: battleActive/startBattle/battleTurn/flee 등),
  * fragment 존재와 {@code play.html} {@code th:replace} 조합,
  * 그리고 Jackson 3을 통한 {@code map.json}/{@code ambience.json} 역직렬화 및
  * 양방향 링크 무결성(Req 4.5)을 통합 검증합니다.
  *
- * <p>Validates: Requirements 1.2, 1.3, 4.5
+ * <p>Validates: Requirements 1.2, 1.3, 4.5, 18.1, 24.5
  */
 @SpringBootTest
 class VisualJsPreservationAndJsonLoadingIntegrationTest {
@@ -46,7 +47,8 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
             "templates/fragments/panel-popup.html",
             "templates/fragments/full-map.html",
             "templates/fragments/move-response.html",
-            "templates/fragments/monster-response.html"
+            "templates/fragments/monster-response.html",
+            "templates/fragments/battle-view.html"
     );
 
     private static final List<String> CSS_DESIGN_TOKENS = List.of(
@@ -64,12 +66,17 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     );
 
     private static final List<String> JS_MONSTER_FUNCTIONS = List.of(
-            "swapCenter", "onInteractionClick", "encounterMonster", "monsterAction"
+            "swapCenter", "onInteractionClick", "encounterMonster", "startBattle"
+    );
+
+    private static final List<String> JS_BATTLE_FUNCTIONS = List.of(
+            "battleActive", "startBattle", "battleTurn", "flee",
+            "fetchBattleView", "handleTurnResultSignal", "refreshBattleSkills"
     );
 
     private static final List<String> CENTER_MONSTER_MARKERS = List.of(
             "monster-name", "monster-meta", "monster-actions",
-            "monsterAction", "onInteractionClick", "data-monster-id"
+            "startBattle", "onInteractionClick", "data-monster-id"
     );
 
     // ========== Req 1.2: CSS 디자인 토큰 보존 ==========
@@ -133,6 +140,49 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
                     .as("몬스터 JS 함수 '%s' 존재 확인", function)
                     .contains(function);
         }
+    }
+
+    // ========== Req 008: 전투 시스템 JS 함수 보존 ==========
+
+    /**
+     * JS 파일이 전투 시스템 관련 함수(battleActive/startBattle/battleTurn/flee 등)를 포함하는지 검증한다.
+     */
+    @Test
+    void should_containBattleFunctions_when_jsMyrpgLoaded() throws IOException {
+        final String js = loadClasspathResource(JS_PATH);
+
+        for (final String function : JS_BATTLE_FUNCTIONS) {
+            assertThat(js)
+                    .as("전투 JS 함수/변수 '%s' 존재 확인", function)
+                    .contains(function);
+        }
+    }
+
+    /**
+     * JS의 move 함수가 전투 중 이동 차단 로직(battleActive 검사)을 포함하는지 검증한다.
+     */
+    @Test
+    void should_containBattleMoveGuard_when_jsMyrpgLoaded() throws IOException {
+        final String js = loadClasspathResource(JS_PATH);
+
+        assertThat(js).contains("전투 중에는 이동할 수 없습니다");
+    }
+
+    // ========== Req 008: battle-view.html 템플릿 보존 ==========
+
+    /**
+     * battle-view.html이 전투 프래그먼트 마크업을 포함하는지 검증한다.
+     */
+    @Test
+    void should_containBattleViewMarkup_when_battleViewHtmlLoaded() throws IOException {
+        final String battleViewHtml = loadClasspathResource("templates/fragments/battle-view.html");
+
+        assertThat(battleViewHtml).contains("battle-view");
+        assertThat(battleViewHtml).contains("battleSkills");
+        assertThat(battleViewHtml).contains("battle-skill-btn");
+        assertThat(battleViewHtml).contains("flee-btn");
+        assertThat(battleViewHtml).contains("monster-hp");
+        assertThat(battleViewHtml).contains("turnResultSignal");
     }
 
     // ========== Req 007: center.html 몬스터 마크업 보존 ==========

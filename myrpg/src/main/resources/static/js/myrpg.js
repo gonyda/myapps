@@ -1,3 +1,6 @@
+// ===== 전투 상태 플래그 =====
+let battleActive = false;
+
 // ===== 전체 지도: 줌/이동 (지도 앱처럼) =====
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 4;
@@ -151,6 +154,10 @@ function closePanel() {
 
 // ===== 이동 패드: POST /move 호출 + DOM fragment swap =====
 function move(dx, dy) {
+    if (battleActive) {
+        alert("전투 중에는 이동할 수 없습니다.");
+        return;
+    }
     fetch("/move?dx=" + dx + "&dy=" + dy, { method: "POST" })
         .then(function (response) {
             if (!response.ok) {
@@ -199,10 +206,14 @@ function move(dx, dy) {
                 }
             }
 
-            // 선공 판정 신호 확인
-            var preemptiveEl = container.querySelector("#preemptiveSignal");
-            if (preemptiveEl) {
-                alert("몬스터 선공 발동");
+            // 기습 판정 신호 확인
+            var ambushEl = container.querySelector("#ambushSignal");
+            if (ambushEl) {
+                var monsterName = ambushEl.getAttribute("data-monster");
+                alert("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!");
+                battleActive = true;
+                // 기습은 서버에서 이미 start 호출됨 → battle-view 갱신
+                fetchBattleView();
             }
         });
 }
@@ -265,11 +276,174 @@ function encounterMonster(monsterId) {
         });
 }
 
-// ===== 몬스터 행동 버튼 (6순위 전투 seam - 현재 placeholder) =====
-// 6순위(전투 시스템) 구현 시 이 함수의 alert를 POST /battle/start 호출로 교체한다.
-// 그때 전투 턴 진입·데미지 계산·드랍 지급·HP 감소 흐름이 시작된다.
-function monsterAction(label) {
-    alert("구현 예정입니다");
+// ===== 전투 시작: POST /battle/start → .center 교체 =====
+function startBattle(monsterId) {
+    fetch("/battle/start?monsterId=" + encodeURIComponent(monsterId), { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) {
+                return;
+            }
+            var container = document.createElement("div");
+            container.innerHTML = html;
+            var newCenter = container.querySelector(".center");
+            if (newCenter) {
+                var oldCenter = document.querySelector(".center");
+                if (oldCenter) {
+                    oldCenter.replaceWith(newCenter);
+                }
+            }
+            battleActive = true;
+        });
+}
+
+// ===== 전투 뷰 갱신 (기습 후 battle-view 로드) =====
+function fetchBattleView() {
+    fetch("/")
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (!html) { return; }
+            var container = document.createElement("div");
+            container.innerHTML = html;
+            var newCenter = container.querySelector(".center");
+            if (newCenter) {
+                var oldCenter = document.querySelector(".center");
+                if (oldCenter) {
+                    oldCenter.replaceWith(newCenter);
+                }
+            }
+        });
+}
+
+// ===== 전투 턴: POST /battle/turn → top-bar + .center + action-log 교체 =====
+function battleTurn(skillId, skillLabel) {
+    alert(skillLabel + " 스킬을 사용하였습니다.");
+    fetch("/battle/turn?skillId=" + encodeURIComponent(skillId), { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) {
+                return;
+            }
+            var container = document.createElement("div");
+            container.innerHTML = html;
+
+            var newTopBar = container.querySelector(".top-bar");
+            var newCenter = container.querySelector(".center");
+            var newActionLog = container.querySelector(".action-log");
+
+            if (newTopBar) {
+                var oldTopBar = document.querySelector(".top-bar");
+                if (oldTopBar) {
+                    oldTopBar.replaceWith(newTopBar);
+                }
+            }
+            if (newCenter) {
+                var oldCenter = document.querySelector(".center");
+                if (oldCenter) {
+                    oldCenter.replaceWith(newCenter);
+                }
+            }
+            if (newActionLog) {
+                var oldActionLog = document.querySelector(".action-log");
+                if (oldActionLog) {
+                    oldActionLog.replaceWith(newActionLog);
+                    newActionLog.scrollTop = newActionLog.scrollHeight;
+                }
+            }
+
+            handleTurnResultSignal(container);
+        });
+}
+
+// ===== 도망: POST /battle/flee → top-bar + .center + action-log 교체 =====
+function flee() {
+    fetch("/battle/flee", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) {
+                return;
+            }
+            var container = document.createElement("div");
+            container.innerHTML = html;
+
+            var newTopBar = container.querySelector(".top-bar");
+            var newCenter = container.querySelector(".center");
+            var newActionLog = container.querySelector(".action-log");
+
+            if (newTopBar) {
+                var oldTopBar = document.querySelector(".top-bar");
+                if (oldTopBar) {
+                    oldTopBar.replaceWith(newTopBar);
+                }
+            }
+            if (newCenter) {
+                var oldCenter = document.querySelector(".center");
+                if (oldCenter) {
+                    oldCenter.replaceWith(newCenter);
+                }
+            }
+            if (newActionLog) {
+                var oldActionLog = document.querySelector(".action-log");
+                if (oldActionLog) {
+                    oldActionLog.replaceWith(newActionLog);
+                    newActionLog.scrollTop = newActionLog.scrollHeight;
+                }
+            }
+
+            handleTurnResultSignal(container);
+        });
+}
+
+// ===== 턴 결과 시그널 처리 (승리/패배/도망 성공/자원 부족 alert) =====
+function handleTurnResultSignal(container) {
+    var signal = container.querySelector("#turnResultSignal");
+    if (!signal) {
+        return;
+    }
+
+    var resourceInsufficient = signal.getAttribute("data-resource-insufficient") === "true";
+    if (resourceInsufficient) {
+        var insufficientKind = signal.getAttribute("data-insufficient-kind");
+        if (insufficientKind === "MP") {
+            alert("MP가 부족합니다!");
+        } else {
+            alert("스태미나가 부족합니다!");
+        }
+        return;
+    }
+
+    var battleEnded = signal.getAttribute("data-battle-ended") === "true";
+    if (!battleEnded) {
+        return;
+    }
+
+    var outcome = signal.getAttribute("data-outcome");
+    if (outcome === "WIN") {
+        var monsterName = signal.getAttribute("data-monster-name") || "몬스터";
+        alert(monsterName + "이(가) 쓰러졌습니다!");
+        battleActive = false;
+    } else if (outcome === "LOSE") {
+        alert("정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
+        battleActive = false;
+    } else if (outcome === "FLED") {
+        alert("도망쳤다!");
+        battleActive = false;
+    }
 }
 
 // ===== NPC 행동 버튼 (라벨에 따라 분기) =====
@@ -335,6 +509,9 @@ function equipItem(ownedItemId) {
             if (html) {
                 document.getElementById('inventoryListArea').innerHTML = html;
             }
+            if (battleActive) {
+                refreshBattleSkills();
+            }
         });
 }
 
@@ -345,6 +522,27 @@ function unequipItem(ownedItemId) {
         .then(function (html) {
             if (html) {
                 document.getElementById('inventoryListArea').innerHTML = html;
+            }
+            if (battleActive) {
+                refreshBattleSkills();
+            }
+        });
+}
+
+// ===== 전투 중 스킬 목록 실시간 갱신 =====
+function refreshBattleSkills() {
+    fetch('/battle/skills')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (!html) { return; }
+            var container = document.createElement('div');
+            container.innerHTML = html;
+            var newSkills = container.querySelector('#battleSkills');
+            if (newSkills) {
+                var oldSkills = document.getElementById('battleSkills');
+                if (oldSkills) {
+                    oldSkills.replaceWith(newSkills);
+                }
             }
         });
 }
@@ -417,31 +615,6 @@ function sortInventory(criteria) {
     for (var j = 0; j < items.length; j++) {
         list.appendChild(items[j]);
     }
-}
-
-// ===== 임시 골드 버튼 =====
-function goldGain() {
-    fetch('/gold/gain', { method: 'POST' })
-        .then(function (r) {
-            if (!r.ok) { return; }
-            return r.text();
-        })
-        .then(function (html) {
-            if (!html) { return; }
-            swapProgressResponse(html);
-        });
-}
-
-function goldSpend() {
-    fetch('/gold/spend', { method: 'POST' })
-        .then(function (r) {
-            if (!r.ok) { return; }
-            return r.text();
-        })
-        .then(function (html) {
-            if (!html) { return; }
-            swapProgressResponse(html);
-        });
 }
 
 // ===== 은행 팝업 열기/닫기 =====
@@ -559,11 +732,16 @@ function refreshBankPopup(html) {
     document.getElementById('bankContent').innerHTML = html;
 }
 
-// 페이지 로드 시 행동 로그를 맨 아래로 스크롤
+// 페이지 로드 시 행동 로그를 맨 아래로 스크롤 + 전투 상태 복원
 document.addEventListener("DOMContentLoaded", function () {
     var actionLog = document.getElementById("actionLog");
     if (actionLog) {
         actionLog.scrollTop = actionLog.scrollHeight;
+    }
+    // 전투 중 재접속 시 battleActive 복원
+    var battleSignal = document.getElementById("battleActiveSignal");
+    if (battleSignal) {
+        battleActive = true;
     }
 });
 
@@ -578,31 +756,6 @@ function openInfo() {
 }
 function closeInfo() {
     document.getElementById("infoOverlay").classList.remove("open");
-}
-
-// ===== 경험치 증가/감소: POST → 3영역 스왑 =====
-function expUp() {
-    fetch("/exp/up", { method: "POST" })
-        .then(function (response) {
-            if (!response.ok) { return; }
-            return response.text();
-        })
-        .then(function (html) {
-            if (!html) { return; }
-            swapProgressResponse(html);
-        });
-}
-
-function expDown() {
-    fetch("/exp/down", { method: "POST" })
-        .then(function (response) {
-            if (!response.ok) { return; }
-            return response.text();
-        })
-        .then(function (html) {
-            if (!html) { return; }
-            swapProgressResponse(html);
-        });
 }
 
 // ===== 환생 2단계: 1단계 confirm → 재능 선택 팝업, 2단계 재능 선택 → POST =====
@@ -703,24 +856,6 @@ function confirmRankUp(skillId) {
         .then(function (html) {
             document.getElementById('rankupModalArea').innerHTML = html;
             // 목록도 갱신
-            loadSkillTab(getCurrentSkillTab());
-        });
-}
-
-function fillUsage(skillId) {
-    fetch('/skills/' + skillId + '/dev/fill-usage', { method: 'POST' })
-        .then(function (r) { return r.text(); })
-        .then(function (html) {
-            document.getElementById('rankupModalArea').innerHTML = html;
-            loadSkillTab(getCurrentSkillTab());
-        });
-}
-
-function fillKill(skillId) {
-    fetch('/skills/' + skillId + '/dev/fill-kill', { method: 'POST' })
-        .then(function (r) { return r.text(); })
-        .then(function (html) {
-            document.getElementById('rankupModalArea').innerHTML = html;
             loadSkillTab(getCurrentSkillTab());
         });
 }

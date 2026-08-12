@@ -65,7 +65,10 @@ class EquippedBonusPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         // 장착 중 장비만 리포지토리가 반환
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
@@ -109,7 +112,10 @@ class EquippedBonusPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
                 .thenReturn(scenario.equippedInventoryItems());
@@ -151,7 +157,10 @@ class EquippedBonusPropertyTest {
         final StatProgression statProgression = new StatProgression();
 
         final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression);
+                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
 
         // 장착 장비 없음(미장착·은행·포션만 존재)
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
