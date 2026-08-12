@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 실제 {@code data/skill.json} 로딩 통합 테스트.
  *
  * <p>Spring Boot 컨텍스트 전체를 기동하여 {@link SkillCatalogService}가
- * 클래스패스 리소스를 정상 로드하고, 7종 스킬·16키 랭크맵·유일 id를 검증한다.
+ * 클래스패스 리소스를 정상 로드하고, 11종 스킬·16키 랭크맵·유일 id를 검증한다.
  *
  * <p>Validates: Requirements 1.1, 1.7
  */
@@ -28,11 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class SkillCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_SKILL_COUNT = 7;
+    private static final int TOTAL_SKILL_COUNT = 11;
     private static final int EXPECTED_RANK_MAP_SIZE = 16;
     private static final Set<String> KNOWN_SKILL_IDS = Set.of(
-            "smash", "windmill", "magnum_shot", "arrow_revolver",
-            "firebolt", "icebolt", "defense");
+            "smash", "windmill", "slash", "magnum_shot", "arrow_revolver",
+            "aimed_shot", "firebolt", "icebolt", "mana_bolt",
+            "defense", "counter_attack");
 
     private final SkillCatalogService skillCatalogService;
 
@@ -41,10 +42,10 @@ class SkillCatalogLoadIntegrationTest {
     }
 
     /**
-     * 전체 스킬 수가 7개인지 검증한다.
+     * 전체 스킬 수가 11개인지 검증한다.
      */
     @Test
-    void should_loadSevenSkills_when_applicationStarts() {
+    void should_loadElevenSkills_when_applicationStarts() {
         final List<Skill> allSkills = skillCatalogService.all();
 
         assertThat(allSkills).hasSize(TOTAL_SKILL_COUNT);
@@ -66,7 +67,7 @@ class SkillCatalogLoadIntegrationTest {
     }
 
     /**
-     * 알려진 7개 스킬 id가 모두 로드되었는지 검증한다.
+     * 알려진 11개 스킬 id가 모두 로드되었는지 검증한다.
      */
     @Test
     void should_containAllKnownSkillIds_when_loaded() {

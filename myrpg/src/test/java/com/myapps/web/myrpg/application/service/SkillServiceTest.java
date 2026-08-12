@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -247,17 +248,24 @@ class SkillServiceTest {
     }
 
     @Test
-    void should_seedDefault_learn_windmill() {
-        when(skillCatalogService.byId(WINDMILL_ID))
-                .thenReturn(Optional.of(createDummySkill(WINDMILL_ID)));
-        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
-                .thenReturn(Optional.empty());
+    void should_seedDefault_learnFourDefaultSkills() {
+        final List<String> seedIds = List.of("slash", "aimed_shot", "mana_bolt", "defense");
+        for (final String skillId : seedIds) {
+            when(skillCatalogService.byId(skillId))
+                    .thenReturn(Optional.of(createDummySkill(skillId)));
+            when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, skillId))
+                    .thenReturn(Optional.empty());
+        }
         when(characterSkillRepository.save(any(CharacterSkill.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         skillService.seedDefault(CHARACTER_ID);
 
-        verify(characterSkillRepository).save(any(CharacterSkill.class));
+        final ArgumentCaptor<CharacterSkill> captor = ArgumentCaptor.forClass(CharacterSkill.class);
+        verify(characterSkillRepository, times(seedIds.size())).save(captor.capture());
+        assertThat(captor.getAllValues())
+                .extracting(CharacterSkill::getSkillId)
+                .containsExactlyInAnyOrderElementsOf(seedIds);
     }
 
     @Test

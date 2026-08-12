@@ -39,7 +39,8 @@ import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 @Service
 public class SkillService {
 
-    private static final String DEFAULT_SEED_SKILL_ID = "windmill";
+    private static final List<String> DEFAULT_SEED_SKILL_IDS = List.of(
+            "slash", "aimed_shot", "mana_bolt", "defense");
     private static final int FULL_PROGRESS_PERCENT = 100;
     private static final int PROGRESS_DIVISOR = 2;
     private static final String TAB_ALL = "all";
@@ -276,14 +277,18 @@ public class SkillService {
     /**
      * 신규 캐릭터에게 기본 스킬을 시드한다.
      *
-     * <p>현재 기본 시드 스킬은 {@code windmill}(NORMAL, MELEE) 1개이며 F 랭크로 추가된다.
+     * <p>기본 시드 스킬은 재능별 기본 공격 3종과 공용 방어 스킬 1종으로 구성되며,
+     * 각각 F 랭크로 추가된다: {@code slash}(베기, MELEE), {@code aimed_shot}(조준 사격, ARCHERY),
+     * {@code mana_bolt}(마나 볼트, MAGIC), {@code defense}(디펜스, COMMON).
      * 캐릭터 생성 시({@code CharacterService.loadOrCreateDefault}) 호출된다.
      *
      * @param characterId 시드 대상 캐릭터 ID
      */
     @Transactional
     public void seedDefault(final Long characterId) {
-        learnSkill(characterId, DEFAULT_SEED_SKILL_ID);
+        for (final String skillId : DEFAULT_SEED_SKILL_IDS) {
+            learnSkill(characterId, skillId);
+        }
     }
 
     /**
