@@ -2,6 +2,7 @@ package com.myapps.web.myrpg.application.service;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import net.jqwik.api.Arbitraries;
@@ -13,9 +14,12 @@ import net.jqwik.api.Provide;
 
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
+import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.RankUpRequirement;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
+import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
@@ -69,6 +73,11 @@ class SkillRankUpEffectPropertyTest {
                 .thenReturn(Optional.of(skill));
         when(mockRepository.save(any(CharacterSkill.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockCatalogService.byId(SKILL_ID))
+                .thenReturn(Optional.of(new DamageSkill(
+                        SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
+                        Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                        "주변의 적을 베어 넘기는 회전 공격.")));
 
         final SkillRank previousRank = rankableState.rank();
         final int previousAp = rankableState.abilityPoints();

@@ -1,6 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Optional;
 
 import net.jqwik.api.Arbitraries;
@@ -13,8 +14,11 @@ import net.jqwik.api.Provide;
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
+import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
+import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
@@ -65,6 +69,11 @@ class SkillRankUpApGuardPropertyTest {
                 CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount(), state.killCount());
         when(mockRepository.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
+        when(mockCatalog.byId(SKILL_ID))
+                .thenReturn(Optional.of(new DamageSkill(
+                        SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
+                        Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                        "범위 공격")));
 
         final SkillService skillService = new SkillService(mockRepository, mock(CharacterProgressRepository.class), mockCatalog);
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());

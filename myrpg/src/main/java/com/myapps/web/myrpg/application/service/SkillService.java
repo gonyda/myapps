@@ -89,9 +89,13 @@ public class SkillService {
      * <p>선행조건 판정 순서:
      * <ol>
      *   <li>MASTER이면 승급 불가 → {@code false} 반환</li>
-     *   <li>사용 횟수·막타 처치 조건 미충족 → {@code false} 반환</li>
+     *   <li>사용 횟수 미충족 → {@code false} 반환</li>
+     *   <li>DEFENSE 타입이 아닌 경우 막타 처치 조건 미충족 → {@code false} 반환</li>
      *   <li>AP 부족 → {@link InsufficientAbilityPointsException} 발생</li>
      * </ol>
+     *
+     * <p>DEFENSE 타입 스킬(디펜스, 카운터 어택)은 반격 피해가 낮아
+     * 막타를 달성하기 어려우므로 kills 조건을 면제한다.
      *
      * <p>승급 성공 시 (a) AP 소모, (b) 랭크 +1, (c) 카운트 리셋, (d) 저장을 수행한다.
      *
@@ -110,9 +114,14 @@ public class SkillService {
 
         final RankUpRequirement requirement = skillRankPolicy.requirement(skill.getRank()).orElseThrow();
         final int apCost = skillRankPolicy.apCost(skill.getRank()).orElseThrow();
+        final Skill catalog = skillCatalogService.byId(skillId).orElseThrow();
+        final boolean killExempt = catalog instanceof DefenseSkill;
 
-        if (skill.getUsageCount() < requirement.requiredUsage()
-                || skill.getKillCount() < requirement.requiredKills()) {
+        if (skill.getUsageCount() < requirement.requiredUsage()) {
+            return false;
+        }
+
+        if (!killExempt && skill.getKillCount() < requirement.requiredKills()) {
             return false;
         }
 
@@ -203,6 +212,8 @@ public class SkillService {
         final int usageCurrent = characterSkill.getUsageCount();
         final int killCurrent = characterSkill.getKillCount();
 
+        final boolean killExempt = catalog instanceof DefenseSkill;
+
         final int usageRequired;
         final int killRequired;
         final int apCost;
@@ -213,14 +224,14 @@ public class SkillService {
         } else {
             final RankUpRequirement requirement = skillRankPolicy.requirement(currentRank).orElseThrow();
             usageRequired = requirement.requiredUsage();
-            killRequired = requirement.requiredKills();
+            killRequired = killExempt ? 0 : requirement.requiredKills();
             apCost = skillRankPolicy.apCost(currentRank).orElseThrow();
         }
 
         final int apOwned = progress.getAbilityPoints();
         final boolean rankable = !maxed
                 && usageCurrent >= usageRequired
-                && killCurrent >= killRequired
+                && (killExempt || killCurrent >= killRequired)
                 && apOwned >= apCost;
 
         return new SkillRankUpView(
@@ -345,8 +356,9 @@ public class SkillService {
                                   final int abilityPoints) {
         final SkillRank rank = characterSkill.getRank();
         final boolean maxed = rank.isMax();
-        final int progressPercent = calculateProgressPercent(characterSkill, rank, maxed);
-        final boolean rankable = calculateRankable(characterSkill, rank, maxed, abilityPoints);
+        final boolean killExempt = catalog instanceof DefenseSkill;
+        final int progressPercent = calculateProgressPercent(characterSkill, rank, maxed, killExempt);
+        final boolean rankable = calculateRankable(characterSkill, rank, maxed, abilityPoints, killExempt);
         final String talentLabel = talentLabel(catalog.talent());
 
         return new SkillRowView(
@@ -358,13 +370,17 @@ public class SkillService {
 
     private int calculateProgressPercent(final CharacterSkill characterSkill,
                                          final SkillRank rank,
-                                         final boolean maxed) {
+                                         final boolean maxed,
+                                         final boolean killExempt) {
         if (maxed) {
             return FULL_PROGRESS_PERCENT;
         }
         final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
         final double usageRatio = Math.min(
                 (double) characterSkill.getUsageCount() / requirement.requiredUsage(), 1.0);
+        if (killExempt) {
+            return (int) (usageRatio * FULL_PROGRESS_PERCENT);
+        }
         final double killRatio = Math.min(
                 (double) characterSkill.getKillCount() / requirement.requiredKills(), 1.0);
         return (int) ((usageRatio + killRatio) / PROGRESS_DIVISOR * FULL_PROGRESS_PERCENT);
@@ -373,14 +389,15 @@ public class SkillService {
     private boolean calculateRankable(final CharacterSkill characterSkill,
                                       final SkillRank rank,
                                       final boolean maxed,
-                                      final int abilityPoints) {
+                                      final int abilityPoints,
+                                      final boolean killExempt) {
         if (maxed) {
             return false;
         }
         final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
         final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
         return characterSkill.getUsageCount() >= requirement.requiredUsage()
-                && characterSkill.getKillCount() >= requirement.requiredKills()
+                && (killExempt || characterSkill.getKillCount() >= requirement.requiredKills())
                 && abilityPoints >= apCost;
     }
 

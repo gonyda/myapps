@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.application.service;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import net.jqwik.api.Arbitraries;
@@ -14,8 +15,11 @@ import net.jqwik.api.Provide;
 
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
+import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
+import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
@@ -84,6 +88,11 @@ class SkillApInvariantPropertyTest {
 
         // Mock: 카탈로그 (rankUp에서 직접 사용하지 않지만 SkillService 생성에 필요)
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
+        when(mockCatalog.byId(anyString()))
+                .thenReturn(Optional.of(new DamageSkill(
+                        SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
+                        Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                        "주변의 적을 베어 넘기는 회전 공격.")));
         final SkillService skillService = new SkillService(mockRepository, mock(CharacterProgressRepository.class), mockCatalog);
 
         // When: 순차적으로 랭크업 수행 (최대 rankUpCount 또는 AP가 부족해질 때까지)
@@ -169,6 +178,11 @@ class SkillApInvariantPropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
+        when(mockCatalog.byId(anyString()))
+                .thenReturn(Optional.of(new DamageSkill(
+                        "windmill", "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
+                        Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                        "주변의 적을 베어 넘기는 회전 공격.")));
         final SkillService skillService = new SkillService(mockRepository, mock(CharacterProgressRepository.class), mockCatalog);
 
         // When: 번갈아 랭크업

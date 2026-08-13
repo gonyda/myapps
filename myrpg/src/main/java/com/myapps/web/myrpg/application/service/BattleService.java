@@ -261,7 +261,7 @@ public class BattleService {
 
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
         skillService.onSkillUsed(progress.getId(), skillId);
-        if (monsterKilled) {
+        if (monsterKilled && skill.type() != SkillType.DEFENSE) {
             skillService.onSkillKill(progress.getId(), skillId);
         }
 

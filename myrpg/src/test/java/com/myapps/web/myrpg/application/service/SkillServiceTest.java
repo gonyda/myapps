@@ -57,6 +57,12 @@ class SkillServiceTest {
     @BeforeEach
     void setUp() {
         skillService = new SkillService(characterSkillRepository, characterProgressRepository, skillCatalogService);
+
+        org.mockito.Mockito.lenient().when(skillCatalogService.byId(WINDMILL_ID))
+                .thenReturn(Optional.of(new DamageSkill(
+                        WINDMILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
+                        java.util.Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                        "범위 공격")));
     }
 
     @Test
