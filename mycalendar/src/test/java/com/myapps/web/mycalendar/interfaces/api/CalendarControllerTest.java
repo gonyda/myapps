@@ -19,6 +19,7 @@ import com.myapps.web.mycalendar.domain.model.Category;
 import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
@@ -74,6 +75,7 @@ class CalendarControllerTest {
         );
 
         when(scheduleService.findByMonth(yearMonth)).thenReturn(schedules);
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(yearMonth)).thenReturn(anniversaries);
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(31L);
 
@@ -101,6 +103,7 @@ class CalendarControllerTest {
         final int month = 1;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(199L);
 
@@ -121,6 +124,7 @@ class CalendarControllerTest {
         final int month = 12;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(180L);
 
@@ -145,6 +149,7 @@ class CalendarControllerTest {
         final long expectedDDay = 270L;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(expectedDDay);
 
@@ -175,6 +180,7 @@ class CalendarControllerTest {
         );
 
         when(scheduleService.findByMonth(YearMonth.of(year, month))).thenReturn(schedules);
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(YearMonth.of(year, month)))
                 .thenReturn(anniversaries);
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(91L);
@@ -195,5 +201,60 @@ class CalendarControllerTest {
                 .andExpect(model().attribute("prevMonth", 8))
                 .andExpect(model().attribute("nextYear", 2026))
                 .andExpect(model().attribute("nextMonth", 10));
+    }
+
+    /**
+     * GET /calendar/weekly?startDate= 요청 시 주간 일정 프래그먼트 뷰를 반환하는지 검증합니다.
+     */
+    @Test
+    void should_returnWeeklyFragment_when_weeklyEndpointCalled() throws Exception {
+        final LocalDate weekStart = LocalDate.of(2026, 7, 5);
+        final LocalDate weekEnd = LocalDate.of(2026, 7, 11);
+        final LocalDateTime now = LocalDateTime.of(2026, 7, 8, 10, 0);
+        final List<ScheduleResponse> schedules = List.of(
+                new ScheduleResponse(1L, Category.DATE, LocalDate.of(2026, 7, 8),
+                        null, LocalTime.of(18, 0), "데이트", now, now)
+        );
+
+        when(scheduleService.findByWeek(eq(weekStart), eq(weekEnd))).thenReturn(schedules);
+
+        mockMvc.perform(get("/calendar/weekly").param("startDate", "2026-07-05"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/weekly-schedule"))
+                .andExpect(model().attributeExists("weekStart", "weekEnd", "weeklyScheduleMap"));
+    }
+
+    /**
+     * 주간 일정 조회 시 일정이 없으면 빈 맵이 모델에 전달되는지 검증합니다.
+     */
+    @Test
+    void should_returnEmptyWeeklyMap_when_noSchedulesInWeek() throws Exception {
+        final LocalDate weekStart = LocalDate.of(2026, 8, 3);
+        final LocalDate weekEnd = LocalDate.of(2026, 8, 9);
+
+        when(scheduleService.findByWeek(eq(weekStart), eq(weekEnd))).thenReturn(List.of());
+
+        mockMvc.perform(get("/calendar/weekly").param("startDate", "2026-08-03"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/weekly-schedule"))
+                .andExpect(model().attributeExists("weeklyScheduleMap"));
+    }
+
+    /**
+     * 캘린더 뷰에 주간 일정 관련 모델 속성이 포함되는지 검증합니다.
+     */
+    @Test
+    void should_includeWeeklyAttributes_when_calendarViewed() throws Exception {
+        final int year = 2026;
+        final int month = 7;
+
+        when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
+        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(31L);
+
+        mockMvc.perform(get("/calendar/{year}/{month}", year, month))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("weekStart", "weekEnd", "weeklyScheduleMap"));
     }
 }

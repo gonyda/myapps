@@ -37,4 +37,20 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             + "(s.endDate IS NULL AND s.startDate >= :startOfMonth AND s.startDate <= :endOfMonth))")
     List<Schedule> findByMonth(@Param("startOfMonth") final LocalDate startOfMonth,
                                @Param("endOfMonth") final LocalDate endOfMonth);
+
+    /**
+     * 지정된 주간 범위와 겹치는 모든 일정을 시작일, 시간순으로 조회합니다.
+     *
+     * <p>조회 조건은 {@link #findByMonth}와 동일하며 결과를 startDate, scheduleTime 순으로 정렬합니다.
+     *
+     * @param weekStart 조회 대상 주의 시작일 (일요일)
+     * @param weekEnd   조회 대상 주의 마지막 날 (토요일)
+     * @return 해당 주와 겹치는 일정 목록 (시작일, 시간순 정렬)
+     */
+    @Query("SELECT s FROM Schedule s WHERE s.startDate <= :weekEnd AND "
+            + "(s.endDate >= :weekStart OR "
+            + "(s.endDate IS NULL AND s.startDate >= :weekStart AND s.startDate <= :weekEnd)) "
+            + "ORDER BY s.startDate ASC, s.scheduleTime ASC NULLS LAST")
+    List<Schedule> findByWeek(@Param("weekStart") final LocalDate weekStart,
+                              @Param("weekEnd") final LocalDate weekEnd);
 }

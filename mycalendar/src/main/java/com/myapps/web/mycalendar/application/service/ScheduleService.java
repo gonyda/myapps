@@ -87,6 +87,20 @@ public class ScheduleService {
     }
 
     /**
+     * 특정 주간 범위의 일정을 시작일/시간순으로 조회합니다.
+     *
+     * @param weekStart 조회 대상 주의 시작일 (일요일)
+     * @param weekEnd   조회 대상 주의 마지막 날 (토요일)
+     * @return 해당 주와 겹치는 일정 응답 목록 (시작일, 시간순 정렬)
+     */
+    public List<ScheduleResponse> findByWeek(final LocalDate weekStart, final LocalDate weekEnd) {
+        final List<Schedule> schedules = scheduleRepository.findByWeek(weekStart, weekEnd);
+        return schedules.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    /**
      * 유효성 검증 후 기존 일정을 수정합니다.
      *
      * <p>수정 시 엔티티의 {@code @PreUpdate}에 의해 updatedAt이 자동 갱신됩니다.

@@ -656,6 +656,128 @@ textarea {
 }
 
 /* --------------------------------------------------------------------------
+   Weekly Schedule Section
+   -------------------------------------------------------------------------- */
+.weekly-schedule-section {
+    margin-top: 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.weekly-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.weekly-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.weekly-nav-btn:hover {
+    background: #e9ecef;
+}
+
+.weekly-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.weekly-schedule-list {
+    padding: 8px 0;
+}
+
+.weekly-date-group {
+    padding: 0 16px;
+    margin-bottom: 8px;
+}
+
+.weekly-date-group:last-child {
+    margin-bottom: 0;
+}
+
+.weekly-date-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #555;
+    padding: 8px 0 4px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 4px;
+}
+
+.weekly-schedule-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 8px;
+    margin: 2px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    min-height: 44px;
+}
+
+.weekly-schedule-item:hover {
+    background: #f5f5f5;
+}
+
+.weekly-item-date {
+    background: #fff0f0;
+    border-left: 3px solid #ff6b9d;
+}
+
+.weekly-item-date:hover {
+    background: #ffe4e9;
+}
+
+.weekly-category-icon {
+    font-size: 0.85rem;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.weekly-schedule-time {
+    font-size: 0.8rem;
+    color: #888;
+    margin-right: 8px;
+    flex-shrink: 0;
+    min-width: 40px;
+}
+
+.weekly-schedule-content {
+    font-size: 0.85rem;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.weekly-empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+    font-size: 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
    Schedule Modal
    -------------------------------------------------------------------------- */
 .modal-overlay {

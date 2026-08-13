@@ -1,0 +1,42 @@
+<div id="weekly-schedule-content" xmlns:th="http://www.thymeleaf.org">
+    <!-- 주간 네비게이션 헤더 -->
+    <div class="weekly-header">
+        <button type="button" class="weekly-nav-btn"
+                th:attr="data-week-start=${weekStart.minusDays(7)}"
+                onclick="navigateWeek(this.dataset.weekStart)"
+                aria-label="이전 주">&laquo;</button>
+        <span class="weekly-title"
+              th:text="|${weekStart.getMonthValue()}/${weekStart.getDayOfMonth()}(${weekStart.getDayOfWeek().getDisplayName(T(java.time.format.TextStyle).SHORT, T(java.util.Locale).KOREAN)}) ~ ${weekEnd.getMonthValue()}/${weekEnd.getDayOfMonth()}(${weekEnd.getDayOfWeek().getDisplayName(T(java.time.format.TextStyle).SHORT, T(java.util.Locale).KOREAN)})|">
+            7/6(일) ~ 7/12(토)
+        </span>
+        <button type="button" class="weekly-nav-btn"
+                th:attr="data-week-start=${weekStart.plusDays(7)}"
+                onclick="navigateWeek(this.dataset.weekStart)"
+                aria-label="다음 주">&raquo;</button>
+    </div>
+
+    <!-- 일정 리스트 (날짜 그룹핑) -->
+    <div class="weekly-schedule-list" th:if="${!weeklyScheduleMap.isEmpty()}">
+        <div class="weekly-date-group" th:each="entry : ${weeklyScheduleMap}">
+            <div class="weekly-date-header"
+                 th:text="|${entry.key.getMonthValue()}/${entry.key.getDayOfMonth()} (${entry.key.getDayOfWeek().getDisplayName(T(java.time.format.TextStyle).SHORT, T(java.util.Locale).KOREAN)})|">
+                7/6 (일)
+            </div>
+            <div class="weekly-schedule-item" th:each="schedule : ${entry.value}"
+                 th:attr="data-schedule-id=${schedule.id()}"
+                 th:classappend="${schedule.category().name() == 'DATE' ? ' weekly-item-date' : ''}"
+                 onclick="openScheduleDetailModal(event, this.dataset.scheduleId)">
+                <span class="weekly-category-icon" th:if="${schedule.category().name() == 'SEUNGKWON'}">💙</span>
+                <span class="weekly-category-icon" th:if="${schedule.category().name() == 'CHIWON'}">❤️</span>
+                <span class="weekly-schedule-time" th:if="${schedule.scheduleTime() != null}"
+                      th:text="${#temporals.format(schedule.scheduleTime(), 'HH:mm')}">10:00</span>
+                <span class="weekly-schedule-content" th:text="${schedule.content()}">일정 내용</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 일정 없음 메시지 -->
+    <div class="weekly-empty" th:if="${weeklyScheduleMap.isEmpty()}">
+        <p>이번 주 일정이 없습니다</p>
+    </div>
+</div>

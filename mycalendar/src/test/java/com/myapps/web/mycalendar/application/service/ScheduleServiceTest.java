@@ -237,6 +237,38 @@ class ScheduleServiceTest {
     }
 
     @Test
+    void should_returnScheduleList_when_findByWeek() {
+        // given
+        final LocalDate weekStart = LocalDate.of(2026, 7, 5);
+        final LocalDate weekEnd = LocalDate.of(2026, 7, 11);
+        final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 8), "주간 일정");
+        when(scheduleRepository.findByWeek(weekStart, weekEnd)).thenReturn(List.of(schedule));
+
+        // when
+        final List<ScheduleResponse> responses = scheduleService.findByWeek(weekStart, weekEnd);
+
+        // then
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).content()).isEqualTo("주간 일정");
+        assertThat(responses.get(0).startDate()).isEqualTo(LocalDate.of(2026, 7, 8));
+        verify(scheduleRepository).findByWeek(weekStart, weekEnd);
+    }
+
+    @Test
+    void should_returnEmptyList_when_noSchedulesInWeek() {
+        // given
+        final LocalDate weekStart = LocalDate.of(2026, 8, 3);
+        final LocalDate weekEnd = LocalDate.of(2026, 8, 9);
+        when(scheduleRepository.findByWeek(weekStart, weekEnd)).thenReturn(List.of());
+
+        // when
+        final List<ScheduleResponse> responses = scheduleService.findByWeek(weekStart, weekEnd);
+
+        // then
+        assertThat(responses).isEmpty();
+    }
+
+    @Test
     void should_deleteSchedule_when_exists() {
         // given
         final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "삭제 대상");
