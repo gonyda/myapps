@@ -5,7 +5,7 @@
     "type": "normal",
     "level": 1,
     "maxHp": 45,
-    "attackPower": 48,
+    "attackPower": 42,
     "defense": 3,
     "critical": 30,
     "experience": 22,

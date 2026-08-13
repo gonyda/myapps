@@ -28,7 +28,7 @@ class MonsterServiceLoadIntegrationTest {
     private static final String RACCOON_NAME = "너구리";
     private static final int RACCOON_LEVEL = 1;
     private static final int RACCOON_MAX_HP = 45;
-    private static final int RACCOON_ATTACK_POWER = 48;
+    private static final int RACCOON_ATTACK_POWER = 42;
     private static final int RACCOON_DEFENSE = 3;
     private static final int RACCOON_CRITICAL = 30;
     private static final long RACCOON_EXPERIENCE = 22L;
