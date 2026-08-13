@@ -36,5 +36,5 @@ bin/
 **/data/*.trace.db
 **/data/*.lock.db
 
-# CodeGraph
-.codegraph/
+# KiroGraph
+.kirograph/
