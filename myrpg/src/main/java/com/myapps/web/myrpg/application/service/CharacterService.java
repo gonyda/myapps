@@ -13,7 +13,7 @@ import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
  * 캐릭터 진행상황 관리 서비스.
  *
  * <p>저장소에서 기존 진행상황을 로드하거나, 비어 있을 때 기본 캐릭터를 생성합니다.
- * 신규 캐릭터 생성 시 기본 스킬(windmill F)과 기본 아이템(초보자 장비 4종 + 포션)을 시드합니다.
+ * 신규 캐릭터 생성 시 기본 스킬(windmill F)과 기본 아이템(초보자 장비 6종 장착 + 4종 미장착 + 포션)을 시드합니다.
  * 턴 종료 시 변경된 진행상황을 저장하는 기능도 제공합니다.
  */
 @Service

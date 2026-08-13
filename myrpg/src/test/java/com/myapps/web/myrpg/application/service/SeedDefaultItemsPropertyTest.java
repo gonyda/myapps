@@ -36,9 +36,9 @@ import static org.mockito.Mockito.when;
  * <p>신규 캐릭터 시드({@code seedDefault()})에 대해:
  * <ul>
  *   <li>INVENTORY에 초보자 장비 10종 + 포션 1스택(수량 5)이 생성되고</li>
- *   <li>한손검·방패·갑옷만 {@code equipped=true}(양손검 false)이며</li>
+ *   <li>한손검·방패·갑옷·투구·장갑·부츠 6종이 {@code equipped=true}(양손검·활·완드·스태프 false)이며</li>
  *   <li>모든 지급 장비의 {@code currentDurability == maxDurability(20)}이고</li>
- *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+10이다</li>
+ *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+17이다</li>
  * </ul>
  *
  * <p>Feature: 006-gold-item-inventory, Property 18: 기본 지급 결과
@@ -52,6 +52,9 @@ class SeedDefaultItemsPropertyTest {
     private static final String TWO_HAND_SWORD_ID = "beginner_two_hand_sword";
     private static final String SHIELD_ID = "beginner_shield";
     private static final String ARMOR_ID = "beginner_armor";
+    private static final String HELMET_ID = "beginner_helmet";
+    private static final String GLOVES_ID = "beginner_gloves";
+    private static final String BOOTS_ID = "beginner_boots";
     private static final int MAX_DURABILITY = 20;
     private static final int POTION_QUANTITY = 5;
 
@@ -70,21 +73,23 @@ class SeedDefaultItemsPropertyTest {
     }
 
     /**
-     * seedDefault()가 한손검·방패·갑옷 3종만 장착(equipped=true)으로 저장함을 검증한다.
+     * seedDefault()가 한손검·방패·갑옷·투구·장갑·부츠 6종을 장착(equipped=true)으로 저장함을 검증한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_equipThreeItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
+    void should_equipSixItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
         final List<OwnedItem> equippedItems = savedItems.stream()
                 .filter(OwnedItem::isEquipped)
                 .toList();
 
-        assertThat(equippedItems).hasSize(3);
+        assertThat(equippedItems).hasSize(6);
         assertThat(equippedItems.stream().map(OwnedItem::getItemId).toList())
-                .containsExactlyInAnyOrder(ONE_HAND_SWORD_ID, SHIELD_ID, ARMOR_ID);
+                .containsExactlyInAnyOrder(
+                        ONE_HAND_SWORD_ID, SHIELD_ID, ARMOR_ID,
+                        HELMET_ID, GLOVES_ID, BOOTS_ID);
     }
 
     /**
@@ -142,15 +147,15 @@ class SeedDefaultItemsPropertyTest {
     }
 
     /**
-     * 기본 장착 장비의 보너스 합산이 STR+5, DEF+10임을 검증한다.
+     * 기본 장착 장비의 보너스 합산이 STR+5, DEF+17임을 검증한다.
      *
-     * <p>한손검(STR+5) + 방패(DEF+5) + 갑옷(DEF+5)이 장착되어
-     * equippedBonus의 STAT 보너스가 STR+5, DEF+10이어야 한다.
+     * <p>한손검(STR+5) + 방패(DEF+5) + 갑옷(DEF+5) + 투구(DEF+3) + 장갑(DEF+2) + 부츠(DEF+2)가 장착되어
+     * equippedBonus의 STAT 보너스가 STR+5, DEF+17이어야 한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_yieldStatBonusStrFiveDefTen_when_equippedBonusAfterSeed(
+    void should_yieldStatBonusStrFiveDefSeventeen_when_equippedBonusAfterSeed(
             @ForAll("dummyInt") final int dummy) {
 
         final List<OwnedItem> savedItems = executeSeedAndCapture();
@@ -177,7 +182,7 @@ class SeedDefaultItemsPropertyTest {
         final EquippedBonusResult result = bonusService.equippedBonus();
 
         assertThat(result.statBonus().str()).isEqualTo(5);
-        assertThat(result.statBonus().defense()).isEqualTo(10);
+        assertThat(result.statBonus().defense()).isEqualTo(17);
         assertThat(result.statBonus().dex()).isZero();
         assertThat(result.statBonus().intelligence()).isZero();
         assertThat(result.statBonus().critical()).isZero();
@@ -249,8 +254,29 @@ class SeedDefaultItemsPropertyTest {
                 List.of(new EquipBonus(BonusTarget.DEF, 5)),
                 null, MAX_DURABILITY);
 
+        final EquipmentItem helmet = new EquipmentItem(
+                HELMET_ID, "초보자용 투구", ItemType.ARMOR,
+                EquipmentKind.HELMET,
+                List.of(new EquipBonus(BonusTarget.DEF, 3)),
+                null, MAX_DURABILITY);
+
+        final EquipmentItem gloves = new EquipmentItem(
+                GLOVES_ID, "초보자용 장갑", ItemType.ARMOR,
+                EquipmentKind.GLOVES,
+                List.of(new EquipBonus(BonusTarget.DEF, 2)),
+                null, MAX_DURABILITY);
+
+        final EquipmentItem boots = new EquipmentItem(
+                BOOTS_ID, "초보자용 부츠", ItemType.ARMOR,
+                EquipmentKind.BOOTS,
+                List.of(new EquipBonus(BonusTarget.DEF, 2)),
+                null, MAX_DURABILITY);
+
         when(mockCatalog.byId(ONE_HAND_SWORD_ID)).thenReturn(Optional.of(oneHandSword));
         when(mockCatalog.byId(SHIELD_ID)).thenReturn(Optional.of(shield));
         when(mockCatalog.byId(ARMOR_ID)).thenReturn(Optional.of(armor));
+        when(mockCatalog.byId(HELMET_ID)).thenReturn(Optional.of(helmet));
+        when(mockCatalog.byId(GLOVES_ID)).thenReturn(Optional.of(gloves));
+        when(mockCatalog.byId(BOOTS_ID)).thenReturn(Optional.of(boots));
     }
 }

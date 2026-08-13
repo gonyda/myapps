@@ -326,7 +326,7 @@ public class InventoryService {
      *
      * <p>초보자 무기 5종(한손검·양손검·활·완드·스태프)과 방어구 5종
      * (방패·갑옷·투구·장갑·부츠) 각 1개(내구도 20), 생명력 30 포션 5개를 인벤토리에 생성한다.
-     * 이 중 한손검·방패·갑옷만 기본 장착하고 나머지는 미장착 상태로 지급한다.
+     * 이 중 한손검·방패·갑옷·투구·장갑·부츠를 기본 장착하고 나머지 무기는 미장착 상태로 지급한다.
      */
     @Transactional
     public void seedDefault() {
@@ -340,12 +340,12 @@ public class InventoryService {
         seedEquipment(SEED_WAND_ID, false);
         seedEquipment(SEED_STAFF_ID, false);
 
-        // 방어구 5종: 방패·갑옷 기본 장착, 투구·장갑·부츠는 인벤토리 보유
+        // 방어구 5종: 방패·갑옷·투구·장갑·부츠 모두 기본 장착
         seedEquipment(SEED_SHIELD_ID, true);
         seedEquipment(SEED_ARMOR_ID, true);
-        seedEquipment(SEED_HELMET_ID, false);
-        seedEquipment(SEED_GLOVES_ID, false);
-        seedEquipment(SEED_BOOTS_ID, false);
+        seedEquipment(SEED_HELMET_ID, true);
+        seedEquipment(SEED_GLOVES_ID, true);
+        seedEquipment(SEED_BOOTS_ID, true);
     }
 
     /**
