@@ -149,6 +149,7 @@ public class PlayScreenController {
                 model.addAttribute("battleView", battleView);
                 model.addAttribute("skills", skills);
                 model.addAttribute("battleActive", true);
+                model.addAttribute("turnLog", List.of(monster.name() + " Lv." + monster.level() + " 출현!"));
                 return "play";
             }
         }

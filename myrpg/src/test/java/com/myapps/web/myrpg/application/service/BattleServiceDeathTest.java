@@ -78,7 +78,7 @@ class BattleServiceDeathTest {
 
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(5, LETHAL_MONSTER_DAMAGE, false, false, false, false));
+                .thenReturn(new ResolvedTurn(5, LETHAL_MONSTER_DAMAGE, false, false, false, false, List.of()));
 
         final MonsterService monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));

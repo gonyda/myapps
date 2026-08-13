@@ -25,12 +25,16 @@ import com.myapps.web.myrpg.domain.model.BattleTurnResult;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult.Outcome;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.GoldDrop;
+import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.SkillType;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -233,6 +237,80 @@ class BattleControllerTest {
                 .andExpect(model().attributeExists("skills"));
     }
 
+    // ─── 009: turnLog 모델 속성 및 battle-log 렌더 검증 ─────────────────────
+
+    /**
+     * POST /battle/start 응답의 모델에 turnLog(인트로 라인)이 포함되는지 검증한다.
+     */
+    @Test
+    void should_containTurnLogWithIntroLine_when_battleStarted() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        final Monster monster = createTestMonster();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.start(any(CharacterProgress.class), eq(MONSTER_ID), eq(false))).thenReturn(state);
+        when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(monster));
+        when(battleService.combatSkills(any(CharacterProgress.class))).thenReturn(createTestSkills());
+        when(playScreenViewHelper.buildTopBar(any(CharacterProgress.class))).thenReturn(createTestTopBar());
+        when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
+        when(actionLog.getEntries()).thenReturn(List.of());
+
+        final String expectedIntro = MONSTER_NAME + " Lv." + MONSTER_LEVEL + " 출현!";
+
+        mockMvc.perform(post("/battle/start").param("monsterId", MONSTER_ID))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("turnLog"))
+                .andExpect(model().attribute("turnLog", contains(expectedIntro)));
+    }
+
+    /**
+     * POST /battle/turn 응답의 모델에 turnLog(combatLines)이 포함되고
+     * 렌더된 HTML에 battle-log 섹션이 존재하는지 검증한다.
+     */
+    @Test
+    void should_containTurnLogFromCombatLines_when_turnProcessed() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        final Monster monster = createTestMonster();
+        final BattleTurnResult turnResult = createOngoingTurnResult();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.of(state));
+        when(battleService.takeTurn(any(CharacterProgress.class), any(BattleState.class), eq(SKILL_ID)))
+                .thenReturn(turnResult);
+        when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(monster));
+        when(battleService.combatSkills(any(CharacterProgress.class))).thenReturn(createTestSkills());
+        when(playScreenViewHelper.buildTopBar(any(CharacterProgress.class))).thenReturn(createTestTopBar());
+        when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
+        when(actionLog.getEntries()).thenReturn(List.of());
+
+        mockMvc.perform(post("/battle/turn").param("skillId", SKILL_ID))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("turnLog"))
+                .andExpect(model().attribute("turnLog", hasSize(turnResult.combatLines().size())))
+                .andExpect(content().string(containsString("battle-log")))
+                .andExpect(content().string(containsString("battle-log-line")));
+    }
+
+    /**
+     * GET /battle/skills 응답에 turnLog 모델 속성이 없고
+     * battle-log 섹션이 렌더되지 않는지 검증한다 (스킬 프래그먼트만 반환).
+     */
+    @Test
+    void should_notContainBattleLog_when_skillsFragmentReturned() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final List<BattleSkillButton> skills = createTestSkills();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.combatSkills(any(CharacterProgress.class))).thenReturn(skills);
+
+        mockMvc.perform(get("/battle/skills"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeDoesNotExist("turnLog"))
+                .andExpect(content().string(not(containsString("battle-log-line"))));
+    }
+
     // ─── 테스트 데이터 생성 헬퍼 ────────────────────────────────────────────
 
     private Monster createTestMonster() {
@@ -279,6 +357,7 @@ class BattleControllerTest {
                 false, null,
                 false, Outcome.NONE,
                 null, 0L,
+                List.of(),
                 List.of("스매시(강)로 너구리에게 12 피해", "너구리의 일반공격, 5 피해를 입음"));
     }
 
@@ -291,6 +370,7 @@ class BattleControllerTest {
                 false, null,
                 true, Outcome.WIN,
                 null, 20L,
+                List.of(),
                 List.of("스매시(강)로 너구리에게 25 피해 (크리티컬!)", "너구리이(가) 쓰러졌습니다!"));
     }
 
@@ -303,6 +383,7 @@ class BattleControllerTest {
                 false, null,
                 true, Outcome.FLED,
                 null, 0L,
+                List.of(),
                 List.of("도망쳤다!"));
     }
 
@@ -315,6 +396,7 @@ class BattleControllerTest {
                 false, null,
                 false, Outcome.NONE,
                 null, 0L,
+                List.of(),
                 List.of("도망 실패! 너구리에게 8 피해"));
     }
 }

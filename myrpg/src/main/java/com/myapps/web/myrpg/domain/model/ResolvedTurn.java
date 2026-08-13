@@ -1,5 +1,7 @@
 package com.myapps.web.myrpg.domain.model;
 
+import java.util.List;
+
 /**
  * 9칸 매트릭스 기반 전투 턴 해결 결과를 담는 레코드.
  *
@@ -13,6 +15,7 @@ package com.myapps.web.myrpg.domain.model;
  * @param monsterCritical       몬스터 크리티컬 발동 여부
  * @param blocked               몬스터가 방어에 성공했는지 (플레이어 일반 vs 몬스터 방어)
  * @param countered             몬스터가 반격했는지 (방어 성공 후 반격 발생)
+ * @param playerHits            플레이어 딜 스킬 히트별 상세 결과 (공격 경로 시 hitCount개, 그 외 빈 리스트)
  */
 public record ResolvedTurn(
         int playerDamageToMonster,
@@ -20,5 +23,6 @@ public record ResolvedTurn(
         boolean playerCritical,
         boolean monsterCritical,
         boolean blocked,
-        boolean countered) {
+        boolean countered,
+        List<HitResult> playerHits) {
 }

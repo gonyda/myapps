@@ -243,7 +243,8 @@ class BattleResolverMatrixPropertyTest {
                 DEFAULT_COUNTER_PERCENT,
                 DEFAULT_COUNTER_PERCENT,
                 DEFAULT_CRITICAL,
-                DEFAULT_CRITICAL
+                DEFAULT_CRITICAL,
+                1
         );
     }
 }

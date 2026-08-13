@@ -170,7 +170,7 @@ class BattleServiceTurnOrderPropertyTest {
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
                 .thenReturn(new ResolvedTurn(playerDmgToMonster, monsterDmgToPlayer,
-                        false, false, monsterAction == SkillType.DEFENSE, false));
+                        false, false, monsterAction == SkillType.DEFENSE, false, List.of()));
         when(resolver.baseDamage(anyInt(), anyInt(), anyInt())).thenReturn(10);
         when(resolver.rollCritical(anyInt())).thenReturn(false);
         when(resolver.finalDamage(anyInt(), any(Double.class), any(Boolean.class))).thenReturn(10);

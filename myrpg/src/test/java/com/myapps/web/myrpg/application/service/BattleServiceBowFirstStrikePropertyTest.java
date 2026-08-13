@@ -22,6 +22,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.GoldDrop;
+import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.ResolvedTurn;
@@ -176,8 +177,10 @@ class BattleServiceBowFirstStrikePropertyTest {
         when(resolver.baseDamage(anyInt(), anyInt(), anyInt())).thenReturn(20);
         when(resolver.rollCritical(anyInt())).thenReturn(false);
         when(resolver.finalDamage(anyInt(), anyDouble(), any(Boolean.class))).thenReturn(20);
+        when(resolver.multiHitDamage(anyInt(), anyInt(), anyInt(), anyDouble(), anyInt(), anyInt()))
+                .thenReturn(List.of(new HitResult(20, false)));
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(15, 10, false, false, false, false));
+                .thenReturn(new ResolvedTurn(15, 10, false, false, false, false, List.of()));
 
         final MonsterService monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));

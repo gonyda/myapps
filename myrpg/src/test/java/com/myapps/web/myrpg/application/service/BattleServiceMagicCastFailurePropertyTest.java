@@ -224,7 +224,7 @@ class BattleServiceMagicCastFailurePropertyTest {
         when(resolver.rollCritical(anyInt())).thenReturn(false);
         when(resolver.finalDamage(anyInt(), anyDouble(), any(Boolean.class))).thenReturn(15);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(15, 10, false, false, false, false));
+                .thenReturn(new ResolvedTurn(15, 10, false, false, false, false, List.of()));
 
         final MonsterService monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));
@@ -271,7 +271,7 @@ class BattleServiceMagicCastFailurePropertyTest {
 
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(5, 0, false, false, true, true));
+                .thenReturn(new ResolvedTurn(5, 0, false, false, true, true, List.of()));
 
         final MonsterService monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));

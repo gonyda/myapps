@@ -13,7 +13,7 @@ package com.myapps.web.myrpg.domain.model;
  * @param monsterAttackPower         몬스터 공격력
  * @param playerDefense              플레이어 방어력
  * @param monsterDefense             몬스터 방어력
- * @param playerMultiplierPercent    플레이어 스킬 배율(%)
+ * @param playerMultiplierPercent    플레이어 스킬 1히트당 배율(%)
  * @param monsterMultiplierPercent   몬스터 스킬 배율(%) — 일반 100 / 강 150
  * @param playerBlockRatePercent     플레이어 방어 경감률(%)
  * @param monsterBlockRatePercent    몬스터 방어 경감률(%) — 기본 40
@@ -21,6 +21,7 @@ package com.myapps.web.myrpg.domain.model;
  * @param monsterCounterPercent      몬스터 반격률(%) — 기본 30
  * @param playerCritical             플레이어 크리티컬 수치(0.1% 단위, 범위 0~1000)
  * @param monsterCritical            몬스터 크리티컬 수치(0.1% 단위, 범위 0~1000)
+ * @param playerHitCount             플레이어 히트 수 (딜 스킬의 hitCount, 기본 1)
  */
 public record TurnInput(
         SkillType playerType,
@@ -36,5 +37,6 @@ public record TurnInput(
         int playerCounterPercent,
         int monsterCounterPercent,
         int playerCritical,
-        int monsterCritical) {
+        int monsterCritical,
+        int playerHitCount) {
 }

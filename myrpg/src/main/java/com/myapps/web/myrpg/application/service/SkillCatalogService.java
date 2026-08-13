@@ -38,6 +38,14 @@ public class SkillCatalogService {
     private static final String SKILL_JSON_PATH = "data/skill.json";
     private static final int EXPECTED_RANK_MAP_SIZE = 16;
 
+    private static final int DEFAULT_HIT_COUNT = 1;
+    private static final int MIN_HIT_COUNT = 1;
+    private static final int MAX_HIT_COUNT = 8;
+
+    private static final int DEFAULT_CRIT_BONUS = 0;
+    private static final int MIN_CRIT_BONUS = 0;
+    private static final int MAX_CRIT_BONUS = 100;
+
     private final ObjectMapper objectMapper;
     private List<Skill> skills;
 
@@ -160,8 +168,12 @@ public class SkillCatalogService {
                                          final String description) {
         final Map<SkillRank, Integer> multiplierByRank =
                 parseRankMap(skillNode, "multiplierByRank", id);
+        final int hitCount = extractOptionalInt(skillNode, "hitCount", id,
+                DEFAULT_HIT_COUNT, MIN_HIT_COUNT, MAX_HIT_COUNT);
+        final int critBonus = extractOptionalInt(skillNode, "critBonus", id,
+                DEFAULT_CRIT_BONUS, MIN_CRIT_BONUS, MAX_CRIT_BONUS);
         return new DamageSkill(id, label, type, talent, resourceCost,
-                multiplierByRank, description);
+                multiplierByRank, description, hitCount, critBonus);
     }
 
     private DefenseSkill parseDefenseSkill(final JsonNode skillNode, final String id,
@@ -225,6 +237,41 @@ public class SkillCatalogService {
                             + "'이(가) 비어있거나 숫자가 아닙니다.");
         }
         return fieldNode.asInt();
+    }
+
+    /**
+     * 스킬 노드에서 선택적 정수 필드를 추출합니다.
+     *
+     * <p>필드가 부재하면 기본값을 반환하고, 존재하되 숫자가 아니거나
+     * 지정 범위 밖이면 {@link SkillDataException}을 발생시킵니다.
+     *
+     * @param skillNode    스킬 JSON 노드
+     * @param fieldName    필드명
+     * @param skillId      스킬 ID (오류 메시지용)
+     * @param defaultValue 필드 부재 시 반환할 기본값
+     * @param minValue     허용 최솟값 (포함)
+     * @param maxValue     허용 최댓값 (포함)
+     * @return 파싱된 정수 또는 기본값
+     * @throws SkillDataException 숫자가 아니거나 범위 밖인 경우
+     */
+    private int extractOptionalInt(final JsonNode skillNode, final String fieldName,
+                                   final String skillId, final int defaultValue,
+                                   final int minValue, final int maxValue) {
+        final JsonNode fieldNode = skillNode.get(fieldName);
+        if (fieldNode == null || fieldNode.isNull()) {
+            return defaultValue;
+        }
+        if (!fieldNode.isNumber()) {
+            throw new SkillDataException(
+                    "스킬 '" + skillId + "'의 필드 '" + fieldName + "'이(가) 숫자가 아닙니다.");
+        }
+        final int value = fieldNode.asInt();
+        if (value < minValue || value > maxValue) {
+            throw new SkillDataException(
+                    "스킬 '" + skillId + "'의 필드 '" + fieldName + "' 값 " + value
+                            + "이(가) 허용 범위 [" + minValue + ", " + maxValue + "]를 벗어납니다.");
+        }
+        return value;
     }
 
     private void validateNoDuplicateIds(final List<Skill> skillList) {

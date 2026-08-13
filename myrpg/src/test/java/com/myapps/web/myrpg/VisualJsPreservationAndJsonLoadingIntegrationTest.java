@@ -36,6 +36,8 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     private static final String PLAY_HTML_PATH = "templates/play.html";
     private static final String MAP_JSON_PATH = "data/map.json";
     private static final String AMBIENCE_JSON_PATH = "data/ambience.json";
+    private static final String SKILL_JSON_PATH = "data/skill.json";
+    private static final int EXPECTED_SKILL_COUNT = 11;
 
     private static final List<String> EXPECTED_FRAGMENTS = List.of(
             "templates/fragments/top-bar.html",
@@ -178,6 +180,10 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
         final String battleViewHtml = loadClasspathResource("templates/fragments/battle-view.html");
 
         assertThat(battleViewHtml).contains("battle-view");
+        assertThat(battleViewHtml).contains("battle-center");
+        assertThat(battleViewHtml).contains("battle-log");
+        assertThat(battleViewHtml).contains("battleLog");
+        assertThat(battleViewHtml).contains("battle-log-line");
         assertThat(battleViewHtml).contains("battleSkills");
         assertThat(battleViewHtml).contains("battle-skill-btn");
         assertThat(battleViewHtml).contains("flee-btn");
@@ -316,6 +322,34 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
                     "late-afternoon", "night", "late-night");
             assertThat(ambienceData.themes()).isNotEmpty();
             assertThat(ambienceData.themes()).containsKeys("town", "field", "dungeon");
+        }
+    }
+
+    // ========== Req 009: skill.json 로딩 검증 ==========
+
+    /**
+     * skill.json을 Jackson 3로 로드하여 11개 스킬이 포함되고
+     * 각 스킬에 id와 type 필드가 존재하는지 검증한다.
+     */
+    @Test
+    void should_loadAllSkills_when_skillJsonParsed() throws IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final ClassPathResource resource = new ClassPathResource(SKILL_JSON_PATH);
+
+        try (InputStream inputStream = resource.getInputStream()) {
+            final JsonNode root = objectMapper.readTree(inputStream);
+
+            assertThat(root.isArray()).isTrue();
+            assertThat(root.size()).isEqualTo(EXPECTED_SKILL_COUNT);
+
+            for (final JsonNode skillNode : root) {
+                assertThat(skillNode.has("id"))
+                        .as("스킬 노드에 'id' 필드가 존재해야 함")
+                        .isTrue();
+                assertThat(skillNode.has("type"))
+                        .as("스킬 노드에 'type' 필드가 존재해야 함")
+                        .isTrue();
+            }
         }
     }
 

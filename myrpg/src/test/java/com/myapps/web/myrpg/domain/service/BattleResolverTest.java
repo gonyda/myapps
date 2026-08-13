@@ -1,11 +1,13 @@
 package com.myapps.web.myrpg.domain.service;
 
+import java.util.List;
 import java.util.Random;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.ResolvedTurn;
 import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TurnInput;
@@ -282,7 +284,8 @@ class BattleResolverTest {
                     PLAYER_MULTIPLIER, MONSTER_NORMAL_MULTIPLIER,
                     BLOCK_RATE, BLOCK_RATE,
                     COUNTER_PERCENT, COUNTER_PERCENT,
-                    MAX_CRITICAL, ZERO_CRITICAL
+                    MAX_CRITICAL, ZERO_CRITICAL,
+                    1
             );
 
             final ResolvedTurn result = resolver.resolve(input);
@@ -312,6 +315,127 @@ class BattleResolverTest {
         }
     }
 
+    @Nested
+    @DisplayName("멀티히트 예시")
+    class MultiHitExamples {
+
+        private static final long MULTI_HIT_SEED = 77777L;
+        private static final int WINDMILL_PER_HIT_MULTIPLIER = 65;
+        private static final int WINDMILL_HIT_COUNT = 3;
+        private static final int ARROW_REVOLVER_PER_HIT_MULTIPLIER = 50;
+        private static final int ARROW_REVOLVER_HIT_COUNT = 4;
+        private static final int HIGH_DEFENSE = 80;
+
+        /**
+         * 3타 스킬(windmill급): 정확히 3개의 히트 결과, 각 ≥1, 합계 ≥3.
+         */
+        @Test
+        void should_returnThreeHits_when_threeHitSkill() {
+            final BattleResolver resolver = new BattleResolver(new Random(MULTI_HIT_SEED));
+
+            final List<HitResult> hits = resolver.multiHitDamage(
+                    PLAYER_ATTACK, WINDMILL_PER_HIT_MULTIPLIER, MONSTER_DEFENSE,
+                    1.0, ZERO_CRITICAL, WINDMILL_HIT_COUNT);
+
+            assertThat(hits).hasSize(WINDMILL_HIT_COUNT);
+            final int total = hits.stream().mapToInt(HitResult::damage).sum();
+            assertThat(total).isGreaterThanOrEqualTo(WINDMILL_HIT_COUNT);
+            for (final HitResult hit : hits) {
+                assertThat(hit.damage()).isGreaterThanOrEqualTo(1);
+            }
+        }
+
+        /**
+         * 4타 스킬(arrow_revolver급): 정확히 4개의 히트 결과, 각 ≥1, 합계 ≥4.
+         */
+        @Test
+        void should_returnFourHits_when_fourHitSkill() {
+            final BattleResolver resolver = new BattleResolver(new Random(MULTI_HIT_SEED));
+
+            final List<HitResult> hits = resolver.multiHitDamage(
+                    PLAYER_ATTACK, ARROW_REVOLVER_PER_HIT_MULTIPLIER, MONSTER_DEFENSE,
+                    1.0, ZERO_CRITICAL, ARROW_REVOLVER_HIT_COUNT);
+
+            assertThat(hits).hasSize(ARROW_REVOLVER_HIT_COUNT);
+            final int total = hits.stream().mapToInt(HitResult::damage).sum();
+            assertThat(total).isGreaterThanOrEqualTo(ARROW_REVOLVER_HIT_COUNT);
+            for (final HitResult hit : hits) {
+                assertThat(hit.damage()).isGreaterThanOrEqualTo(1);
+            }
+        }
+
+        /**
+         * 고방어 상대: 3타 멀티히트(히트당 배율 65%) 총 피해가 단일(배율 195%)보다 작다.
+         *
+         * <p>방어 80에서 히트당 기본피해 = max(1, floor(100×65/100)−80) = max(1,-15) = 1.
+         * 단일 기본피해 = max(1, floor(100×195/100)−80) = max(1, 115) = 115.
+         * 다단은 3×1수준, 단일은 115수준으로 고방어에서 다단이 크게 불리.
+         */
+        @Test
+        void should_multiHitMuchWeaker_when_highDefense() {
+            final int totalMultiplier = WINDMILL_PER_HIT_MULTIPLIER * WINDMILL_HIT_COUNT;
+
+            final BattleResolver multiResolver = new BattleResolver(new Random(MULTI_HIT_SEED));
+            final List<HitResult> multiHits = multiResolver.multiHitDamage(
+                    PLAYER_ATTACK, WINDMILL_PER_HIT_MULTIPLIER, HIGH_DEFENSE,
+                    1.0, ZERO_CRITICAL, WINDMILL_HIT_COUNT);
+            final int multiTotal = multiHits.stream().mapToInt(HitResult::damage).sum();
+
+            final BattleResolver singleResolver = new BattleResolver(new Random(MULTI_HIT_SEED));
+            final List<HitResult> singleHits = singleResolver.multiHitDamage(
+                    PLAYER_ATTACK, totalMultiplier, HIGH_DEFENSE,
+                    1.0, ZERO_CRITICAL, 1);
+            final int singleTotal = singleHits.getFirst().damage();
+
+            assertThat(multiTotal).isLessThan(singleTotal);
+        }
+
+        /**
+         * 단일 히트 동치: hitCount=1 multiHitDamage와 직접 rollCritical→finalDamage가 동일하다.
+         */
+        @Test
+        void should_matchSingleFinalDamage_when_hitCountIsOne() {
+            final long seed = 99999L;
+            final int multiplier = 120;
+
+            final BattleResolver multiResolver = new BattleResolver(new Random(seed));
+            final List<HitResult> hits = multiResolver.multiHitDamage(
+                    PLAYER_ATTACK, multiplier, MONSTER_DEFENSE, 1.0, ZERO_CRITICAL, 1);
+
+            final BattleResolver directResolver = new BattleResolver(new Random(seed));
+            final int baseDmg = directResolver.baseDamage(PLAYER_ATTACK, multiplier, MONSTER_DEFENSE);
+            final boolean crit = directResolver.rollCritical(ZERO_CRITICAL);
+            final int expectedDmg = directResolver.finalDamage(baseDmg, 1.0, crit);
+
+            assertThat(hits).hasSize(1);
+            assertThat(hits.getFirst().damage()).isEqualTo(expectedDmg);
+            assertThat(hits.getFirst().critical()).isEqualTo(crit);
+        }
+
+        /**
+         * resolve에서 3타 스킬 사용 시 playerHits가 3개이고 합계가 playerDamageToMonster와 일치한다.
+         */
+        @Test
+        void should_resolvePlayerHitsMatch_when_threeHitAttackWins() {
+            final BattleResolver resolver = new BattleResolver(new Random(MULTI_HIT_SEED));
+            final TurnInput input = new TurnInput(
+                    SkillType.NORMAL, SkillType.HEAVY,
+                    PLAYER_ATTACK, MONSTER_ATTACK,
+                    PLAYER_DEFENSE, MONSTER_DEFENSE,
+                    WINDMILL_PER_HIT_MULTIPLIER, MONSTER_NORMAL_MULTIPLIER,
+                    BLOCK_RATE, BLOCK_RATE,
+                    COUNTER_PERCENT, COUNTER_PERCENT,
+                    ZERO_CRITICAL, ZERO_CRITICAL,
+                    WINDMILL_HIT_COUNT);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.playerHits()).hasSize(WINDMILL_HIT_COUNT);
+            final int hitsSum = result.playerHits().stream().mapToInt(HitResult::damage).sum();
+            assertThat(result.playerDamageToMonster()).isEqualTo(hitsSum);
+        }
+    }
+
     /**
      * 테스트용 TurnInput을 생성하는 헬퍼 메서드.
      *
@@ -329,7 +453,8 @@ class BattleResolverTest {
                 PLAYER_MULTIPLIER, monsterMultiplier,
                 BLOCK_RATE, BLOCK_RATE,
                 COUNTER_PERCENT, COUNTER_PERCENT,
-                ZERO_CRITICAL, ZERO_CRITICAL
+                ZERO_CRITICAL, ZERO_CRITICAL,
+                1
         );
     }
 }

@@ -105,7 +105,8 @@ public class BattleController {
 
         final Monster monster = monsterOpt.get();
         final BattleView battleView = buildBattleView(state, monster, progress);
-        populateBattleModel(model, progress, battleView);
+        final List<String> turnLog = List.of(monster.name() + " Lv." + monster.level() + " 출현!");
+        populateBattleModel(model, progress, battleView, turnLog);
         return "fragments/battle-view :: battle-view";
     }
 
@@ -207,7 +208,8 @@ public class BattleController {
 
     private void populateBattleModel(final Model model,
                                      final CharacterProgress progress,
-                                     final BattleView battleView) {
+                                     final BattleView battleView,
+                                     final List<String> turnLog) {
         final TopBarView topBar = playScreenViewHelper.buildTopBar(progress);
         final MinimapView minimap = mapService.minimap(progress.getCurrentNodeId());
         final List<ActionLogEntry> logs = actionLog.getEntries();
@@ -215,6 +217,7 @@ public class BattleController {
         model.addAttribute("view", buildViewShell(topBar, minimap, logs));
         model.addAttribute("battleView", battleView);
         model.addAttribute("skills", battleView.skills());
+        model.addAttribute("turnLog", turnLog);
     }
 
     // ─── Private: response construction ─────────────────────────────────────
@@ -229,7 +232,7 @@ public class BattleController {
         }
         final Monster monster = monsterOpt.get();
         final BattleView battleView = buildBattleView(state, monster, progress);
-        populateBattleModel(model, progress, battleView);
+        populateBattleModel(model, progress, battleView, result.combatLines());
         model.addAttribute("turnResult", result);
         model.addAttribute("battleMonsterName", monster.name());
         return "fragments/battle-view :: battle-response";
@@ -244,6 +247,7 @@ public class BattleController {
         model.addAttribute("battleEnded", true);
         model.addAttribute("outcome", result.outcome());
         model.addAttribute("battleMonsterName", resolveMonsterName(monsterId));
+        model.addAttribute("turnLog", result.combatLines());
         return "fragments/battle-view :: battle-response";
     }
 

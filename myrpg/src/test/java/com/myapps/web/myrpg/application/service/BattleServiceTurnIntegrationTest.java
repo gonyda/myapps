@@ -91,7 +91,7 @@ class BattleServiceTurnIntegrationTest {
 
         resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(10, 5, false, false, false, false));
+                .thenReturn(new ResolvedTurn(10, 5, false, false, false, false, List.of()));
 
         monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));
@@ -154,7 +154,7 @@ class BattleServiceTurnIntegrationTest {
     @DisplayName("몬스터 처치 시 onSkillKill이 호출된다")
     void should_callOnSkillKill_when_monsterKilled() {
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false));
+                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false, List.of()));
 
         final DropResult drop = new DropResult(50L, List.of(new DroppedItem("potion", 1)));
         when(rewardService.rollDrop(any(Monster.class))).thenReturn(drop);
@@ -207,7 +207,7 @@ class BattleServiceTurnIntegrationTest {
     @DisplayName("몬스터 처치 시 보상 체인(rollDrop → acquire → gainExperience)이 호출된다")
     void should_processRewardChain_when_monsterKilled() {
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false));
+                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false, List.of()));
 
         final DropResult drop = new DropResult(100L, List.of(new DroppedItem("sword", 1)));
         when(rewardService.rollDrop(any(Monster.class))).thenReturn(drop);

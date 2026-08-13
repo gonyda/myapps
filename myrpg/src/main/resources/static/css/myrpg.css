@@ -1883,3 +1883,20 @@
         .flee-btn:active {
             background: #3a3a4a;
         }
+
+        /* ===== 전투 중앙 로그 (이번 턴 결과, HP 바와 스킬 사이) ===== */
+        .battle-log {
+            margin: calc(var(--gap) * 0.5) 0;
+            padding: calc(var(--gap) * 0.5) var(--pad);
+            min-height: 40px;
+            font-size: var(--fs-sm);
+            line-height: 1.4;
+            color: #ddd;
+            background: #232323;
+            border: 1px solid #3a3a3a;
+            border-radius: var(--radius);
+        }
+
+        .battle-log-line {
+            margin-bottom: 2px;
+        }

@@ -1,0 +1,377 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 HitResult record · DamageSkill 필드 · SkillCatalogService 파싱": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854812
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541865362
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542131284
+      }
+    ],
+    "1.2 스킬 필드·파싱 프로퍼티/단위 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854848
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542137762
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542410240
+      }
+    ],
+    "2.1 skill.json 데이터 갱신": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854882
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542138692
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542411086
+      }
+    ],
+    "2.2 skill.json 데이터 규격 프로퍼티 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854913
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542416750
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542646315
+      }
+    ],
+    "3. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854945
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542664014
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542693468
+      }
+    ],
+    "4.1 BattleResolver.multiHitDamage + 공격 경로 멀티히트화": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541854978
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542699310
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543287670
+      }
+    ],
+    "4.2 멀티히트 프로퍼티/단위 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855044
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543293426
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543874800
+      }
+    ],
+    "5. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855078
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543882014
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543887084
+      }
+    ],
+    "6.1 크리 보너스·hitCount 조립 + BattleTurnResult 확장": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855105
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543892950
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786544504362
+      }
+    ],
+    "6.2 크리 보너스 프로퍼티/통합 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855138
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786544510785
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545443221
+      }
+    ],
+    "7.1 combatLines(중앙) ↔ actionLog(하단) 분리": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855179
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786544511755
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545443911
+      }
+    ],
+    "7.2 로그 라우팅 프로퍼티/통합 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855214
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545450792
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545954488
+      }
+    ],
+    "8. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855246
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545961429
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545993029
+      }
+    ],
+    "9.1 BattleLogInput 확장 + BattleLogFormatter 멀티히트 분기": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855277
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545452602
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545954519
+      }
+    ],
+    "9.2 로그 포맷 프로퍼티/단위 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855304
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545999185
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546379292
+      }
+    ],
+    "10. 체크포인트 — 모든 테스트 통과 확인": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855343
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546387584
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546393417
+      }
+    ],
+    "11.1 battle-center 서브프래그먼트 + battle-log + turnLog 배선": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855378
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546000101
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546380312
+      }
+    ],
+    "11.2 컨트롤러 슬라이스 + 정적 리소스 보존 테스트": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855414
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546399349
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546728213
+      }
+    ],
+    "12. 최종 체크포인트 — 모든 테스트 통과 + 빌드 검증": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786541855472
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546735038
+      },
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546771497
+      }
+    ],
+    "1. HitResult + DamageSkill 확장 + 카탈로그 파싱/검증": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542410331
+      }
+    ],
+    "2. skill.json 9개 딜 스킬 확정": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786542646363
+      }
+    ],
+    "4. 멀티히트 데미지 + TurnInput/ResolvedTurn 확장": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786543874847
+      }
+    ],
+    "6. BattleService 조립 (크리 보너스 · hitCount · 선제 멀티히트) + 턴 결과 확장": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545443269
+      }
+    ],
+    "7. BattleService 로그 분리 (액션 ↔ 결산)": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786545954550
+      }
+    ],
+    "9. 멀티히트 하이브리드 로그 포맷": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546379344
+      }
+    ],
+    "11. battle-view 중앙 로그 섹션 + BattleController turnLog": [
+      {
+        "executionId": "d9dde749-d828-4016-ac74-9dc5e658a54d",
+        "chatSessionId": "sess_19c8e80c-8ce1-4785-8fbf-8a97d8346044",
+        "timestamp": 1786546728329
+      }
+    ]
+  }
+}
