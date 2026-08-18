@@ -629,10 +629,7 @@ public class InventoryService {
     }
 
     private String formatDurability(final double currentDurability) {
-        if (currentDurability == Math.floor(currentDurability)) {
-            return String.valueOf((int) currentDurability);
-        }
-        return String.valueOf(currentDurability);
+        return String.valueOf((int) Math.ceil(currentDurability));
     }
 
     // ─── acquire helpers ────────────────────────────────────────────────────
