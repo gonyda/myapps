@@ -557,11 +557,19 @@ public class InventoryService {
                 ownedItemRepository.findByStorageAndItemId(destination, source.getItemId());
 
         if (existingStack.isPresent()) {
-            existingStack.get().increaseQuantity(source.getQuantity());
-            ownedItemRepository.delete(source);
+            existingStack.get().increaseQuantity(1);
+            ownedItemRepository.save(existingStack.get());
         } else {
             checkCapacity(destination);
-            source.moveTo(destination);
+            final OwnedItem newItem = new OwnedItem(source.getItemId(), 1, destination, false, 0);
+            ownedItemRepository.save(newItem);
+        }
+
+        source.decreaseQuantity(1);
+        if (source.getQuantity() <= 0) {
+            ownedItemRepository.delete(source);
+        } else {
+            ownedItemRepository.save(source);
         }
     }
 

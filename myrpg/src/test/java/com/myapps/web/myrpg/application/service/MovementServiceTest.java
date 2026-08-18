@@ -69,8 +69,7 @@ class MovementServiceTest {
         assertThat(result).isInstanceOf(MovementResult.Moved.class);
         final MovementResult.Moved moved = (MovementResult.Moved) result;
         assertThat(moved.node().id()).isEqualTo("field-b");
-        assertThat(moved.log().type()).isEqualTo("move");
-        assertThat(moved.log().message()).contains("들판B");
+        assertThat(moved.log()).isNull();
         assertThat(progress.getCurrentNodeId()).isEqualTo("field-b");
     }
 
@@ -180,7 +179,7 @@ class MovementServiceTest {
     }
 
     @Test
-    void should_addMoveLogEntry_when_movementSucceeds() {
+    void should_notAddMoveLogEntry_when_movementSucceeds() {
         // given
         final MapNode townNode = new MapNode("town-a", "마을A", "town", NodeType.TOWN,
                 0, 0, null, null, List.of("field-b"));
@@ -199,8 +198,6 @@ class MovementServiceTest {
         movementService.move(progress, 1, 0);
 
         // then
-        assertThat(actionLog.size()).isEqualTo(1);
-        assertThat(actionLog.getEntries().getFirst().type()).isEqualTo("move");
-        assertThat(actionLog.getEntries().getFirst().message()).contains("들판B");
+        assertThat(actionLog.size()).isEqualTo(0);
     }
 }

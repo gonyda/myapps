@@ -22,6 +22,7 @@ import net.jqwik.api.Provide;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -124,12 +125,15 @@ class InventoryCapacityPropertyTest {
         when(ownedItemRepository.countByStorage(StorageKind.BANK)).thenReturn(currentCount);
 
         // 기존 스택 누적이므로 예외 없이 성공
+        when(ownedItemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         inventoryService.moveToBank(1L);
 
-        // 수량이 누적됨
-        assertThat(existingStack.getQuantity()).isEqualTo(5 + 3);
-        // 원본은 삭제됨
-        verify(ownedItemRepository).delete(source);
+        // 기존 스택에 1만큼 누적
+        assertThat(existingStack.getQuantity()).isEqualTo(6);
+        // 원본 수량이 1만큼 감소 (3→2)
+        assertThat(source.getQuantity()).isEqualTo(2);
+        // 원본은 삭제되지 않음
+        verify(ownedItemRepository, never()).delete(any());
     }
 
     /**

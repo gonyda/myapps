@@ -66,9 +66,8 @@ public class MovementService {
         }
 
         progress.updateCurrentNodeId(target.id());
-        final ActionLogEntry logEntry = actionLog.add(target.name() + "(으)로 이동했습니다.", "move");
 
-        return new MovementResult.Moved(target, logEntry);
+        return new MovementResult.Moved(target, null);
     }
 
     /**

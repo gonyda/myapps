@@ -134,8 +134,7 @@ class PlayScreenControllerBattleTest {
     void should_setAmbushSignalAndStartBattle_when_preemptiveStrikeTriggered() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode("dugald-north");
-        final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
-        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, logEntry);
+        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, null);
         final Monster raccoon = createRaccoon();
         final BattleState battleState = new BattleState(1L, "raccoon", 25, true);
 
@@ -152,7 +151,7 @@ class PlayScreenControllerBattleTest {
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("두갈드 아일", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("위험한 들판");
-        when(actionLog.getEntries()).thenReturn(List.of(logEntry));
+        when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of(raccoon));
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(interactions);
@@ -191,8 +190,7 @@ class PlayScreenControllerBattleTest {
     void should_notSetAmbushSignal_when_preemptiveStrikeNotTriggered() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode("dugald-north");
-        final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
-        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, logEntry);
+        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, null);
         final Monster raccoon = createRaccoon();
 
         final List<InteractionItem> interactions = List.of(
@@ -208,7 +206,7 @@ class PlayScreenControllerBattleTest {
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("두갈드 아일", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("위험한 들판");
-        when(actionLog.getEntries()).thenReturn(List.of(logEntry));
+        when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of(raccoon));
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(interactions);

@@ -441,7 +441,7 @@ function handleTurnResultSignal(container) {
         alert("정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
         battleActive = false;
     } else if (outcome === "FLED") {
-        alert("도망쳤다!");
+        alert("도망 성공!");
         battleActive = false;
     }
 }

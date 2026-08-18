@@ -22,7 +22,10 @@ import net.jqwik.api.Provide;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -193,11 +196,14 @@ class ItemMovePropertyTest {
         when(ownedItemRepository.findByStorageAndItemId(StorageKind.BANK, POTION_ITEM_ID))
                 .thenReturn(Optional.empty());
         when(ownedItemRepository.countByStorage(StorageKind.BANK)).thenReturn(10L);
+        when(ownedItemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         inventoryService.moveToBank(1L);
 
-        assertThat(source.getStorage()).isEqualTo(StorageKind.BANK);
-        assertThat(source.getQuantity()).isEqualTo(quantity);
+        // 새 행(quantity=1)이 BANK로 save되고, 원본은 INVENTORY 유지 + 수량 1 감소
+        verify(ownedItemRepository, atLeastOnce()).save(any(OwnedItem.class));
+        assertThat(source.getStorage()).isEqualTo(StorageKind.INVENTORY);
+        assertThat(source.getQuantity()).isEqualTo(quantity - 1);
     }
 
     /**
@@ -232,11 +238,14 @@ class ItemMovePropertyTest {
         when(ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, POTION_ITEM_ID))
                 .thenReturn(Optional.empty());
         when(ownedItemRepository.countByStorage(StorageKind.INVENTORY)).thenReturn(10L);
+        when(ownedItemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         inventoryService.moveToInventory(1L);
 
-        assertThat(source.getStorage()).isEqualTo(StorageKind.INVENTORY);
-        assertThat(source.getQuantity()).isEqualTo(quantity);
+        // 새 행(quantity=1)이 INVENTORY로 save되고, 원본은 BANK 유지 + 수량 1 감소
+        verify(ownedItemRepository, atLeastOnce()).save(any(OwnedItem.class));
+        assertThat(source.getStorage()).isEqualTo(StorageKind.BANK);
+        assertThat(source.getQuantity()).isEqualTo(quantity - 1);
     }
 
     // ─── Providers ──────────────────────────────────────────────────────────

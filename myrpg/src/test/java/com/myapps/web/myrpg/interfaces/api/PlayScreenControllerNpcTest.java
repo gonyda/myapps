@@ -247,8 +247,7 @@ class PlayScreenControllerNpcTest {
     void should_reconstructInteractions_when_moveToNodeWithDifferentNpcs() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode("dunbarton");
-        final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
-        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, logEntry);
+        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, null);
 
         final Npc aranwen = createNpc("aranwen", "아란웬", NpcType.SCHOOL, "dunbarton");
         final List<Npc> newNodeNpcs = List.of(aranwen);
@@ -266,7 +265,7 @@ class PlayScreenControllerNpcTest {
                 null,
                 newInteractions,
                 null,
-                List.of(logEntry),
+                List.of(),
                 dummyInfo()
         );
 
@@ -277,7 +276,7 @@ class PlayScreenControllerNpcTest {
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("던바튼", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("활기찬 도시");
-        when(actionLog.getEntries()).thenReturn(List.of(logEntry));
+        when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(newNodeNpcs);
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(newNodeNpcs, List.of())).thenReturn(newInteractions);

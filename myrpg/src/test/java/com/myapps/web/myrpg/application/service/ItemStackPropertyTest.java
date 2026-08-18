@@ -21,6 +21,7 @@ import net.jqwik.api.Provide;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -80,13 +81,20 @@ class ItemStackPropertyTest {
         when(itemCatalogService.byId(POTION_ITEM_ID)).thenReturn(Optional.of(potionCatalog));
         when(ownedItemRepository.findByStorageAndItemId(StorageKind.BANK, POTION_ITEM_ID))
                 .thenReturn(Optional.of(existingStack));
+        when(ownedItemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         inventoryService.moveToBank(1L);
 
-        // 기존 스택에 수량이 누적됨
-        assertThat(existingStack.getQuantity()).isEqualTo(existingQuantity + initialQuantity);
-        // 원본 행은 삭제됨
-        verify(ownedItemRepository).delete(source);
+        // 기존 스택에 수량이 1만큼 증가
+        assertThat(existingStack.getQuantity()).isEqualTo(existingQuantity + 1);
+        // 원본의 수량이 1만큼 감소
+        assertThat(source.getQuantity()).isEqualTo(initialQuantity - 1);
+        // 원본 수량이 0이면 삭제, 아니면 유지
+        if (initialQuantity == 1) {
+            verify(ownedItemRepository).delete(source);
+        } else {
+            verify(ownedItemRepository, never()).delete(any());
+        }
     }
 
     /**
@@ -121,12 +129,22 @@ class ItemStackPropertyTest {
         when(ownedItemRepository.findByStorageAndItemId(StorageKind.BANK, POTION_ITEM_ID))
                 .thenReturn(Optional.empty());
         when(ownedItemRepository.countByStorage(StorageKind.BANK)).thenReturn(10L);
+        when(ownedItemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         inventoryService.moveToBank(1L);
 
-        // 저장위치가 BANK로 전환됨 (삭제 없이 moveTo)
-        assertThat(source.getStorage()).isEqualTo(StorageKind.BANK);
-        verify(ownedItemRepository, never()).delete(any());
+        // 새 행(quantity=1)이 생성되어 save 호출됨
+        verify(ownedItemRepository, atLeastOnce()).save(any(OwnedItem.class));
+        // 원본 저장위치는 INVENTORY 그대로 (이동하지 않음)
+        assertThat(source.getStorage()).isEqualTo(StorageKind.INVENTORY);
+        // 원본 수량이 1만큼 감소
+        assertThat(source.getQuantity()).isEqualTo(initialQuantity - 1);
+        // 원본 수량이 0이면 delete 호출
+        if (initialQuantity == 1) {
+            verify(ownedItemRepository).delete(source);
+        } else {
+            verify(ownedItemRepository, never()).delete(any());
+        }
     }
 
     /**

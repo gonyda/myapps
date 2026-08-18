@@ -145,8 +145,7 @@ class PlayScreenControllerTest {
     void should_saveTurnAndReturnFragment_when_moveSucceeds() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MapNode targetNode = dummyNode();
-        final ActionLogEntry logEntry = new ActionLogEntry("2025-01-01 12:00:00", "이동했습니다.", "move");
-        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, logEntry);
+        final MovementResult.Moved moved = new MovementResult.Moved(targetNode, null);
         final PlayScreenView view = createDummyView();
         final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
@@ -157,7 +156,7 @@ class PlayScreenControllerTest {
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
         when(ambienceService.ambience(any(MapNode.class))).thenReturn("새로운 장소");
-        when(actionLog.getEntries()).thenReturn(List.of(logEntry));
+        when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());

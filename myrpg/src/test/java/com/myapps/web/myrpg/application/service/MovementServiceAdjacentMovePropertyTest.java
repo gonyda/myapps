@@ -87,11 +87,8 @@ class MovementServiceAdjacentMovePropertyTest {
         // Then: 반환된 노드가 대상 노드와 일치
         assertThat(moved.node().id()).isEqualTo(targetNode.id());
 
-        // Then: 로그 타입이 "move"
-        assertThat(moved.log().type()).isEqualTo("move");
-
-        // Then: 로그 메시지에 대상 노드 이름 포함
-        assertThat(moved.log().message()).contains(targetNode.name());
+        // Then: 이동 로그가 null (맵 노드 이동 시 로그 미출력)
+        assertThat(moved.log()).isNull();
     }
 
     /**
