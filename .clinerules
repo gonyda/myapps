@@ -14,7 +14,7 @@
    ├── requirements.md  (요구사항 정의)
    ├── design.md        (설계)
    └── tasks.md         (구현 태스크 목록)
-   
+
 2. 사용자 검토 및 승인
 
 3. tasks.md 기반 구현 (ACT MODE)
@@ -27,8 +27,8 @@
 .kiro/specs/
 └── {모듈명}/
     └── {순번}-{기능명}/
-        ├── requiremets.md
-        ├── desgin.md
+        ├── requirements.md
+        ├── design.md
         └── tasks.md
 ```
 
@@ -41,18 +41,18 @@
 ## 2. Spec 문서 3종 규칙
 
 ### requirements.md
-- Introdution: 스펙 배경과 해결하려는 문제
-- Glosary: 기존 용어 + 신규 용어 정의
-- Requiremets: User Sory + Aceptance Criteia (Given/Whe/Then)
+- Introduction: 스펙 배경과 해결하려는 문제
+- Glossary: 기존 용어 + 신규 용어 정의
+- Requirements: User Story + Acceptance Criteria (Given/When/Then)
 
-### desgin.md
-- Overiew: 핵심 원칙과 이번 스펙 범위
-- Architeture: 변경될 모듈 구조 (신규/확장/유지)
+### design.md
+- Overview: 핵심 원칙과 이번 스펙 범위
+- Architecture: 변경될 모듈 구조 (신규/확장/유지)
 - 데이터 변경: JSON 스키마 등
 - 세부 설계: 각 요구사항별 구현 방안
 
 ### tasks.md
-- Overiew: 구현 순서 원칙
+- Overview: 구현 순서 원칙
 - Tasks: 체크박스 리스트 (하위 Task 포함)
 - 각 Task 완료 전 테스트 + 빌드 검증
 
@@ -62,24 +62,37 @@
 
 ### 코딩 컨벤션
 - **Java 25**, Spring Boot 4.0
-- `var` 사이 금지, `@Autowired` 금지, Lombok 금지
+- `var` 사용 금지, `@Autowired` 금지, Lombok 금지
 - VO/DTO는 `record` 타입
 - `final` 파라미터/지역변수 필수
 - 커스텀 예외 사용 (`RuntimeException` 직접 금지)
 - 매직 넘버 `private static final` 상수화
 - 메서드 50줄 초과 시 분리 필수
+- 의존성 주입은 순수 생성자 주입만 사용
 
 ### 테스트
 - 기능 구현시 테스트 코드 필수 작성
-- 서비스: 단위 + PBT (`@ExtendWith(MockitoExtesion.class)` + jqwik)
-- 컨트롤러: `@WebMvcTest` + `@MokitoBean`
+- 서비스: 단위 + PBT (`@ExtendWith(MockitoExtension.class)` + jqwik)
+- 컨트롤러: `@WebMvcTest` + `@MockitoBean`
+- 레포지토리: `@DataJpaTest`
+- jqwik PBT에서는 `@Mock` 대신 `Mockito.mock()` 직접 호출
+- Spring Boot 4.0: `@MockBean`/`@SpyBean` 금지 → `@MockitoBean`/`@MockitoSpyBean` 사용
+- Jackson 3: `com.fasterxml.jackson` → `tools.jackson` 패키지 사용
 
 ### 빌드 검증
 - 각 Task 완료 전 반드시:
   1. 밸런스 검증 스크립트(`myrpg` 데이터 변경 시): `cd tools/balance && python3 verify_equipment.py` / `verify_monster.py` / `verify_skill.py` — `data-balance-guide.md §C-6` 참조
   2. `mvn test -pl {모듈명}`
-  3. `mvn clean instll -pl {모듈명} -am`
+  3. `mvn clean install -pl {모듈명} -am`
 - `BUILD SUCCESS` 확인 후에만 Task 완료 처리
+
+### 소스 수정 Task 완료 전 코드 정리 (필수)
+- 미사용 import 제거 (와일드카드 import 금지)
+- 미사용 변수/필드 제거
+- 매직 넘버 상수화
+- 중복 코드 메서드 추출
+- 메서드 분리 (50줄 초과 시 필수)
+- 불필요한 주석 제거 (`TODO`/`FIXME` 해결 후 제거)
 
 ---
 
@@ -100,6 +113,8 @@
 | 모듈 템플릿 | `.kiro/steering/module/module-template.md` |
 | 신규 모듈 가드 | `.kiro/steering/module/new-module-guard.md` |
 | 배포 | `.kiro/steering/infra/deployment.md` |
+
+---
 
 ## 5. MCP 툴 우선 사용
 
