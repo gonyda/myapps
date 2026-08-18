@@ -413,7 +413,7 @@ public class InventoryService {
      * 파손 시 자동 장착 해제까지만 처리한다.
      *
      * @param progress 캐릭터 진행상황 (로그 기록용)
-     * @param amount   감소시킬 내구도량 (양수, 전투에서는 0.2)
+     * @param amount   감소시킬 내구도량 (양수, 전투에서는 0.05)
      */
     @Transactional
     public void reduceDurabilityAndAutoUnequip(final CharacterProgress progress, final double amount) {

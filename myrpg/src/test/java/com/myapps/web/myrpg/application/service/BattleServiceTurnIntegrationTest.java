@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
  * 전투 턴 오케스트레이션 통합 테스트.
  *
  * <p>협력자 호출을 Mockito verify로 검증한다:
- * {@code onSkillUsed}/{@code onSkillKill}, {@code reduceDurability(0.2)},
+ * {@code onSkillUsed}/{@code onSkillKill}, {@code reduceDurability(0.05)},
  * {@code saveTurn} + {@code BattleState} 저장,
  * 처치 시 {@code rollDrop} → {@code acquire} → {@code gainExperience}.
  *
@@ -63,7 +63,7 @@ class BattleServiceTurnIntegrationTest {
     private static final String SKILL_ID = "windmill";
     private static final int MONSTER_MAX_HP = 200;
     private static final int HIGH_HP = 500;
-    private static final double DURABILITY_PER_ATTACK = 0.2;
+    private static final double DURABILITY_PER_ATTACK = 0.05;
     private static final long MONSTER_EXP = 30L;
 
     private BattleStateRepository battleStateRepo;
@@ -169,7 +169,7 @@ class BattleServiceTurnIntegrationTest {
     }
 
     /**
-     * 비방어 스킬 사용 시 reduceDurabilityAndAutoUnequip(0.2)가 호출되는지 검증한다.
+     * 비방어 스킬 사용 시 reduceDurabilityAndAutoUnequip(0.05)가 호출되는지 검증한다.
      */
     @Test
     @DisplayName("공격 스킬 사용 시 내구도 감소가 호출된다")

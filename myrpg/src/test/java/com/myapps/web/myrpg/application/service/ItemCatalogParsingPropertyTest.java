@@ -14,11 +14,8 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
 import com.myapps.web.myrpg.application.exception.ItemDataException;
-import com.myapps.web.myrpg.domain.model.BonusTarget;
-import com.myapps.web.myrpg.domain.model.EquipBonus;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.Item;
-import com.myapps.web.myrpg.domain.model.PotionItem;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;

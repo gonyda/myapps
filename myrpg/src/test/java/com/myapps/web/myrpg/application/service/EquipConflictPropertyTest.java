@@ -1,17 +1,14 @@
 package com.myapps.web.myrpg.application.service;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
 import com.myapps.web.myrpg.domain.model.EquipBonus;
-import com.myapps.web.myrpg.domain.model.EquipSlot;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
-import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;

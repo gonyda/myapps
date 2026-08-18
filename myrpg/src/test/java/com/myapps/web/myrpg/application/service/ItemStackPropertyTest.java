@@ -3,7 +3,6 @@ package com.myapps.web.myrpg.application.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.myapps.web.myrpg.domain.model.EquipBonus;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
 import com.myapps.web.myrpg.domain.model.ItemType;

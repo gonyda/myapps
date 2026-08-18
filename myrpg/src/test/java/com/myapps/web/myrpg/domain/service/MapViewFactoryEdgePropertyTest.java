@@ -2,7 +2,6 @@ package com.myapps.web.myrpg.domain.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +16,6 @@ import com.myapps.web.myrpg.application.dto.FullMapCell;
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.MinimapCell;
 import com.myapps.web.myrpg.application.dto.MinimapView;
-import com.myapps.web.myrpg.domain.model.Dungeon;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;

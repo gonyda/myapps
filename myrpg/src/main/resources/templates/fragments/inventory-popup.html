@@ -35,7 +35,7 @@
                 <span class="item-type" th:text="${item.typeLabel}">타입</span>
                 <span class="item-quantity" th:if="${item.quantity > 1}" th:text="'×' + ${item.quantity}">×1</span>
                 <span class="item-durability" th:if="${item.currentDurability != null}"
-                      th:text="'내구도 ' + ${#numbers.formatDecimal(item.currentDurability, 1, 1)} + '/' + ${item.maxDurability}">
+                      th:text="'내구도 ' + ${#numbers.formatInteger(T(java.lang.Math).ceil(item.currentDurability), 1)} + '/' + ${item.maxDurability}">
                 </span>
             </div>
             <div class="item-actions">

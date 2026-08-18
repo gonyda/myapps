@@ -66,7 +66,7 @@ public class BattleService {
     private static final double MAGIC_COEF = 1.2;
     private static final int MAGIC_FAIL_PERCENT = 10;
     private static final int FLEE_SUCCESS_PERCENT = 50;
-    private static final double DURABILITY_PER_ATTACK = 0.2;
+    private static final double DURABILITY_PER_ATTACK = 0.05;
     private static final int MONSTER_NORMAL_MULTIPLIER = 100;
     private static final int MONSTER_HEAVY_MULTIPLIER = 150;
     private static final int PERCENT_DIVISOR = 100;

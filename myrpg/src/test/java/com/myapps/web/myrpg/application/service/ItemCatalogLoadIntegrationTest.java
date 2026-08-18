@@ -10,7 +10,6 @@ import org.springframework.test.context.TestConstructor;
 
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.Item;
-import com.myapps.web.myrpg.domain.model.ItemType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

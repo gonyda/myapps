@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
@@ -16,7 +15,6 @@ import net.jqwik.api.Tuple;
 
 import com.myapps.web.myrpg.application.dto.MinimapCell;
 import com.myapps.web.myrpg.application.dto.MinimapView;
-import com.myapps.web.myrpg.domain.model.Dungeon;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
