@@ -76,8 +76,9 @@
 
 ### 빌드 검증
 - 각 Task 완료 전 반드시:
-  1. `mvn test -pl {모듈명}`
-  2. `mvn clean instll -pl {모듈명} -am`
+  1. 밸런스 검증 스크립트(`myrpg` 데이터 변경 시): `cd tools/balance && python3 verify_equipment.py` / `verify_monster.py` / `verify_skill.py` — `data-balance-guide.md §C-6` 참조
+  2. `mvn test -pl {모듈명}`
+  3. `mvn clean instll -pl {모듈명} -am`
 - `BUILD SUCCESS` 확인 후에만 Task 완료 처리
 
 ---
@@ -91,10 +92,14 @@
 | 코딩 스타일 | `.kiro/steering/coding/code-style.md` |
 | 깃 워크플로우 | `.kiro/steering/workflow/git-workflow.md` |
 | 빌드 검증 | `.kiro/steering/workflow/task-build-validation.md` |
+| codegraph 우선 사용 | `.kiro/steering/workflow/codegraph-first.md` |
 | 스펙 문서 규칙 | `.kiro/steering/project/spec-conventions.md` |
-| 밸런스 가이드 | `.kiro/steering/myrpg/data-balance-guide.md` |
+| POM 컨벤션 | `.kiro/steering/project/pom-conventions.md` |
 | 기술 스택 | `.kiro/steering/project/tech-stack.md` |
-| 배포 | `.kiro/steering/nfra/deployment.md` |
+| 밸런스 가이드 | `.kiro/steering/myrpg/data-balance-guide.md` |
+| 모듈 템플릿 | `.kiro/steering/module/module-template.md` |
+| 신규 모듈 가드 | `.kiro/steering/module/new-module-guard.md` |
+| 배포 | `.kiro/steering/infra/deployment.md` |
 
 ## 5. MCP 툴 우선 사용
 

@@ -22,7 +22,9 @@ fileMatchPattern: '**/data/*.json'
 3. **스탯 수치는 반드시 비교로 제시한다.** "같은 종류의 기존 아이템(직전/최상위)은 지금 이러이러한데, 새 건 **더 세게? 비슷하게? 뭐가 다르게?**"를 baseline과 함께 물어본다.
 4. **값이 정해질 때마다 즉시 `§C` 원칙으로 검증**하고, 위반 시 그 자리에서 지적한다(1뎀 문제 / 밴드 초과 / 상한 초과 / 재능-주스탯 불일치 등).
 5. 모든 값이 정해지면 **JSON 초안을 보여주고 사용자 확인**을 받은 뒤 반영한다.
-6. 반영 후 **검증 실행**: `mvn test -pl myrpg` (카탈로그 파싱·16키·단조 테스트) → `mvn clean install -pl myrpg -am`.
+6. 반영 후 **검증 실행**:
+   - **밸런스 검증 스크립트**(`tools/balance/`): `python3 verify_equipment.py` / `python3 verify_monster.py` / `python3 verify_skill.py` — `§C` 규칙(CP·판매가·밴드·상한)을 코드로 즉시 검증
+   - **빌드 검증**: `mvn test -pl myrpg` (카탈로그 파싱·16키·단조 테스트) → `mvn clean install -pl myrpg -am`
 
 > 목표: "사용자가 이름과 대략의 컨셉만 말해도, 에이전트가 baseline·규칙을 근거로 질문·제안하여 밸런스가 깨지지 않는 값이 나오게 한다."
 
@@ -53,6 +55,7 @@ fileMatchPattern: '**/data/*.json'
 7. **몬스터 드랍**시킬 건가? 어느 몬스터/확률? (드랍은 `monster.json`의 `itemDrops`)
 
 검증: 주스탯↔재능 일치, 같은 `kind` 내 강함 단조성(상위 티어가 하위보다 약하지 않게), 양손=방패 불가, 활만 CRITICAL 부여.
+→ **스크립트 검증**: `cd tools/balance && python3 verify_equipment.py --json '{신규 무기 JSON}'` — CP 순위·주스탯·CRITICAL 경고를 자동 확인.
 
 ### B-2. 방어구 추가 (`item.json`, `type: armor`)
 `item.json`에서 **같은 슬롯(`kind`)의 기존 방어구**를 읽어 나열한 뒤:
@@ -63,11 +66,13 @@ fileMatchPattern: '**/data/*.json'
 4. `maxDurability` / 상점 판매(`buyPrice`) / 드랍 여부 — B-1의 5~7과 동일.
 
 검증: DEF가 그 구간 몬스터 `attackPower`를 **완전 무효화하지 않는 선**(`§C-2`), 슬롯당 유일 착용.
+→ **스크립트 검증**: `cd tools/balance && python3 verify_equipment.py --json '{신규 방어구 JSON}'` — DEF합·EHP·CP 순위 확인.
 
 ### B-3. 포션 추가 (`item.json`, `type: potion`)
 기존 포션들(`healHp`/`buyPrice`)을 읽어 나열한 뒤:
 
 1. 이름 / 2. 회복량(`healHp`) / 3. `buyPrice`(회복량 대비 비례, `§C-2`) → 판매가 자동 계산 제시.
+→ **스크립트 검증**: `cd tools/balance && python3 verify_equipment.py --json '{신규 포션 JSON}'`.
 
 ### B-4. 몬스터 추가 (`monster.json`)
 `monster.json`에서 **인접 레벨대 기존 몬스터**를 읽어 나열하고, **그 레벨 플레이어의 성장 기준선(`§C-1`)과 유효 DEF 추정치**를 함께 제시한 뒤:
@@ -79,6 +84,7 @@ fileMatchPattern: '**/data/*.json'
 5. **`itemDrops`**(드랍 아이템·확률) / 방어 상수 오버라이드(`defenseBlockRate`/`defenseCounterRate`) 필요 시.
 
 검증: `attackPower` > 그 구간 플레이어 유효 DEF(1뎀 방지), 보상이 위협도에 비례, 보스면 방어 상수 상향(`§C-4`).
+→ **스크립트 검증**: `cd tools/balance && python3 verify_monster.py --level {레벨} --json '{신규 몬스터 JSON}'` (난이도계수는 `--difficulty`로 조정).
 
 ### B-5. 스킬 추가 (`skill.json`)
 `skill.json`에서 **같은 재능·같은 `type`의 기존 스킬**과 그 밴드 위치를 읽어 제시한 뒤:
@@ -90,6 +96,7 @@ fileMatchPattern: '**/data/*.json'
 5. 방어 스킬이면 `blockRateByRank`↔`counterMultiplierByRank` 배분(`§C-5`).
 
 검증: 랭크 맵 **16키(F→MASTER) 완비 + 단조 비감소**, 밴드 초과 금지, `critBonus` 상한 +100, 마법은 `critBonus` 0, 반격율 상한 50%.
+→ **스크립트 검증**: `cd tools/balance && python3 verify_skill.py --json '{신규 스킬 JSON}'` (SP 참조 크리는 `--ref-crit`로 조정).
 
 ---
 
@@ -176,6 +183,27 @@ fileMatchPattern: '**/data/*.json'
 
 ---
 
+### C-6. tools/balance 검증 스크립트 (규칙의 코드화)
+
+`§C`의 규칙·공식·밴드·상한을 코드로 구현한 검증 도구. `--json '{...}'`으로 신규 후보를 기존 카탈로그와 즉시 비교·검증하며, 반영 후에는 항상 실행한다.
+
+| 스크립트 | 대상 | 주요 검증 내용 |
+|---|---|---|
+| `verify_equipment.py` | `item.json` 장비·포션 | CP/ΔCP(무기 주스탯 기여, 방어구 EHP 기여), 판매가·수리비(`weightOf`·buyPrice×0.5), 같은 kind/slot 내 CP 순위, 주스탯↔재능 일치, 활만 CRITICAL 경고 |
+| `verify_monster.py` | `monster.json` 몬스터 | CP(O×S), 난이도비(몬스터CP/플레이어 baseline CP), 1뎀 방지(attackPower>유효DEF), 처치 턴, 실피해, critical 상한 경고, 목표 스탯 제시(`--level`/`--difficulty`) |
+| `verify_skill.py` | `skill.json` 스킬 | SP(총배율×크리계수×캐스팅성공×재능계수), 명목총배율 밴드(NORMAL/HEAVY), critBonus 상한 +100 · 마법 0, 반격율 상한 50%, 랭크 16키+단조 비감소 |
+
+**공통 계산식·상수는 `balance_core.py`가 단일 소스** — 재능계수, KIND_TO_TALENT, weightOf, RANK_KEYS, 몬스터 방어 상수, 플레이어 성장 기준선. 가이드(`§C`)와 이 코드가 어긋나면 이 스크립트를 기준으로 불일치를 확인한다.
+
+```bash
+cd tools/balance
+python3 verify_equipment.py [--level N] [--json '{신규 아이템 JSON}']
+python3 verify_monster.py  [--level N] [--difficulty D] [--json '{신규 몬스터 JSON}']
+python3 verify_skill.py    [--ref-crit N] [--json '{신규 스킬 JSON}']
+```
+
+---
+
 ## D. 완료 체크리스트 (반영 전)
 
 - [ ] baseline을 **JSON에서 읽어** 비교·제안했는가(하드코딩 값에 의존하지 않음)?
@@ -185,4 +213,5 @@ fileMatchPattern: '**/data/*.json'
 - [ ] 몬스터: attackPower가 그 구간 유효 DEF보다 위(1뎀 방지)? maxHp가 목표 처치 턴? critical 0.1%? 보상 비례?
 - [ ] 스킬: 랭크 16키+단조 비감소? NORMAL<HEAVY 밴드? 2축 차별화? critBonus 상한 +100? 마법 critBonus 0? 반격율 ≤50%?
 - [ ] JSON 문법(쉼표·따옴표) 유효?
+- [ ] **밸런스 스크립트 실행**: 변경 카테고리에 맞는 스크립트(`verify_equipment.py`/`verify_monster.py`/`verify_skill.py`)를 `--json`으로 실행해 경고 없음 확인?
 - [ ] **검증 실행**: `mvn test -pl myrpg` → `mvn clean install -pl myrpg -am`.
