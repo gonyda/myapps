@@ -34,13 +34,13 @@
 
 ---
 
-## 작업 트리 (미커밋 상태)
+## 작업 트리 (커밋 완료 상태)
 
-현재 `git status`상 **스펙 010의 A/B단계 결과물이 커밋되지 않은 상태**다.
+스펙 010의 A/B/C 단계 산출물은 `aa8ea01` 커밋으로 완료되었다. 현재 남은 작업은 D단계(UI)와 E단계(최종 검증)다.
 
-- **수정됨**: `InventoryService.java`, `NpcService.java`, `Npc.java`, `NpcType.java`, `OwnedItem.java`, `item.json`, `npc.json`, `GoldItemContextLoadSmokeTest`, `ItemCatalogLoadIntegrationTest`, `NpcTypeTest`, `PlayScreenController.java` (talkingNpcId 바인딩)
-- **신규 (Untracked)**: DTO 5종(`ShopView`, `ShopBuyItemView`, `ShopSellItemView`, `RepairView`, `RepairItemView`), `ShopService.java`, 컨트롤러 3종(`ShopController`, `RepairController`, `HealController`), 신규 테스트(`ShopServiceTest`, `ShopServiceSellValuePropertyTest`, `ShopServiceBuyValidationPropertyTest`, `ShopServiceSellEquippedProtectionPropertyTest`, `NpcTest`, `NpcServiceShopItemsParsingPropertyTest`, `NpcTypeActionLabelsPropertyTest`, `OwnedItemTest`, `OwnedItemRepairByPropertyTest`, `ItemCatalogServiceTest`)
-- **신규 (Untracked)**: `.clinerules/memory-bank/` (본 메모리뱅크), `.kiro/specs/myrpg/010-npc-actions-shop-repair-heal/` (spec 문서 3종), `.clinerules/memory-bank/activeContext.md`
+- **커밋 `3b5d1cb`**: spec 문서 3종 + 메모리뱅크
+- **커밋 `b7ef2ed`**: 메모리뱅크 커밋 하이라이트 갱신
+- **커밋 `aa8ea01`**: A/B/C 단계 산출물 (40 files, +3740)
 
 ---
 ---
@@ -73,6 +73,8 @@
 
 | 해시 | 내용 |
 |---|---|
+| `aa8ea01` | feat(myrpg): NPC 상점 구매/판매·수리·치료 실기능 구현 (스펙 010 A/B/C 단계) |
+| `b7ef2ed` | docs: 메모리뱅크 최근 커밋 하이라이트 갱신 |
 | `3b5d1cb` | docs: 스펙 010 NPC 행동 실기능 spec 문서 3종 및 메모리뱅크 추가 |
 | `1c86cad` | docs(rules): `.clinerules` 정리 (스티어링 참조 섹션 재구성) |
 | `2fbed3` | fix: `formatDurability` Math.ceil 올림 처리 (M18) |
@@ -88,7 +90,7 @@
 
 1. **D단계 실행**: UI 템플릿 및 정적 리소스 (Task 9~11) — `shop-popup.html`, `repair-popup.html`, `center.html` `talkingNpcId` 주입, `play.html` include, `myrpg.css`, `myrpg.js` (`npcAction` 분기, `openShop`, `openRepair`, `heal`, `refreshTopBar`)
 2. **E단계**: 최종 검증 및 회귀 확인 (Task 12) — `@WebMvcTest` 컨트롤러 테스트 7종 + Property 6~9
-3. 스펙 010 완료 후 **커밋** — 현재 A/B/C 산출물 미커밋 상태
+3. 스펙 010 완료 후 **커밋** — A/B/C 산출물은 `aa8ea01`로 커밋 완료, D/E 단계 완료 후 최종 커밋 예정
 4. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시(상세문서 `npc-actions-system.md` 삭제 — 현재는 보존 중)
 5. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
 6. 스펙 순서 적용: 스펙 문서 3종 → 사용자 검토 → tasks.md 기반 구현
