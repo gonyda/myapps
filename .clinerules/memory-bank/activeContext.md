@@ -73,6 +73,7 @@
 
 | 해시 | 내용 |
 |---|---|
+| `3b5d1cb` | docs: 스펙 010 NPC 행동 실기능 spec 문서 3종 및 메모리뱅크 추가 |
 | `1c86cad` | docs(rules): `.clinerules` 정리 (스티어링 참조 섹션 재구성) |
 | `2fbed3` | fix: `formatDurability` Math.ceil 올림 처리 (M18) |
 | `02c6a1d` | feat: 인벤토리 용량 제한, 아이템 이동/스택 PBT |
