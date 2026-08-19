@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>6개 타입의 {@code typeString}→{@code label}·{@code actionLabels} 매핑과
  * {@code fromType}의 미지 타입 처리를 확인한다.
  *
- * <p><b>Validates: Requirements 4.3, 5.4</b>
+ * <p><b>Validates: Requirements 4.3, 5.4, 12.1, 12.4</b>
  */
 class NpcTypeTest {
 
@@ -46,7 +46,7 @@ class NpcTypeTest {
     }
 
     /**
-     * magic-school 타입의 라벨은 "마법학교"이고 행동 라벨은 ["상점"]임을 검증한다.
+     * magic-school 타입의 라벨은 "마법학교"이고 행동 라벨은 ["상점", "인챈트"]임을 검증한다.
      */
     @Test
     void should_returnCorrectLabelAndActions_when_magicSchool() {
@@ -56,7 +56,7 @@ class NpcTypeTest {
         final NpcType npcType = result.get();
         assertThat(npcType).isEqualTo(NpcType.MAGIC_SCHOOL);
         assertThat(npcType.label()).isEqualTo("마법학교");
-        assertThat(npcType.actionLabels()).isEqualTo(List.of("상점"));
+        assertThat(npcType.actionLabels()).isEqualTo(List.of("상점", "인챈트"));
     }
 
     /**

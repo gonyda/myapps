@@ -20,7 +20,7 @@ public enum NpcType {
     BLACKSMITH("blacksmith", "대장간", "⚒️", List.of("상점", "수리")),
 
     /** 마법학교 NPC. */
-    MAGIC_SCHOOL("magic-school", "마법학교", "🕍", List.of("상점")),
+    MAGIC_SCHOOL("magic-school", "마법학교", "🕍", List.of("상점", "인챈트")),
 
     /** 학교 NPC. */
     SCHOOL("school", "학교", "🏫", List.of("상점")),

@@ -381,6 +381,48 @@ public class InventoryService {
     }
 
     /**
+     * 지정된 아이템을 인벤토리에 1개 획득 처리한다.
+     *
+     * <p>상점 구매 등에서 사용되며, 포션은 기존 스택에 누적되고
+     * 장비는 개별 인스턴스로 저장된다. 인벤토리가 가득 찬 경우
+     * {@link InventoryFullException}이 발생한다.
+     *
+     * @param itemId  획득할 아이템 카탈로그 ID
+     * @param quantity 획득 수량 (1 이상)
+     * @throws InventoryFullException 인벤토리 용량 초과 시
+     */
+    @Transactional
+    public void acquireItem(final String itemId, final int quantity) {
+        final Optional<Item> catalogOpt = itemCatalogService.byId(itemId);
+        if (catalogOpt.isEmpty()) {
+            return;
+        }
+        final Item catalogItem = catalogOpt.get();
+
+        if (catalogItem.type() == ItemType.POTION) {
+            acquirePotionItem(itemId, quantity);
+        } else {
+            checkCapacity(StorageKind.INVENTORY);
+            final int maxDurability = resolveMaxDurability(itemId);
+            ownedItemRepository.save(new OwnedItem(
+                    itemId, 1, StorageKind.INVENTORY, false, maxDurability));
+        }
+    }
+
+    private void acquirePotionItem(final String itemId, final int quantity) {
+        final Optional<OwnedItem> existingStack =
+                ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, itemId);
+
+        if (existingStack.isPresent()) {
+            existingStack.get().increaseQuantity(quantity);
+        } else {
+            checkCapacity(StorageKind.INVENTORY);
+            ownedItemRepository.save(new OwnedItem(
+                    itemId, quantity, StorageKind.INVENTORY, false, 0));
+        }
+    }
+
+    /**
      * 현재 착용 무기의 재능에 해당하는 전투 스킬 목록을 조회한다.
      *
      * <p>착용 무기 재능에 해당하는 스킬과 공통(COMMON) 스킬 중

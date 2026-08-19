@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class ItemCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_ITEM_COUNT = 11;
+    private static final int TOTAL_ITEM_COUNT = 13;
     private static final Set<String> KNOWN_ITEM_IDS = Set.of(
             "hp_potion_30",
             "beginner_one_hand_sword",
@@ -37,7 +37,9 @@ class ItemCatalogLoadIntegrationTest {
             "beginner_staff",
             "beginner_helmet",
             "beginner_gloves",
-            "beginner_boots");
+            "beginner_boots",
+            "short_sword",
+            "long_sword");
 
     private final ItemCatalogService itemCatalogService;
 

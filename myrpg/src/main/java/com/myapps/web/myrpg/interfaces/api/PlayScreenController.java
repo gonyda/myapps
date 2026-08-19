@@ -256,6 +256,7 @@ public class PlayScreenController {
         final PlayScreenView view = playScreenViewHelper.buildPlayScreen(
                 progress, minimap, fullMap, ambience, interactions, talkingNpc, dialogue, logs);
         model.addAttribute("view", view);
+        model.addAttribute("talkingNpcId", npcId);
         return "fragments/npc-response";
     }
 

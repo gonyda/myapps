@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 수리 내용 fragment (fetch 응답용) -->
+<div th:fragment="repair-content" th:if="${repair != null}">
+    <div class="repair-list">
+        <th:block th:if="${repair.repairItems.isEmpty()}">
+            <div class="repair-empty">수리할 장비가 없습니다</div>
+        </th:block>
+        <div th:each="item : ${repair.repairItems}" class="repair-item-row">
+            <span class="item-name">
+                <span th:text="${item.name}">아이템</span>
+                <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+            </span>
+            <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+            <span class="item-durability"
+                  th:text="${item.currentDurabilityCeil} + '/' + ${item.maxDurability}">내구도</span>
+            <span class="item-price" th:text="${item.repairCost} + ' G'">수리비</span>
+            <button class="item-action-btn repair-btn"
+                    th:data-id="${item.ownedItemId}"
+                    onclick="repairItem(this.dataset.id)">수리</button>
+        </div>
+    </div>
+    <div class="repair-gold-area">
+        <span class="gold-label">소지 골드</span>
+        <span class="gold-value" id="repairGoldValue" th:text="${repair.currentGold}">0</span>
+    </div>
+</div>
+</body>
+</html>

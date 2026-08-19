@@ -106,5 +106,27 @@
       { "target": "DEF", "amount": 2 }
     ],
     "maxDurability": 20
+  },
+  {
+    "id": "short_sword",
+    "name": "숏소드",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      { "target": "STR", "amount": 8 }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 300
+  },
+  {
+    "id": "long_sword",
+    "name": "롱소드",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      { "target": "STR", "amount": 12 }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 700
   }
 ]

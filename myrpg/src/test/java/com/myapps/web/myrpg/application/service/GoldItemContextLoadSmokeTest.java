@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class GoldItemContextLoadSmokeTest {
 
-    private static final int EXPECTED_ITEM_COUNT = 11;
+    private static final int EXPECTED_ITEM_COUNT = 13;
 
     private final ItemCatalogService itemCatalogService;
     private final InventoryService inventoryService;

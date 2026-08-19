@@ -179,6 +179,19 @@ public class OwnedItem {
     }
 
     /**
+     * 내구도를 지정된 양만큼 복구한다.
+     *
+     * <p>대장간 수리에서 1포인트 단위로 복구할 때 사용된다.
+     * 복구 결과는 최대 내구도(max)를 초과할 수 없다.
+     *
+     * @param amount 복구할 내구도 양 (양수)
+     * @param max    내구도의 최대값
+     */
+    public void repairBy(final double amount, final double max) {
+        this.currentDurability = Math.min(max, this.currentDurability + amount);
+    }
+
+    /**
      * 내구도를 최대값으로 복구한다.
      *
      * <p>7순위 대장간 스펙에서 수리비를 소모한 뒤 이 메서드를 호출하여 확정된다.

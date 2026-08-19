@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 상점 내용 fragment (fetch 응답용) -->
+<div th:fragment="shop-content" th:if="${shop != null}">
+    <div class="shop-lists">
+        <div class="shop-buy-section">
+            <h4 class="shop-list-title">구매 가능</h4>
+            <div class="shop-item-list" id="shopBuyList">
+                <th:block th:if="${shop.buyItems.isEmpty()}">
+                    <div class="shop-empty">판매 상품 없음</div>
+                </th:block>
+                <div th:each="item : ${shop.buyItems}" class="shop-item-row">
+                    <span class="item-name" th:text="${item.name}">아이템</span>
+                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+                    <span class="item-price" th:text="${item.buyPrice} + ' G'">가격</span>
+                    <button class="item-action-btn buy-btn"
+                            th:data-id="${item.id}"
+                            onclick="buyShopItem(this.dataset.id)">구매</button>
+                </div>
+            </div>
+        </div>
+        <div class="shop-sell-section">
+            <h4 class="shop-list-title">판매 가능</h4>
+            <div class="shop-item-list" id="shopSellList">
+                <th:block th:if="${shop.sellItems.isEmpty()}">
+                    <div class="shop-empty">판매할 아이템 없음</div>
+                </th:block>
+                <div th:each="item : ${shop.sellItems}" class="shop-item-row">
+                    <span class="item-name" th:text="${item.name}">아이템</span>
+                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+                    <span class="item-price" th:text="${item.sellValue} + ' G'">가격</span>
+                    <button class="item-action-btn sell-btn"
+                            th:data-id="${item.ownedItemId}"
+                            th:disabled="${item.equipped}"
+                            onclick="sellShopItem(this.dataset.id)">판매</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="shop-gold-area">
+        <span class="gold-label">소지 골드</span>
+        <span class="gold-value" id="shopGoldValue" th:text="${shop.currentGold}">0</span>
+    </div>
+</div>
+</body>
+</html>

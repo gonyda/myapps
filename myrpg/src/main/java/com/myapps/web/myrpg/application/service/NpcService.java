@@ -158,8 +158,9 @@ public class NpcService {
                         "NPC '" + id + "'의 type '" + typeString + "'을(를) 분류할 수 없습니다."));
 
         final NpcLines lines = parseLines(npcNode, id);
+        final List<String> shopItems = parseStringList(npcNode.get("shopItems"));
 
-        return new Npc(id, name, npcType, nodeId, personality, lines);
+        return new Npc(id, name, npcType, nodeId, personality, lines, shopItems);
     }
 
     private String extractRequiredField(final JsonNode npcNode, final String fieldName) {
