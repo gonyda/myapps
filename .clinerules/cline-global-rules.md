@@ -58,49 +58,11 @@
 
 ---
 
-## 3. 구현 원칙
-
-### 코딩 컨벤션
-- **Java 25**, Spring Boot 4.0
-- `var` 사용 금지, `@Autowired` 금지, Lombok 금지
-- VO/DTO는 `record` 타입
-- `final` 파라미터/지역변수 필수
-- 커스텀 예외 사용 (`RuntimeException` 직접 금지)
-- 매직 넘버 `private static final` 상수화
-- 메서드 50줄 초과 시 분리 필수
-- 의존성 주입은 순수 생성자 주입만 사용
-
-### 테스트
-- 기능 구현시 테스트 코드 필수 작성
-- 서비스: 단위 + PBT (`@ExtendWith(MockitoExtension.class)` + jqwik)
-- 컨트롤러: `@WebMvcTest` + `@MockitoBean`
-- 레포지토리: `@DataJpaTest`
-- jqwik PBT에서는 `@Mock` 대신 `Mockito.mock()` 직접 호출
-- Spring Boot 4.0: `@MockBean`/`@SpyBean` 금지 → `@MockitoBean`/`@MockitoSpyBean` 사용
-- Jackson 3: `com.fasterxml.jackson` → `tools.jackson` 패키지 사용
-
-### 빌드 검증
-- 각 Task 완료 전 반드시:
-  1. 밸런스 검증 스크립트(`myrpg` 데이터 변경 시): `cd tools/balance && python3 verify_equipment.py` / `verify_monster.py` / `verify_skill.py` — `data-balance-guide.md §C-6` 참조
-  2. `mvn test -pl {모듈명}`
-  3. `mvn clean install -pl {모듈명} -am`
-- `BUILD SUCCESS` 확인 후에만 Task 완료 처리
-
-### 소스 수정 Task 완료 전 코드 정리 (필수)
-- 미사용 import 제거 (와일드카드 import 금지)
-- 미사용 변수/필드 제거
-- 매직 넘버 상수화
-- 중복 코드 메서드 추출
-- 메서드 분리 (50줄 초과 시 필수)
-- 불필요한 주석 제거 (`TODO`/`FIXME` 해결 후 제거)
-
----
-
-## 4. 스티어링 파일 참조
+## 3. 스티어링 파일 참조
 
 중요 결정사항은 아래 스티어링 파일을 우선 참조합니다:
 
-### 4.1. 코드 관련
+### 3.1. 코드 관련
 
 - **코딩 스타일**: `.kiro/steering/coding/code-style.md`
   - **참조 시점**: 새 Java/Kotlin 파일 생성, 기존 파일 수정, 리팩토링, 코드 포맷 변경 등 소스 코드를 변경할 때 반드시 읽고 따라야 합니다.
@@ -110,7 +72,7 @@
   - **참조 시점**: 코드 구조 파악, 심볼 탐색, 호출 관계 분석이 필요할 때 항상 `codegraph`를 사용하기 전에 읽습니다.
   - **참조 목적**: `codegraph_explore` MCP 사용 방법과 우선 순위를 확인하기 위해 참조합니다.
 
-### 4.2. 작업 워크플로우 관련
+### 3.2. 작업 워크플로우 관련
 
 - **깃 워크플로우**: `.kiro/steering/workflow/git-workflow.md`
   - **참조 시점**: 브랜치 생성, 커밋, PR 생성, push, rebase 등 git 명령을 실행하기 전에 반드시 읽습니다.
@@ -120,7 +82,7 @@
   - **참조 시점**: 각 Task 완료 후 빌드 검증이 필요할 때 읽습니다.
   - **참조 목적**: `mvn test`, `mvn clean install` 실행 순서와 검증 기준을 확인하기 위해 참조합니다.
 
-### 4.3. 프로젝트 설정 관련
+### 3.3. 프로젝트 설정 관련
 
 - **스펙 문서 규칙**: `.kiro/steering/project/spec-conventions.md`
   - **참조 시점**: spec 문서(requirements.md, design.md, tasks.md)를 작성하거나 수정할 때 읽습니다.
@@ -134,7 +96,7 @@
   - **참조 시점**: 기술 스택을 선정하거나 변경할 때, 새 라이브러리/프레임워크 도입을 검토할 때 읽습니다.
   - **참조 목적**: 표준 기술 스택(Java 25, Spring Boot 4.0 등)과 허용/금지 기술을 확인하기 위해 참조합니다.
 
-### 4.4. 모듈 관련
+### 3.4. 모듈 관련
 
 - **모듈 템플릿**: `.kiro/steering/module/module-template.md`
   - **참조 시점**: 신규 Maven 모듈을 추가하거나 기존 모듈의 구조를 참조할 때 읽습니다.
@@ -144,7 +106,7 @@
   - **참조 시점**: 신규 모듈을 추가하기 전에 반드시 읽습니다.
   - **참조 목적**: 신규 모듈 추가 시 확인해야 할 사전 조건과 가이드라인을 확인하기 위해 참조합니다.
 
-### 4.5. 도메인/인프라 관련
+### 3.5. 도메인/인프라 관련
 
 - **밸런스 가이드**: `.kiro/steering/myrpg/data-balance-guide.md`
   - **참조 시점**: `myrpg` 모듈의 게임 데이터(장비, 몬스터, 스킬), 게임 밸런스를 조정할 때 읽습니다.
@@ -156,7 +118,7 @@
 
 ---
 
-## 5. MCP 툴 우선 사용
+## 4. MCP 툴 우선 사용
 
 코드 탐색 시 아래 순서로 툴을 사용합니다:
 
