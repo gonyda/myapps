@@ -21,12 +21,12 @@ Spec 문서는 반드시 아래 구조를 따릅니다:
 
 ```
 .kiro/specs/
-└── mysender/
-    ├── 001-message-sending/
+└── myrpg/
+    ├── 001-character-progress-and-map-movement/
     │   ├── requirements.md
     │   ├── design.md
     │   └── tasks.md
-    └── 002-retry-policy/
+    └── 002-npc-system/
         ├── requirements.md
         ├── design.md
         └── tasks.md
@@ -34,12 +34,12 @@ Spec 문서는 반드시 아래 구조를 따릅니다:
 
 ## 네이밍 규칙
 
-- **모듈명**: 기존 Maven 모듈명과 동일 (예: `mysender`, `myreceiver`)
+- **모듈명**: 기존 Maven 모듈명과 동일 (예: `myrpg`, `mycalendar`, `mystudy`)
   - 모듈에 종속되지 않는 공통 기능은 `common` 사용
 - **순번**: 3자리 0-padded 숫자 (예: `001`, `002`, `010`, `099`)
   - 해당 모듈 내에서 스펙이 생성된 순서대로 부여
   - 기존 스펙 폴더를 확인하여 다음 순번 결정
-- **기능명**: kebab-case 영문 소문자 (예: `message-sending`, `user-authentication`)
+- **기능명**: kebab-case 영문 소문자 (예: `battle-system`, `npc-actions`)
 
 ## 순번 결정 방법
 

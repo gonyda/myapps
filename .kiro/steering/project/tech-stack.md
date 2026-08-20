@@ -6,7 +6,9 @@ inclusion: always
 
 ## 런타임 & 빌드 도구
 
-- **Java**: 25 (JDK 25, Homebrew `openjdk@25`)
+- **Java**: 21 (타겟) / JDK 25 (빌드 환경)
+  - `pom.xml` `<java.version>` = 21 → 컴파일러 `<release>` 21
+  - 로컬·서버는 JDK 25 설치 (Homebrew `openjdk@25`, Oracle JDK 25) — 해석·컴파일 실행
 - **Build Tool**: Apache Maven 3.9.9
 - **Framework**: Spring Boot 4.0.0
 - **Spring Framework**: 7.0.0 (Spring Boot 4.0 내장)
@@ -31,7 +33,7 @@ myapps/                        # Git 레포지토리 루트 (Project_Root)
 
 ## 모듈 네이밍 규칙
 
-- 모든 애플리케이션 모듈은 `my` 접두사를 사용합니다 (예: `mystudy`, `myreceiver`)
+- 모든 애플리케이션 모듈은 `my` 접두사를 사용합니다 (예: `mystudy`, `mycalendar`, `myrpg`)
 - Maven `<artifactId>`는 모듈 디렉터리명과 동일하게 설정합니다
 - Maven `<groupId>`는 `com.myapps`로 통일합니다
 
@@ -39,7 +41,7 @@ myapps/                        # Git 레포지토리 루트 (Project_Root)
 
 - 모듈 유형에 따라 기본 패키지가 결정됩니다:
   - Web 모듈: `com.myapps.web.{modulename}` (예: `mystudy` → `com.myapps.web.mystudy`)
-  - Batch 모듈: `com.myapps.batch.{modulename}` (예: `myjob` → `com.myapps.batch.myjob`)
+  - Batch 모듈: `com.myapps.batch.{modulename}` (Batch 모듈은 현재 없음 — 신규 추가 시 이 규칙 적용)
 - 메인 클래스: `com.myapps.{web|batch}.{modulename}.{ModuleName}Application`
 - DDD 계층 구조 적용 (상세 패키지 구조 및 모듈 생성 절차는 `module-template.md` 참고)
 

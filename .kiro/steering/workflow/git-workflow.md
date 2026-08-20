@@ -8,8 +8,8 @@ inclusion: always
 
 ```
 main          # 항상 배포 가능한 안정 브랜치
-feature/*     # 새 기능 개발 (예: feature/add-mysender-api)
-fix/*         # 버그 수정 (예: fix/sender-null-pointer)
+feature/*     # 새 기능 개발 (예: feature/add-myrpg-battle-system)
+fix/*         # 버그 수정 (예: fix/mycalendar-date-error)
 hotfix/*      # 긴급 프로덕션 수정
 chore/*       # 빌드, 설정, 의존성 업데이트 등
 ```
@@ -72,12 +72,12 @@ chore/*       # 빌드, 설정, 의존성 업데이트 등
 - `chore`: 빌드, 설정, 의존성 관련
 - `ci`: CI/CD 설정 변경
 
-**scope 예시:** `mysender`, `root-pom`, `deps`, `ci`
+**scope 예시:** `myrpg`, `mycalendar`, `mystudy`, `root-pom`, `deps`, `ci`
 
 **예시:**
 ```
-feat(mysender): 메시지 전송 API 엔드포인트 추가
-fix(mysender): 메시지 본문 null 처리 오류 수정
+feat(myrpg): 전투 보상 시스템 추가
+fix(mycalendar): 날짜 경계값 처리 오류 수정
 chore(deps): spring-boot 4.0.1로 버전 업그레이드
 chore: 프로젝트 초기 설정 및 스펙 문서 추가
 ```

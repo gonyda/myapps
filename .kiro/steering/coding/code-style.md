@@ -6,15 +6,15 @@ inclusion: always
 
 ## Java 코딩 컨벤션
 
-- **언어**: Java 25, 최신 언어 기능 적극 활용 (record, sealed class, pattern matching 등)
+- **언어**: Java 21 (target), 최신 언어 기능 적극 활용 (record, sealed class, pattern matching 등)
 - **`var` 사용 금지**: 지역 변수 타입 추론(`var`) 사용하지 않음 — 항상 명시적 타입 선언
 - **인코딩**: UTF-8
 - **들여쓰기**: 스페이스 4칸 (탭 금지)
 - **최대 줄 길이**: 120자
-- **클래스명**: PascalCase (예: `MessageSender`)
-- **메서드/변수명**: camelCase (예: `sendMessage`, `messageId`)
-- **상수명**: UPPER_SNAKE_CASE (예: `MAX_RETRY_COUNT`)
-- **패키지명**: 소문자, 점 구분 (예: `com.myapps.web.mysender.domain.service`)
+- **클래스명**: PascalCase (예: `BattleService`)
+- **메서드/변수명**: camelCase (예: `startBattle`, `playerId`)
+- **상수명**: UPPER_SNAKE_CASE (예: `MAX_LEVEL`)
+- **패키지명**: 소문자, 점 구분 (예: `com.myapps.web.myrpg.domain.service`)
 
 ## JavaDoc 주석 규칙
 
@@ -24,26 +24,26 @@ inclusion: always
 
 ```java
 /**
- * 메시지 전송을 담당하는 서비스 클래스.
+ * 전투 처리를 담당하는 서비스 클래스.
  *
- * <p>외부 시스템으로의 메시지 전송 및 재시도 로직을 처리합니다.
+ * <p>몬스터와의 전투 턴 진행 및 결과 계산을 처리합니다.
  */
 @Service
-public class MessageSenderService { ... }
+public class BattleService { ... }
 ```
 
 ### 메서드 JavaDoc
 
 ```java
 /**
- * 지정된 수신자에게 메시지를 전송합니다.
+ * 플레이어와 몬스터의 전투를 1턴 진행합니다.
  *
- * @param receiverId 메시지를 받을 수신자 ID
- * @param message    전송할 메시지 내용
- * @return 전송 성공 여부
- * @throws MessageSendException 전송 실패 시
+ * @param playerId  전투에 참가하는 플레이어 ID
+ * @param monsterId 상대 몬스터 ID
+ * @return 전투 턴 결과
+ * @throws BattleException 전투 진행 중 오류 발생 시
  */
-public boolean sendMessage(String receiverId, String message) { ... }
+public BattleTurnResult executeTurn(String playerId, String monsterId) { ... }
 ```
 
 ### 규칙
@@ -52,7 +52,7 @@ public boolean sendMessage(String receiverId, String message) { ... }
 - **public 메서드**: 반드시 `@param`, `@return`, `@throws` 태그 포함 (해당하는 경우)
 - **private 메서드**: 로직이 복잡하거나 비직관적인 경우에만 JavaDoc 작성
 - **record/DTO**: 클래스 수준 JavaDoc으로 용도 설명, 필드별 주석은 생략 가능
-- 단순히 메서드명을 반복하는 주석 금지 (예: `sendMessage 메서드` → ❌)
+- 단순히 메서드명을 반복하는 주석 금지 (예: `executeTurn 메서드` → ❌)
 
 ## Spring 어노테이션 규칙
 
@@ -72,14 +72,16 @@ public boolean sendMessage(String receiverId, String message) { ... }
 
 ```java
 // 좋은 예
-public void sendMessage(final String receiverId, final String message) {
-    final MessageResult result = messageClient.send(receiverId, message);
+public void executeBattle(final String playerId, final String monsterId) {
+    final Player player = playerRepository.findById(playerId);
+    final Monster monster = monsterRepository.findById(monsterId);
     final long startTime = System.currentTimeMillis();
 
     // 재할당이 필요한 변수는 final 붙이지 않음
-    int retryCount = 0;
-    while (!result.isSuccess() && retryCount < MAX_RETRY_COUNT) {
-        retryCount++;
+    int turn = 0;
+    while (player.isAlive() && monster.isAlive() && turn < MAX_TURN) {
+        battleService.executeTurn(player, monster);
+        turn++;
     }
 }
 ```
@@ -88,7 +90,7 @@ public void sendMessage(final String receiverId, final String message) {
 
 - **Lombok 사용 절대 금지**: `@Getter`, `@Setter`, `@Builder`, `@Data`, `@AllArgsConstructor`, `@NoArgsConstructor` 등 모든 Lombok 어노테이션 사용 불가
 - `lombok` 의존성을 pom.xml에 추가하지 않음
-- DTO/VO는 `record` 타입 사용 권장 (Java 25 record로 대체)
+- DTO/VO는 `record` 타입 사용 권장 (Java 21 record 사용)
 - 불변 도메인 객체도 `record` 타입 권장
 - getter/setter가 필요한 경우 직접 작성
 
@@ -113,19 +115,19 @@ public void sendMessage(final String receiverId, final String message) {
 
 ```java
 @Test
-@DisplayName("유효한 유저 ID와 메시지가 주어졌을 때 전송에 성공한다")
-void should_sendSuccessfully_when_validUserAndMessage() {
+@DisplayName("유효한 레벨과 몬스터가 주어졌을 때 전투 턴이 정상 진행된다")
+void should_executeTurn_when_validPlayerAndMonster() {
     // given (준비: 입력 데이터, Mock 동작 및 사전 조건 설정)
-    final String receiverId = "user-123";
-    final String message = "Hello World";
-    given(messageClient.send(receiverId, message)).willReturn(MessageResult.success());
+    final String playerId = "player-123";
+    final String monsterId = "monster-456";
+    given(battleRepository.findMonster(monsterId)).willReturn(monster);
 
     // when (실행: 테스트 대상 핵심 단일 행위 호출)
-    final boolean isSent = messageSenderService.sendMessage(receiverId, message);
+    final BattleTurnResult result = battleService.executeTurn(playerId, monsterId);
 
     // then (검증: 결과 단언, 예외 검증, Mock 인터랙션 확인)
-    assertThat(isSent).isTrue();
-    then(messageClient).should().send(receiverId, message);
+    assertThat(result.isPlayerAlive()).isTrue();
+    then(battleRepository).should().findMonster(monsterId);
 }
 ```
 
@@ -253,7 +255,7 @@ import tools.jackson.databind.ObjectMapper;
 - **미사용 변수 제거**: 선언 후 읽히지 않는 지역 변수, private 필드 제거
 - **명확한 네이밍**: 변수/메서드명이 의도를 충분히 설명하는지 확인
   - 나쁜 예: `d`, `tmp`, `flag`, `data`
-  - 좋은 예: `elapsedDays`, `retryCount`, `isMessageSent`
+  - 좋은 예: `elapsedDays`, `retryCount`, `isPlayerAlive`
 - **매직 넘버 상수화**: 의미 없는 숫자 리터럴은 `private static final` 상수로 추출
 - **중복 코드 제거**: 동일 로직이 2회 이상 반복되면 메서드로 추출
 - **메서드 분리**: 한 메서드 안에 코드가 길어지면 반드시 리팩토링하여 메서드를 분리한다 (20줄 초과 시 분리 권장, 50줄 초과 시 분리 필수)
