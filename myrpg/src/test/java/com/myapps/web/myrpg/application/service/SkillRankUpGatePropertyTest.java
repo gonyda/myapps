@@ -1,15 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Optional;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -21,23 +16,24 @@ import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TalentType;
-import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Optional;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Combinators;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 랭크업 게이트 프로퍼티 테스트.
  *
- * <p>임의의 (rank, usageCount, killCount, abilityPoints) 조합에 대해
- * {@code rankUp}이 올바르게 게이트를 판정하는지 검증한다.
- * 성공 조건: usageCount ≥ required AND killCount ≥ required AND
- * abilityPoints ≥ apCost AND rank ≠ MASTER.
- * 그 외에는 상태가 불변이어야 한다.
+ * <p>임의의 (rank, usageCount, killCount, abilityPoints) 조합에 대해 {@code rankUp}이 올바르게 게이트를 판정하는지 검증한다.
+ * 성공 조건: usageCount ≥ required AND killCount ≥ required AND abilityPoints ≥ apCost AND rank ≠
+ * MASTER. 그 외에는 상태가 불변이어야 한다.
  *
  * <p>Feature: 005-skill-system, Property 8: 랭크업 게이트
  *
@@ -64,24 +60,27 @@ class SkillRankUpGatePropertyTest {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService = new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
+        final SkillService skillService =
+                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
 
-        final CharacterSkill skill = new CharacterSkill(
-                CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount(), state.killCount());
+        final CharacterSkill skill =
+                new CharacterSkill(
+                        CHARACTER_ID,
+                        SKILL_ID,
+                        state.rank(),
+                        state.usageCount(),
+                        state.killCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
         when(mockRepo.save(any(CharacterSkill.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(mockCatalog.byId(SKILL_ID))
-                .thenReturn(Optional.of(createDamageSkillCatalog()));
+        when(mockCatalog.byId(SKILL_ID)).thenReturn(Optional.of(createDamageSkillCatalog()));
 
         final boolean result = skillService.rankUp(progress, SKILL_ID);
 
-        assertThat(result)
-                .as("조건+AP 충족·≠MASTER이면 랭크업 성공")
-                .isTrue();
+        assertThat(result).as("조건+AP 충족·≠MASTER이면 랭크업 성공").isTrue();
     }
 
     /**
@@ -95,22 +94,25 @@ class SkillRankUpGatePropertyTest {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService = new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
+        final SkillService skillService =
+                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
 
-        final CharacterSkill skill = new CharacterSkill(
-                CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount(), state.killCount());
+        final CharacterSkill skill =
+                new CharacterSkill(
+                        CHARACTER_ID,
+                        SKILL_ID,
+                        state.rank(),
+                        state.usageCount(),
+                        state.killCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
-        when(mockCatalog.byId(SKILL_ID))
-                .thenReturn(Optional.of(createDamageSkillCatalog()));
+        when(mockCatalog.byId(SKILL_ID)).thenReturn(Optional.of(createDamageSkillCatalog()));
 
         final boolean result = skillService.rankUp(progress, SKILL_ID);
 
-        assertThat(result)
-                .as("사용 횟수 부족 시 랭크업 실패")
-                .isFalse();
+        assertThat(result).as("사용 횟수 부족 시 랭크업 실패").isFalse();
         assertStateUnchanged(skill, state, progress);
     }
 
@@ -125,30 +127,33 @@ class SkillRankUpGatePropertyTest {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService = new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
+        final SkillService skillService =
+                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
 
-        final CharacterSkill skill = new CharacterSkill(
-                CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount(), state.killCount());
+        final CharacterSkill skill =
+                new CharacterSkill(
+                        CHARACTER_ID,
+                        SKILL_ID,
+                        state.rank(),
+                        state.usageCount(),
+                        state.killCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
-        when(mockCatalog.byId(SKILL_ID))
-                .thenReturn(Optional.of(createDamageSkillCatalog()));
+        when(mockCatalog.byId(SKILL_ID)).thenReturn(Optional.of(createDamageSkillCatalog()));
 
         final boolean result = skillService.rankUp(progress, SKILL_ID);
 
-        assertThat(result)
-                .as("막타 처치 부족 시 랭크업 실패")
-                .isFalse();
+        assertThat(result).as("막타 처치 부족 시 랭크업 실패").isFalse();
         assertStateUnchanged(skill, state, progress);
     }
 
     /**
      * 랭크가 MASTER이면 랭크업이 실패하고 상태가 불변이다.
      *
-     * @param usageCount  임의의 사용 횟수
-     * @param killCount   임의의 막타 처치 수
+     * @param usageCount 임의의 사용 횟수
+     * @param killCount 임의의 막타 처치 수
      * @param abilityPoints 임의의 AP
      */
     @Property(tries = 100)
@@ -159,10 +164,11 @@ class SkillRankUpGatePropertyTest {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService = new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
+        final SkillService skillService =
+                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
 
-        final CharacterSkill skill = new CharacterSkill(
-                CHARACTER_ID, SKILL_ID, SkillRank.MASTER, usageCount, killCount);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.MASTER, usageCount, killCount);
         final CharacterProgress progress = createProgressWithAp(abilityPoints);
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
@@ -170,9 +176,7 @@ class SkillRankUpGatePropertyTest {
 
         final boolean result = skillService.rankUp(progress, SKILL_ID);
 
-        assertThat(result)
-                .as("MASTER 랭크이면 랭크업 불가")
-                .isFalse();
+        assertThat(result).as("MASTER 랭크이면 랭크업 불가").isFalse();
         assertThat(skill.getRank()).isEqualTo(SkillRank.MASTER);
         assertThat(skill.getUsageCount()).isEqualTo(usageCount);
         assertThat(skill.getKillCount()).isEqualTo(killCount);
@@ -190,16 +194,21 @@ class SkillRankUpGatePropertyTest {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService = new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
+        final SkillService skillService =
+                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
 
-        final CharacterSkill skill = new CharacterSkill(
-                CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount(), state.killCount());
+        final CharacterSkill skill =
+                new CharacterSkill(
+                        CHARACTER_ID,
+                        SKILL_ID,
+                        state.rank(),
+                        state.usageCount(),
+                        state.killCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
-        when(mockCatalog.byId(SKILL_ID))
-                .thenReturn(Optional.of(createDamageSkillCatalog()));
+        when(mockCatalog.byId(SKILL_ID)).thenReturn(Optional.of(createDamageSkillCatalog()));
 
         final Throwable thrown = catchThrowable(() -> skillService.rankUp(progress, SKILL_ID));
 
@@ -218,20 +227,32 @@ class SkillRankUpGatePropertyTest {
      */
     @Provide
     Arbitrary<RankUpTestState> rankableState() {
-        return nonMasterRank().flatMap(rank -> {
-            final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
-            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
+        return nonMasterRank()
+                .flatMap(
+                        rank -> {
+                            final RankUpRequirement requirement =
+                                    skillRankPolicy.requirement(rank).orElseThrow();
+                            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
 
-            final Arbitrary<Integer> usages = Arbitraries.integers()
-                    .between(requirement.requiredUsage(), requirement.requiredUsage() + MAX_USAGE_SURPLUS);
-            final Arbitrary<Integer> kills = Arbitraries.integers()
-                    .between(requirement.requiredKills(), requirement.requiredKills() + MAX_KILL_SURPLUS);
-            final Arbitrary<Integer> aps = Arbitraries.integers()
-                    .between(apCost, apCost + MAX_AP_SURPLUS);
+                            final Arbitrary<Integer> usages =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    requirement.requiredUsage(),
+                                                    requirement.requiredUsage()
+                                                            + MAX_USAGE_SURPLUS);
+                            final Arbitrary<Integer> kills =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    requirement.requiredKills(),
+                                                    requirement.requiredKills() + MAX_KILL_SURPLUS);
+                            final Arbitrary<Integer> aps =
+                                    Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
 
-            return Combinators.combine(usages, kills, aps)
-                    .as((usage, kill, ap) -> new RankUpTestState(rank, usage, kill, ap));
-        });
+                            return Combinators.combine(usages, kills, aps)
+                                    .as(
+                                            (usage, kill, ap) ->
+                                                    new RankUpTestState(rank, usage, kill, ap));
+                        });
     }
 
     /**
@@ -241,20 +262,29 @@ class SkillRankUpGatePropertyTest {
      */
     @Provide
     Arbitrary<RankUpTestState> usageInsufficientState() {
-        return nonMasterRank().flatMap(rank -> {
-            final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
-            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
+        return nonMasterRank()
+                .flatMap(
+                        rank -> {
+                            final RankUpRequirement requirement =
+                                    skillRankPolicy.requirement(rank).orElseThrow();
+                            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
 
-            final Arbitrary<Integer> usages = Arbitraries.integers()
-                    .between(0, requirement.requiredUsage() - 1);
-            final Arbitrary<Integer> kills = Arbitraries.integers()
-                    .between(0, requirement.requiredKills() + MAX_KILL_SURPLUS);
-            final Arbitrary<Integer> aps = Arbitraries.integers()
-                    .between(apCost, apCost + MAX_AP_SURPLUS);
+                            final Arbitrary<Integer> usages =
+                                    Arbitraries.integers()
+                                            .between(0, requirement.requiredUsage() - 1);
+                            final Arbitrary<Integer> kills =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    0,
+                                                    requirement.requiredKills() + MAX_KILL_SURPLUS);
+                            final Arbitrary<Integer> aps =
+                                    Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
 
-            return Combinators.combine(usages, kills, aps)
-                    .as((usage, kill, ap) -> new RankUpTestState(rank, usage, kill, ap));
-        });
+                            return Combinators.combine(usages, kills, aps)
+                                    .as(
+                                            (usage, kill, ap) ->
+                                                    new RankUpTestState(rank, usage, kill, ap));
+                        });
     }
 
     /**
@@ -264,20 +294,30 @@ class SkillRankUpGatePropertyTest {
      */
     @Provide
     Arbitrary<RankUpTestState> killInsufficientState() {
-        return nonMasterRank().flatMap(rank -> {
-            final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
-            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
+        return nonMasterRank()
+                .flatMap(
+                        rank -> {
+                            final RankUpRequirement requirement =
+                                    skillRankPolicy.requirement(rank).orElseThrow();
+                            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
 
-            final Arbitrary<Integer> usages = Arbitraries.integers()
-                    .between(requirement.requiredUsage(), requirement.requiredUsage() + MAX_USAGE_SURPLUS);
-            final Arbitrary<Integer> kills = Arbitraries.integers()
-                    .between(0, requirement.requiredKills() - 1);
-            final Arbitrary<Integer> aps = Arbitraries.integers()
-                    .between(apCost, apCost + MAX_AP_SURPLUS);
+                            final Arbitrary<Integer> usages =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    requirement.requiredUsage(),
+                                                    requirement.requiredUsage()
+                                                            + MAX_USAGE_SURPLUS);
+                            final Arbitrary<Integer> kills =
+                                    Arbitraries.integers()
+                                            .between(0, requirement.requiredKills() - 1);
+                            final Arbitrary<Integer> aps =
+                                    Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
 
-            return Combinators.combine(usages, kills, aps)
-                    .as((usage, kill, ap) -> new RankUpTestState(rank, usage, kill, ap));
-        });
+                            return Combinators.combine(usages, kills, aps)
+                                    .as(
+                                            (usage, kill, ap) ->
+                                                    new RankUpTestState(rank, usage, kill, ap));
+                        });
     }
 
     /**
@@ -287,20 +327,32 @@ class SkillRankUpGatePropertyTest {
      */
     @Provide
     Arbitrary<RankUpTestState> apInsufficientState() {
-        return nonMasterRank().flatMap(rank -> {
-            final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
-            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
+        return nonMasterRank()
+                .flatMap(
+                        rank -> {
+                            final RankUpRequirement requirement =
+                                    skillRankPolicy.requirement(rank).orElseThrow();
+                            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
 
-            final Arbitrary<Integer> usages = Arbitraries.integers()
-                    .between(requirement.requiredUsage(), requirement.requiredUsage() + MAX_USAGE_SURPLUS);
-            final Arbitrary<Integer> kills = Arbitraries.integers()
-                    .between(requirement.requiredKills(), requirement.requiredKills() + MAX_KILL_SURPLUS);
-            final Arbitrary<Integer> aps = Arbitraries.integers()
-                    .between(0, apCost - 1);
+                            final Arbitrary<Integer> usages =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    requirement.requiredUsage(),
+                                                    requirement.requiredUsage()
+                                                            + MAX_USAGE_SURPLUS);
+                            final Arbitrary<Integer> kills =
+                                    Arbitraries.integers()
+                                            .between(
+                                                    requirement.requiredKills(),
+                                                    requirement.requiredKills() + MAX_KILL_SURPLUS);
+                            final Arbitrary<Integer> aps =
+                                    Arbitraries.integers().between(0, apCost - 1);
 
-            return Combinators.combine(usages, kills, aps)
-                    .as((usage, kill, ap) -> new RankUpTestState(rank, usage, kill, ap));
-        });
+                            return Combinators.combine(usages, kills, aps)
+                                    .as(
+                                            (usage, kill, ap) ->
+                                                    new RankUpTestState(rank, usage, kill, ap));
+                        });
     }
 
     /**
@@ -336,34 +388,40 @@ class SkillRankUpGatePropertyTest {
     // ── Helpers ──
 
     private Arbitrary<SkillRank> nonMasterRank() {
-        final SkillRank[] nonMasterRanks = java.util.Arrays.stream(SkillRank.values())
-                .filter(rank -> !rank.isMax())
-                .toArray(SkillRank[]::new);
+        final SkillRank[] nonMasterRanks =
+                java.util.Arrays.stream(SkillRank.values())
+                        .filter(rank -> !rank.isMax())
+                        .toArray(SkillRank[]::new);
         return Arbitraries.of(nonMasterRanks);
     }
 
-    private void assertStateUnchanged(final CharacterSkill skill,
-                                      final RankUpTestState originalState,
-                                      final CharacterProgress progress) {
-        assertThat(skill.getRank())
-                .as("실패 시 랭크 불변")
-                .isEqualTo(originalState.rank());
-        assertThat(skill.getUsageCount())
-                .as("실패 시 사용 횟수 불변")
-                .isEqualTo(originalState.usageCount());
-        assertThat(skill.getKillCount())
-                .as("실패 시 막타 처치 수 불변")
-                .isEqualTo(originalState.killCount());
+    private void assertStateUnchanged(
+            final CharacterSkill skill,
+            final RankUpTestState originalState,
+            final CharacterProgress progress) {
+        assertThat(skill.getRank()).as("실패 시 랭크 불변").isEqualTo(originalState.rank());
+        assertThat(skill.getUsageCount()).as("실패 시 사용 횟수 불변").isEqualTo(originalState.usageCount());
+        assertThat(skill.getKillCount()).as("실패 시 막타 처치 수 불변").isEqualTo(originalState.killCount());
         assertThat(progress.getAbilityPoints())
                 .as("실패 시 AP 불변")
                 .isEqualTo(originalState.abilityPoints());
     }
 
     private CharacterProgress createProgressWithAp(final int abilityPoints) {
-        final CharacterProgress progress = new CharacterProgress(
-                "테스트", 1, 1, 0L,
-                TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", abilityPoints, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "테스트",
+                        1,
+                        1,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        "tir-chonaill",
+                        abilityPoints,
+                        0L);
         setId(progress, CHARACTER_ID);
         return progress;
     }
@@ -380,8 +438,11 @@ class SkillRankUpGatePropertyTest {
 
     private DamageSkill createDamageSkillCatalog() {
         return new DamageSkill(
-                SKILL_ID, "윈드밀",
-                SkillType.NORMAL, SkillTalent.MELEE, 7,
+                SKILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                7,
                 Map.of(SkillRank.F, 35, SkillRank.E, 38),
                 "주변의 적을 베어 넘기는 회전 공격.");
     }
@@ -389,11 +450,10 @@ class SkillRankUpGatePropertyTest {
     /**
      * 랭크업 테스트용 상태 record.
      *
-     * @param rank          스킬 랭크
-     * @param usageCount    사용 횟수
-     * @param killCount     막타 처치 수
+     * @param rank 스킬 랭크
+     * @param usageCount 사용 횟수
+     * @param killCount 막타 처치 수
      * @param abilityPoints 보유 AP
      */
-    record RankUpTestState(SkillRank rank, int usageCount, int killCount, int abilityPoints) {
-    }
+    record RankUpTestState(SkillRank rank, int usageCount, int killCount, int abilityPoints) {}
 }

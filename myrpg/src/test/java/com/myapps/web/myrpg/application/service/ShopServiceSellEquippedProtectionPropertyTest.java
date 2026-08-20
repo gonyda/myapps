@@ -1,20 +1,11 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.lang.reflect.Field;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Tuple;
-import net.jqwik.api.constraints.IntRange;
-import net.jqwik.api.constraints.LongRange;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -24,21 +15,25 @@ import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.lang.reflect.Field;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Optional;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.Tuple;
+import net.jqwik.api.constraints.IntRange;
+import net.jqwik.api.constraints.LongRange;
 
 /**
  * 상점 판매 시 장착 중 장비 보호 및 1개 단위 처리 프로퍼티 테스트.
  *
- * <p>장착 중인 장비 판매는 항상 {@link EquipConflictException}으로 거부되고
- * 골드·수량·장착 상태가 불변임을 검증한다. 미장착 아이템은 1개 단위로 판매되어
- * 수량이 정확히 1 감소하고 골드가 판매가만큼 증가하며, 수량이 0이 되면
- * 저장소에서 행이 삭제됨을 검증한다.
+ * <p>장착 중인 장비 판매는 항상 {@link EquipConflictException}으로 거부되고 골드·수량·장착 상태가 불변임을 검증한다. 미장착 아이템은 1개 단위로
+ * 판매되어 수량이 정확히 1 감소하고 골드가 판매가만큼 증가하며, 수량이 0이 되면 저장소에서 행이 삭제됨을 검증한다.
  *
  * <p>Feature: 010-npc-actions-shop-repair-heal, Property 4: 상점 판매 시 장착 중 장비 보호 및 1개 단위 처리
  *
@@ -54,7 +49,7 @@ class ShopServiceSellEquippedProtectionPropertyTest {
     /**
      * 장착 중인 장비 판매 시도는 항상 거부되고 골드·수량·장착 상태가 불변임을 검증한다.
      *
-     * @param gold     보유 골드 (0~10000)
+     * @param gold 보유 골드 (0~10000)
      * @param quantity 보유 수량 (1~10)
      */
     @Property(tries = 100)
@@ -66,8 +61,8 @@ class ShopServiceSellEquippedProtectionPropertyTest {
         final OwnedItem equippedItem = createOwnedItem(1L, POTION_ID, quantity, true);
 
         when(repository.findById(1L)).thenReturn(Optional.of(equippedItem));
-        when(catalog.byId(POTION_ID)).thenReturn(Optional.of(
-                new PotionItem(POTION_ID, "포션", 30, 50)));
+        when(catalog.byId(POTION_ID))
+                .thenReturn(Optional.of(new PotionItem(POTION_ID, "포션", 30, 50)));
 
         final ShopService service = newService(catalog, repository);
         final CharacterProgress progress = createProgress(gold);
@@ -97,8 +92,8 @@ class ShopServiceSellEquippedProtectionPropertyTest {
         final OwnedItem potionStack = createOwnedItem(2L, POTION_ID, quantity, false);
 
         when(repository.findById(2L)).thenReturn(Optional.of(potionStack));
-        when(catalog.byId(POTION_ID)).thenReturn(Optional.of(
-                new PotionItem(POTION_ID, "포션", 30, 50)));
+        when(catalog.byId(POTION_ID))
+                .thenReturn(Optional.of(new PotionItem(POTION_ID, "포션", 30, 50)));
 
         final ShopService service = newService(catalog, repository);
         final CharacterProgress progress = createProgress(gold);
@@ -123,8 +118,8 @@ class ShopServiceSellEquippedProtectionPropertyTest {
         final OwnedItem singlePotion = createOwnedItem(3L, POTION_ID, 1, false);
 
         when(repository.findById(3L)).thenReturn(Optional.of(singlePotion));
-        when(catalog.byId(POTION_ID)).thenReturn(Optional.of(
-                new PotionItem(POTION_ID, "포션", 30, 50)));
+        when(catalog.byId(POTION_ID))
+                .thenReturn(Optional.of(new PotionItem(POTION_ID, "포션", 30, 50)));
 
         final ShopService service = newService(catalog, repository);
         final CharacterProgress progress = createProgress(gold);
@@ -145,9 +140,13 @@ class ShopServiceSellEquippedProtectionPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Long, Integer>> goldAndQuantity() {
-        return Arbitraries.longs().between(0L, 10_000L)
-                .flatMap(gold -> Arbitraries.integers().between(2, 10)
-                        .map(quantity -> Tuple.of(gold, quantity)));
+        return Arbitraries.longs()
+                .between(0L, 10_000L)
+                .flatMap(
+                        gold ->
+                                Arbitraries.integers()
+                                        .between(2, 10)
+                                        .map(quantity -> Tuple.of(gold, quantity)));
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────
@@ -155,16 +154,16 @@ class ShopServiceSellEquippedProtectionPropertyTest {
     /**
      * 지정된 속성의 OwnedItem을 생성한다.
      *
-     * @param id       엔티티 ID
-     * @param itemId   아이템 카탈로그 ID
+     * @param id 엔티티 ID
+     * @param itemId 아이템 카탈로그 ID
      * @param quantity 보유 수량
      * @param equipped 장착 여부
      * @return OwnedItem 인스턴스
      */
-    private OwnedItem createOwnedItem(final long id, final String itemId,
-                                      final int quantity, final boolean equipped) {
-        final OwnedItem ownedItem = new OwnedItem(itemId, quantity, StorageKind.INVENTORY,
-                equipped, 0.0);
+    private OwnedItem createOwnedItem(
+            final long id, final String itemId, final int quantity, final boolean equipped) {
+        final OwnedItem ownedItem =
+                new OwnedItem(itemId, quantity, StorageKind.INVENTORY, equipped, 0.0);
         try {
             final Field idField = OwnedItem.class.getDeclaredField("id");
             idField.setAccessible(true);
@@ -178,14 +177,19 @@ class ShopServiceSellEquippedProtectionPropertyTest {
     /**
      * 모의 의존성으로 ShopService를 생성한다.
      *
-     * @param catalog    모의 ItemCatalogService
+     * @param catalog 모의 ItemCatalogService
      * @param repository 모의 OwnedItemRepository
      * @return ShopService 인스턴스
      */
-    private ShopService newService(final ItemCatalogService catalog,
-                                   final OwnedItemRepository repository) {
-        return new ShopService(catalog, mock(NpcService.class), repository,
-                mock(InventoryService.class), mock(CharacterService.class), fixedActionLog());
+    private ShopService newService(
+            final ItemCatalogService catalog, final OwnedItemRepository repository) {
+        return new ShopService(
+                catalog,
+                mock(NpcService.class),
+                repository,
+                mock(InventoryService.class),
+                mock(CharacterService.class),
+                fixedActionLog());
     }
 
     /**
@@ -196,11 +200,11 @@ class ShopServiceSellEquippedProtectionPropertyTest {
      */
     private CharacterProgress createProgress(final long gold) {
         return new CharacterProgress(
-                "테스트", 1, 1, 0L, TalentType.MELEE, null,
-                100, 100, 100, "tir-chonaill", 0, gold);
+                "테스트", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, gold);
     }
 
     private ActionLog fixedActionLog() {
-        return new ActionLog(Clock.fixed(Instant.ofEpochSecond(FIXED_EPOCH_SECOND), ZoneId.systemDefault()));
+        return new ActionLog(
+                Clock.fixed(Instant.ofEpochSecond(FIXED_EPOCH_SECOND), ZoneId.systemDefault()));
     }
 }

@@ -1,10 +1,9 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
@@ -23,15 +22,12 @@ import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * {@link PlayScreenViewHelper}의 게이지 계산 및 뷰 조립 단위 테스트.
- */
+/** {@link PlayScreenViewHelper}의 게이지 계산 및 뷰 조립 단위 테스트. */
 class PlayScreenViewHelperTest {
 
     private PlayScreenViewHelper helper;
@@ -42,7 +38,12 @@ class PlayScreenViewHelperTest {
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        new ExperiencePolicy(),
+                        new StatProgression(),
+                        skillService,
+                        inventoryService);
     }
 
     @Test
@@ -126,11 +127,11 @@ class PlayScreenViewHelperTest {
         final MinimapView minimap = new MinimapView("티르 코네일", List.of());
         final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
         final String ambience = "마을 광장이 한적합니다.";
-        final List<ActionLogEntry> logs = List.of(
-                new ActionLogEntry("2024-01-01 12:00:00", "이동했습니다.", "move")
-        );
+        final List<ActionLogEntry> logs =
+                List.of(new ActionLogEntry("2024-01-01 12:00:00", "이동했습니다.", "move"));
 
-        final PlayScreenView view = helper.buildPlayScreen(progress, minimap, fullMap, ambience, logs);
+        final PlayScreenView view =
+                helper.buildPlayScreen(progress, minimap, fullMap, ambience, logs);
 
         assertThat(view.topBar()).isNotNull();
         assertThat(view.topBar().nickname()).isEqualTo("고니");
@@ -145,13 +146,13 @@ class PlayScreenViewHelperTest {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MinimapView minimap = new MinimapView("티르 코네일", List.of());
         final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
-        final List<InteractionItem> interactions = List.of(
-                new InteractionItem("neris", "네리스 (대장간)", true)
-        );
+        final List<InteractionItem> interactions =
+                List.of(new InteractionItem("neris", "네리스 (대장간)", true));
         final List<ActionLogEntry> logs = List.of();
 
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, minimap, fullMap, "평화로운 마을", interactions, null, null, logs);
+        final PlayScreenView view =
+                helper.buildPlayScreen(
+                        progress, minimap, fullMap, "평화로운 마을", interactions, null, null, logs);
 
         assertThat(view.npcName()).isNull();
         assertThat(view.npcDialogue()).isNull();
@@ -165,11 +166,13 @@ class PlayScreenViewHelperTest {
         final MinimapView minimap = new MinimapView("티르 코네일", List.of());
         final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
         final NpcLines lines = new NpcLines(List.of("안녕"), Map.of());
-        final Npc npc = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
+        final Npc npc =
+                new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
         final List<ActionLogEntry> logs = List.of();
 
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, minimap, fullMap, "평화로운 마을", null, npc, "반갑다.", logs);
+        final PlayScreenView view =
+                helper.buildPlayScreen(
+                        progress, minimap, fullMap, "평화로운 마을", null, npc, "반갑다.", logs);
 
         assertThat(view.npcName()).isEqualTo("네리스");
         assertThat(view.npcDialogue()).isEqualTo("반갑다.");
@@ -181,7 +184,8 @@ class PlayScreenViewHelperTest {
     @Test
     void should_buildInteractions_when_npcListProvided() {
         final NpcLines lines = new NpcLines(List.of("안녕"), Map.of());
-        final Npc neris = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
+        final Npc neris =
+                new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "무뚝뚝한 대장장이", lines);
         final Npc duncan = new Npc("duncan", "던컨", NpcType.CHIEF, "tir-chonaill", "마을의 촌장", lines);
 
         final List<InteractionItem> items = helper.buildInteractions(List.of(neris, duncan));

@@ -1,16 +1,13 @@
 package com.myapps.web.mystudy.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.myapps.web.mystudy.application.dto.QuizQuestionDto;
 import com.myapps.web.mystudy.application.dto.QuizResponse;
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
 import com.myapps.web.mystudy.domain.repository.EnglishStudyRepository;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Tag;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,10 +17,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.Tag;
 
 /**
  * QuizService의 Property-Based 테스트.
@@ -38,8 +37,8 @@ class QuizServicePropertyTest {
     /**
      * Property 1: 생성된 퀴즈의 모든 문제가 문장 2개 이상인 에피소드에서 출제되었는지 검증합니다.
      *
-     * <p>For any generated quiz from any dataset, every question in the quiz must originate
-     * from an episode that contains at least 2 sentences in the source data.
+     * <p>For any generated quiz from any dataset, every question in the quiz must originate from an
+     * episode that contains at least 2 sentences in the source data.
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -54,13 +53,19 @@ class QuizServicePropertyTest {
         final QuizService quizService = new QuizService(mockRepository, new Random(42));
         final QuizResponse response = quizService.generateQuiz();
 
-        final Set<String> eligibleSentences = studies.stream()
-                .collect(Collectors.groupingBy(EnglishStudy::getEpisode))
-                .entrySet().stream()
-                .filter(entry -> entry.getValue().size() >= MIN_SENTENCES_PER_EPISODE)
-                .flatMap(entry -> entry.getValue().stream())
-                .flatMap(study -> Stream.of(study.getEnglishSentence(), study.getKoreanSentence()))
-                .collect(Collectors.toSet());
+        final Set<String> eligibleSentences =
+                studies.stream()
+                        .collect(Collectors.groupingBy(EnglishStudy::getEpisode))
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> entry.getValue().size() >= MIN_SENTENCES_PER_EPISODE)
+                        .flatMap(entry -> entry.getValue().stream())
+                        .flatMap(
+                                study ->
+                                        Stream.of(
+                                                study.getEnglishSentence(),
+                                                study.getKoreanSentence()))
+                        .collect(Collectors.toSet());
 
         for (final QuizQuestionDto question : response.questions()) {
             assertThat(eligibleSentences).contains(question.question());
@@ -72,9 +77,9 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 2.3
      *
-     * <p>For any dataset of EnglishStudy records, the number of questions generated equals
-     * {@code min(10, totalEligibleSentences)} where totalEligibleSentences is the count of
-     * sentences belonging to episodes with 2 or more sentences.
+     * <p>For any dataset of EnglishStudy records, the number of questions generated equals {@code
+     * min(10, totalEligibleSentences)} where totalEligibleSentences is the count of sentences
+     * belonging to episodes with 2 or more sentences.
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -89,12 +94,14 @@ class QuizServicePropertyTest {
         final QuizService quizService = new QuizService(mockRepository, new Random(42));
         final QuizResponse response = quizService.generateQuiz();
 
-        final long totalEligibleSentences = studies.stream()
-                .collect(Collectors.groupingBy(EnglishStudy::getEpisode))
-                .entrySet().stream()
-                .filter(entry -> entry.getValue().size() >= MIN_SENTENCES_PER_EPISODE)
-                .flatMap(entry -> entry.getValue().stream())
-                .count();
+        final long totalEligibleSentences =
+                studies.stream()
+                        .collect(Collectors.groupingBy(EnglishStudy::getEpisode))
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> entry.getValue().size() >= MIN_SENTENCES_PER_EPISODE)
+                        .flatMap(entry -> entry.getValue().stream())
+                        .count();
 
         final int expectedQuestionCount = (int) Math.min(10, totalEligibleSentences);
         assertThat(response.questions()).hasSize(expectedQuestionCount);
@@ -105,9 +112,9 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 2.4, 2.5, 2.6
      *
-     * <p>For any generated quiz question, if the question text equals an English sentence
-     * from the source record, then the correct answer (at answerIndex) must equal that
-     * record's Korean sentence, and vice versa.
+     * <p>For any generated quiz question, if the question text equals an English sentence from the
+     * source record, then the correct answer (at answerIndex) must equal that record's Korean
+     * sentence, and vice versa.
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -150,8 +157,8 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 2.8
      *
-     * <p>For any generated quiz, all questions must reference distinct source sentences —
-     * no single EnglishStudy record is used as the basis for more than one question.
+     * <p>For any generated quiz, all questions must reference distinct source sentences — no single
+     * EnglishStudy record is used as the basis for more than one question.
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -166,9 +173,8 @@ class QuizServicePropertyTest {
         final QuizService quizService = new QuizService(mockRepository, new Random(42));
         final QuizResponse response = quizService.generateQuiz();
 
-        final List<String> questionTexts = response.questions().stream()
-                .map(QuizQuestionDto::question)
-                .toList();
+        final List<String> questionTexts =
+                response.questions().stream().map(QuizQuestionDto::question).toList();
 
         final Set<String> uniqueQuestionTexts = new HashSet<>(questionTexts);
 
@@ -182,9 +188,9 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 3.1
      *
-     * <p>For any generated quiz question, all choices must be sentences from the same episode
-     * as the question's source sentence, and they must be in the answer's language direction
-     * (Korean if direction is ENGLISH_TO_KOREAN, English if KOREAN_TO_ENGLISH).
+     * <p>For any generated quiz question, all choices must be sentences from the same episode as
+     * the question's source sentence, and they must be in the answer's language direction (Korean
+     * if direction is ENGLISH_TO_KOREAN, English if KOREAN_TO_ENGLISH).
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -199,31 +205,41 @@ class QuizServicePropertyTest {
         final QuizService quizService = new QuizService(mockRepository, new Random(42));
         final QuizResponse response = quizService.generateQuiz();
 
-        final Map<Long, List<EnglishStudy>> episodeMap = studies.stream()
-                .collect(Collectors.groupingBy(EnglishStudy::getEpisode));
+        final Map<Long, List<EnglishStudy>> episodeMap =
+                studies.stream().collect(Collectors.groupingBy(EnglishStudy::getEpisode));
 
         for (final QuizQuestionDto question : response.questions()) {
             final String questionText = question.question();
 
             final boolean isEnglishToKorean = questionText.startsWith("English_");
 
-            final Long sourceEpisode = studies.stream()
-                    .filter(s -> s.getEnglishSentence().equals(questionText)
-                            || s.getKoreanSentence().equals(questionText))
-                    .map(EnglishStudy::getEpisode)
-                    .findFirst()
-                    .orElseThrow(() -> new AssertionError(
-                            "문제 텍스트가 데이터셋에 존재하지 않습니다: " + questionText));
+            final Long sourceEpisode =
+                    studies.stream()
+                            .filter(
+                                    s ->
+                                            s.getEnglishSentence().equals(questionText)
+                                                    || s.getKoreanSentence().equals(questionText))
+                            .map(EnglishStudy::getEpisode)
+                            .findFirst()
+                            .orElseThrow(
+                                    () ->
+                                            new AssertionError(
+                                                    "문제 텍스트가 데이터셋에 존재하지 않습니다: " + questionText));
 
-            final Set<String> validChoices = episodeMap.get(sourceEpisode).stream()
-                    .map(s -> isEnglishToKorean ? s.getKoreanSentence() : s.getEnglishSentence())
-                    .collect(Collectors.toSet());
+            final Set<String> validChoices =
+                    episodeMap.get(sourceEpisode).stream()
+                            .map(
+                                    s ->
+                                            isEnglishToKorean
+                                                    ? s.getKoreanSentence()
+                                                    : s.getEnglishSentence())
+                            .collect(Collectors.toSet());
 
             for (final String choice : question.choices()) {
                 assertThat(validChoices)
-                        .as("보기 '%s'는 에피소드 %d의 %s 문장이어야 합니다",
-                                choice, sourceEpisode,
-                                isEnglishToKorean ? "한국어" : "영어")
+                        .as(
+                                "보기 '%s'는 에피소드 %d의 %s 문장이어야 합니다",
+                                choice, sourceEpisode, isEnglishToKorean ? "한국어" : "영어")
                         .contains(choice);
             }
         }
@@ -234,8 +250,8 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 3.2, 3.3
      *
-     * <p>For any generated quiz question, the number of choices must equal
-     * {@code min(4, sentenceCountInEpisode)} and must be at least 2.
+     * <p>For any generated quiz question, the number of choices must equal {@code min(4,
+     * sentenceCountInEpisode)} and must be at least 2.
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -250,25 +266,31 @@ class QuizServicePropertyTest {
         final QuizService quizService = new QuizService(mockRepository, new Random(42));
         final QuizResponse response = quizService.generateQuiz();
 
-        final Map<Long, List<EnglishStudy>> episodeMap = studies.stream()
-                .collect(Collectors.groupingBy(EnglishStudy::getEpisode));
+        final Map<Long, List<EnglishStudy>> episodeMap =
+                studies.stream().collect(Collectors.groupingBy(EnglishStudy::getEpisode));
 
         for (final QuizQuestionDto question : response.questions()) {
             final String questionText = question.question();
 
-            final Long sourceEpisode = studies.stream()
-                    .filter(s -> s.getEnglishSentence().equals(questionText)
-                            || s.getKoreanSentence().equals(questionText))
-                    .map(EnglishStudy::getEpisode)
-                    .findFirst()
-                    .orElseThrow(() -> new AssertionError(
-                            "문제 텍스트가 데이터셋에 존재하지 않습니다: " + questionText));
+            final Long sourceEpisode =
+                    studies.stream()
+                            .filter(
+                                    s ->
+                                            s.getEnglishSentence().equals(questionText)
+                                                    || s.getKoreanSentence().equals(questionText))
+                            .map(EnglishStudy::getEpisode)
+                            .findFirst()
+                            .orElseThrow(
+                                    () ->
+                                            new AssertionError(
+                                                    "문제 텍스트가 데이터셋에 존재하지 않습니다: " + questionText));
 
             final int episodeSentenceCount = episodeMap.get(sourceEpisode).size();
             final int expectedChoiceCount = Math.min(4, episodeSentenceCount);
 
             assertThat(question.choices())
-                    .as("보기 수는 min(4, %d) = %d 이어야 합니다 (에피소드 %d)",
+                    .as(
+                            "보기 수는 min(4, %d) = %d 이어야 합니다 (에피소드 %d)",
                             episodeSentenceCount, expectedChoiceCount, sourceEpisode)
                     .hasSize(expectedChoiceCount);
 
@@ -283,9 +305,9 @@ class QuizServicePropertyTest {
      *
      * <p>Validates: Requirements 3.4
      *
-     * <p>For any generated quiz question, the correct answer text must appear in the choices
-     * list at the position specified by {@code answerIndex}, and {@code answerIndex} must be
-     * a valid index (0 ≤ answerIndex &lt; choices.size()).
+     * <p>For any generated quiz question, the correct answer text must appear in the choices list
+     * at the position specified by {@code answerIndex}, and {@code answerIndex} must be a valid
+     * index (0 ≤ answerIndex &lt; choices.size()).
      *
      * @param studies 랜덤 생성된 EnglishStudy 데이터셋
      */
@@ -311,9 +333,7 @@ class QuizServicePropertyTest {
             final int answerIndex = question.answerIndex();
             final List<String> choices = question.choices();
 
-            assertThat(answerIndex)
-                    .as("answerIndex는 0 이상이어야 합니다")
-                    .isGreaterThanOrEqualTo(0);
+            assertThat(answerIndex).as("answerIndex는 0 이상이어야 합니다").isGreaterThanOrEqualTo(0);
 
             assertThat(answerIndex)
                     .as("answerIndex는 choices 크기(%d) 미만이어야 합니다", choices.size())
@@ -367,33 +387,48 @@ class QuizServicePropertyTest {
     /**
      * 다양한 에피소드/문장 수 조합의 EnglishStudy 데이터셋 Arbitrary를 생성합니다.
      *
-     * <p>에피소드 수는 0~5개, 각 에피소드의 문장 수는 1~6개로 제한하여
-     * 적격(2개 이상)과 비적격(1개) 에피소드가 혼합된 데이터셋을 생성합니다.
+     * <p>에피소드 수는 0~5개, 각 에피소드의 문장 수는 1~6개로 제한하여 적격(2개 이상)과 비적격(1개) 에피소드가 혼합된 데이터셋을 생성합니다.
      *
      * @return EnglishStudy 리스트의 Arbitrary
      */
     @Provide
     Arbitrary<List<EnglishStudy>> englishStudyDatasets() {
-        return Arbitraries.integers().between(0, 5).flatMap(episodeCount ->
-                Arbitraries.integers().between(1, 6)
-                        .list().ofSize(episodeCount)
-                        .map(sentenceCounts -> {
-                            final List<EnglishStudy> studies = new ArrayList<>();
-                            long idCounter = 1L;
-                            for (int ep = 0; ep < episodeCount; ep++) {
-                                final long episode = ep + 1L;
-                                final int sentenceCount = sentenceCounts.get(ep);
-                                for (int s = 0; s < sentenceCount; s++) {
-                                    final EnglishStudy study = new EnglishStudy();
-                                    study.setId(idCounter);
-                                    study.setEpisode(episode);
-                                    study.setEnglishSentence("English_ep" + episode + "_s" + (s + 1));
-                                    study.setKoreanSentence("Korean_ep" + episode + "_s" + (s + 1));
-                                    idCounter++;
-                                }
-                            }
-                            return studies;
-                        })
-        );
+        return Arbitraries.integers()
+                .between(0, 5)
+                .flatMap(
+                        episodeCount ->
+                                Arbitraries.integers()
+                                        .between(1, 6)
+                                        .list()
+                                        .ofSize(episodeCount)
+                                        .map(
+                                                sentenceCounts -> {
+                                                    final List<EnglishStudy> studies =
+                                                            new ArrayList<>();
+                                                    long idCounter = 1L;
+                                                    for (int ep = 0; ep < episodeCount; ep++) {
+                                                        final long episode = ep + 1L;
+                                                        final int sentenceCount =
+                                                                sentenceCounts.get(ep);
+                                                        for (int s = 0; s < sentenceCount; s++) {
+                                                            final EnglishStudy study =
+                                                                    new EnglishStudy();
+                                                            study.setId(idCounter);
+                                                            study.setEpisode(episode);
+                                                            study.setEnglishSentence(
+                                                                    "English_ep"
+                                                                            + episode
+                                                                            + "_s"
+                                                                            + (s + 1));
+                                                            study.setKoreanSentence(
+                                                                    "Korean_ep"
+                                                                            + episode
+                                                                            + "_s"
+                                                                            + (s + 1));
+                                                            idCounter++;
+                                                        }
+                                                    }
+                                                    return studies;
+                                                }));
     }
 }

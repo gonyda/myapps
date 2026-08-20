@@ -1,16 +1,6 @@
 package com.myapps.web.myrpg.domain.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Tuple;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.application.dto.FullMapCell;
 import com.myapps.web.myrpg.application.dto.FullMapView;
@@ -19,16 +9,23 @@ import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.Tuple;
 
 /**
  * 뷰 간선 정합성 프로퍼티 테스트.
  *
- * <p>임의의 유효 맵 그래프(완전 연결 및 부분 연결 격자)에 대해
- * {@link MapViewFactory#createMinimap}과 {@link MapViewFactory#createFullMap}이
- * 생성하는 뷰 셀의 {@code linkRight}/{@code linkDown} 플래그가 다음 쌍조건과
- * 정확히 일치하는지 검증한다:
+ * <p>임의의 유효 맵 그래프(완전 연결 및 부분 연결 격자)에 대해 {@link MapViewFactory#createMinimap}과 {@link
+ * MapViewFactory#createFullMap}이 생성하는 뷰 셀의 {@code linkRight}/{@code linkDown} 플래그가 다음 쌍조건과 정확히
+ * 일치하는지 검증한다:
  *
  * <pre>
  *   linkRight ⟺ (오른쪽 이웃이 표시 범위 내 ∧ links에 실제 연결)
@@ -56,13 +53,15 @@ class MapViewFactoryEdgePropertyTest {
      * 미니맵에서 각 셀의 linkRight/linkDown 플래그가 쌍조건을 만족하는지 검증한다.
      *
      * <p>linkRight=true ⟺ (오른쪽 이웃이 미니맵 표시 범위 내 ∧ links에 실제 연결)
-     * <p>linkDown=true  ⟺ (아래쪽 이웃이 미니맵 표시 범위 내 ∧ links에 실제 연결)
+     *
+     * <p>linkDown=true ⟺ (아래쪽 이웃이 미니맵 표시 범위 내 ∧ links에 실제 연결)
      *
      * @param graphAndCurrent 임의 생성된 맵 그래프(부분 연결 포함)와 현재 노드 ID 튜플
      */
     @Property(tries = 100)
     void should_satisfyEdgeBiconditional_when_minimapCreated(
-            @ForAll("graphWithPartialConnectivity") final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
+            @ForAll("graphWithPartialConnectivity")
+                    final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
 
         final MapGraph graph = graphAndCurrent.get1();
         final String currentNodeId = graphAndCurrent.get2();
@@ -71,23 +70,22 @@ class MapViewFactoryEdgePropertyTest {
         final MinimapView minimap = mapViewFactory.createMinimap(graph, currentNodeId);
         final List<MinimapCell> cells = minimap.cells();
 
-        final Set<String> cellNodeIds = cells.stream()
-                .map(MinimapCell::nodeId)
-                .collect(Collectors.toSet());
+        final Set<String> cellNodeIds =
+                cells.stream().map(MinimapCell::nodeId).collect(Collectors.toSet());
 
         for (final MinimapCell cell : cells) {
             final MapNode node = graph.byId(cell.nodeId()).orElseThrow();
 
             // linkRight 쌍조건 검증
-            final boolean expectedLinkRight = isMinimapEdgeExpected(
-                    graph, currentNode, node, 1, 0, cellNodeIds);
+            final boolean expectedLinkRight =
+                    isMinimapEdgeExpected(graph, currentNode, node, 1, 0, cellNodeIds);
             assertThat(cell.linkRight())
                     .as("linkRight for node %s at (%d,%d)", node.id(), node.x(), node.y())
                     .isEqualTo(expectedLinkRight);
 
             // linkDown 쌍조건 검증
-            final boolean expectedLinkDown = isMinimapEdgeExpected(
-                    graph, currentNode, node, 0, 1, cellNodeIds);
+            final boolean expectedLinkDown =
+                    isMinimapEdgeExpected(graph, currentNode, node, 0, 1, cellNodeIds);
             assertThat(cell.linkDown())
                     .as("linkDown for node %s at (%d,%d)", node.id(), node.x(), node.y())
                     .isEqualTo(expectedLinkDown);
@@ -98,14 +96,17 @@ class MapViewFactoryEdgePropertyTest {
      * 전체지도에서 각 셀의 linkRight/linkDown 플래그가 쌍조건을 만족하는지 검증한다.
      *
      * <p>전체지도는 모든 노드가 항상 표시 범위 내이므로, 조건은 다음과 같다:
+     *
      * <p>linkRight=true ⟺ (좌표상 오른쪽 이웃이 존재 ∧ links에 실제 연결)
-     * <p>linkDown=true  ⟺ (좌표상 아래쪽 이웃이 존재 ∧ links에 실제 연결)
+     *
+     * <p>linkDown=true ⟺ (좌표상 아래쪽 이웃이 존재 ∧ links에 실제 연결)
      *
      * @param graphAndCurrent 임의 생성된 맵 그래프(부분 연결 포함)와 현재 노드 ID 튜플
      */
     @Property(tries = 100)
     void should_satisfyEdgeBiconditional_when_fullMapCreated(
-            @ForAll("graphWithPartialConnectivity") final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
+            @ForAll("graphWithPartialConnectivity")
+                    final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
 
         final MapGraph graph = graphAndCurrent.get1();
         final String currentNodeId = graphAndCurrent.get2();
@@ -133,34 +134,53 @@ class MapViewFactoryEdgePropertyTest {
     /**
      * 부분 연결 격자 그래프와 무작위 현재 노드 ID 튜플을 생성하는 Arbitrary 제공자.
      *
-     * <p>완전 연결 격자를 생성한 뒤, 일부 간선을 무작위로 제거하여
-     * 좌표상 인접하지만 links로 연결되지 않은 경우를 포함시킨다.
+     * <p>완전 연결 격자를 생성한 뒤, 일부 간선을 무작위로 제거하여 좌표상 인접하지만 links로 연결되지 않은 경우를 포함시킨다.
      *
      * @return 맵 그래프와 현재 노드 ID 튜플 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<MapGraph, String>> graphWithPartialConnectivity() {
-        return Arbitraries.integers().between(GRID_SIZE_MIN, GRID_SIZE_MAX)
-                .flatMap(gridSize -> {
-                    final int nodeCount = gridSize * gridSize;
-                    final Arbitrary<String> types = Arbitraries.of(
-                            "town", "field", "dungeon", "shrine", "lake");
-                    final Arbitrary<List<Boolean>> removals = Arbitraries.of(true, false)
-                            .list().ofSize(computeMaxEdgeCount(gridSize));
+        return Arbitraries.integers()
+                .between(GRID_SIZE_MIN, GRID_SIZE_MAX)
+                .flatMap(
+                        gridSize -> {
+                            final int nodeCount = gridSize * gridSize;
+                            final Arbitrary<String> types =
+                                    Arbitraries.of("town", "field", "dungeon", "shrine", "lake");
+                            final Arbitrary<List<Boolean>> removals =
+                                    Arbitraries.of(true, false)
+                                            .list()
+                                            .ofSize(computeMaxEdgeCount(gridSize));
 
-                    return types.list().ofSize(nodeCount)
-                            .flatMap(typeList -> removals.flatMap(removalFlags -> {
-                                final List<MapNode> nodes = createPartialGridNodes(
-                                        gridSize, typeList, removalFlags);
-                                final MapGraph graph = new MapGraph(
-                                        nodes, List.of(), nodes.getFirst().id());
-                                final List<String> nodeIds = nodes.stream()
-                                        .map(MapNode::id)
-                                        .toList();
-                                return Arbitraries.of(nodeIds)
-                                        .map(currentId -> Tuple.of(graph, currentId));
-                            }));
-                });
+                            return types.list()
+                                    .ofSize(nodeCount)
+                                    .flatMap(
+                                            typeList ->
+                                                    removals.flatMap(
+                                                            removalFlags -> {
+                                                                final List<MapNode> nodes =
+                                                                        createPartialGridNodes(
+                                                                                gridSize,
+                                                                                typeList,
+                                                                                removalFlags);
+                                                                final MapGraph graph =
+                                                                        new MapGraph(
+                                                                                nodes,
+                                                                                List.of(),
+                                                                                nodes.getFirst()
+                                                                                        .id());
+                                                                final List<String> nodeIds =
+                                                                        nodes.stream()
+                                                                                .map(MapNode::id)
+                                                                                .toList();
+                                                                return Arbitraries.of(nodeIds)
+                                                                        .map(
+                                                                                currentId ->
+                                                                                        Tuple.of(
+                                                                                                graph,
+                                                                                                currentId));
+                                                            }));
+                        });
     }
 
     private int computeMaxEdgeCount(final int gridSize) {
@@ -168,9 +188,8 @@ class MapViewFactoryEdgePropertyTest {
         return 2 * gridSize * (gridSize - 1);
     }
 
-    private List<MapNode> createPartialGridNodes(final int gridSize,
-                                                  final List<String> typeList,
-                                                  final List<Boolean> removalFlags) {
+    private List<MapNode> createPartialGridNodes(
+            final int gridSize, final List<String> typeList, final List<Boolean> removalFlags) {
         final String[][] idGrid = new String[gridSize][gridSize];
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {
@@ -190,8 +209,8 @@ class MapViewFactoryEdgePropertyTest {
                 final String name = "Node " + row + "," + col;
                 final NodeType nodeType = NodeType.fromType(type).orElse(null);
                 final String dungeonId = "dungeon".equals(type) ? "dungeon-" + id : null;
-                final List<String> links = buildPartialLinks(
-                        row, col, gridSize, idGrid, removedEdges);
+                final List<String> links =
+                        buildPartialLinks(row, col, gridSize, idGrid, removedEdges);
 
                 nodes.add(new MapNode(id, name, type, nodeType, col, row, dungeonId, null, links));
             }
@@ -199,9 +218,8 @@ class MapViewFactoryEdgePropertyTest {
         return List.copyOf(nodes);
     }
 
-    private Set<String> computeRemovedEdges(final int gridSize,
-                                             final String[][] idGrid,
-                                             final List<Boolean> removalFlags) {
+    private Set<String> computeRemovedEdges(
+            final int gridSize, final String[][] idGrid, final List<Boolean> removalFlags) {
         final List<String> allEdgeKeys = new ArrayList<>();
 
         // 수평 간선 (row, col) → (row, col+1)
@@ -234,10 +252,12 @@ class MapViewFactoryEdgePropertyTest {
         return nodeB + "<->" + nodeA;
     }
 
-    private List<String> buildPartialLinks(final int row, final int col,
-                                            final int gridSize,
-                                            final String[][] idGrid,
-                                            final Set<String> removedEdges) {
+    private List<String> buildPartialLinks(
+            final int row,
+            final int col,
+            final int gridSize,
+            final String[][] idGrid,
+            final Set<String> removedEdges) {
         final List<String> links = new ArrayList<>();
         final String currentId = idGrid[row][col];
 
@@ -268,20 +288,23 @@ class MapViewFactoryEdgePropertyTest {
         return List.copyOf(links);
     }
 
-    private boolean isMinimapEdgeExpected(final MapGraph graph,
-                                          final MapNode centerNode,
-                                          final MapNode node,
-                                          final int edgeDx,
-                                          final int edgeDy,
-                                          final Set<String> cellNodeIds) {
+    private boolean isMinimapEdgeExpected(
+            final MapGraph graph,
+            final MapNode centerNode,
+            final MapNode node,
+            final int edgeDx,
+            final int edgeDy,
+            final Set<String> cellNodeIds) {
         final int neighborX = node.x() + edgeDx;
         final int neighborY = node.y() + edgeDy;
 
         // 조건 1: 이웃이 미니맵 표시 범위 내인지 확인
         final int offsetX = neighborX - centerNode.x();
         final int offsetY = neighborY - centerNode.y();
-        if (offsetX < MINIMAP_DX_MIN || offsetX > MINIMAP_DX_MAX
-                || offsetY < MINIMAP_DY_MIN || offsetY > MINIMAP_DY_MAX) {
+        if (offsetX < MINIMAP_DX_MIN
+                || offsetX > MINIMAP_DX_MAX
+                || offsetY < MINIMAP_DY_MIN
+                || offsetY > MINIMAP_DY_MAX) {
             return false;
         }
 
@@ -301,10 +324,8 @@ class MapViewFactoryEdgePropertyTest {
         return node.links().contains(neighbor.id());
     }
 
-    private boolean isFullMapEdgeExpected(final MapGraph graph,
-                                          final MapNode node,
-                                          final int edgeDx,
-                                          final int edgeDy) {
+    private boolean isFullMapEdgeExpected(
+            final MapGraph graph, final MapNode node, final int edgeDx, final int edgeDy) {
         final int neighborX = node.x() + edgeDx;
         final int neighborY = node.y() + edgeDy;
 

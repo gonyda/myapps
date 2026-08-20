@@ -5,7 +5,7 @@
 
 ---
 
-## 1. 개발 워크플로우: 메모리뱅크 → Spec 문서 3종 → 구현
+## 1. 개발 워크플로우: 메모리뱅크 → Spec 문서 3종 → 구현 및 가드레일 검증
 
 모든 작업(코드 작성, 리팩토링, 버그 수정, 문서 작업 포함)은 아래 순서를 따릅니다:
 
@@ -22,7 +22,8 @@
 2. 사용자 검토 및 승인
 
 3. tasks.md 기반 구현 (ACT MODE)
-   └── 각 Task 완료 시 mvn test + mvn clean install 검증
+   └── 각 Task 완료 시 반드시 아래 명령어로 가드레일 검증 및 CodeGraph 동기화 수행 (스마트 Tail 토큰 최적화):
+       mvn -B -q spotless:apply -pl {modulename} && (mvn -B clean install -pl {modulename} -am > /tmp/mvn.log 2>&1 || (tail -n 30 /tmp/mvn.log && exit 1)) && tail -n 12 /tmp/mvn.log && codegraph sync
 
 4. 메모리뱅크 자동 업데이트 (§5 절차에 따라 작업 결과 반영)
 ```
@@ -60,7 +61,7 @@
 ### tasks.md
 - Overview: 구현 순서 원칙
 - Tasks: 체크박스 리스트 (하위 Task 포함)
-- 각 Task 완료 전 테스트 + 빌드 검증
+- 각 Task 완료 전 4대 가드레일 검증(`mvn spotless:apply && mvn clean install -pl {modulename} -am && codegraph sync`)
 
 ---
 
@@ -84,9 +85,9 @@
   - **참조 시점**: 브랜치 생성, 커밋, PR 생성, push, rebase 등 git 명령을 실행하기 전에 반드시 읽습니다.
   - **참조 목적**: 브랜치 전략(`main` 직접 push 금지), 커밋 메시지 컨벤션, PR 규칙을 준수하기 위해 참조합니다.
 
-- **빌드 검증**: `.kiro/steering/workflow/task-build-validation.md`
-  - **참조 시점**: 각 Task 완료 후 빌드 검증이 필요할 때 읽습니다.
-  - **참조 목적**: `mvn test`, `mvn clean install` 실행 순서와 검증 기준을 확인하기 위해 참조합니다.
+- **빌드 및 품질 가드레일 검증**: `.kiro/steering/workflow/task-build-validation.md`
+  - **참조 시점**: 각 Task 완료 후 빌드 및 가드레일 검증이 필요할 때 읽습니다.
+  - **참조 목적**: `mvn -B spotless:apply && mvn -B clean install -pl {modulename} -am && codegraph sync` 파이프라인과 검증 기준을 확인하기 위해 참조합니다.
 
 ### 3.3. 프로젝트 설정 관련
 
@@ -96,7 +97,7 @@
 
 - **POM 컨벤션**: `.kiro/steering/project/pom-conventions.md`
   - **참조 시점**: `pom.xml` 파일을 수정하거나 의존성을 추가/제거할 때 읽습니다.
-  - **참조 목적**: 모듈 구조, 의존성 버전 관리, 플러그인 설정 컨벤션을 준수하기 위해 참조합니다.
+  - **참조 목적**: 모듈 구조, 의존성 버전 관리, 4대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo) 설정을 준수하기 위해 참조합니다.
 
 - **기술 스택**: `.kiro/steering/project/tech-stack.md`
   - **참조 시점**: 기술 스택을 선정하거나 변경할 때, 새 라이브러리/프레임워크 도입을 검토할 때 읽습니다.
@@ -180,4 +181,3 @@
 3. **Spec 문서 3종 완료** — 시작 전에 스펙 개요를 기록
 4. **커밋/빌드 완료** — 새 커밋 해시를 최근 커밋 하이라이트에 반영
 5. **다음 단계 이동 시** — 다음에 할 일을 명시
-<!-- End of clinerules -->

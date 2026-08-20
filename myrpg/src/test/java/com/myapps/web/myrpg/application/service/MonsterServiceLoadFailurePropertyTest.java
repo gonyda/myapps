@@ -1,38 +1,35 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.myapps.web.myrpg.application.exception.MonsterDataException;
+import com.myapps.web.myrpg.domain.model.Item;
+import com.myapps.web.myrpg.domain.model.MapGraph;
+import com.myapps.web.myrpg.domain.model.PotionItem;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.application.exception.MonsterDataException;
-import com.myapps.web.myrpg.domain.model.Item;
-import com.myapps.web.myrpg.domain.model.MapGraph;
-import com.myapps.web.myrpg.domain.model.PotionItem;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * 몬스터 카탈로그 검증 실패 프로퍼티 테스트.
  *
- * <p>유효한 몬스터 데이터셋에 결함(중복 id, 미지 type, 필드 누락, 범위 위반, lines≠3)을
- * 주입하여 {@code loadFromStream}이 {@link MonsterDataException}을 던짐을 검증한다.
+ * <p>유효한 몬스터 데이터셋에 결함(중복 id, 미지 type, 필드 누락, 범위 위반, lines≠3)을 주입하여 {@code loadFromStream}이 {@link
+ * MonsterDataException}을 던짐을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 4: 카탈로그 검증 실패
  *
@@ -68,8 +65,8 @@ class MonsterServiceLoadFailurePropertyTest {
         final List<MonsterInputData> corrupted = injectDuplicateId(dataset, 0, targetIndex);
 
         final String json = serializeToJson(corrupted);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -94,8 +91,8 @@ class MonsterServiceLoadFailurePropertyTest {
         final List<MonsterInputData> corrupted = injectUnknownType(dataset, targetIdx, unknownType);
 
         final String json = serializeToJson(corrupted);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -106,8 +103,8 @@ class MonsterServiceLoadFailurePropertyTest {
     /**
      * 유효 데이터셋에 필수 필드 누락을 주입하면 {@code MonsterDataException}이 발생함을 검증한다.
      *
-     * <p>필수 필드(id, name, type, level, maxHp, attackPower, defense, critical, experience)
-     * 중 하나를 null이나 누락시켜 검증한다.
+     * <p>필수 필드(id, name, type, level, maxHp, attackPower, defense, critical, experience) 중 하나를
+     * null이나 누락시켜 검증한다.
      *
      * @param dataset 유효 몬스터 데이터셋
      * @param corruptionIndex 필드를 누락시킬 항목 인덱스
@@ -121,8 +118,8 @@ class MonsterServiceLoadFailurePropertyTest {
 
         final int targetIdx = corruptionIndex % dataset.size();
         final String json = serializeWithMissingField(dataset, targetIdx, fieldIndex);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -131,8 +128,7 @@ class MonsterServiceLoadFailurePropertyTest {
     }
 
     /**
-     * 유효 데이터셋에 goldDrop 범위 위반(min > max 또는 min < 0)을 주입하면
-     * {@code MonsterDataException}이 발생함을 검증한다.
+     * 유효 데이터셋에 goldDrop 범위 위반(min > max 또는 min < 0)을 주입하면 {@code MonsterDataException}이 발생함을 검증한다.
      *
      * @param dataset 유효 몬스터 데이터셋
      * @param corruptionIndex 범위를 위반시킬 항목 인덱스
@@ -145,12 +141,12 @@ class MonsterServiceLoadFailurePropertyTest {
             @ForAll("violationType") final int violationType) {
 
         final int targetIdx = corruptionIndex % dataset.size();
-        final List<MonsterInputData> corrupted = injectGoldDropViolation(
-                dataset, targetIdx, violationType);
+        final List<MonsterInputData> corrupted =
+                injectGoldDropViolation(dataset, targetIdx, violationType);
 
         final String json = serializeToJson(corrupted);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -159,8 +155,7 @@ class MonsterServiceLoadFailurePropertyTest {
     }
 
     /**
-     * 유효 데이터셋에 chancePercent 범위 위반(0 또는 101 이상)을 주입하면
-     * {@code MonsterDataException}이 발생함을 검증한다.
+     * 유효 데이터셋에 chancePercent 범위 위반(0 또는 101 이상)을 주입하면 {@code MonsterDataException}이 발생함을 검증한다.
      *
      * @param dataset 유효 몬스터 데이터셋
      * @param corruptionIndex 범위를 위반시킬 항목 인덱스
@@ -173,12 +168,12 @@ class MonsterServiceLoadFailurePropertyTest {
             @ForAll("invalidChancePercent") final int invalidChance) {
 
         final int targetIdx = corruptionIndex % dataset.size();
-        final List<MonsterInputData> corrupted = injectInvalidChancePercent(
-                dataset, targetIdx, invalidChance);
+        final List<MonsterInputData> corrupted =
+                injectInvalidChancePercent(dataset, targetIdx, invalidChance);
 
         final String json = serializeToJson(corrupted);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -187,8 +182,7 @@ class MonsterServiceLoadFailurePropertyTest {
     }
 
     /**
-     * 유효 데이터셋에 lines 개수 위반(3개가 아닌 경우)을 주입하면
-     * {@code MonsterDataException}이 발생함을 검증한다.
+     * 유효 데이터셋에 lines 개수 위반(3개가 아닌 경우)을 주입하면 {@code MonsterDataException}이 발생함을 검증한다.
      *
      * @param dataset 유효 몬스터 데이터셋
      * @param corruptionIndex lines를 위반시킬 항목 인덱스
@@ -201,12 +195,12 @@ class MonsterServiceLoadFailurePropertyTest {
             @ForAll("invalidLineCount") final int invalidLineCount) {
 
         final int targetIdx = corruptionIndex % dataset.size();
-        final List<MonsterInputData> corrupted = injectInvalidLinesCount(
-                dataset, targetIdx, invalidLineCount);
+        final List<MonsterInputData> corrupted =
+                injectInvalidLinesCount(dataset, targetIdx, invalidLineCount);
 
         final String json = serializeToJson(corrupted);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final MonsterService monsterService = buildServiceWithMocks();
 
@@ -225,7 +219,8 @@ class MonsterServiceLoadFailurePropertyTest {
      */
     @Provide
     Arbitrary<List<MonsterInputData>> validMonsterDataset() {
-        return Arbitraries.integers().between(MIN_MONSTER_COUNT, MAX_MONSTER_COUNT)
+        return Arbitraries.integers()
+                .between(MIN_MONSTER_COUNT, MAX_MONSTER_COUNT)
                 .flatMap(this::buildUniqueMonsterList);
     }
 
@@ -256,7 +251,10 @@ class MonsterServiceLoadFailurePropertyTest {
      */
     @Provide
     Arbitrary<String> unknownType() {
-        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(10)
+        return Arbitraries.strings()
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(10)
                 .filter(s -> !isValidType(s));
     }
 
@@ -277,9 +275,7 @@ class MonsterServiceLoadFailurePropertyTest {
      */
     @Provide
     Arbitrary<Integer> invalidChancePercent() {
-        return Arbitraries.oneOf(
-                Arbitraries.just(0),
-                Arbitraries.integers().between(101, 200));
+        return Arbitraries.oneOf(Arbitraries.just(0), Arbitraries.integers().between(101, 200));
     }
 
     /**
@@ -290,8 +286,7 @@ class MonsterServiceLoadFailurePropertyTest {
     @Provide
     Arbitrary<Integer> invalidLineCount() {
         return Arbitraries.oneOf(
-                Arbitraries.integers().between(0, 2),
-                Arbitraries.integers().between(4, 6));
+                Arbitraries.integers().between(0, 2), Arbitraries.integers().between(4, 6));
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -299,9 +294,7 @@ class MonsterServiceLoadFailurePropertyTest {
     // ──────────────────────────────────────────────────────────────────────
 
     private Arbitrary<List<MonsterInputData>> buildUniqueMonsterList(final int count) {
-        return monsterInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return monsterInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private List<MonsterInputData> ensureUniqueIds(final List<MonsterInputData> rawList) {
@@ -309,21 +302,33 @@ class MonsterServiceLoadFailurePropertyTest {
         for (int i = 0; i < rawList.size(); i++) {
             final MonsterInputData original = rawList.get(i);
             final String uniqueId = original.id() + "-" + i;
-            result.add(new MonsterInputData(
-                    uniqueId, original.name(), original.typeString(),
-                    original.level(), original.maxHp(), original.attackPower(),
-                    original.defense(), original.critical(), original.experience(),
-                    original.goldDropMin(), original.goldDropMax(),
-                    original.itemDrops(), original.lines()));
+            result.add(
+                    new MonsterInputData(
+                            uniqueId,
+                            original.name(),
+                            original.typeString(),
+                            original.level(),
+                            original.maxHp(),
+                            original.attackPower(),
+                            original.defense(),
+                            original.critical(),
+                            original.experience(),
+                            original.goldDropMin(),
+                            original.goldDropMax(),
+                            original.itemDrops(),
+                            original.lines()));
         }
         return List.copyOf(result);
     }
 
     private Arbitrary<MonsterInputData> monsterInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
         final Arbitrary<String> types = Arbitraries.of(VALID_TYPES);
         final Arbitrary<Integer> levels = Arbitraries.integers().between(1, 50);
         final Arbitrary<Integer> maxHps = Arbitraries.integers().between(1, 999);
@@ -335,36 +340,62 @@ class MonsterServiceLoadFailurePropertyTest {
         final Arbitrary<List<String>> lines = linesArbitrary();
 
         // Combinators.combine은 최대 8개까지 지원하므로 두 단계로 나누어 조합한다.
-        final Arbitrary<MonsterStatGroup> statGroup = Combinators.combine(
-                        levels, maxHps, attackPowers, defenses, criticals, experiences, goldDropRange)
-                .as(MonsterStatGroup::new);
+        final Arbitrary<MonsterStatGroup> statGroup =
+                Combinators.combine(
+                                levels,
+                                maxHps,
+                                attackPowers,
+                                defenses,
+                                criticals,
+                                experiences,
+                                goldDropRange)
+                        .as(MonsterStatGroup::new);
 
         return Combinators.combine(ids, names, types, statGroup, lines)
-                .as((id, name, type, stats, linesList) ->
-                        new MonsterInputData(id, name, type,
-                                stats.level(), stats.maxHp(), stats.attackPower(),
-                                stats.defense(), stats.critical(), stats.experience(),
-                                stats.goldDrop()[0], stats.goldDrop()[1],
-                                List.of(), linesList));
+                .as(
+                        (id, name, type, stats, linesList) ->
+                                new MonsterInputData(
+                                        id,
+                                        name,
+                                        type,
+                                        stats.level(),
+                                        stats.maxHp(),
+                                        stats.attackPower(),
+                                        stats.defense(),
+                                        stats.critical(),
+                                        stats.experience(),
+                                        stats.goldDrop()[0],
+                                        stats.goldDrop()[1],
+                                        List.of(),
+                                        linesList));
     }
 
     private record MonsterStatGroup(
-            int level, int maxHp, int attackPower,
-            int defense, int critical, long experience,
-            int[] goldDrop
-    ) {
-    }
+            int level,
+            int maxHp,
+            int attackPower,
+            int defense,
+            int critical,
+            long experience,
+            int[] goldDrop) {}
 
     private Arbitrary<int[]> goldDropArbitrary() {
-        return Arbitraries.integers().between(0, 100)
-                .flatMap(min -> Arbitraries.integers().between(min, min + 100)
-                        .map(max -> new int[]{min, max}));
+        return Arbitraries.integers()
+                .between(0, 100)
+                .flatMap(
+                        min ->
+                                Arbitraries.integers()
+                                        .between(min, min + 100)
+                                        .map(max -> new int[] {min, max}));
     }
 
     private Arbitrary<List<String>> linesArbitrary() {
         return Arbitraries.strings()
-                .alpha().ofMinLength(LINE_MIN_LENGTH).ofMaxLength(LINE_MAX_LENGTH)
-                .list().ofSize(3);
+                .alpha()
+                .ofMinLength(LINE_MIN_LENGTH)
+                .ofMaxLength(LINE_MAX_LENGTH)
+                .list()
+                .ofSize(3);
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -372,48 +403,60 @@ class MonsterServiceLoadFailurePropertyTest {
     // ──────────────────────────────────────────────────────────────────────
 
     private List<MonsterInputData> injectDuplicateId(
-            final List<MonsterInputData> dataset,
-            final int sourceIndex,
-            final int targetIndex) {
+            final List<MonsterInputData> dataset, final int sourceIndex, final int targetIndex) {
 
         final List<MonsterInputData> result = new ArrayList<>(dataset);
         final MonsterInputData source = result.get(sourceIndex);
         final MonsterInputData target = result.get(targetIndex);
 
-        final MonsterInputData duplicated = new MonsterInputData(
-                source.id(), target.name(), target.typeString(),
-                target.level(), target.maxHp(), target.attackPower(),
-                target.defense(), target.critical(), target.experience(),
-                target.goldDropMin(), target.goldDropMax(),
-                target.itemDrops(), target.lines());
+        final MonsterInputData duplicated =
+                new MonsterInputData(
+                        source.id(),
+                        target.name(),
+                        target.typeString(),
+                        target.level(),
+                        target.maxHp(),
+                        target.attackPower(),
+                        target.defense(),
+                        target.critical(),
+                        target.experience(),
+                        target.goldDropMin(),
+                        target.goldDropMax(),
+                        target.itemDrops(),
+                        target.lines());
 
         result.set(targetIndex, duplicated);
         return List.copyOf(result);
     }
 
     private List<MonsterInputData> injectUnknownType(
-            final List<MonsterInputData> dataset,
-            final int targetIndex,
-            final String unknownType) {
+            final List<MonsterInputData> dataset, final int targetIndex, final String unknownType) {
 
         final List<MonsterInputData> result = new ArrayList<>(dataset);
         final MonsterInputData original = result.get(targetIndex);
 
-        final MonsterInputData corrupted = new MonsterInputData(
-                original.id(), original.name(), unknownType,
-                original.level(), original.maxHp(), original.attackPower(),
-                original.defense(), original.critical(), original.experience(),
-                original.goldDropMin(), original.goldDropMax(),
-                original.itemDrops(), original.lines());
+        final MonsterInputData corrupted =
+                new MonsterInputData(
+                        original.id(),
+                        original.name(),
+                        unknownType,
+                        original.level(),
+                        original.maxHp(),
+                        original.attackPower(),
+                        original.defense(),
+                        original.critical(),
+                        original.experience(),
+                        original.goldDropMin(),
+                        original.goldDropMax(),
+                        original.itemDrops(),
+                        original.lines());
 
         result.set(targetIndex, corrupted);
         return List.copyOf(result);
     }
 
     private List<MonsterInputData> injectGoldDropViolation(
-            final List<MonsterInputData> dataset,
-            final int targetIndex,
-            final int violationType) {
+            final List<MonsterInputData> dataset, final int targetIndex, final int violationType) {
 
         final List<MonsterInputData> result = new ArrayList<>(dataset);
         final MonsterInputData original = result.get(targetIndex);
@@ -430,44 +473,58 @@ class MonsterServiceLoadFailurePropertyTest {
             corruptedMax = 10;
         }
 
-        final MonsterInputData corrupted = new MonsterInputData(
-                original.id(), original.name(), original.typeString(),
-                original.level(), original.maxHp(), original.attackPower(),
-                original.defense(), original.critical(), original.experience(),
-                corruptedMin, corruptedMax,
-                original.itemDrops(), original.lines());
+        final MonsterInputData corrupted =
+                new MonsterInputData(
+                        original.id(),
+                        original.name(),
+                        original.typeString(),
+                        original.level(),
+                        original.maxHp(),
+                        original.attackPower(),
+                        original.defense(),
+                        original.critical(),
+                        original.experience(),
+                        corruptedMin,
+                        corruptedMax,
+                        original.itemDrops(),
+                        original.lines());
 
         result.set(targetIndex, corrupted);
         return List.copyOf(result);
     }
 
     private List<MonsterInputData> injectInvalidChancePercent(
-            final List<MonsterInputData> dataset,
-            final int targetIndex,
-            final int invalidChance) {
+            final List<MonsterInputData> dataset, final int targetIndex, final int invalidChance) {
 
         final List<MonsterInputData> result = new ArrayList<>(dataset);
         final MonsterInputData original = result.get(targetIndex);
 
         // 아이템 드랍을 하나 추가하되 유효하지 않은 chancePercent 사용
-        final List<ItemDropInputData> corruptedDrops = List.of(
-                new ItemDropInputData("hp_potion_50", invalidChance, 1, 1));
+        final List<ItemDropInputData> corruptedDrops =
+                List.of(new ItemDropInputData("hp_potion_50", invalidChance, 1, 1));
 
-        final MonsterInputData corrupted = new MonsterInputData(
-                original.id(), original.name(), original.typeString(),
-                original.level(), original.maxHp(), original.attackPower(),
-                original.defense(), original.critical(), original.experience(),
-                original.goldDropMin(), original.goldDropMax(),
-                corruptedDrops, original.lines());
+        final MonsterInputData corrupted =
+                new MonsterInputData(
+                        original.id(),
+                        original.name(),
+                        original.typeString(),
+                        original.level(),
+                        original.maxHp(),
+                        original.attackPower(),
+                        original.defense(),
+                        original.critical(),
+                        original.experience(),
+                        original.goldDropMin(),
+                        original.goldDropMax(),
+                        corruptedDrops,
+                        original.lines());
 
         result.set(targetIndex, corrupted);
         return List.copyOf(result);
     }
 
     private List<MonsterInputData> injectInvalidLinesCount(
-            final List<MonsterInputData> dataset,
-            final int targetIndex,
-            final int lineCount) {
+            final List<MonsterInputData> dataset, final int targetIndex, final int lineCount) {
 
         final List<MonsterInputData> result = new ArrayList<>(dataset);
         final MonsterInputData original = result.get(targetIndex);
@@ -477,21 +534,28 @@ class MonsterServiceLoadFailurePropertyTest {
             invalidLines.add("line" + i);
         }
 
-        final MonsterInputData corrupted = new MonsterInputData(
-                original.id(), original.name(), original.typeString(),
-                original.level(), original.maxHp(), original.attackPower(),
-                original.defense(), original.critical(), original.experience(),
-                original.goldDropMin(), original.goldDropMax(),
-                original.itemDrops(), List.copyOf(invalidLines));
+        final MonsterInputData corrupted =
+                new MonsterInputData(
+                        original.id(),
+                        original.name(),
+                        original.typeString(),
+                        original.level(),
+                        original.maxHp(),
+                        original.attackPower(),
+                        original.defense(),
+                        original.critical(),
+                        original.experience(),
+                        original.goldDropMin(),
+                        original.goldDropMax(),
+                        original.itemDrops(),
+                        List.copyOf(invalidLines));
 
         result.set(targetIndex, corrupted);
         return List.copyOf(result);
     }
 
     private String serializeWithMissingField(
-            final List<MonsterInputData> dataset,
-            final int targetIndex,
-            final int fieldIndex) {
+            final List<MonsterInputData> dataset, final int targetIndex, final int fieldIndex) {
 
         final ArrayNode rootArray = objectMapper.createArrayNode();
 
@@ -616,19 +680,19 @@ class MonsterServiceLoadFailurePropertyTest {
     /**
      * 프로퍼티 테스트용 몬스터 입력 데이터 레코드.
      *
-     * @param id           몬스터 고유 식별자
-     * @param name         몬스터 표시 이름
-     * @param typeString   몬스터 유형 문자열
-     * @param level        레벨
-     * @param maxHp        최대 HP
-     * @param attackPower  공격력
-     * @param defense      방어력
-     * @param critical     크리티컬
-     * @param experience   경험치
-     * @param goldDropMin  골드 드랍 최소값
-     * @param goldDropMax  골드 드랍 최대값
-     * @param itemDrops    아이템 드랍 목록
-     * @param lines        조우 대사 목록
+     * @param id 몬스터 고유 식별자
+     * @param name 몬스터 표시 이름
+     * @param typeString 몬스터 유형 문자열
+     * @param level 레벨
+     * @param maxHp 최대 HP
+     * @param attackPower 공격력
+     * @param defense 방어력
+     * @param critical 크리티컬
+     * @param experience 경험치
+     * @param goldDropMin 골드 드랍 최소값
+     * @param goldDropMax 골드 드랍 최대값
+     * @param itemDrops 아이템 드랍 목록
+     * @param lines 조우 대사 목록
      */
     record MonsterInputData(
             String id,
@@ -643,23 +707,15 @@ class MonsterServiceLoadFailurePropertyTest {
             int goldDropMin,
             int goldDropMax,
             List<ItemDropInputData> itemDrops,
-            List<String> lines
-    ) {
-    }
+            List<String> lines) {}
 
     /**
      * 프로퍼티 테스트용 아이템 드랍 입력 데이터 레코드.
      *
-     * @param itemId        아이템 ID
+     * @param itemId 아이템 ID
      * @param chancePercent 드랍 확률
-     * @param minQuantity   최소 수량
-     * @param maxQuantity   최대 수량
+     * @param minQuantity 최소 수량
+     * @param maxQuantity 최대 수량
      */
-    record ItemDropInputData(
-            String itemId,
-            int chancePercent,
-            int minQuantity,
-            int maxQuantity
-    ) {
-    }
+    record ItemDropInputData(String itemId, int chancePercent, int minQuantity, int maxQuantity) {}
 }

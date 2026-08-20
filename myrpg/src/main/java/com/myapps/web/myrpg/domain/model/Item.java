@@ -3,8 +3,7 @@ package com.myapps.web.myrpg.domain.model;
 /**
  * 아이템 카탈로그의 공통 계약을 정의하는 봉인 인터페이스.
  *
- * <p>포션({@link PotionItem})과 장비({@link EquipmentItem})만 허용하며,
- * 모든 아이템은 고유 식별자·이름·타입·구매가를 제공한다.
+ * <p>포션({@link PotionItem})과 장비({@link EquipmentItem})만 허용하며, 모든 아이템은 고유 식별자·이름·타입·구매가를 제공한다.
  */
 public sealed interface Item permits PotionItem, EquipmentItem {
 
@@ -32,8 +31,7 @@ public sealed interface Item permits PotionItem, EquipmentItem {
     /**
      * 상점 구매가(optional).
      *
-     * <p>7순위 상점 스펙에서 실제 구매 처리가 확정된다.
-     * 없으면({@code null}) 상점 미판매(드랍 전용)로 취급.
+     * <p>7순위 상점 스펙에서 실제 구매 처리가 확정된다. 없으면({@code null}) 상점 미판매(드랍 전용)로 취급.
      *
      * @return 구매 가격, 또는 상점 미판매이면 {@code null}
      */

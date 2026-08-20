@@ -1,26 +1,24 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-import net.jqwik.api.constraints.StringLength;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 행동 로그 항목 구성과 기본 타입을 검증하는 프로퍼티 테스트.
  *
- * <p>항목은 {@code yyyy-MM-dd HH:mm:ss} 형식의 타임스탬프, 메시지, 타입으로 구성되며,
- * 타입이 {@code null}이면 기본값 {@code move}가 설정되는지 검증한다.
+ * <p>항목은 {@code yyyy-MM-dd HH:mm:ss} 형식의 타임스탬프, 메시지, 타입으로 구성되며, 타입이 {@code null}이면 기본값 {@code
+ * move}가 설정되는지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 19: 행동 로그 항목 구성과 기본 타입
  *
@@ -30,16 +28,16 @@ class ActionLogEntryCompositionPropertyTest {
 
     private static final String DEFAULT_TYPE = "move";
     private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN);
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER =
+            DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN);
     private static final ZoneId ZONE_ID = ZoneId.of("Asia/Seoul");
 
     /**
-     * 임의의 메시지와 non-null 타입으로 로그 항목을 추가하면,
-     * 결과 항목의 타임스탬프가 {@code yyyy-MM-dd HH:mm:ss} 형식이고,
-     * 메시지와 타입이 입력값과 동일한지 검증한다.
+     * 임의의 메시지와 non-null 타입으로 로그 항목을 추가하면, 결과 항목의 타임스탬프가 {@code yyyy-MM-dd HH:mm:ss} 형식이고, 메시지와 타입이
+     * 입력값과 동일한지 검증한다.
      *
      * @param message 임의의 로그 메시지
-     * @param type    임의의 non-null 로그 타입
+     * @param type 임의의 non-null 로그 타입
      * @param epochSecond 임의의 에포크 초 (결정적 Clock 생성용)
      */
     @Property(tries = 100)
@@ -70,8 +68,7 @@ class ActionLogEntryCompositionPropertyTest {
     }
 
     /**
-     * 임의의 메시지와 {@code null} 타입으로 로그 항목을 추가하면,
-     * 결과 항목의 타입이 기본값 {@code move}로 설정되는지 검증한다.
+     * 임의의 메시지와 {@code null} 타입으로 로그 항목을 추가하면, 결과 항목의 타입이 기본값 {@code move}로 설정되는지 검증한다.
      *
      * @param message 임의의 로그 메시지
      * @param epochSecond 임의의 에포크 초 (결정적 Clock 생성용)
@@ -107,8 +104,7 @@ class ActionLogEntryCompositionPropertyTest {
         try {
             LocalDateTime.parse(timestamp, TIMESTAMP_FORMATTER);
         } catch (final DateTimeParseException e) {
-            throw new AssertionError(
-                    "타임스탬프가 yyyy-MM-dd HH:mm:ss 형식이 아닙니다: " + timestamp, e);
+            throw new AssertionError("타임스탬프가 yyyy-MM-dd HH:mm:ss 형식이 아닙니다: " + timestamp, e);
         }
     }
 
@@ -119,9 +115,7 @@ class ActionLogEntryCompositionPropertyTest {
      */
     @Provide
     Arbitrary<String> messages() {
-        return Arbitraries.strings()
-                .ofMinLength(1)
-                .ofMaxLength(50);
+        return Arbitraries.strings().ofMinLength(1).ofMaxLength(50);
     }
 
     /**
@@ -131,10 +125,7 @@ class ActionLogEntryCompositionPropertyTest {
      */
     @Provide
     Arbitrary<String> nonNullTypes() {
-        return Arbitraries.strings()
-                .alpha()
-                .ofMinLength(1)
-                .ofMaxLength(20);
+        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(20);
     }
 
     /**

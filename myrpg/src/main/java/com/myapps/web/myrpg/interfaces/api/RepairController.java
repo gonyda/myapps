@@ -1,17 +1,5 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.myapps.web.myrpg.application.dto.RepairItemView;
 import com.myapps.web.myrpg.application.dto.RepairView;
 import com.myapps.web.myrpg.application.service.CharacterService;
@@ -25,17 +13,27 @@ import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * 대장간 수리 팝업·1포인트 수리를 처리하는 컨트롤러.
  *
- * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며,
- * 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
+ * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며, 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
  *
  * <p>엔드포인트 개요:
+ *
  * <ul>
- *   <li>{@code GET /repair} — 수리 팝업 fragment (닳은 장비만 목록)</li>
- *   <li>{@code POST /repair} — 1포인트 수리 (95% 성공, 실패 시 골드 환불 없음)</li>
+ *   <li>{@code GET /repair} — 수리 팝업 fragment (닳은 장비만 목록)
+ *   <li>{@code POST /repair} — 1포인트 수리 (95% 성공, 실패 시 골드 환불 없음)
  * </ul>
  */
 @Controller
@@ -58,21 +56,22 @@ public class RepairController {
     /**
      * RepairController를 생성한다.
      *
-     * @param characterService     캐릭터 진행상황 서비스
-     * @param shopService          판매가 계산 서비스 (수리비 = 판매가)
-     * @param inventoryService     인벤토리 서비스 (아이템 상세 설명)
-     * @param itemCatalogService   아이템 카탈로그 서비스
-     * @param ownedItemRepository  보유 아이템 리포지토리
-     * @param actionLog            활동 로그 (세션 스코프)
-     * @param random               수리 성공 판정용 Random (테스트 시 시드 고정 가능)
+     * @param characterService 캐릭터 진행상황 서비스
+     * @param shopService 판매가 계산 서비스 (수리비 = 판매가)
+     * @param inventoryService 인벤토리 서비스 (아이템 상세 설명)
+     * @param itemCatalogService 아이템 카탈로그 서비스
+     * @param ownedItemRepository 보유 아이템 리포지토리
+     * @param actionLog 활동 로그 (세션 스코프)
+     * @param random 수리 성공 판정용 Random (테스트 시 시드 고정 가능)
      */
-    public RepairController(final CharacterService characterService,
-                            final ShopService shopService,
-                            final InventoryService inventoryService,
-                            final ItemCatalogService itemCatalogService,
-                            final OwnedItemRepository ownedItemRepository,
-                            final ActionLog actionLog,
-                            final Random random) {
+    public RepairController(
+            final CharacterService characterService,
+            final ShopService shopService,
+            final InventoryService inventoryService,
+            final ItemCatalogService itemCatalogService,
+            final OwnedItemRepository ownedItemRepository,
+            final ActionLog actionLog,
+            final Random random) {
         this.characterService = characterService;
         this.shopService = shopService;
         this.inventoryService = inventoryService;
@@ -85,8 +84,8 @@ public class RepairController {
     /**
      * 수리 팝업 fragment를 반환한다.
      *
-     * <p>인벤토리에서 내구도가 닳은 장비({@code ceil(currentDurability) < maxDurability})만
-     * 필터링하여 수리 목록을 조립한다. 장착 중인 장비도 수리 대상에 포함된다.
+     * <p>인벤토리에서 내구도가 닳은 장비({@code ceil(currentDurability) < maxDurability})만 필터링하여 수리 목록을 조립한다. 장착
+     * 중인 장비도 수리 대상에 포함된다.
      *
      * @param model Spring MVC 모델
      * @return 수리 팝업 fragment 뷰 이름
@@ -102,24 +101,31 @@ public class RepairController {
     /**
      * 1포인트 수리를 수행하고 갱신된 수리 팝업 fragment를 반환한다.
      *
-     * <p>대상 장비의 내구도가 가득 차 있으면 수리 없이 갱신 fragment만 반환한다.
-     * 수리비는 해당 장비의 판매가와 동일하며, 시도 시 골드를 차감한다.
-     * 95% 확률로 성공하여 내구도가 +1 되고, 실패 시 내구도 변화 없이 골드만 소모된다.
+     * <p>대상 장비의 내구도가 가득 차 있으면 수리 없이 갱신 fragment만 반환한다. 수리비는 해당 장비의 판매가와 동일하며, 시도 시 골드를 차감한다. 95%
+     * 확률로 성공하여 내구도가 +1 되고, 실패 시 내구도 변화 없이 골드만 소모된다.
      *
      * @param ownedItemId 수리할 보유 아이템 PK
-     * @param model       Spring MVC 모델
+     * @param model Spring MVC 모델
      * @return 수리 팝업 fragment 뷰 이름
      */
     @PostMapping
     public String repair(@RequestParam final long ownedItemId, final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final OwnedItem target = ownedItemRepository.findById(ownedItemId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
+        final OwnedItem target =
+                ownedItemRepository
+                        .findById(ownedItemId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
 
-        final Item catalogItem = itemCatalogService.byId(target.getItemId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "카탈로그에 아이템이 없습니다: " + target.getItemId()));
+        final Item catalogItem =
+                itemCatalogService
+                        .byId(target.getItemId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "카탈로그에 아이템이 없습니다: " + target.getItemId()));
 
         if (catalogItem instanceof EquipmentItem equipItem
                 && Math.ceil(target.getCurrentDurability()) < equipItem.maxDurability()) {
@@ -161,15 +167,16 @@ public class RepairController {
             if (Math.ceil(owned.getCurrentDurability()) >= equipItem.maxDurability()) {
                 continue;
             }
-            repairItems.add(new RepairItemView(
-                    owned.getId(),
-                    equipItem.name(),
-                    equipItem.type().label(),
-                    (int) Math.ceil(owned.getCurrentDurability()),
-                    equipItem.maxDurability(),
-                    shopService.sellValueOf(owned),
-                    owned.isEquipped(),
-                    inventoryService.describe(equipItem, owned)));
+            repairItems.add(
+                    new RepairItemView(
+                            owned.getId(),
+                            equipItem.name(),
+                            equipItem.type().label(),
+                            (int) Math.ceil(owned.getCurrentDurability()),
+                            equipItem.maxDurability(),
+                            shopService.sellValueOf(owned),
+                            owned.isEquipped(),
+                            inventoryService.describe(equipItem, owned)));
         }
         return new RepairView(List.copyOf(repairItems), currentGold);
     }

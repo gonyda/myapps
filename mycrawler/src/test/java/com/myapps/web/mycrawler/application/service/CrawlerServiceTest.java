@@ -1,23 +1,5 @@
 package com.myapps.web.mycrawler.application.service;
 
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.myapps.web.mycrawler.domain.model.CrawlResult;
-import com.myapps.web.mycrawler.domain.model.CrawlStatus;
-import com.myapps.web.mycrawler.domain.model.CrawlTarget;
-import com.myapps.web.mycrawler.domain.model.TriggerSource;
-import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
-import com.myapps.web.mycrawler.infrastructure.crawler.CrawlerEngine;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -25,11 +7,26 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.myapps.web.mycrawler.domain.model.CrawlResult;
+import com.myapps.web.mycrawler.domain.model.CrawlStatus;
+import com.myapps.web.mycrawler.domain.model.CrawlTarget;
+import com.myapps.web.mycrawler.domain.model.TriggerSource;
+import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
+import com.myapps.web.mycrawler.infrastructure.crawler.CrawlerEngine;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 /**
  * CrawlerService의 단위 테스트.
  *
- * <p>executeSingle 메서드의 성공/실패 시나리오와
- * 중복 실행 방지, 결과 저장을 검증합니다.
+ * <p>executeSingle 메서드의 성공/실패 시나리오와 중복 실행 방지, 결과 저장을 검증합니다.
  */
 @ExtendWith(MockitoExtension.class)
 class CrawlerServiceTest {
@@ -39,11 +36,9 @@ class CrawlerServiceTest {
     private static final String TARGET_NAME_2 = "target-2";
     private static final String TARGET_URL_2 = "https://example.com/2";
 
-    @Mock
-    private CrawlerEngine crawlerEngine;
+    @Mock private CrawlerEngine crawlerEngine;
 
-    @Mock
-    private CrawlerConfig crawlerConfig;
+    @Mock private CrawlerConfig crawlerConfig;
 
     private CrawlerService crawlerService;
 
@@ -63,7 +58,8 @@ class CrawlerServiceTest {
         final CrawlResult expectedResult = createSuccessResult(target2);
         when(crawlerEngine.crawl(target2, TriggerSource.MANUAL)).thenReturn(expectedResult);
 
-        final CrawlResult result = crawlerService.executeSingle(TARGET_NAME_2, TriggerSource.MANUAL);
+        final CrawlResult result =
+                crawlerService.executeSingle(TARGET_NAME_2, TriggerSource.MANUAL);
 
         assertThat(result).isNotNull();
         assertThat(result.targetName()).isEqualTo(TARGET_NAME_2);
@@ -78,7 +74,8 @@ class CrawlerServiceTest {
 
         when(crawlerConfig.validTargets()).thenReturn(targets);
 
-        final CrawlResult result = crawlerService.executeSingle("non-existent", TriggerSource.MANUAL);
+        final CrawlResult result =
+                crawlerService.executeSingle("non-existent", TriggerSource.MANUAL);
 
         assertThat(result).isNull();
         verify(crawlerEngine, never()).crawl(any(), any());
@@ -88,7 +85,8 @@ class CrawlerServiceTest {
     void should_returnNull_when_executeSingleCalledWhileAlreadyRunning() throws Exception {
         setRunningState(true);
 
-        final CrawlResult result = crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
+        final CrawlResult result =
+                crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
 
         assertThat(result).isNull();
         verify(crawlerEngine, never()).crawl(any(), any());
@@ -118,7 +116,8 @@ class CrawlerServiceTest {
         final List<CrawlTarget> targets = List.of(target1);
 
         when(crawlerConfig.validTargets()).thenReturn(targets);
-        when(crawlerEngine.crawl(target1, TriggerSource.MANUAL)).thenReturn(createSuccessResult(target1));
+        when(crawlerEngine.crawl(target1, TriggerSource.MANUAL))
+                .thenReturn(createSuccessResult(target1));
 
         crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
 
@@ -131,9 +130,11 @@ class CrawlerServiceTest {
         final List<CrawlTarget> targets = List.of(target1);
 
         when(crawlerConfig.validTargets()).thenReturn(targets);
-        when(crawlerEngine.crawl(target1, TriggerSource.MANUAL)).thenThrow(new RuntimeException("Network error"));
+        when(crawlerEngine.crawl(target1, TriggerSource.MANUAL))
+                .thenThrow(new RuntimeException("Network error"));
 
-        final CrawlResult result = crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
+        final CrawlResult result =
+                crawlerService.executeSingle(TARGET_NAME_1, TriggerSource.MANUAL);
 
         assertThat(result).isNotNull();
         assertThat(result.status()).isEqualTo(CrawlStatus.FAILURE);
@@ -150,8 +151,7 @@ class CrawlerServiceTest {
                 "crawled content",
                 null,
                 now,
-                now.plusSeconds(2)
-        );
+                now.plusSeconds(2));
     }
 
     private void setRunningState(final boolean state) throws Exception {

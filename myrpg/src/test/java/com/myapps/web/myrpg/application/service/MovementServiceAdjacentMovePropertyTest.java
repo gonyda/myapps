@@ -1,17 +1,8 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Tuple;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -20,16 +11,23 @@ import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.Tuple;
 
 /**
  * 인접 이동 성공 프로퍼티 테스트.
  *
- * <p>이웃·연결 대상(던전 입구 포함) 이동 성공 시 현재 노드가 변경되고,
- * {@code move} 타입이며 대상 맵 이름을 포함하는 {@code ActionLogEntry}를 생성하는지 검증한다.
+ * <p>이웃·연결 대상(던전 입구 포함) 이동 성공 시 현재 노드가 변경되고, {@code move} 타입이며 대상 맵 이름을 포함하는 {@code
+ * ActionLogEntry}를 생성하는지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 8: 인접 이동 성공
  *
@@ -38,19 +36,20 @@ import static org.mockito.Mockito.when;
 // Feature: 001-character-progress-and-map-movement, Property 8: 인접 이동 성공
 class MovementServiceAdjacentMovePropertyTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(
-            Instant.parse("2025-06-15T10:00:00Z"), ZoneId.of("Asia/Seoul"));
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2025-06-15T10:00:00Z"), ZoneId.of("Asia/Seoul"));
 
     /**
-     * 인접하고 링크로 연결된 노드(던전 입구 포함)로 이동하면,
-     * 결과가 {@code Moved}이고, 현재 노드 ID가 대상 노드로 갱신되며,
-     * 로그 타입이 {@code move}이고 메시지에 대상 노드 이름이 포함되는지 검증한다.
+     * 인접하고 링크로 연결된 노드(던전 입구 포함)로 이동하면, 결과가 {@code Moved}이고, 현재 노드 ID가 대상 노드로 갱신되며, 로그 타입이 {@code
+     * move}이고 메시지에 대상 노드 이름이 포함되는지 검증한다.
      *
      * @param scenario 임의 생성된 맵 그래프, 출발 노드 ID, 이동 오프셋(dx, dy), 대상 노드 튜플
      */
     @Property(tries = 100)
     void should_returnMovedAndUpdateNodeId_when_neighborIsConnected(
-            @ForAll("connectedNeighborScenario") final Tuple.Tuple4<MapGraph, String, Tuple.Tuple2<Integer, Integer>, MapNode> scenario) {
+            @ForAll("connectedNeighborScenario")
+                    final Tuple.Tuple4<MapGraph, String, Tuple.Tuple2<Integer, Integer>, MapNode>
+                            scenario) {
 
         final MapGraph graph = scenario.get1();
         final String currentNodeId = scenario.get2();
@@ -69,9 +68,20 @@ class MovementServiceAdjacentMovePropertyTest {
         final ActionLog actionLog = new ActionLog(FIXED_CLOCK);
         final MovementService movementService = new MovementService(mockMapService, actionLog);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100,
-                currentNodeId, 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        1,
+                        1,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        currentNodeId,
+                        0,
+                        0L);
 
         // When
         final MovementResult result = movementService.move(progress, dx, dy);
@@ -94,56 +104,115 @@ class MovementServiceAdjacentMovePropertyTest {
     /**
      * 유효한 맵 그래프에서 인접·연결된 이웃 노드 쌍(던전 입구 포함)을 생성하는 Arbitrary.
      *
-     * <p>생성된 시나리오는 (MapGraph, 출발 노드 ID, (dx, dy) 오프셋, 대상 MapNode) 4-튜플이다.
-     * 각 그래프는 최소 2개 노드로 구성되며, TOWN·FIELD·DUNGEON 타입이 골고루 분배된다.
+     * <p>생성된 시나리오는 (MapGraph, 출발 노드 ID, (dx, dy) 오프셋, 대상 MapNode) 4-튜플이다. 각 그래프는 최소 2개 노드로 구성되며,
+     * TOWN·FIELD·DUNGEON 타입이 골고루 분배된다.
      *
      * @return 인접 이동 시나리오 Arbitrary
      */
     @Provide
-    Arbitrary<Tuple.Tuple4<MapGraph, String, Tuple.Tuple2<Integer, Integer>, MapNode>> connectedNeighborScenario() {
-        return Arbitraries.integers().between(2, 6).flatMap(nodeCount ->
-                Arbitraries.integers().between(-10, 10).flatMap(baseX ->
-                        Arbitraries.integers().between(-10, 10).flatMap(baseY ->
-                                Arbitraries.integers().between(0, 3).flatMap(layoutType ->
-                                        Arbitraries.integers().between(0, nodeCount - 2).map(sourceIndex -> {
-                                            final List<MapNode> nodes = generateConnectedGraph(
-                                                    nodeCount, baseX, baseY, layoutType);
-                                            final MapGraph graph = new MapGraph(nodes, List.of(), nodes.getFirst().id());
+    Arbitrary<Tuple.Tuple4<MapGraph, String, Tuple.Tuple2<Integer, Integer>, MapNode>>
+            connectedNeighborScenario() {
+        return Arbitraries.integers()
+                .between(2, 6)
+                .flatMap(
+                        nodeCount ->
+                                Arbitraries.integers()
+                                        .between(-10, 10)
+                                        .flatMap(
+                                                baseX ->
+                                                        Arbitraries.integers()
+                                                                .between(-10, 10)
+                                                                .flatMap(
+                                                                        baseY ->
+                                                                                Arbitraries
+                                                                                        .integers()
+                                                                                        .between(
+                                                                                                0,
+                                                                                                3)
+                                                                                        .flatMap(
+                                                                                                layoutType ->
+                                                                                                        Arbitraries
+                                                                                                                .integers()
+                                                                                                                .between(
+                                                                                                                        0,
+                                                                                                                        nodeCount
+                                                                                                                                - 2)
+                                                                                                                .map(
+                                                                                                                        sourceIndex -> {
+                                                                                                                            final
+                                                                                                                            List<
+                                                                                                                                            MapNode>
+                                                                                                                                    nodes =
+                                                                                                                                            generateConnectedGraph(
+                                                                                                                                                    nodeCount,
+                                                                                                                                                    baseX,
+                                                                                                                                                    baseY,
+                                                                                                                                                    layoutType);
+                                                                                                                            final
+                                                                                                                            MapGraph
+                                                                                                                                    graph =
+                                                                                                                                            new MapGraph(
+                                                                                                                                                    nodes,
+                                                                                                                                                    List
+                                                                                                                                                            .of(),
+                                                                                                                                                    nodes.getFirst()
+                                                                                                                                                            .id());
 
-                                            final MapNode sourceNode = nodes.get(sourceIndex);
-                                            final MapNode targetNode = findLinkedNeighbor(sourceNode, nodes);
+                                                                                                                            final
+                                                                                                                            MapNode
+                                                                                                                                    sourceNode =
+                                                                                                                                            nodes
+                                                                                                                                                    .get(
+                                                                                                                                                            sourceIndex);
+                                                                                                                            final
+                                                                                                                            MapNode
+                                                                                                                                    targetNode =
+                                                                                                                                            findLinkedNeighbor(
+                                                                                                                                                    sourceNode,
+                                                                                                                                                    nodes);
 
-                                            final int dx = targetNode.x() - sourceNode.x();
-                                            final int dy = targetNode.y() - sourceNode.y();
+                                                                                                                            final
+                                                                                                                            int
+                                                                                                                                    dx =
+                                                                                                                                            targetNode
+                                                                                                                                                            .x()
+                                                                                                                                                    - sourceNode
+                                                                                                                                                            .x();
+                                                                                                                            final
+                                                                                                                            int
+                                                                                                                                    dy =
+                                                                                                                                            targetNode
+                                                                                                                                                            .y()
+                                                                                                                                                    - sourceNode
+                                                                                                                                                            .y();
 
-                                            return Tuple.of(
-                                                    graph,
-                                                    sourceNode.id(),
-                                                    Tuple.of(dx, dy),
-                                                    targetNode);
-                                        })
-                                )
-                        )
-                )
-        );
+                                                                                                                            return Tuple
+                                                                                                                                    .of(
+                                                                                                                                            graph,
+                                                                                                                                            sourceNode
+                                                                                                                                                    .id(),
+                                                                                                                                            Tuple
+                                                                                                                                                    .of(
+                                                                                                                                                            dx,
+                                                                                                                                                            dy),
+                                                                                                                                            targetNode);
+                                                                                                                        })))));
     }
 
     /**
      * 연결된 그래프를 생성한다.
      *
-     * <p>각 노드는 다음 노드와 양방향으로 연결되며, 다양한 NodeType을 포함한다.
-     * layoutType에 따라 노드 배치 패턴이 달라진다(수평, 수직, 대각선, 혼합).
+     * <p>각 노드는 다음 노드와 양방향으로 연결되며, 다양한 NodeType을 포함한다. layoutType에 따라 노드 배치 패턴이 달라진다(수평, 수직, 대각선,
+     * 혼합).
      *
-     * @param nodeCount  노드 수
-     * @param baseX      기준 X 좌표
-     * @param baseY      기준 Y 좌표
+     * @param nodeCount 노드 수
+     * @param baseX 기준 X 좌표
+     * @param baseY 기준 Y 좌표
      * @param layoutType 배치 유형 (0=수평, 1=수직, 2=대각선, 3=혼합)
      * @return 생성된 노드 목록
      */
-    private List<MapNode> generateConnectedGraph(final int nodeCount,
-                                                  final int baseX,
-                                                  final int baseY,
-                                                  final int layoutType) {
+    private List<MapNode> generateConnectedGraph(
+            final int nodeCount, final int baseX, final int baseY, final int layoutType) {
         final NodeType[] types = {NodeType.TOWN, NodeType.FIELD, NodeType.DUNGEON, NodeType.FIELD};
         final String[] typeStrings = {"town", "field", "dungeon", "field"};
         final String[] nameKorean = {"마을", "들판", "던전입구", "평원"};
@@ -171,17 +240,17 @@ class MovementServiceAdjacentMovePropertyTest {
         for (int i = 0; i < nodeCount; i++) {
             final int typeIndex = i % types.length;
             final String dungeonId = (types[typeIndex] == NodeType.DUNGEON) ? "dungeon-" + i : null;
-            nodes.add(new MapNode(
-                    ids.get(i),
-                    nameKorean[typeIndex] + i,
-                    typeStrings[typeIndex],
-                    types[typeIndex],
-                    coords.get(i)[0],
-                    coords.get(i)[1],
-                    dungeonId,
-                    null,
-                    List.copyOf(linkLists.get(i))
-            ));
+            nodes.add(
+                    new MapNode(
+                            ids.get(i),
+                            nameKorean[typeIndex] + i,
+                            typeStrings[typeIndex],
+                            types[typeIndex],
+                            coords.get(i)[0],
+                            coords.get(i)[1],
+                            dungeonId,
+                            null,
+                            List.copyOf(linkLists.get(i))));
         }
 
         return List.copyOf(nodes);
@@ -190,22 +259,23 @@ class MovementServiceAdjacentMovePropertyTest {
     /**
      * 레이아웃 유형에 따라 노드 좌표를 계산한다.
      *
-     * @param index      노드 인덱스
-     * @param baseX      기준 X 좌표
-     * @param baseY      기준 Y 좌표
+     * @param index 노드 인덱스
+     * @param baseX 기준 X 좌표
+     * @param baseY 기준 Y 좌표
      * @param layoutType 배치 유형
      * @return [x, y] 좌표 배열
      */
-    private int[] computeCoordinate(final int index,
-                                     final int baseX,
-                                     final int baseY,
-                                     final int layoutType) {
+    private int[] computeCoordinate(
+            final int index, final int baseX, final int baseY, final int layoutType) {
         return switch (layoutType) {
-            case 0 -> new int[]{baseX + index, baseY};          // 수평
-            case 1 -> new int[]{baseX, baseY + index};          // 수직
-            case 2 -> new int[]{baseX + index, baseY + index};  // 대각선
-            default -> new int[]{baseX + (index % 2 == 0 ? index / 2 : index / 2 + 1),
-                    baseY + (index % 2 == 0 ? 0 : 1)};         // 지그재그
+            case 0 -> new int[] {baseX + index, baseY}; // 수평
+            case 1 -> new int[] {baseX, baseY + index}; // 수직
+            case 2 -> new int[] {baseX + index, baseY + index}; // 대각선
+            default ->
+                    new int[] {
+                        baseX + (index % 2 == 0 ? index / 2 : index / 2 + 1),
+                        baseY + (index % 2 == 0 ? 0 : 1)
+                    }; // 지그재그
         };
     }
 
@@ -213,14 +283,11 @@ class MovementServiceAdjacentMovePropertyTest {
      * 소스 노드의 links 목록에서 좌표상 인접한 노드를 찾아 반환한다.
      *
      * @param source 출발 노드
-     * @param nodes  전체 노드 목록
+     * @param nodes 전체 노드 목록
      * @return 링크되어 있는 이웃 노드 (첫 번째 발견)
      */
     private MapNode findLinkedNeighbor(final MapNode source, final List<MapNode> nodes) {
         final String firstLinkedId = source.links().getFirst();
-        return nodes.stream()
-                .filter(n -> n.id().equals(firstLinkedId))
-                .findFirst()
-                .orElseThrow();
+        return nodes.stream().filter(n -> n.id().equals(firstLinkedId)).findFirst().orElseThrow();
     }
 }

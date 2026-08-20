@@ -1,18 +1,16 @@
 package com.myapps.web.myrpg.domain.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * 보유 아이템 엔티티에 대한 영속성 인터페이스.
  *
- * <p>Spring Data JPA를 활용하여 기본 CRUD와 저장 위치별 아이템 조회 기능을 제공한다.
- * 인벤토리와 은행을 {@link StorageKind}로 구분하여 조회한다.
+ * <p>Spring Data JPA를 활용하여 기본 CRUD와 저장 위치별 아이템 조회 기능을 제공한다. 인벤토리와 은행을 {@link StorageKind}로 구분하여
+ * 조회한다.
  */
 public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
 
@@ -30,7 +28,7 @@ public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
      * <p>소비형(포션) 스택 누적 시 기존 행을 찾기 위해 사용된다.
      *
      * @param storage 저장 위치
-     * @param itemId  아이템 카탈로그 ID
+     * @param itemId 아이템 카탈로그 ID
      * @return 해당 아이템, 없으면 빈 Optional
      */
     Optional<OwnedItem> findByStorageAndItemId(StorageKind storage, String itemId);

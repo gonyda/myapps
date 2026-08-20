@@ -106,6 +106,37 @@ public void sendMessage(final String receiverId, final String message) {
 - 테스트 메서드명: `should_{기대동작}_when_{조건}` 형식 권장
 - 단위 테스트와 통합 테스트 분리
 
+### Given-When-Then 패턴 작성 필수 (BDD 스타일)
+
+**모든 테스트 메서드는 반드시 `// given`, `// when`, `// then` 3단계 주석으로 명확히 구분하여 작성합니다.**
+이는 정상 동작뿐 아니라 경계값(Edge Case), 비정상 입력, 예외 상황 등 **다양하고 풍부한 테스트 케이스 생성을 유도**하기 위한 필수 규칙입니다.
+
+```java
+@Test
+@DisplayName("유효한 유저 ID와 메시지가 주어졌을 때 전송에 성공한다")
+void should_sendSuccessfully_when_validUserAndMessage() {
+    // given (준비: 입력 데이터, Mock 동작 및 사전 조건 설정)
+    final String receiverId = "user-123";
+    final String message = "Hello World";
+    given(messageClient.send(receiverId, message)).willReturn(MessageResult.success());
+
+    // when (실행: 테스트 대상 핵심 단일 행위 호출)
+    final boolean isSent = messageSenderService.sendMessage(receiverId, message);
+
+    // then (검증: 결과 단언, 예외 검증, Mock 인터랙션 확인)
+    assertThat(isSent).isTrue();
+    then(messageClient).should().send(receiverId, message);
+}
+```
+
+#### Given-When-Then 작성 가이드
+1. **Given (사전 조건/준비)**:
+   - 정상 케이스뿐 아니라 null/빈 문자열, 음수, 경계값(0, Max), 비인가 상태 등 다양한 상태를 구체적으로 설정
+2. **When (행위/실행)**:
+   - 검증하려는 단일 작업(메서드 호출)만 깔끔하게 실행
+3. **Then (사후 결과/검증)**:
+   - `assertThat` (AssertJ) 또는 `assertThatThrownBy` 등을 활용하여 엄격하게 결과 검증
+
 | 대상 | 테스트 유형 | 어노테이션 |
 |---|---|---|
 | 서비스 클래스 | 단위 테스트 | `@ExtendWith(MockitoExtension.class)` |

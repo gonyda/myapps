@@ -1,35 +1,31 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.myapps.web.myrpg.application.exception.ItemDataException;
+import com.myapps.web.myrpg.domain.model.EquipmentItem;
+import com.myapps.web.myrpg.domain.model.Item;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.application.exception.ItemDataException;
-import com.myapps.web.myrpg.domain.model.EquipmentItem;
-import com.myapps.web.myrpg.domain.model.Item;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * 아이템 카탈로그 파싱 검증 프로퍼티 테스트.
  *
- * <p>유효한 아이템 JSON 입력은 올바른 크기의 불변 목록을 반환하고,
- * 결함(미지 type/kind/target, 중복 id, 필수 필드 누락, 장비 maxDurability 누락)이
- * 주입된 입력은 {@link ItemDataException}을 던짐을 검증한다.
+ * <p>유효한 아이템 JSON 입력은 올바른 크기의 불변 목록을 반환하고, 결함(미지 type/kind/target, 중복 id, 필수 필드 누락, 장비
+ * maxDurability 누락)이 주입된 입력은 {@link ItemDataException}을 던짐을 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 4: 아이템 카탈로그 검증
  *
@@ -53,9 +49,11 @@ class ItemCatalogParsingPropertyTest {
 
     private static final String[] VALID_EQUIPMENT_TYPES = {"weapon", "armor"};
     private static final String[] VALID_EQUIPMENT_KINDS = {
-            "one_handed_sword", "two_handed_sword", "shield", "armor_body"};
+        "one_handed_sword", "two_handed_sword", "shield", "armor_body"
+    };
     private static final String[] VALID_BONUS_TARGETS = {
-            "STR", "DEX", "INT", "CRITICAL", "DEF", "HP", "MP", "STAMINA"};
+        "STR", "DEX", "INT", "CRITICAL", "DEF", "HP", "MP", "STAMINA"
+    };
     private static final String[] REQUIRED_FIELDS = {"id", "name", "type"};
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -243,8 +241,7 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<ItemInputData>> validItemDataset() {
-        return Arbitraries.integers().between(1, MAX_ITEM_COUNT)
-                .flatMap(this::buildUniqueItemList);
+        return Arbitraries.integers().between(1, MAX_ITEM_COUNT).flatMap(this::buildUniqueItemList);
     }
 
     /**
@@ -254,8 +251,7 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<ItemInputData>> validItemDatasetAtLeastTwo() {
-        return Arbitraries.integers().between(2, MAX_ITEM_COUNT)
-                .flatMap(this::buildUniqueItemList);
+        return Arbitraries.integers().between(2, MAX_ITEM_COUNT).flatMap(this::buildUniqueItemList);
     }
 
     /**
@@ -265,7 +261,8 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<ItemInputData>> validEquipmentDataset() {
-        return Arbitraries.integers().between(1, MAX_ITEM_COUNT)
+        return Arbitraries.integers()
+                .between(1, MAX_ITEM_COUNT)
                 .flatMap(this::buildUniqueEquipmentList);
     }
 
@@ -276,7 +273,8 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<ItemInputData>> validItemDatasetWithoutBuyPrice() {
-        return Arbitraries.integers().between(1, MAX_ITEM_COUNT)
+        return Arbitraries.integers()
+                .between(1, MAX_ITEM_COUNT)
                 .flatMap(this::buildUniqueItemListWithoutBuyPrice);
     }
 
@@ -287,7 +285,8 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<ItemInputData>> validEquipmentDatasetWithoutBonuses() {
-        return Arbitraries.integers().between(1, MAX_ITEM_COUNT)
+        return Arbitraries.integers()
+                .between(1, MAX_ITEM_COUNT)
                 .flatMap(this::buildUniqueEquipmentList);
     }
 
@@ -333,36 +332,60 @@ class ItemCatalogParsingPropertyTest {
 
     // ── Defect Injection ──
 
-    private List<ItemInputData> injectUnknownType(final List<ItemInputData> dataset,
-                                                   final String invalidType) {
+    private List<ItemInputData> injectUnknownType(
+            final List<ItemInputData> dataset, final String invalidType) {
         final List<ItemInputData> result = new ArrayList<>(dataset);
         final ItemInputData first = result.getFirst();
-        result.set(0, new ItemInputData(
-                first.id(), first.name(), invalidType, first.kind(),
-                first.bonusTarget(), first.bonusAmount(), first.healHp(),
-                first.maxDurability(), first.buyPrice()));
+        result.set(
+                0,
+                new ItemInputData(
+                        first.id(),
+                        first.name(),
+                        invalidType,
+                        first.kind(),
+                        first.bonusTarget(),
+                        first.bonusAmount(),
+                        first.healHp(),
+                        first.maxDurability(),
+                        first.buyPrice()));
         return List.copyOf(result);
     }
 
-    private List<ItemInputData> injectUnknownKind(final List<ItemInputData> dataset,
-                                                   final String invalidKind) {
+    private List<ItemInputData> injectUnknownKind(
+            final List<ItemInputData> dataset, final String invalidKind) {
         final List<ItemInputData> result = new ArrayList<>(dataset);
         final ItemInputData first = result.getFirst();
-        result.set(0, new ItemInputData(
-                first.id(), first.name(), first.type(), invalidKind,
-                first.bonusTarget(), first.bonusAmount(), first.healHp(),
-                first.maxDurability(), first.buyPrice()));
+        result.set(
+                0,
+                new ItemInputData(
+                        first.id(),
+                        first.name(),
+                        first.type(),
+                        invalidKind,
+                        first.bonusTarget(),
+                        first.bonusAmount(),
+                        first.healHp(),
+                        first.maxDurability(),
+                        first.buyPrice()));
         return List.copyOf(result);
     }
 
-    private List<ItemInputData> injectUnknownBonusTarget(final List<ItemInputData> dataset,
-                                                          final String invalidTarget) {
+    private List<ItemInputData> injectUnknownBonusTarget(
+            final List<ItemInputData> dataset, final String invalidTarget) {
         final List<ItemInputData> result = new ArrayList<>(dataset);
         final ItemInputData first = result.getFirst();
-        result.set(0, new ItemInputData(
-                first.id(), first.name(), first.type(), first.kind(),
-                invalidTarget, first.bonusAmount(), first.healHp(),
-                first.maxDurability(), first.buyPrice()));
+        result.set(
+                0,
+                new ItemInputData(
+                        first.id(),
+                        first.name(),
+                        first.type(),
+                        first.kind(),
+                        invalidTarget,
+                        first.bonusAmount(),
+                        first.healHp(),
+                        first.maxDurability(),
+                        first.buyPrice()));
         return List.copyOf(result);
     }
 
@@ -370,10 +393,18 @@ class ItemCatalogParsingPropertyTest {
         final List<ItemInputData> result = new ArrayList<>(dataset);
         final ItemInputData first = result.getFirst();
         final ItemInputData second = result.get(1);
-        result.set(1, new ItemInputData(
-                first.id(), second.name(), second.type(), second.kind(),
-                second.bonusTarget(), second.bonusAmount(), second.healHp(),
-                second.maxDurability(), second.buyPrice()));
+        result.set(
+                1,
+                new ItemInputData(
+                        first.id(),
+                        second.name(),
+                        second.type(),
+                        second.kind(),
+                        second.bonusTarget(),
+                        second.bonusAmount(),
+                        second.healHp(),
+                        second.maxDurability(),
+                        second.buyPrice()));
         return List.copyOf(result);
     }
 
@@ -388,8 +419,8 @@ class ItemCatalogParsingPropertyTest {
         return rootArray.toString();
     }
 
-    private String serializeToJsonWithMissingField(final List<ItemInputData> dataset,
-                                                    final String fieldToRemove) {
+    private String serializeToJsonWithMissingField(
+            final List<ItemInputData> dataset, final String fieldToRemove) {
         final ArrayNode rootArray = objectMapper.createArrayNode();
         for (int i = 0; i < dataset.size(); i++) {
             final ItemInputData data = dataset.get(i);
@@ -454,20 +485,17 @@ class ItemCatalogParsingPropertyTest {
     // ── List Builders ──
 
     private Arbitrary<List<ItemInputData>> buildUniqueItemList(final int count) {
-        return mixedItemInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return mixedItemInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private Arbitrary<List<ItemInputData>> buildUniqueEquipmentList(final int count) {
-        return equipmentInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return equipmentInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private Arbitrary<List<ItemInputData>> buildUniqueItemListWithoutBuyPrice(final int count) {
         return mixedItemInputDataWithoutBuyPriceArbitrary()
-                .list().ofSize(count)
+                .list()
+                .ofSize(count)
                 .map(this::ensureUniqueIds);
     }
 
@@ -476,10 +504,17 @@ class ItemCatalogParsingPropertyTest {
         for (int i = 0; i < rawList.size(); i++) {
             final ItemInputData original = rawList.get(i);
             final String uniqueId = original.id() + "_" + i;
-            result.add(new ItemInputData(
-                    uniqueId, original.name(), original.type(), original.kind(),
-                    original.bonusTarget(), original.bonusAmount(), original.healHp(),
-                    original.maxDurability(), original.buyPrice()));
+            result.add(
+                    new ItemInputData(
+                            uniqueId,
+                            original.name(),
+                            original.type(),
+                            original.kind(),
+                            original.bonusTarget(),
+                            original.bonusAmount(),
+                            original.healHp(),
+                            original.maxDurability(),
+                            original.buyPrice()));
         }
         return List.copyOf(result);
     }
@@ -497,68 +532,93 @@ class ItemCatalogParsingPropertyTest {
     }
 
     private Arbitrary<ItemInputData> potionInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
-        final Arbitrary<Integer> healHps = Arbitraries.integers()
-                .between(HEAL_HP_MIN, HEAL_HP_MAX);
-        final Arbitrary<Integer> buyPrices = Arbitraries.integers()
-                .between(BUY_PRICE_MIN, BUY_PRICE_MAX);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<Integer> healHps = Arbitraries.integers().between(HEAL_HP_MIN, HEAL_HP_MAX);
+        final Arbitrary<Integer> buyPrices =
+                Arbitraries.integers().between(BUY_PRICE_MIN, BUY_PRICE_MAX);
 
         return Combinators.combine(ids, names, healHps, buyPrices)
-                .as((id, name, healHp, buyPrice) -> new ItemInputData(
-                        id, name, "potion", null,
-                        null, 0, healHp, 0, buyPrice));
+                .as(
+                        (id, name, healHp, buyPrice) ->
+                                new ItemInputData(
+                                        id, name, "potion", null, null, 0, healHp, 0, buyPrice));
     }
 
     private Arbitrary<ItemInputData> potionInputDataWithoutBuyPriceArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
-        final Arbitrary<Integer> healHps = Arbitraries.integers()
-                .between(HEAL_HP_MIN, HEAL_HP_MAX);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<Integer> healHps = Arbitraries.integers().between(HEAL_HP_MIN, HEAL_HP_MAX);
 
         return Combinators.combine(ids, names, healHps)
-                .as((id, name, healHp) -> new ItemInputData(
-                        id, name, "potion", null,
-                        null, 0, healHp, 0, null));
+                .as(
+                        (id, name, healHp) ->
+                                new ItemInputData(
+                                        id, name, "potion", null, null, 0, healHp, 0, null));
     }
 
     private Arbitrary<ItemInputData> equipmentInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
         final Arbitrary<String> types = Arbitraries.of(VALID_EQUIPMENT_TYPES);
         final Arbitrary<String> kinds = Arbitraries.of(VALID_EQUIPMENT_KINDS);
         final Arbitrary<String> targets = Arbitraries.of(VALID_BONUS_TARGETS);
-        final Arbitrary<Integer> amounts = Arbitraries.integers()
-                .between(BONUS_AMOUNT_MIN, BONUS_AMOUNT_MAX);
-        final Arbitrary<Integer> durabilities = Arbitraries.integers()
-                .between(MAX_DURABILITY_MIN, MAX_DURABILITY_MAX);
-        final Arbitrary<Integer> buyPrices = Arbitraries.integers()
-                .between(BUY_PRICE_MIN, BUY_PRICE_MAX);
+        final Arbitrary<Integer> amounts =
+                Arbitraries.integers().between(BONUS_AMOUNT_MIN, BONUS_AMOUNT_MAX);
+        final Arbitrary<Integer> durabilities =
+                Arbitraries.integers().between(MAX_DURABILITY_MIN, MAX_DURABILITY_MAX);
+        final Arbitrary<Integer> buyPrices =
+                Arbitraries.integers().between(BUY_PRICE_MIN, BUY_PRICE_MAX);
 
-        return Combinators.combine(ids, names, types, kinds, targets, amounts, durabilities, buyPrices)
-                .as((id, name, type, kind, target, amount, durability, buyPrice) ->
-                        new ItemInputData(id, name, type, kind, target, amount, 0, durability, buyPrice));
+        return Combinators.combine(
+                        ids, names, types, kinds, targets, amounts, durabilities, buyPrices)
+                .as(
+                        (id, name, type, kind, target, amount, durability, buyPrice) ->
+                                new ItemInputData(
+                                        id,
+                                        name,
+                                        type,
+                                        kind,
+                                        target,
+                                        amount,
+                                        0,
+                                        durability,
+                                        buyPrice));
     }
 
     private Arbitrary<ItemInputData> equipmentInputDataWithoutBuyPriceArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
         final Arbitrary<String> types = Arbitraries.of(VALID_EQUIPMENT_TYPES);
         final Arbitrary<String> kinds = Arbitraries.of(VALID_EQUIPMENT_KINDS);
-        final Arbitrary<Integer> durabilities = Arbitraries.integers()
-                .between(MAX_DURABILITY_MIN, MAX_DURABILITY_MAX);
+        final Arbitrary<Integer> durabilities =
+                Arbitraries.integers().between(MAX_DURABILITY_MIN, MAX_DURABILITY_MAX);
 
         return Combinators.combine(ids, names, types, kinds, durabilities)
-                .as((id, name, type, kind, durability) ->
-                        new ItemInputData(id, name, type, kind, null, 0, 0, durability, null));
+                .as(
+                        (id, name, type, kind, durability) ->
+                                new ItemInputData(
+                                        id, name, type, kind, null, 0, 0, durability, null));
     }
 
     private InputStream toInputStream(final String json) {
@@ -568,15 +628,15 @@ class ItemCatalogParsingPropertyTest {
     /**
      * 프로퍼티 테스트용 아이템 입력 데이터 레코드.
      *
-     * @param id            아이템 고유 식별자
-     * @param name          표시용 이름
-     * @param type          아이템 타입 문자열
-     * @param kind          장비 종류 문자열 (포션이면 null)
-     * @param bonusTarget   보너스 대상 문자열 (없으면 null)
-     * @param bonusAmount   보너스 수치
-     * @param healHp        포션 회복량 (장비이면 0)
+     * @param id 아이템 고유 식별자
+     * @param name 표시용 이름
+     * @param type 아이템 타입 문자열
+     * @param kind 장비 종류 문자열 (포션이면 null)
+     * @param bonusTarget 보너스 대상 문자열 (없으면 null)
+     * @param bonusAmount 보너스 수치
+     * @param healHp 포션 회복량 (장비이면 0)
      * @param maxDurability 최대 내구도 (포션이면 0)
-     * @param buyPrice      구매가 (nullable)
+     * @param buyPrice 구매가 (nullable)
      */
     record ItemInputData(
             String id,
@@ -587,7 +647,5 @@ class ItemCatalogParsingPropertyTest {
             int bonusAmount,
             int healHp,
             int maxDurability,
-            Integer buyPrice
-    ) {
-    }
+            Integer buyPrice) {}
 }

@@ -1,18 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -36,20 +30,24 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 활 1턴 선제 규칙을 검증하는 프로퍼티 테스트.
  *
- * <p>{@code turnCount==1} + ARCHERY 재능이면 몬스터 피해 0, 플레이어 100% 적중,
- * firstStrike 플래그 true. {@code turnCount!=1}이거나 비활 재능이면 발동하지 않는다.
+ * <p>{@code turnCount==1} + ARCHERY 재능이면 몬스터 피해 0, 플레이어 100% 적중, firstStrike 플래그 true. {@code
+ * turnCount!=1}이거나 비활 재능이면 발동하지 않는다.
  *
  * <p>Feature: 008-battle-system, Property 8: 활 1턴 선제
  *
@@ -82,24 +80,19 @@ class BattleServiceBowFirstStrikePropertyTest {
         assertThat(result.firstStrike())
                 .as("turnCount==1 + ARCHERY에서 firstStrike 플래그가 true여야 한다")
                 .isTrue();
-        assertThat(result.monsterDamage())
-                .as("선제 사격 시 몬스터 피해(플레이어에게)는 0이어야 한다")
-                .isEqualTo(0);
-        assertThat(result.playerDamage())
-                .as("선제 사격 시 플레이어 피해(몬스터에게)는 0보다 커야 한다")
-                .isGreaterThan(0);
+        assertThat(result.monsterDamage()).as("선제 사격 시 몬스터 피해(플레이어에게)는 0이어야 한다").isEqualTo(0);
+        assertThat(result.playerDamage()).as("선제 사격 시 플레이어 피해(몬스터에게)는 0보다 커야 한다").isGreaterThan(0);
     }
 
     /**
      * turnCount!=1 (2턴 이상)일 때 활 스킬이라도 선제가 발동하지 않는지 검증한다.
      *
-     * @param seed      랜덤 시드
+     * @param seed 랜덤 시드
      * @param turnCount 2 이상의 턴 카운트
      */
     @Property(tries = 100)
     void should_notTriggerFirstStrike_when_turnCountNotOne(
-            @ForAll("seeds") final long seed,
-            @ForAll("turnCountsAboveOne") final int turnCount) {
+            @ForAll("seeds") final long seed, @ForAll("turnCountsAboveOne") final int turnCount) {
         final Random random = new Random(seed);
         final BattleService service = createServiceWithBowSkill(random);
 
@@ -109,9 +102,7 @@ class BattleServiceBowFirstStrikePropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, BOW_SKILL_ID);
 
-        assertThat(result.firstStrike())
-                .as("turnCount > 1이면 firstStrike는 false여야 한다")
-                .isFalse();
+        assertThat(result.firstStrike()).as("turnCount > 1이면 firstStrike는 false여야 한다").isFalse();
     }
 
     /**
@@ -166,9 +157,8 @@ class BattleServiceBowFirstStrikePropertyTest {
         return buildService(random, createMeleeSkill(), MELEE_SKILL_ID);
     }
 
-    private BattleService buildService(final Random random,
-                                       final DamageSkill skill,
-                                       final String skillId) {
+    private BattleService buildService(
+            final Random random, final DamageSkill skill, final String skillId) {
         final BattleStateRepository battleStateRepo = mock(BattleStateRepository.class);
         when(battleStateRepo.save(any(BattleState.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -201,7 +191,8 @@ class BattleServiceBowFirstStrikePropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
 
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
@@ -209,39 +200,79 @@ class BattleServiceBowFirstStrikePropertyTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     private CharacterProgress createProgress() {
         return new CharacterProgress(
-                "궁수", 10, 10, 100L, TalentType.ARCHERY, null,
-                HIGH_HP, 100, 100, "dunbarton", 0, 500L);
+                "궁수",
+                10,
+                10,
+                100L,
+                TalentType.ARCHERY,
+                null,
+                HIGH_HP,
+                100,
+                100,
+                "dunbarton",
+                0,
+                500L);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, 30L, new GoldDrop(10, 20), List.of(), List.of("소리", "행동1", "행동2"));
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                30L,
+                new GoldDrop(10, 20),
+                List.of(),
+                List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createBowSkill() {
         return new DamageSkill(
-                BOW_SKILL_ID, "매그넘 샷", SkillType.NORMAL, SkillTalent.ARCHERY, 8,
+                BOW_SKILL_ID,
+                "매그넘 샷",
+                SkillType.NORMAL,
+                SkillTalent.ARCHERY,
+                8,
                 createFullRankMap(100),
                 "활 테스트 스킬");
     }
 
     private DamageSkill createMeleeSkill() {
         return new DamageSkill(
-                MELEE_SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 5,
+                MELEE_SKILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                5,
                 createFullRankMap(100),
                 "근접 테스트 스킬");
     }
@@ -255,6 +286,7 @@ class BattleServiceBowFirstStrikePropertyTest {
                 Map.entry(SkillRank.R7, baseValue + 80), Map.entry(SkillRank.R6, baseValue + 90),
                 Map.entry(SkillRank.R5, baseValue + 100), Map.entry(SkillRank.R4, baseValue + 110),
                 Map.entry(SkillRank.R3, baseValue + 120), Map.entry(SkillRank.R2, baseValue + 130),
-                Map.entry(SkillRank.R1, baseValue + 140), Map.entry(SkillRank.MASTER, baseValue + 150));
+                Map.entry(SkillRank.R1, baseValue + 140),
+                        Map.entry(SkillRank.MASTER, baseValue + 150));
     }
 }

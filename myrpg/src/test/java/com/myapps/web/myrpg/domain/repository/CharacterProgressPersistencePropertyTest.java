@@ -1,29 +1,24 @@
 package com.myapps.web.myrpg.domain.repository;
 
-import java.time.LocalDateTime;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.TalentType;
+import java.time.LocalDateTime;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * CharacterProgress 진행상황 영속 라운드트립 프로퍼티 테스트.
  *
- * <p>신규 필드(talent, lastRebirthAt(nullable), 현재 바이탈, 레벨, 누적, 경험치, 노드)를
- * 저장한 후 조회하면 모든 필드가 보존되는지 검증한다.
+ * <p>신규 필드(talent, lastRebirthAt(nullable), 현재 바이탈, 레벨, 누적, 경험치, 노드)를 저장한 후 조회하면 모든 필드가 보존되는지 검증한다.
  *
  * <p>Feature: 003-character-progression-and-rebirth, Property 10: 진행상황 영속 라운드트립
  *
@@ -54,15 +49,15 @@ class CharacterProgressPersistencePropertyTest {
     /**
      * lastRebirthAt이 null인 CharacterProgress를 저장→조회 시 모든 필드가 보존되는지 검증한다.
      *
-     * @param nickname      임의 닉네임 (1~10자)
-     * @param currentLevel  현재 레벨 (1~100)
-     * @param levelExtra    누적레벨 추가분 (0~200)
-     * @param experience    경험치 (0~100,000)
-     * @param talent        재능 유형
-     * @param hpCurrent     HP 현재값 (0~1000)
-     * @param mpCurrent     MP 현재값 (0~1000)
+     * @param nickname 임의 닉네임 (1~10자)
+     * @param currentLevel 현재 레벨 (1~100)
+     * @param levelExtra 누적레벨 추가분 (0~200)
+     * @param experience 경험치 (0~100,000)
+     * @param talent 재능 유형
+     * @param hpCurrent HP 현재값 (0~1000)
+     * @param mpCurrent MP 현재값 (0~1000)
      * @param staminaCurrent Stamina 현재값 (0~1000)
-     * @param nodeIndex     노드 인덱스 (1~99)
+     * @param nodeIndex 노드 인덱스 (1~99)
      */
     @Property(tries = 100)
     void should_preserveAllFields_when_lastRebirthAtIsNull(
@@ -79,9 +74,20 @@ class CharacterProgressPersistencePropertyTest {
         final int accumulatedLevel = currentLevel + levelExtra;
         final String currentNodeId = "node-" + nodeIndex;
 
-        final CharacterProgress progress = new CharacterProgress(
-                nickname, currentLevel, accumulatedLevel, experience,
-                talent, null, hpCurrent, mpCurrent, staminaCurrent, currentNodeId, 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        nickname,
+                        currentLevel,
+                        accumulatedLevel,
+                        experience,
+                        talent,
+                        null,
+                        hpCurrent,
+                        mpCurrent,
+                        staminaCurrent,
+                        currentNodeId,
+                        0,
+                        0L);
 
         // persist → flush → clear → find
         entityManager.persistAndFlush(progress);
@@ -106,16 +112,16 @@ class CharacterProgressPersistencePropertyTest {
     /**
      * lastRebirthAt이 non-null인 CharacterProgress를 저장→조회 시 모든 필드가 보존되는지 검증한다.
      *
-     * @param nickname      임의 닉네임 (1~10자)
-     * @param currentLevel  현재 레벨 (1~100)
-     * @param levelExtra    누적레벨 추가분 (0~200)
-     * @param experience    경험치 (0~100,000)
-     * @param talent        재능 유형
+     * @param nickname 임의 닉네임 (1~10자)
+     * @param currentLevel 현재 레벨 (1~100)
+     * @param levelExtra 누적레벨 추가분 (0~200)
+     * @param experience 경험치 (0~100,000)
+     * @param talent 재능 유형
      * @param lastRebirthAt 마지막 환생 시각
-     * @param hpCurrent     HP 현재값 (0~1000)
-     * @param mpCurrent     MP 현재값 (0~1000)
+     * @param hpCurrent HP 현재값 (0~1000)
+     * @param mpCurrent MP 현재값 (0~1000)
      * @param staminaCurrent Stamina 현재값 (0~1000)
-     * @param nodeIndex     노드 인덱스 (1~99)
+     * @param nodeIndex 노드 인덱스 (1~99)
      */
     @Property(tries = 100)
     void should_preserveAllFields_when_lastRebirthAtIsNonNull(
@@ -133,9 +139,20 @@ class CharacterProgressPersistencePropertyTest {
         final int accumulatedLevel = currentLevel + levelExtra;
         final String currentNodeId = "node-" + nodeIndex;
 
-        final CharacterProgress progress = new CharacterProgress(
-                nickname, currentLevel, accumulatedLevel, experience,
-                talent, lastRebirthAt, hpCurrent, mpCurrent, staminaCurrent, currentNodeId, 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        nickname,
+                        currentLevel,
+                        accumulatedLevel,
+                        experience,
+                        talent,
+                        lastRebirthAt,
+                        hpCurrent,
+                        mpCurrent,
+                        staminaCurrent,
+                        currentNodeId,
+                        0,
+                        0L);
 
         // persist → flush → clear → find
         entityManager.persistAndFlush(progress);
@@ -183,8 +200,7 @@ class CharacterProgressPersistencePropertyTest {
     }
 
     /**
-     * 누적레벨 추가분 Arbitrary를 제공한다 (0~200).
-     * 누적레벨 = currentLevel + levelExtra 로 항상 >= currentLevel을 보장.
+     * 누적레벨 추가분 Arbitrary를 제공한다 (0~200). 누적레벨 = currentLevel + levelExtra 로 항상 >= currentLevel을 보장.
      *
      * @return 누적레벨 추가분 Arbitrary
      */

@@ -1,5 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
+import com.myapps.web.myrpg.application.exception.MonsterDataException;
+import com.myapps.web.myrpg.domain.model.GoldDrop;
+import com.myapps.web.myrpg.domain.model.ItemDrop;
+import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.MonsterType;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,28 +16,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
-import com.myapps.web.myrpg.application.exception.MonsterDataException;
-import com.myapps.web.myrpg.domain.model.GoldDrop;
-import com.myapps.web.myrpg.domain.model.ItemDrop;
-import com.myapps.web.myrpg.domain.model.MapNode;
-import com.myapps.web.myrpg.domain.model.Monster;
-import com.myapps.web.myrpg.domain.model.MonsterType;
-
-import jakarta.annotation.PostConstruct;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
  * 몬스터 카탈로그 로딩, 교차검증 및 조회 서비스.
  *
- * <p>애플리케이션 기동 시 {@code classpath:data/monster.json}을 1회 파싱하여
- * 불변 {@link Monster} 목록을 구성하고, ID별·노드별 조회 기능을 제공합니다.
- * 카탈로그 파싱 후 맵 배치·아이템 존재 교차검증을 수행하며,
- * 무결성 위반 시 {@link MonsterDataException}을 발생시켜 기동을 실패시킵니다.
+ * <p>애플리케이션 기동 시 {@code classpath:data/monster.json}을 1회 파싱하여 불변 {@link Monster} 목록을 구성하고, ID별·노드별
+ * 조회 기능을 제공합니다. 카탈로그 파싱 후 맵 배치·아이템 존재 교차검증을 수행하며, 무결성 위반 시 {@link MonsterDataException}을 발생시켜 기동을
+ * 실패시킵니다.
  */
 @Service
 public class MonsterService {
@@ -51,13 +47,14 @@ public class MonsterService {
     /**
      * MonsterService를 생성합니다.
      *
-     * @param objectMapper      Jackson 3 ObjectMapper
-     * @param mapService        맵 데이터 서비스 (노드별 몬스터 배치 교차검증용)
+     * @param objectMapper Jackson 3 ObjectMapper
+     * @param mapService 맵 데이터 서비스 (노드별 몬스터 배치 교차검증용)
      * @param itemCatalogService 아이템 카탈로그 서비스 (드랍 아이템 존재 교차검증용)
      */
-    public MonsterService(final ObjectMapper objectMapper,
-                          final MapService mapService,
-                          final ItemCatalogService itemCatalogService) {
+    public MonsterService(
+            final ObjectMapper objectMapper,
+            final MapService mapService,
+            final ItemCatalogService itemCatalogService) {
         this.objectMapper = objectMapper;
         this.mapService = mapService;
         this.itemCatalogService = itemCatalogService;
@@ -73,19 +70,18 @@ public class MonsterService {
         try (InputStream inputStream = new ClassPathResource(MONSTER_JSON_PATH).getInputStream()) {
             this.monsters = loadFromStream(inputStream);
         } catch (final IOException exception) {
-            throw new MonsterDataException(
-                    "몬스터 JSON 파일 로딩 실패: " + MONSTER_JSON_PATH, exception);
+            throw new MonsterDataException("몬스터 JSON 파일 로딩 실패: " + MONSTER_JSON_PATH, exception);
         }
-        this.byIdMap = monsters.stream()
-                .collect(Collectors.toUnmodifiableMap(Monster::id, monster -> monster));
+        this.byIdMap =
+                monsters.stream()
+                        .collect(Collectors.toUnmodifiableMap(Monster::id, monster -> monster));
         crossValidate();
     }
 
     /**
      * 입력 스트림에서 몬스터 데이터를 파싱하고 검증하여 불변 목록으로 반환합니다.
      *
-     * <p>파싱 로직이 리소스 로딩과 분리되어 있으므로, 프로퍼티 테스트에서
-     * 인메모리 데이터를 주입하여 검증할 수 있습니다.
+     * <p>파싱 로직이 리소스 로딩과 분리되어 있으므로, 프로퍼티 테스트에서 인메모리 데이터를 주입하여 검증할 수 있습니다.
      *
      * @param inputStream 몬스터 JSON 데이터 입력 스트림
      * @return 검증 완료된 불변 몬스터 목록 (정의 순서 보존)
@@ -101,8 +97,7 @@ public class MonsterService {
         for (final JsonNode monsterNode : rootArray) {
             final Monster monster = parseMonsterNode(monsterNode);
             if (!ids.add(monster.id())) {
-                throw new MonsterDataException(
-                        "몬스터 id '" + monster.id() + "'이(가) 중복됩니다.");
+                throw new MonsterDataException("몬스터 id '" + monster.id() + "'이(가) 중복됩니다.");
             }
             parsed.add(monster);
         }
@@ -135,8 +130,7 @@ public class MonsterService {
     /**
      * 지정된 맵 노드에 배치된 몬스터 목록을 {@code map.json}의 순서대로 반환합니다.
      *
-     * <p>미지 노드이거나 {@code null}이면 빈 목록을 반환합니다(예외를 던지지 않음).
-     * 맵에 정의되었으나 카탈로그에 없는 몬스터는 교차검증에서 이미 걸러지므로
+     * <p>미지 노드이거나 {@code null}이면 빈 목록을 반환합니다(예외를 던지지 않음). 맵에 정의되었으나 카탈로그에 없는 몬스터는 교차검증에서 이미 걸러지므로
      * 런타임에는 항상 유효한 결과만 반환됩니다.
      *
      * @param nodeId 조회할 맵 노드 ID
@@ -180,9 +174,16 @@ public class MonsterService {
         final String name = extractRequiredString(monsterNode, "name");
         final String typeString = extractRequiredString(monsterNode, "type");
 
-        final MonsterType monsterType = MonsterType.fromType(typeString)
-                .orElseThrow(() -> new MonsterDataException(
-                        "몬스터 '" + id + "'의 type '" + typeString + "'을(를) 분류할 수 없습니다."));
+        final MonsterType monsterType =
+                MonsterType.fromType(typeString)
+                        .orElseThrow(
+                                () ->
+                                        new MonsterDataException(
+                                                "몬스터 '"
+                                                        + id
+                                                        + "'의 type '"
+                                                        + typeString
+                                                        + "'을(를) 분류할 수 없습니다."));
 
         final int level = extractRequiredInt(monsterNode, "level", id);
         final int maxHp = extractRequiredInt(monsterNode, "maxHp", id);
@@ -197,33 +198,46 @@ public class MonsterService {
         final List<ItemDrop> itemDrops = parseItemDrops(monsterNode, id);
         final List<String> lines = parseLines(monsterNode, id);
 
-        final int defenseBlockRate = extractOptionalInt(monsterNode, "defenseBlockRate",
-                DEFAULT_DEFENSE_BLOCK_RATE);
-        final int defenseCounterRate = extractOptionalInt(monsterNode, "defenseCounterRate",
-                DEFAULT_DEFENSE_COUNTER_RATE);
+        final int defenseBlockRate =
+                extractOptionalInt(monsterNode, "defenseBlockRate", DEFAULT_DEFENSE_BLOCK_RATE);
+        final int defenseCounterRate =
+                extractOptionalInt(monsterNode, "defenseCounterRate", DEFAULT_DEFENSE_COUNTER_RATE);
 
-        return new Monster(id, name, monsterType, level, maxHp, attackPower,
-                defense, critical, experience, goldDrop, itemDrops, lines,
-                defenseBlockRate, defenseCounterRate);
+        return new Monster(
+                id,
+                name,
+                monsterType,
+                level,
+                maxHp,
+                attackPower,
+                defense,
+                critical,
+                experience,
+                goldDrop,
+                itemDrops,
+                lines,
+                defenseBlockRate,
+                defenseCounterRate);
     }
 
-    private void validateStatRanges(final String id, final int level, final int maxHp,
-                                    final int attackPower, final int defense) {
+    private void validateStatRanges(
+            final String id,
+            final int level,
+            final int maxHp,
+            final int attackPower,
+            final int defense) {
         if (level < 1) {
-            throw new MonsterDataException(
-                    "몬스터 '" + id + "'의 level은 1 이상이어야 합니다: " + level);
+            throw new MonsterDataException("몬스터 '" + id + "'의 level은 1 이상이어야 합니다: " + level);
         }
         if (maxHp < 1) {
-            throw new MonsterDataException(
-                    "몬스터 '" + id + "'의 maxHp는 1 이상이어야 합니다: " + maxHp);
+            throw new MonsterDataException("몬스터 '" + id + "'의 maxHp는 1 이상이어야 합니다: " + maxHp);
         }
         if (attackPower < 0) {
             throw new MonsterDataException(
                     "몬스터 '" + id + "'의 attackPower는 0 이상이어야 합니다: " + attackPower);
         }
         if (defense < 0) {
-            throw new MonsterDataException(
-                    "몬스터 '" + id + "'의 defense는 0 이상이어야 합니다: " + defense);
+            throw new MonsterDataException("몬스터 '" + id + "'의 defense는 0 이상이어야 합니다: " + defense);
         }
     }
 
@@ -251,8 +265,7 @@ public class MonsterService {
             return List.of();
         }
         if (!itemDropsNode.isArray()) {
-            throw new MonsterDataException(
-                    "몬스터 '" + monsterId + "'의 'itemDrops' 필드가 배열이 아닙니다.");
+            throw new MonsterDataException("몬스터 '" + monsterId + "'의 'itemDrops' 필드가 배열이 아닙니다.");
         }
 
         final List<ItemDrop> result = new ArrayList<>();
@@ -265,24 +278,33 @@ public class MonsterService {
 
     private ItemDrop parseItemDrop(final JsonNode dropNode, final String monsterId) {
         final String itemId = extractRequiredString(dropNode, "itemId");
-        final int chancePercent = extractRequiredInt(dropNode, "chancePercent", monsterId + ".itemDrops");
-        final int minQuantity = extractRequiredInt(dropNode, "minQuantity", monsterId + ".itemDrops");
-        final int maxQuantity = extractRequiredInt(dropNode, "maxQuantity", monsterId + ".itemDrops");
+        final int chancePercent =
+                extractRequiredInt(dropNode, "chancePercent", monsterId + ".itemDrops");
+        final int minQuantity =
+                extractRequiredInt(dropNode, "minQuantity", monsterId + ".itemDrops");
+        final int maxQuantity =
+                extractRequiredInt(dropNode, "maxQuantity", monsterId + ".itemDrops");
 
         if (chancePercent < MIN_CHANCE_PERCENT || chancePercent > MAX_CHANCE_PERCENT) {
             throw new MonsterDataException(
-                    "몬스터 '" + monsterId + "'의 itemDrops.chancePercent는 1~100이어야 합니다: "
+                    "몬스터 '"
+                            + monsterId
+                            + "'의 itemDrops.chancePercent는 1~100이어야 합니다: "
                             + chancePercent);
         }
         if (minQuantity < 1) {
             throw new MonsterDataException(
-                    "몬스터 '" + monsterId + "'의 itemDrops.minQuantity는 1 이상이어야 합니다: "
-                            + minQuantity);
+                    "몬스터 '" + monsterId + "'의 itemDrops.minQuantity는 1 이상이어야 합니다: " + minQuantity);
         }
         if (maxQuantity < minQuantity) {
             throw new MonsterDataException(
-                    "몬스터 '" + monsterId + "'의 itemDrops.maxQuantity는 minQuantity 이상이어야 합니다: "
-                            + "min=" + minQuantity + ", max=" + maxQuantity);
+                    "몬스터 '"
+                            + monsterId
+                            + "'의 itemDrops.maxQuantity는 minQuantity 이상이어야 합니다: "
+                            + "min="
+                            + minQuantity
+                            + ", max="
+                            + maxQuantity);
         }
 
         return new ItemDrop(itemId, chancePercent, minQuantity, maxQuantity);
@@ -296,8 +318,13 @@ public class MonsterService {
         }
         if (linesNode.size() != REQUIRED_LINES_COUNT) {
             throw new MonsterDataException(
-                    "몬스터 '" + monsterId + "'의 lines는 정확히 " + REQUIRED_LINES_COUNT
-                            + "개여야 합니다: " + linesNode.size() + "개");
+                    "몬스터 '"
+                            + monsterId
+                            + "'의 lines는 정확히 "
+                            + REQUIRED_LINES_COUNT
+                            + "개여야 합니다: "
+                            + linesNode.size()
+                            + "개");
         }
 
         final List<String> lines = new ArrayList<>();
@@ -318,7 +345,10 @@ public class MonsterService {
             for (final String monsterId : node.monsters()) {
                 if (!byIdMap.containsKey(monsterId)) {
                     throw new MonsterDataException(
-                            "맵 노드 '" + node.id() + "'의 몬스터 '" + monsterId
+                            "맵 노드 '"
+                                    + node.id()
+                                    + "'의 몬스터 '"
+                                    + monsterId
                                     + "'이(가) 몬스터 카탈로그에 존재하지 않습니다.");
                 }
             }
@@ -331,8 +361,11 @@ public class MonsterService {
             for (final String monsterId : node.monsters()) {
                 if (!nodeMonsterIds.add(monsterId)) {
                     throw new MonsterDataException(
-                            "맵 노드 '" + node.id() + "'의 monsters 배열에 '"
-                                    + monsterId + "'이(가) 중복됩니다.");
+                            "맵 노드 '"
+                                    + node.id()
+                                    + "'의 monsters 배열에 '"
+                                    + monsterId
+                                    + "'이(가) 중복됩니다.");
                 }
             }
         }
@@ -343,8 +376,11 @@ public class MonsterService {
             for (final ItemDrop itemDrop : monster.itemDrops()) {
                 if (itemCatalogService.byId(itemDrop.itemId()).isEmpty()) {
                     throw new MonsterDataException(
-                            "몬스터 '" + monster.id() + "'의 itemDrops.itemId '"
-                                    + itemDrop.itemId() + "'이(가) 아이템 카탈로그에 존재하지 않습니다.");
+                            "몬스터 '"
+                                    + monster.id()
+                                    + "'의 itemDrops.itemId '"
+                                    + itemDrop.itemId()
+                                    + "'이(가) 아이템 카탈로그에 존재하지 않습니다.");
                 }
             }
         }
@@ -360,30 +396,28 @@ public class MonsterService {
         return fieldNode.asText();
     }
 
-    private int extractRequiredInt(final JsonNode node, final String fieldName,
-                                   final String contextId) {
+    private int extractRequiredInt(
+            final JsonNode node, final String fieldName, final String contextId) {
         final JsonNode fieldNode = node.get(fieldName);
         if (fieldNode == null || fieldNode.isNull() || !fieldNode.isNumber()) {
             throw new MonsterDataException(
-                    "몬스터 '" + contextId + "'의 필수 필드 '" + fieldName
-                            + "'이(가) 비어있거나 숫자가 아닙니다.");
+                    "몬스터 '" + contextId + "'의 필수 필드 '" + fieldName + "'이(가) 비어있거나 숫자가 아닙니다.");
         }
         return fieldNode.asInt();
     }
 
-    private long extractRequiredLong(final JsonNode node, final String fieldName,
-                                     final String contextId) {
+    private long extractRequiredLong(
+            final JsonNode node, final String fieldName, final String contextId) {
         final JsonNode fieldNode = node.get(fieldName);
         if (fieldNode == null || fieldNode.isNull() || !fieldNode.isNumber()) {
             throw new MonsterDataException(
-                    "몬스터 '" + contextId + "'의 필수 필드 '" + fieldName
-                            + "'이(가) 비어있거나 숫자가 아닙니다.");
+                    "몬스터 '" + contextId + "'의 필수 필드 '" + fieldName + "'이(가) 비어있거나 숫자가 아닙니다.");
         }
         return fieldNode.asLong();
     }
 
-    private int extractOptionalInt(final JsonNode node, final String fieldName,
-                                   final int defaultValue) {
+    private int extractOptionalInt(
+            final JsonNode node, final String fieldName, final int defaultValue) {
         final JsonNode fieldNode = node.get(fieldName);
         if (fieldNode == null || fieldNode.isNull() || !fieldNode.isNumber()) {
             return defaultValue;

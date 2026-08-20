@@ -3,9 +3,8 @@ package com.myapps.web.myrpg.domain.model;
 /**
  * 스킬 카탈로그 항목의 공통 계약을 정의하는 sealed interface.
  *
- * <p>모든 스킬은 고유 식별자({@link #id()}), 표시 라벨({@link #label()}),
- * 공격/방어 유형({@link #type()}), 재능 분류({@link #talent()}),
- * 자원 소모량({@link #resourceCost()}), 스킬 설명({@link #description()})을 가진다.
+ * <p>모든 스킬은 고유 식별자({@link #id()}), 표시 라벨({@link #label()}), 공격/방어 유형({@link #type()}), 재능 분류({@link
+ * #talent()}), 자원 소모량({@link #resourceCost()}), 스킬 설명({@link #description()})을 가진다.
  *
  * <p>구현체는 딜스킬({@link DamageSkill})과 방어스킬({@link DefenseSkill})로 제한된다.
  *

@@ -1,14 +1,13 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * {@link ActionLog} 및 {@link ActionLogEntry}의 기본 동작을 검증하는 단위 테스트.
@@ -17,10 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class ActionLogTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(
-            Instant.parse("2025-03-15T14:30:45Z"),
-            ZoneId.of("Asia/Seoul")
-    );
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2025-03-15T14:30:45Z"), ZoneId.of("Asia/Seoul"));
 
     @Test
     void should_createEntry_withTimestampAndMessageAndType_when_addWithType() {

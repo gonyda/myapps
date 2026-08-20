@@ -1,25 +1,22 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 행동 로그 오름차순 표시 프로퍼티를 검증하는 프로퍼티 테스트.
  *
- * <p>N개 항목을 추가한 후 {@link ActionLog#getEntries()}가 반환하는 목록이
- * 항상 타임스탬프 오름차순(추가 순서)으로 정렬되어 있는지 검증한다.
+ * <p>N개 항목을 추가한 후 {@link ActionLog#getEntries()}가 반환하는 목록이 항상 타임스탬프 오름차순(추가 순서)으로 정렬되어 있는지 검증한다.
  * FIFO로 오래된 항목이 제거되더라도 남은 항목은 여전히 오름차순을 유지해야 한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 21: 행동 로그 오름차순 표시
@@ -29,14 +26,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ActionLogAscendingOrderPropertyTest {
 
     private static final ZoneId ZONE_ID = ZoneId.of("Asia/Seoul");
-    private static final long BASE_EPOCH_SECOND = Instant.parse("2025-01-01T00:00:00Z").getEpochSecond();
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final long BASE_EPOCH_SECOND =
+            Instant.parse("2025-01-01T00:00:00Z").getEpochSecond();
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * N개 항목을 1초 간격으로 추가한 뒤, 반환 목록의 타임스탬프가 오름차순인지 검증한다.
      *
-     * <p>각 항목은 이전보다 1초 늦은 Clock으로 생성되어 타임스탬프가 단조 증가하며,
-     * FIFO 제거 후에도 남은 항목들의 순서가 오름차순(가장 오래된 것 → 최신)을 유지해야 한다.
+     * <p>각 항목은 이전보다 1초 늦은 Clock으로 생성되어 타임스탬프가 단조 증가하며, FIFO 제거 후에도 남은 항목들의 순서가 오름차순(가장 오래된 것 → 최신)을
+     * 유지해야 한다.
      *
      * @param entryCount 추가할 항목 수 (1~50)
      */
@@ -69,7 +68,8 @@ class ActionLogAscendingOrderPropertyTest {
             final int previousIndex = extractIndex(entries.get(i - 1).message());
             final int currentIndex = extractIndex(entries.get(i).message());
             assertThat(currentIndex)
-                    .as("항목[%d]의 인덱스(%d)가 항목[%d]의 인덱스(%d)보다 커야 함",
+                    .as(
+                            "항목[%d]의 인덱스(%d)가 항목[%d]의 인덱스(%d)보다 커야 함",
                             i, currentIndex, i - 1, previousIndex)
                     .isGreaterThan(previousIndex);
         }
@@ -78,13 +78,12 @@ class ActionLogAscendingOrderPropertyTest {
     /**
      * N개 항목을 1초 간격 tick Clock으로 추가한 뒤, 반환 목록의 타임스탬프가 단조 비감소인지 검증한다.
      *
-     * <p>FIFO 제거가 발생해도 남은 항목의 타임스탬프는 항상 오름차순이어야 한다.
-     * tick 접근: 각 항목 추가 시 별도 에포크의 Clock을 사용하여 서로 다른 타임스탬프를 부여한다.
-     * ActionLog는 불변 Clock을 내부 보관하므로, 여기서는 MutableClock 패턴 대신
-     * 리플렉션 없이 순수하게 동일 Clock에서의 삽입 순서 보존을 타임스탬프 문자열 비교로 검증한다.
+     * <p>FIFO 제거가 발생해도 남은 항목의 타임스탬프는 항상 오름차순이어야 한다. tick 접근: 각 항목 추가 시 별도 에포크의 Clock을 사용하여 서로 다른
+     * 타임스탬프를 부여한다. ActionLog는 불변 Clock을 내부 보관하므로, 여기서는 MutableClock 패턴 대신 리플렉션 없이 순수하게 동일 Clock에서의
+     * 삽입 순서 보존을 타임스탬프 문자열 비교로 검증한다.
      *
      * @param entryCount 추가할 항목 수 (1~50)
-     * @param baseEpoch  시작 에포크 초
+     * @param baseEpoch 시작 에포크 초
      */
     @Property(tries = 100)
     void should_haveNonDecreasingTimestamps_when_entriesDisplayed(
@@ -105,7 +104,8 @@ class ActionLogAscendingOrderPropertyTest {
             final String previousTimestamp = entries.get(i - 1).timestamp();
             final String currentTimestamp = entries.get(i).timestamp();
             assertThat(currentTimestamp.compareTo(previousTimestamp))
-                    .as("타임스탬프[%d]('%s')가 타임스탬프[%d]('%s')보다 같거나 커야 함",
+                    .as(
+                            "타임스탬프[%d]('%s')가 타임스탬프[%d]('%s')보다 같거나 커야 함",
                             i, currentTimestamp, i - 1, previousTimestamp)
                     .isGreaterThanOrEqualTo(0);
         }
@@ -114,8 +114,7 @@ class ActionLogAscendingOrderPropertyTest {
     /**
      * 오버플로우(10개 초과) 시에도 남은 항목의 삽입 순서가 오름차순인지 검증한다.
      *
-     * <p>11개 이상 추가 시 FIFO 제거가 발생하지만, 남은 최대 10개 항목은
-     * 반드시 추가된 순서대로(오름차순) 표시되어야 한다.
+     * <p>11개 이상 추가 시 FIFO 제거가 발생하지만, 남은 최대 10개 항목은 반드시 추가된 순서대로(오름차순) 표시되어야 한다.
      *
      * @param entryCount 추가할 항목 수 (11~50, 오버플로우 보장)
      */
@@ -139,7 +138,8 @@ class ActionLogAscendingOrderPropertyTest {
             final int previousIndex = extractIndex(entries.get(i - 1).message());
             final int currentIndex = extractIndex(entries.get(i).message());
             assertThat(currentIndex)
-                    .as("오버플로우 후 항목[%d]의 인덱스(%d)가 항목[%d]의 인덱스(%d)보다 커야 함",
+                    .as(
+                            "오버플로우 후 항목[%d]의 인덱스(%d)가 항목[%d]의 인덱스(%d)보다 커야 함",
                             i, currentIndex, i - 1, previousIndex)
                     .isGreaterThan(previousIndex);
         }

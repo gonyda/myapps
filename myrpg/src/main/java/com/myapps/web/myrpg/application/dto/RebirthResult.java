@@ -14,8 +14,7 @@ public sealed interface RebirthResult permits RebirthResult.Reborn, RebirthResul
      *
      * <p>캐릭터가 레벨 1로 초기화되고 누적 레벨이 증가한다.
      */
-    record Reborn() implements RebirthResult {
-    }
+    record Reborn() implements RebirthResult {}
 
     /**
      * 쿨다운 활성 상태로 인한 환생 거부 결과.
@@ -24,6 +23,5 @@ public sealed interface RebirthResult permits RebirthResult.Reborn, RebirthResul
      *
      * @param remaining 환생 가능까지 남은 쿨다운 시간
      */
-    record CooldownActive(Duration remaining) implements RebirthResult {
-    }
+    record CooldownActive(Duration remaining) implements RebirthResult {}
 }

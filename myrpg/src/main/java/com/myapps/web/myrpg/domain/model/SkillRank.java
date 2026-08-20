@@ -5,10 +5,9 @@ import java.util.Optional;
 /**
  * 스킬 랭크를 정의하는 열거형(16단계).
  *
- * <p>랭크 사다리는 {@code F → E → D → C → B → A → 9 → 8 → 7 → 6 → 5 → 4 → 3 → 2 → 1 → Master}
- * 순서이며, {@code F}(order 0)에서 시작하여 {@code MASTER}(order 15)까지 승급할 수 있다.
- * 각 상수는 표시용 라벨({@link #label()}), 순서 번호({@link #order()}),
- * 다음 랭크 조회({@link #next()}), 최고 랭크 판정({@link #isMax()})을 제공한다.
+ * <p>랭크 사다리는 {@code F → E → D → C → B → A → 9 → 8 → 7 → 6 → 5 → 4 → 3 → 2 → 1 → Master} 순서이며,
+ * {@code F}(order 0)에서 시작하여 {@code MASTER}(order 15)까지 승급할 수 있다. 각 상수는 표시용 라벨({@link #label()}), 순서
+ * 번호({@link #order()}), 다음 랭크 조회({@link #next()}), 최고 랭크 판정({@link #isMax()})을 제공한다.
  */
 public enum SkillRank {
 
@@ -73,8 +72,8 @@ public enum SkillRank {
     /**
      * 랭크의 표시용 라벨을 반환한다.
      *
-     * <p>{@code F}~{@code A}는 알파벳 그대로, {@code R9}~{@code R1}은 숫자만("9"~"1"),
-     * {@code MASTER}는 "Master"를 반환한다.
+     * <p>{@code F}~{@code A}는 알파벳 그대로, {@code R9}~{@code R1}은 숫자만("9"~"1"), {@code MASTER}는
+     * "Master"를 반환한다.
      *
      * @return 표시용 라벨 문자열
      */

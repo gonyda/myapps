@@ -1,12 +1,5 @@
 package com.myapps.web.mycalendar.application.service;
 
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
@@ -14,6 +7,11 @@ import com.myapps.web.mycalendar.application.exception.InvalidScheduleException;
 import com.myapps.web.mycalendar.application.exception.ScheduleNotFoundException;
 import com.myapps.web.mycalendar.domain.model.Schedule;
 import com.myapps.web.mycalendar.domain.repository.ScheduleRepository;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 일정 생성/조회/수정/삭제 유스케이스를 오케스트레이션하는 서비스.
@@ -46,9 +44,11 @@ public class ScheduleService {
      */
     @Transactional
     public ScheduleResponse create(final ScheduleCreateCommand command) {
-        validateCommand(command.content(), command.category(), command.startDate(), command.endDate());
+        validateCommand(
+                command.content(), command.category(), command.startDate(), command.endDate());
 
-        final Schedule schedule = new Schedule(command.category(), command.startDate(), command.content());
+        final Schedule schedule =
+                new Schedule(command.category(), command.startDate(), command.content());
         schedule.updateEndDate(command.endDate());
         schedule.updateScheduleTime(command.scheduleTime());
 
@@ -81,23 +81,19 @@ public class ScheduleService {
         final LocalDate endOfMonth = yearMonth.atEndOfMonth();
 
         final List<Schedule> schedules = scheduleRepository.findByMonth(startOfMonth, endOfMonth);
-        return schedules.stream()
-                .map(this::toResponse)
-                .toList();
+        return schedules.stream().map(this::toResponse).toList();
     }
 
     /**
      * 특정 주간 범위의 일정을 시작일/시간순으로 조회합니다.
      *
      * @param weekStart 조회 대상 주의 시작일 (일요일)
-     * @param weekEnd   조회 대상 주의 마지막 날 (토요일)
+     * @param weekEnd 조회 대상 주의 마지막 날 (토요일)
      * @return 해당 주와 겹치는 일정 응답 목록 (시작일, 시간순 정렬)
      */
     public List<ScheduleResponse> findByWeek(final LocalDate weekStart, final LocalDate weekEnd) {
         final List<Schedule> schedules = scheduleRepository.findByWeek(weekStart, weekEnd);
-        return schedules.stream()
-                .map(this::toResponse)
-                .toList();
+        return schedules.stream().map(this::toResponse).toList();
     }
 
     /**
@@ -105,16 +101,17 @@ public class ScheduleService {
      *
      * <p>수정 시 엔티티의 {@code @PreUpdate}에 의해 updatedAt이 자동 갱신됩니다.
      *
-     * @param id      수정할 일정 ID
+     * @param id 수정할 일정 ID
      * @param command 일정 수정 커맨드
      * @return 수정된 일정 응답
      * @throws ScheduleNotFoundException 해당 ID의 일정이 존재하지 않을 때
-     * @throws InvalidScheduleException  유효성 검증 실패 시
+     * @throws InvalidScheduleException 유효성 검증 실패 시
      */
     @Transactional
     public ScheduleResponse update(final Long id, final ScheduleUpdateCommand command) {
         final Schedule schedule = findScheduleById(id);
-        validateCommand(command.content(), command.category(), command.startDate(), command.endDate());
+        validateCommand(
+                command.content(), command.category(), command.startDate(), command.endDate());
 
         schedule.updateCategory(command.category());
         schedule.updateStartDate(command.startDate());
@@ -138,14 +135,16 @@ public class ScheduleService {
     }
 
     private Schedule findScheduleById(final Long id) {
-        return scheduleRepository.findById(id)
+        return scheduleRepository
+                .findById(id)
                 .orElseThrow(() -> new ScheduleNotFoundException("일정을 찾을 수 없습니다: ID=" + id));
     }
 
-    private void validateCommand(final String content,
-                                 final Object category,
-                                 final LocalDate startDate,
-                                 final LocalDate endDate) {
+    private void validateCommand(
+            final String content,
+            final Object category,
+            final LocalDate startDate,
+            final LocalDate endDate) {
         validateCategory(category);
         validateStartDate(startDate);
         validateContent(content);
@@ -188,7 +187,6 @@ public class ScheduleService {
                 schedule.getScheduleTime(),
                 schedule.getContent(),
                 schedule.getCreatedAt(),
-                schedule.getUpdatedAt()
-        );
+                schedule.getUpdatedAt());
     }
 }

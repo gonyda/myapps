@@ -1,16 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -33,20 +29,22 @@ import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 /**
  * BattleService의 스킬 critBonus 적용을 검증하는 단위 테스트.
  *
- * <p>smash(critBonus=80), magnum_shot(critBonus=100), firebolt(critBonus=0)를 구성하여
- * 각 스킬별 실효 크리티컬이 올바르게 계산되는지 확인한다.
+ * <p>smash(critBonus=80), magnum_shot(critBonus=100), firebolt(critBonus=0)를 구성하여 각 스킬별 실효 크리티컬이
+ * 올바르게 계산되는지 확인한다.
  */
 class BattleServiceCritBonusTest {
 
@@ -66,7 +64,8 @@ class BattleServiceCritBonusTest {
         final int capturedCritical = capturePlayerCritical(smash, "smash");
 
         assertThat(capturedCritical)
-                .as("smash(critBonus=80) 실효 크리 = %d + 80 = %d",
+                .as(
+                        "smash(critBonus=80) 실효 크리 = %d + 80 = %d",
                         BASE_CRITICAL_FROM_EQUIP, expectedCritical)
                 .isEqualTo(expectedCritical);
     }
@@ -80,7 +79,8 @@ class BattleServiceCritBonusTest {
         final int capturedCritical = capturePlayerCritical(magnumShot, "magnum_shot");
 
         assertThat(capturedCritical)
-                .as("magnum_shot(critBonus=100) 실효 크리 = %d + 100 = %d",
+                .as(
+                        "magnum_shot(critBonus=100) 실효 크리 = %d + 100 = %d",
                         BASE_CRITICAL_FROM_EQUIP, expectedCritical)
                 .isEqualTo(expectedCritical);
     }
@@ -94,7 +94,8 @@ class BattleServiceCritBonusTest {
         final int capturedCritical = capturePlayerCritical(firebolt, "firebolt");
 
         assertThat(capturedCritical)
-                .as("firebolt(critBonus=0) 실효 크리 = %d + 0 = %d",
+                .as(
+                        "firebolt(critBonus=0) 실효 크리 = %d + 0 = %d",
                         BASE_CRITICAL_FROM_EQUIP, expectedCritical)
                 .isEqualTo(expectedCritical);
     }
@@ -105,11 +106,10 @@ class BattleServiceCritBonusTest {
         final DamageSkill magnumShot = createMagnumShot();
 
         final int highBaseCritical = 950;
-        final int capturedCritical = capturePlayerCriticalWithBase(magnumShot, "magnum_shot", highBaseCritical);
+        final int capturedCritical =
+                capturePlayerCriticalWithBase(magnumShot, "magnum_shot", highBaseCritical);
 
-        assertThat(capturedCritical)
-                .as("950 + 100 = 1050 → 캡 1000")
-                .isEqualTo(1000);
+        assertThat(capturedCritical).as("950 + 100 = 1050 → 캡 1000").isEqualTo(1000);
     }
 
     // ─── Private helpers ────────────────────────────────────────────────────
@@ -118,13 +118,21 @@ class BattleServiceCritBonusTest {
         return capturePlayerCriticalWithBase(skill, skillId, BASE_CRITICAL_FROM_EQUIP);
     }
 
-    private int capturePlayerCriticalWithBase(final DamageSkill skill, final String skillId,
-                                              final int baseCritical) {
+    private int capturePlayerCriticalWithBase(
+            final DamageSkill skill, final String skillId, final int baseCritical) {
         final BattleResolver resolver = mock(BattleResolver.class);
         final ArgumentCaptor<TurnInput> captor = ArgumentCaptor.forClass(TurnInput.class);
 
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(10, 5, false, false, false, false, List.of(new HitResult(10, false))));
+                .thenReturn(
+                        new ResolvedTurn(
+                                10,
+                                5,
+                                false,
+                                false,
+                                false,
+                                false,
+                                List.of(new HitResult(10, false))));
 
         final BattleService service = buildService(resolver, skill, skillId, baseCritical);
         final CharacterProgress progress = createProgress();
@@ -137,10 +145,11 @@ class BattleServiceCritBonusTest {
         return captor.getValue().playerCritical();
     }
 
-    private BattleService buildService(final BattleResolver resolver,
-                                       final DamageSkill skill,
-                                       final String skillId,
-                                       final int baseCritical) {
+    private BattleService buildService(
+            final BattleResolver resolver,
+            final DamageSkill skill,
+            final String skillId,
+            final int baseCritical) {
         final Random random = new Random(42L);
 
         final BattleStateRepository battleStateRepo = mock(BattleStateRepository.class);
@@ -170,10 +179,10 @@ class BattleServiceCritBonusTest {
 
         final com.myapps.web.myrpg.domain.model.StatProgression statProgression =
                 mock(com.myapps.web.myrpg.domain.model.StatProgression.class);
-        when(statProgression.levelStatsFor(anyInt(), any(TalentType.class)))
-                .thenReturn(Stats.ZERO);
+        when(statProgression.levelStatsFor(anyInt(), any(TalentType.class))).thenReturn(Stats.ZERO);
 
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
 
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
@@ -181,46 +190,87 @@ class BattleServiceCritBonusTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     private CharacterProgress createProgress() {
         return new CharacterProgress(
-                "전사", 1, 1, 100L, TalentType.MELEE, null,
-                HIGH_HP, 100, 100, "dunbarton", 0, 500L);
+                "전사", 1, 1, 100L, TalentType.MELEE, null, HIGH_HP, 100, 100, "dunbarton", 0, 500L);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "테스트 몬스터", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, MONSTER_CRITICAL, 30L, new GoldDrop(10, 20), List.of(),
+                MONSTER_ID,
+                "테스트 몬스터",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                MONSTER_CRITICAL,
+                30L,
+                new GoldDrop(10, 20),
+                List.of(),
                 List.of("대사1", "대사2", "대사3"));
     }
 
     private DamageSkill createSmash() {
         return new DamageSkill(
-                "smash", "스매시", SkillType.HEAVY, SkillTalent.MELEE, 10,
-                createFullRankMap(130), "강력한 일격", 1, 80);
+                "smash",
+                "스매시",
+                SkillType.HEAVY,
+                SkillTalent.MELEE,
+                10,
+                createFullRankMap(130),
+                "강력한 일격",
+                1,
+                80);
     }
 
     private DamageSkill createMagnumShot() {
         return new DamageSkill(
-                "magnum_shot", "매그넘 샷", SkillType.HEAVY, SkillTalent.ARCHERY, 12,
-                createFullRankMap(140), "강력한 한 발", 1, 100);
+                "magnum_shot",
+                "매그넘 샷",
+                SkillType.HEAVY,
+                SkillTalent.ARCHERY,
+                12,
+                createFullRankMap(140),
+                "강력한 한 발",
+                1,
+                100);
     }
 
     private DamageSkill createFirebolt() {
         return new DamageSkill(
-                "firebolt", "파이어볼트", SkillType.HEAVY, SkillTalent.MAGIC, 15,
-                createFullRankMap(130), "화염 마법", 1, 0);
+                "firebolt",
+                "파이어볼트",
+                SkillType.HEAVY,
+                SkillTalent.MAGIC,
+                15,
+                createFullRankMap(130),
+                "화염 마법",
+                1,
+                0);
     }
 
     private Map<SkillRank, Integer> createFullRankMap(final int baseValue) {
@@ -232,6 +282,7 @@ class BattleServiceCritBonusTest {
                 Map.entry(SkillRank.R7, baseValue + 64), Map.entry(SkillRank.R6, baseValue + 72),
                 Map.entry(SkillRank.R5, baseValue + 80), Map.entry(SkillRank.R4, baseValue + 88),
                 Map.entry(SkillRank.R3, baseValue + 96), Map.entry(SkillRank.R2, baseValue + 104),
-                Map.entry(SkillRank.R1, baseValue + 112), Map.entry(SkillRank.MASTER, baseValue + 120));
+                Map.entry(SkillRank.R1, baseValue + 112),
+                        Map.entry(SkillRank.MASTER, baseValue + 120));
     }
 }

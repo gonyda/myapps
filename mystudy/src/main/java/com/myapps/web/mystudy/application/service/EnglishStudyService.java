@@ -2,9 +2,8 @@ package com.myapps.web.mystudy.application.service;
 
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
 import com.myapps.web.mystudy.domain.repository.EnglishStudyRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 /**
  * 영어 학습 데이터의 비즈니스 로직을 처리하는 서비스 클래스.

@@ -1,22 +1,19 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.OptionalInt;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import java.util.OptionalInt;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * {@link SkillRankPolicy}의 AP 소모 곡선이 양수·단조 증가이며
- * F→Master 합계가 200인지 검증하는 프로퍼티 테스트.
+ * {@link SkillRankPolicy}의 AP 소모 곡선이 양수·단조 증가이며 F→Master 합계가 200인지 검증하는 프로퍼티 테스트.
  *
- * <p>모든 비-MASTER 랭크에 대해 {@code apCost(rank) > 0}이고,
- * 랭크 순서 증가 시 apCost가 단조 증가(비감소)하며,
- * F부터 R1까지의 apCost 합계가 정확히 200이다. MASTER는 빈 값을 반환한다.
+ * <p>모든 비-MASTER 랭크에 대해 {@code apCost(rank) > 0}이고, 랭크 순서 증가 시 apCost가 단조 증가(비감소)하며, F부터 R1까지의
+ * apCost 합계가 정확히 200이다. MASTER는 빈 값을 반환한다.
  *
  * <p><b>Validates: Requirements 6.1, 6.2</b>
  */
@@ -39,9 +36,7 @@ class SkillRankApCostPropertyTest {
         assertThat(apCost.getAsInt()).isGreaterThan(0);
     }
 
-    /**
-     * MASTER 랭크는 apCost가 빈 값인지 검증한다.
-     */
+    /** MASTER 랭크는 apCost가 빈 값인지 검증한다. */
     @Property(tries = 100)
     void should_returnEmpty_when_master() {
         final OptionalInt apCost = policy.apCost(SkillRank.MASTER);
@@ -64,9 +59,7 @@ class SkillRankApCostPropertyTest {
         assertThat(nextCost).isGreaterThanOrEqualTo(currentCost);
     }
 
-    /**
-     * F→R1(15개 전이)의 apCost 합계가 정확히 200인지 검증한다.
-     */
+    /** F→R1(15개 전이)의 apCost 합계가 정확히 200인지 검증한다. */
     @Property(tries = 100)
     void should_sumTo200_when_allNonMasterRanksAggregated() {
         int totalAp = 0;
@@ -86,8 +79,7 @@ class SkillRankApCostPropertyTest {
      */
     @Provide
     Arbitrary<SkillRank> nonMasterRanks() {
-        return Arbitraries.of(SkillRank.values())
-                .filter(rank -> !rank.isMax());
+        return Arbitraries.of(SkillRank.values()).filter(rank -> !rank.isMax());
     }
 
     /**

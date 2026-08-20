@@ -1,9 +1,13 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.GoldDrop;
+import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.MonsterType;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -11,17 +15,10 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import com.myapps.web.myrpg.domain.model.GoldDrop;
-import com.myapps.web.myrpg.domain.model.Monster;
-import com.myapps.web.myrpg.domain.model.MonsterType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 선공 판정 경계·선택 프로퍼티 테스트.
  *
- * <p>{@code triggers(roll)} 순수 함수의 경계값 판정과
- * {@code rollPreemptiveStrike}의 빈 목록·발동 시 선택·결정성을 검증한다.
+ * <p>{@code triggers(roll)} 순수 함수의 경계값 판정과 {@code rollPreemptiveStrike}의 빈 목록·발동 시 선택·결정성을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 9: 선공 판정 경계·선택
  *
@@ -52,9 +49,7 @@ class MonsterEncounterServicePropertyTest {
         assertThat(result).isEqualTo(roll < PREEMPTIVE_THRESHOLD);
     }
 
-    /**
-     * 경계값 4는 발동(true), 5는 미발동(false)을 정확히 반환함을 검증한다.
-     */
+    /** 경계값 4는 발동(true), 5는 미발동(false)을 정확히 반환함을 검증한다. */
     @Property(tries = 100)
     void should_triggerAtFour_and_notTriggerAtFive() {
         final MonsterEncounterService service = new MonsterEncounterService(new Random(FIXED_SEED));
@@ -100,8 +95,7 @@ class MonsterEncounterServicePropertyTest {
     // ──────────────────────────────────────────────────────────────────────
 
     /**
-     * 선공 발동 시 반환된 몬스터가 항상 입력 목록에 포함됨을 검증한다.
-     * 확실히 발동하는 시드(roll < 5)를 사용한다.
+     * 선공 발동 시 반환된 몬스터가 항상 입력 목록에 포함됨을 검증한다. 확실히 발동하는 시드(roll < 5)를 사용한다.
      *
      * @param monsters 임의 생성된 몬스터 목록 (1~5개)
      */
@@ -127,7 +121,7 @@ class MonsterEncounterServicePropertyTest {
      * 동일 시드의 Random으로 동일 입력을 두 번 호출하면 동일 결과를 반환함을 검증한다.
      *
      * @param monsters 임의 생성된 몬스터 목록 (1~5개)
-     * @param seed     임의의 시드값
+     * @param seed 임의의 시드값
      */
     @Property(tries = 100)
     void should_beDeterministic_when_sameSeedUsed(
@@ -182,10 +176,8 @@ class MonsterEncounterServicePropertyTest {
     // ──────────────────────────────────────────────────────────────────────
 
     private Arbitrary<Monster> monsterArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(3).ofMaxLength(10);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(2).ofMaxLength(8);
+        final Arbitrary<String> ids = Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(10);
+        final Arbitrary<String> names = Arbitraries.strings().alpha().ofMinLength(2).ofMaxLength(8);
         final Arbitrary<MonsterType> types = Arbitraries.of(MonsterType.values());
         final Arbitrary<Integer> levels = Arbitraries.integers().between(1, 50);
         final Arbitrary<Integer> maxHps = Arbitraries.integers().between(1, 999);
@@ -193,40 +185,59 @@ class MonsterEncounterServicePropertyTest {
         final Arbitrary<Integer> defenses = Arbitraries.integers().between(0, 100);
         final Arbitrary<Integer> criticals = Arbitraries.integers().between(0, 500);
         final Arbitrary<Long> experiences = Arbitraries.longs().between(1L, 10000L);
-        final Arbitrary<GoldDrop> goldDrops = Arbitraries.integers().between(0, 100)
-                .flatMap(min -> Arbitraries.integers().between(min, min + 100)
-                        .map(max -> new GoldDrop(min, max)));
-        final Arbitrary<List<String>> lines = Arbitraries.strings()
-                .alpha().ofMinLength(2).ofMaxLength(15)
-                .list().ofSize(3);
+        final Arbitrary<GoldDrop> goldDrops =
+                Arbitraries.integers()
+                        .between(0, 100)
+                        .flatMap(
+                                min ->
+                                        Arbitraries.integers()
+                                                .between(min, min + 100)
+                                                .map(max -> new GoldDrop(min, max)));
+        final Arbitrary<List<String>> lines =
+                Arbitraries.strings().alpha().ofMinLength(2).ofMaxLength(15).list().ofSize(3);
 
-        return Combinators.combine(ids, names, types, levels, maxHps, attackPowers, defenses, criticals)
-                .as((id, name, type, level, maxHp, atk, def, crit) ->
-                        new MonsterPartial(id, name, type, level, maxHp, atk, def, crit))
-                .flatMap(partial -> Combinators.combine(experiences, goldDrops, lines)
-                        .as((exp, gd, ln) -> new Monster(
-                                partial.id(), partial.name(), partial.type(),
-                                partial.level(), partial.maxHp(), partial.attackPower(),
-                                partial.defense(), partial.critical(),
-                                exp, gd, List.of(), ln)));
+        return Combinators.combine(
+                        ids, names, types, levels, maxHps, attackPowers, defenses, criticals)
+                .as(
+                        (id, name, type, level, maxHp, atk, def, crit) ->
+                                new MonsterPartial(id, name, type, level, maxHp, atk, def, crit))
+                .flatMap(
+                        partial ->
+                                Combinators.combine(experiences, goldDrops, lines)
+                                        .as(
+                                                (exp, gd, ln) ->
+                                                        new Monster(
+                                                                partial.id(),
+                                                                partial.name(),
+                                                                partial.type(),
+                                                                partial.level(),
+                                                                partial.maxHp(),
+                                                                partial.attackPower(),
+                                                                partial.defense(),
+                                                                partial.critical(),
+                                                                exp,
+                                                                gd,
+                                                                List.of(),
+                                                                ln)));
     }
 
-    /**
-     * Monster 생성 시 인자 분할을 위한 중간 레코드.
-     */
+    /** Monster 생성 시 인자 분할을 위한 중간 레코드. */
     private record MonsterPartial(
-            String id, String name, MonsterType type,
-            int level, int maxHp, int attackPower, int defense, int critical
-    ) {
-    }
+            String id,
+            String name,
+            MonsterType type,
+            int level,
+            int maxHp,
+            int attackPower,
+            int defense,
+            int critical) {}
 
     // ──────────────────────────────────────────────────────────────────────
     // Helper
     // ──────────────────────────────────────────────────────────────────────
 
     /**
-     * 확실히 선공 발동하는 Random을 생성한다.
-     * 내부에서 nextInt(100)이 0~4 범위를 반환하도록 시드를 탐색한다.
+     * 확실히 선공 발동하는 Random을 생성한다. 내부에서 nextInt(100)이 0~4 범위를 반환하도록 시드를 탐색한다.
      *
      * @param monsterCount 몬스터 목록 크기 (선택 인덱스 결정에 사용)
      * @return 발동이 보장되는 Random

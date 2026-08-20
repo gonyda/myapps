@@ -1,14 +1,11 @@
 package com.myapps.web.myrpg.domain.model;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * {@link SkillTalent}의 재능 매칭, 자원 종류, 랭크업 스탯 대상, fromString을 검증하는 단위 테스트.
- */
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+
+/** {@link SkillTalent}의 재능 매칭, 자원 종류, 랭크업 스탯 대상, fromString을 검증하는 단위 테스트. */
 class SkillTalentTest {
 
     @Test

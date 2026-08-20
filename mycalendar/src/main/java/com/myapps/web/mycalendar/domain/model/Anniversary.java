@@ -10,5 +10,4 @@ import java.time.LocalDate;
  * @param date 기념일 날짜
  * @param name 기념일 이름
  */
-public record Anniversary(LocalDate date, String name) {
-}
+public record Anniversary(LocalDate date, String name) {}

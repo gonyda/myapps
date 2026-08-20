@@ -1,18 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.DropResult;
@@ -39,21 +33,24 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 액션↔결산 로그 라우팅 프로퍼티 검증.
  *
- * <p>전투 액션 라인(플레이어/몬스터 행동·선제·캐스팅 실패·도망 실패)은
- * {@code BattleTurnResult.combatLines}에 담기고 화면 하단 {@code ActionLog}에는
- * 추가되지 않으며, 결산/사망/도망 성공 라인은 {@code ActionLog}에 추가된다.
+ * <p>전투 액션 라인(플레이어/몬스터 행동·선제·캐스팅 실패·도망 실패)은 {@code BattleTurnResult.combatLines}에 담기고 화면 하단 {@code
+ * ActionLog}에는 추가되지 않으며, 결산/사망/도망 성공 라인은 {@code ActionLog}에 추가된다.
  *
  * <p>Feature: 009-skill-differentiation-and-battle-log, Property 8: 액션↔결산 로그 라우팅
  *
@@ -87,24 +84,18 @@ class BattleServiceLogRoutingPropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, SKILL_ID);
 
-        assertThat(result.combatLines())
-                .as("일반 턴에서 combatLines는 비어있지 않아야 한다")
-                .isNotEmpty();
+        assertThat(result.combatLines()).as("일반 턴에서 combatLines는 비어있지 않아야 한다").isNotEmpty();
 
-        assertThat(actionLog.size())
-                .as("일반 비처치 턴에서 actionLog에는 아무것도 추가되지 않아야 한다")
-                .isZero();
+        assertThat(actionLog.size()).as("일반 비처치 턴에서 actionLog에는 아무것도 추가되지 않아야 한다").isZero();
     }
 
     /**
-     * 처치 턴에서 결산 라인(골드/아이템/경험치)이 actionLog에 추가되고,
-     * combatLines에는 전투 액션만 담긴다.
+     * 처치 턴에서 결산 라인(골드/아이템/경험치)이 actionLog에 추가되고, combatLines에는 전투 액션만 담긴다.
      *
      * @param seed 난수 시드
      */
     @Property(tries = 100)
-    void should_routeSettlementToActionLog_when_monsterKilled(
-            @ForAll("seeds") final long seed) {
+    void should_routeSettlementToActionLog_when_monsterKilled(@ForAll("seeds") final long seed) {
         final ActionLog actionLog = createActionLog();
         final BattleService service = buildServiceForKillTurn(new Random(seed), actionLog);
 
@@ -114,25 +105,19 @@ class BattleServiceLogRoutingPropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, SKILL_ID);
 
-        assertThat(result.combatLines())
-                .as("처치 턴에서 combatLines(액션 라인)는 비어있지 않아야 한다")
-                .isNotEmpty();
+        assertThat(result.combatLines()).as("처치 턴에서 combatLines(액션 라인)는 비어있지 않아야 한다").isNotEmpty();
 
-        assertThat(actionLog.size())
-                .as("처치 시 결산 라인(골드/경험치)이 actionLog에 추가되어야 한다")
-                .isGreaterThan(0);
+        assertThat(actionLog.size()).as("처치 시 결산 라인(골드/경험치)이 actionLog에 추가되어야 한다").isGreaterThan(0);
 
-        final boolean hasSettlementLine = actionLog.getEntries().stream()
-                .anyMatch(e -> e.message().contains("골드") || e.message().contains("경험치"));
-        assertThat(hasSettlementLine)
-                .as("actionLog에 결산 라인(골드 또는 경험치)이 포함되어야 한다")
-                .isTrue();
+        final boolean hasSettlementLine =
+                actionLog.getEntries().stream()
+                        .anyMatch(e -> e.message().contains("골드") || e.message().contains("경험치"));
+        assertThat(hasSettlementLine).as("actionLog에 결산 라인(골드 또는 경험치)이 포함되어야 한다").isTrue();
 
-        final boolean hasActionLine = actionLog.getEntries().stream()
-                .anyMatch(e -> e.message().contains("피해") && !e.message().contains("획득"));
-        assertThat(hasActionLine)
-                .as("actionLog에 전투 액션 라인(피해 등)이 포함되지 않아야 한다")
-                .isFalse();
+        final boolean hasActionLine =
+                actionLog.getEntries().stream()
+                        .anyMatch(e -> e.message().contains("피해") && !e.message().contains("획득"));
+        assertThat(hasActionLine).as("actionLog에 전투 액션 라인(피해 등)이 포함되지 않아야 한다").isFalse();
     }
 
     /**
@@ -141,8 +126,7 @@ class BattleServiceLogRoutingPropertyTest {
      * @param seed 난수 시드
      */
     @Property(tries = 100)
-    void should_routeDeathLineToActionLog_when_playerDies(
-            @ForAll("seeds") final long seed) {
+    void should_routeDeathLineToActionLog_when_playerDies(@ForAll("seeds") final long seed) {
         final ActionLog actionLog = createActionLog();
         final BattleService service = buildServiceForDeathTurn(new Random(seed), actionLog);
 
@@ -152,15 +136,12 @@ class BattleServiceLogRoutingPropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, SKILL_ID);
 
-        assertThat(result.combatLines())
-                .as("사망 턴에서도 combatLines는 존재해야 한다")
-                .isNotEmpty();
+        assertThat(result.combatLines()).as("사망 턴에서도 combatLines는 존재해야 한다").isNotEmpty();
 
-        final boolean hasDeathLine = actionLog.getEntries().stream()
-                .anyMatch(e -> e.message().contains("쓰러졌다") || e.message().contains("부활"));
-        assertThat(hasDeathLine)
-                .as("사망 시 actionLog에 사망/부활 라인이 추가되어야 한다")
-                .isTrue();
+        final boolean hasDeathLine =
+                actionLog.getEntries().stream()
+                        .anyMatch(e -> e.message().contains("쓰러졌다") || e.message().contains("부활"));
+        assertThat(hasDeathLine).as("사망 시 actionLog에 사망/부활 라인이 추가되어야 한다").isTrue();
     }
 
     /**
@@ -185,11 +166,9 @@ class BattleServiceLogRoutingPropertyTest {
 
         service.flee(progress, state);
 
-        final boolean hasFleeSuccess = actionLog.getEntries().stream()
-                .anyMatch(e -> e.message().contains("도망쳤다"));
-        assertThat(hasFleeSuccess)
-                .as("도망 성공 시 actionLog에 '도망쳤다!' 메시지가 추가되어야 한다")
-                .isTrue();
+        final boolean hasFleeSuccess =
+                actionLog.getEntries().stream().anyMatch(e -> e.message().contains("도망쳤다"));
+        assertThat(hasFleeSuccess).as("도망 성공 시 actionLog에 '도망쳤다!' 메시지가 추가되어야 한다").isTrue();
     }
 
     /**
@@ -214,15 +193,12 @@ class BattleServiceLogRoutingPropertyTest {
 
         final BattleTurnResult result = service.flee(progress, state);
 
-        assertThat(result.combatLines())
-                .as("도망 실패 시 combatLines에 몬스터 피해 메시지가 담겨야 한다")
-                .isNotEmpty();
+        assertThat(result.combatLines()).as("도망 실패 시 combatLines에 몬스터 피해 메시지가 담겨야 한다").isNotEmpty();
 
-        final boolean hasFleeFailInActionLog = actionLog.getEntries().stream()
-                .anyMatch(e -> e.message().contains("도망 실패") || e.message().contains("피해"));
-        assertThat(hasFleeFailInActionLog)
-                .as("도망 실패 시 actionLog에는 전투 라인이 추가되지 않아야 한다")
-                .isFalse();
+        final boolean hasFleeFailInActionLog =
+                actionLog.getEntries().stream()
+                        .anyMatch(e -> e.message().contains("도망 실패") || e.message().contains("피해"));
+        assertThat(hasFleeFailInActionLog).as("도망 실패 시 actionLog에는 전투 라인이 추가되지 않아야 한다").isFalse();
     }
 
     /**
@@ -231,8 +207,7 @@ class BattleServiceLogRoutingPropertyTest {
      * @param seed 난수 시드
      */
     @Property(tries = 100)
-    void should_notAddToActionLog_when_battleStarts(
-            @ForAll("seeds") final long seed) {
+    void should_notAddToActionLog_when_battleStarts(@ForAll("seeds") final long seed) {
         final ActionLog actionLog = createActionLog();
         final BattleService service = buildServiceForStart(new Random(seed), actionLog);
 
@@ -240,9 +215,7 @@ class BattleServiceLogRoutingPropertyTest {
 
         service.start(progress, MONSTER_ID, false);
 
-        assertThat(actionLog.size())
-                .as("전투 시작 시 actionLog에 아무것도 추가되지 않아야 한다")
-                .isZero();
+        assertThat(actionLog.size()).as("전투 시작 시 actionLog에 아무것도 추가되지 않아야 한다").isZero();
     }
 
     // ─── Providers ──────────────────────────────────────────────────────────
@@ -279,11 +252,19 @@ class BattleServiceLogRoutingPropertyTest {
 
     // ─── Service builders ───────────────────────────────────────────────────
 
-    private BattleService buildServiceForNormalTurn(final Random random, final ActionLog actionLog) {
+    private BattleService buildServiceForNormalTurn(
+            final Random random, final ActionLog actionLog) {
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(10, 5, false, false, false, false,
-                        List.of(new HitResult(10, false))));
+                .thenReturn(
+                        new ResolvedTurn(
+                                10,
+                                5,
+                                false,
+                                false,
+                                false,
+                                false,
+                                List.of(new HitResult(10, false))));
 
         return buildBaseService(resolver, random, actionLog, false, false);
     }
@@ -291,8 +272,15 @@ class BattleServiceLogRoutingPropertyTest {
     private BattleService buildServiceForKillTurn(final Random random, final ActionLog actionLog) {
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false,
-                        List.of(new HitResult(999, false))));
+                .thenReturn(
+                        new ResolvedTurn(
+                                999,
+                                0,
+                                false,
+                                false,
+                                false,
+                                false,
+                                List.of(new HitResult(999, false))));
 
         return buildBaseService(resolver, random, actionLog, true, false);
     }
@@ -319,11 +307,12 @@ class BattleServiceLogRoutingPropertyTest {
         return buildBaseService(resolver, random, actionLog, false, false);
     }
 
-    private BattleService buildBaseService(final BattleResolver resolver,
-                                           final Random random,
-                                           final ActionLog actionLog,
-                                           final boolean killScenario,
-                                           final boolean deathScenario) {
+    private BattleService buildBaseService(
+            final BattleResolver resolver,
+            final Random random,
+            final ActionLog actionLog,
+            final boolean killScenario,
+            final boolean deathScenario) {
         final BattleStateRepository battleStateRepo = mock(BattleStateRepository.class);
         when(battleStateRepo.save(any(BattleState.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -363,28 +352,52 @@ class BattleServiceLogRoutingPropertyTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
 
     private ActionLog createActionLog() {
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         return new ActionLog(clock);
     }
 
     private CharacterProgress createProgress(final int hp) {
-        final CharacterProgress progress = new CharacterProgress(
-                "전사", 10, 10, 100L, TalentType.MELEE, null,
-                hp, 100, 100, "dunbarton", 0, 500L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        10,
+                        100L,
+                        TalentType.MELEE,
+                        null,
+                        hp,
+                        100,
+                        100,
+                        "dunbarton",
+                        0,
+                        500L);
         setId(progress, CHARACTER_ID);
         return progress;
     }
@@ -401,15 +414,29 @@ class BattleServiceLogRoutingPropertyTest {
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, MONSTER_EXP, new GoldDrop(10, 20), List.of(),
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                MONSTER_EXP,
+                new GoldDrop(10, 20),
+                List.of(),
                 List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createDamageSkill() {
         return new DamageSkill(
-                SKILL_ID, "슬래시", SkillType.NORMAL, SkillTalent.MELEE, 5,
-                createFullRankMap(90), "기본 베기");
+                SKILL_ID,
+                "슬래시",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                5,
+                createFullRankMap(90),
+                "기본 베기");
     }
 
     private Map<SkillRank, Integer> createFullRankMap(final int baseValue) {
@@ -421,6 +448,7 @@ class BattleServiceLogRoutingPropertyTest {
                 Map.entry(SkillRank.R7, baseValue + 40), Map.entry(SkillRank.R6, baseValue + 45),
                 Map.entry(SkillRank.R5, baseValue + 50), Map.entry(SkillRank.R4, baseValue + 55),
                 Map.entry(SkillRank.R3, baseValue + 60), Map.entry(SkillRank.R2, baseValue + 65),
-                Map.entry(SkillRank.R1, baseValue + 70), Map.entry(SkillRank.MASTER, baseValue + 80));
+                Map.entry(SkillRank.R1, baseValue + 70),
+                        Map.entry(SkillRank.MASTER, baseValue + 80));
     }
 }

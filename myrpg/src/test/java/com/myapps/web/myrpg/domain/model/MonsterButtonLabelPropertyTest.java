@@ -1,7 +1,8 @@
 package com.myapps.web.myrpg.domain.model;
 
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -9,13 +10,10 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link Monster#buttonLabel()} 포맷을 검증하는 프로퍼티 테스트.
  *
- * <p>NORMAL 타입(배지 빈 문자열)은 이름만 반환하고,
- * BOSS 타입(배지 "👑")은 이름 뒤에 공백과 배지를 붙여 반환함을 검증한다.
+ * <p>NORMAL 타입(배지 빈 문자열)은 이름만 반환하고, BOSS 타입(배지 "👑")은 이름 뒤에 공백과 배지를 붙여 반환함을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 2: 몬스터 버튼 라벨 포맷
  *
@@ -68,11 +66,27 @@ class MonsterButtonLabelPropertyTest {
 
     private Arbitrary<Monster> monsterWith(final MonsterType type) {
         final Arbitrary<String> ids = Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(10);
-        final Arbitrary<String> names = Arbitraries.strings().ofMinLength(1).ofMaxLength(10)
-                .filter(name -> !name.isBlank());
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .ofMinLength(1)
+                        .ofMaxLength(10)
+                        .filter(name -> !name.isBlank());
 
-        return Combinators.combine(ids, names).as((id, name) ->
-                new Monster(id, name, type, 1, 25, 4, 1, 10, 15L,
-                        new GoldDrop(3, 10), List.of(), DEFAULT_LINES));
+        return Combinators.combine(ids, names)
+                .as(
+                        (id, name) ->
+                                new Monster(
+                                        id,
+                                        name,
+                                        type,
+                                        1,
+                                        25,
+                                        4,
+                                        1,
+                                        10,
+                                        15L,
+                                        new GoldDrop(3, 10),
+                                        List.of(),
+                                        DEFAULT_LINES));
     }
 }

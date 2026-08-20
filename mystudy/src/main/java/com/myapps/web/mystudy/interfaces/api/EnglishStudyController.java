@@ -4,6 +4,7 @@ import com.myapps.web.mystudy.application.dto.QuizResponse;
 import com.myapps.web.mystudy.application.service.EnglishStudyService;
 import com.myapps.web.mystudy.application.service.QuizService;
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.List;
 
 /**
  * 영어 학습 데이터의 웹 진입점을 제공하는 컨트롤러.
@@ -30,10 +29,10 @@ public class EnglishStudyController {
      * EnglishStudyController를 생성합니다.
      *
      * @param englishStudyService 영어 학습 데이터 비즈니스 로직 서비스
-     * @param quizService         퀴즈 생성 서비스
+     * @param quizService 퀴즈 생성 서비스
      */
-    public EnglishStudyController(final EnglishStudyService englishStudyService,
-                                  final QuizService quizService) {
+    public EnglishStudyController(
+            final EnglishStudyService englishStudyService, final QuizService quizService) {
         this.englishStudyService = englishStudyService;
         this.quizService = quizService;
     }
@@ -72,7 +71,8 @@ public class EnglishStudyController {
      */
     @PostMapping("/api/english-study")
     @ResponseBody
-    public ResponseEntity<EnglishStudy> addEnglishStudy(@RequestBody final EnglishStudy englishStudy) {
+    public ResponseEntity<EnglishStudy> addEnglishStudy(
+            @RequestBody final EnglishStudy englishStudy) {
         final EnglishStudy savedStudy = englishStudyService.save(englishStudy);
         return new ResponseEntity<>(savedStudy, HttpStatus.CREATED);
     }
@@ -80,8 +80,7 @@ public class EnglishStudyController {
     /**
      * 랜덤 퀴즈를 생성하여 JSON 형식으로 반환합니다.
      *
-     * <p>매 호출 시 EnglishStudy 데이터를 기반으로 랜덤한 객관식 퀴즈를 생성합니다.
-     * 데이터가 없거나 퀴즈 생성에 실패하면 빈 문제 목록을 반환합니다.
+     * <p>매 호출 시 EnglishStudy 데이터를 기반으로 랜덤한 객관식 퀴즈를 생성합니다. 데이터가 없거나 퀴즈 생성에 실패하면 빈 문제 목록을 반환합니다.
      *
      * @return 퀴즈 문제 목록을 포함한 응답 DTO
      */

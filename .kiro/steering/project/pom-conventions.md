@@ -20,7 +20,11 @@ fileMatchPattern: "**/pom.xml"
 </parent>
 
 <properties>
-  <java.version>25</java.version>
+  <java.version>21</java.version>
+  <spotless.version>2.44.5</spotless.version>
+  <errorprone.version>2.36.0</errorprone.version>
+  <archunit.version>1.4.0</archunit.version>
+  <jacoco.version>0.8.13</jacoco.version>
 </properties>
 ```
 
@@ -30,25 +34,23 @@ fileMatchPattern: "**/pom.xml"
 - Child Module의 `<dependencies>`에는 `<version>` 태그 절대 금지
 - 플러그인 버전도 Parent POM의 `<pluginManagement>`에서만 선언
 
-## maven-compiler-plugin 설정
+## 4대 품질 가드레일 플러그인 설정
 
-```xml
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <configuration>
-    <release>${java.version}</release>
-  </configuration>
-</plugin>
-```
+### 1. Spotless (`spotless-maven-plugin`)
+- 코드 스타일 강제 및 import 정리
+- `googleJavaFormat` (AOSP style, 4-space indent) 사용
 
-`<release>`는 `<source>`, `<target>`, bootclasspath를 한 번에 설정하는 Java 21+ 표준 방식입니다.
+### 2. Error Prone (`maven-compiler-plugin`)
+- 컴파일 타임 정적 버그/안티패턴 차단
+- `<fork>true</fork>` 및 Javac `--add-exports`/`--add-opens` 설정 적용
 
-## spring-boot-maven-plugin 설정
+### 3. ArchUnit (`archunit-junit5`)
+- Parent POM `<dependencies>`에 test scope로 공통 상속
+- 각 모듈 `architecture` 패키지에 아키텍처 규칙 테스트 작성
 
-- Parent POM의 `<build><plugins>`에 선언
-- 모든 Child Module이 실행 가능한 fat JAR로 자동 패키징됨
-- Child Module에서 별도 선언 불필요 (Parent에서 상속)
+### 4. JaCoCo (`jacoco-maven-plugin`)
+- `prepare-agent`(initialize), `report`(verify), `check`(verify) 바인딩
+- 커버리지 최소 기준 검증
 
 ## Parent POM 공통 의존성
 
@@ -83,6 +85,12 @@ fileMatchPattern: "**/pom.xml"
         <artifactId>spring-boot-starter-test</artifactId>
         <scope>test</scope>
     </dependency>
+    <!-- ArchUnit JUnit5 -->
+    <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit5</artifactId>
+        <scope>test</scope>
+    </dependency>
 </dependencies>
 ```
 
@@ -109,3 +117,4 @@ fileMatchPattern: "**/pom.xml"
 1. Parent POM `<modules>` 섹션에 모듈명 추가
 2. 기존 Child Module의 `pom.xml`은 절대 수정하지 않음
 3. 새 모듈 전용 의존성은 해당 모듈 `pom.xml`에만 추가
+4. 새 모듈 `src/test/java/.../architecture/ArchitectureRuleTest.java` 아키텍처 테스트 추가

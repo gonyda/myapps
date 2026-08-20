@@ -1,8 +1,6 @@
 package com.myapps.web.mycrawler.domain.model;
 
-/**
- * 크롤링 실행 결과의 성공/실패 상태를 나타내는 열거형.
- */
+/** 크롤링 실행 결과의 성공/실패 상태를 나타내는 열거형. */
 public enum CrawlStatus {
 
     /** 크롤링이 성공적으로 완료됨. */

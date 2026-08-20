@@ -1,5 +1,7 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -7,14 +9,11 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * OwnedItem.repairBy 연산 및 max 상한 불변 프로퍼티 테스트.
  *
- * <p>임의의 현재 내구도(currentDurability >= 0.0)와 최대 내구도(max > 0.0)에 대해,
- * {@code repairBy(1.0, max)} 호출 후 내구도가 {@code min(max, currentDurability + 1.0)}과
- * 정확히 일치하고, 소수점 오차가 누적되지 않으며, max를 초과하지 않음을 검증한다.
+ * <p>임의의 현재 내구도(currentDurability >= 0.0)와 최대 내구도(max > 0.0)에 대해, {@code repairBy(1.0, max)} 호출 후
+ * 내구도가 {@code min(max, currentDurability + 1.0)}과 정확히 일치하고, 소수점 오차가 누적되지 않으며, max를 초과하지 않음을 검증한다.
  *
  * <p>Feature: 010-npc-actions-shop-repair-heal, Property 5: 수리 도메인 repairBy 연산 및 max 상한 불변
  *
@@ -65,8 +64,7 @@ class OwnedItemRepairByPropertyTest {
     }
 
     /**
-     * 반복 repairBy(1.0, max) 후에도 소수점 오차가 누적되지 않고
-     * 각 단계가 min(max, prev + 1.0)과 정확히 일치함을 검증한다.
+     * 반복 repairBy(1.0, max) 후에도 소수점 오차가 누적되지 않고 각 단계가 min(max, prev + 1.0)과 정확히 일치함을 검증한다.
      *
      * @param tuple (현재 내구도, 최대 내구도) 쌍
      */
@@ -96,9 +94,13 @@ class OwnedItemRepairByPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Double, Double>> durabilityAndMax() {
-        return Arbitraries.doubles().between(0.0, MAX_DURABILITY_UPPER)
-                .flatMap(curr -> Arbitraries.doubles().between(0.1, MAX_DURABILITY_UPPER)
-                        .map(max -> Tuple.of(curr, max)));
+        return Arbitraries.doubles()
+                .between(0.0, MAX_DURABILITY_UPPER)
+                .flatMap(
+                        curr ->
+                                Arbitraries.doubles()
+                                        .between(0.1, MAX_DURABILITY_UPPER)
+                                        .map(max -> Tuple.of(curr, max)));
     }
 
     /**
@@ -108,12 +110,6 @@ class OwnedItemRepairByPropertyTest {
      * @return 설정된 내구도를 가진 OwnedItem
      */
     private OwnedItem createEquipmentWithDurability(final double durability) {
-        return new OwnedItem(
-                "test_equipment",
-                1,
-                StorageKind.INVENTORY,
-                false,
-                durability
-        );
+        return new OwnedItem("test_equipment", 1, StorageKind.INVENTORY, false, durability);
     }
 }

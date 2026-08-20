@@ -1,13 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.List;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.myapps.web.myrpg.domain.model.BonusTarget;
 import com.myapps.web.myrpg.domain.model.EquipBonus;
@@ -21,17 +15,19 @@ import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import java.util.List;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Combinators;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 아이템 상세 자동 생성 프로퍼티 테스트.
  *
- * <p>임의의 포션/장비 아이템과 보유 인스턴스에 대해,
- * {@link InventoryService#describe(Item, OwnedItem)}이
- * 포션 회복 문구, 장비 보너스 라인, 내구도, 양손검 배타 안내를
- * 올바르게 포함하는지 검증한다.
+ * <p>임의의 포션/장비 아이템과 보유 인스턴스에 대해, {@link InventoryService#describe(Item, OwnedItem)}이 포션 회복 문구, 장비
+ * 보너스 라인, 내구도, 양손검 배타 안내를 올바르게 포함하는지 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 15: 상세 자동 생성
  *
@@ -51,13 +47,20 @@ class ItemDescribePropertyTest {
     ItemDescribePropertyTest() {
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
-        this.inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        this.inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
     }
 
     // Feature: 006-gold-item-inventory, Property 15: 상세 자동 생성
@@ -68,8 +71,7 @@ class ItemDescribePropertyTest {
      * @param healHp 임의 생성된 HP 회복량
      */
     @Property(tries = 100)
-    void should_containHealHpDescription_when_potionItem(
-            @ForAll("healHpValues") final int healHp) {
+    void should_containHealHpDescription_when_potionItem(@ForAll("healHpValues") final int healHp) {
 
         final PotionItem potion = new PotionItem("test_potion", "테스트 포션", healHp, null);
         final OwnedItem owned = new OwnedItem("test_potion", 3, StorageKind.INVENTORY, false, 0);
@@ -88,14 +90,26 @@ class ItemDescribePropertyTest {
     void should_containBonusLines_when_equipmentItem(
             @ForAll("equipmentWithBonuses") final EquipTestData equipData) {
 
-        final EquipmentItem equipment = new EquipmentItem(
-                "test_equip", "테스트 장비",
-                equipData.kind() == EquipmentKind.SHIELD || equipData.kind() == EquipmentKind.ARMOR_BODY
-                        ? ItemType.ARMOR : ItemType.WEAPON,
-                equipData.kind(), equipData.bonuses(), null, equipData.maxDurability());
+        final EquipmentItem equipment =
+                new EquipmentItem(
+                        "test_equip",
+                        "테스트 장비",
+                        equipData.kind() == EquipmentKind.SHIELD
+                                        || equipData.kind() == EquipmentKind.ARMOR_BODY
+                                ? ItemType.ARMOR
+                                : ItemType.WEAPON,
+                        equipData.kind(),
+                        equipData.bonuses(),
+                        null,
+                        equipData.maxDurability());
 
-        final OwnedItem owned = new OwnedItem(
-                "test_equip", 1, StorageKind.INVENTORY, false, equipData.currentDurability());
+        final OwnedItem owned =
+                new OwnedItem(
+                        "test_equip",
+                        1,
+                        StorageKind.INVENTORY,
+                        false,
+                        equipData.currentDurability());
 
         final List<String> lines = inventoryService.describe(equipment, owned);
 
@@ -103,11 +117,17 @@ class ItemDescribePropertyTest {
             final String targetLabel = bonusTargetLabel(bonus.target());
             if (bonus.target() == BonusTarget.CRITICAL) {
                 final double percent = bonus.amount() * 0.1;
-                assertThat(lines).anyMatch(line ->
-                        line.contains(targetLabel) && line.contains("+" + percent + "%"));
+                assertThat(lines)
+                        .anyMatch(
+                                line ->
+                                        line.contains(targetLabel)
+                                                && line.contains("+" + percent + "%"));
             } else {
-                assertThat(lines).anyMatch(line ->
-                        line.contains(targetLabel) && line.contains("+" + bonus.amount()));
+                assertThat(lines)
+                        .anyMatch(
+                                line ->
+                                        line.contains(targetLabel)
+                                                && line.contains("+" + bonus.amount()));
             }
         }
     }
@@ -121,19 +141,34 @@ class ItemDescribePropertyTest {
     void should_containDurabilityLine_when_equipmentItem(
             @ForAll("equipmentWithBonuses") final EquipTestData equipData) {
 
-        final EquipmentItem equipment = new EquipmentItem(
-                "test_equip", "테스트 장비",
-                equipData.kind() == EquipmentKind.SHIELD || equipData.kind() == EquipmentKind.ARMOR_BODY
-                        ? ItemType.ARMOR : ItemType.WEAPON,
-                equipData.kind(), equipData.bonuses(), null, equipData.maxDurability());
+        final EquipmentItem equipment =
+                new EquipmentItem(
+                        "test_equip",
+                        "테스트 장비",
+                        equipData.kind() == EquipmentKind.SHIELD
+                                        || equipData.kind() == EquipmentKind.ARMOR_BODY
+                                ? ItemType.ARMOR
+                                : ItemType.WEAPON,
+                        equipData.kind(),
+                        equipData.bonuses(),
+                        null,
+                        equipData.maxDurability());
 
-        final OwnedItem owned = new OwnedItem(
-                "test_equip", 1, StorageKind.INVENTORY, false, equipData.currentDurability());
+        final OwnedItem owned =
+                new OwnedItem(
+                        "test_equip",
+                        1,
+                        StorageKind.INVENTORY,
+                        false,
+                        equipData.currentDurability());
 
         final List<String> lines = inventoryService.describe(equipment, owned);
 
-        assertThat(lines).anyMatch(line ->
-                line.contains("내구도:") && line.contains("/" + equipData.maxDurability()));
+        assertThat(lines)
+                .anyMatch(
+                        line ->
+                                line.contains("내구도:")
+                                        && line.contains("/" + equipData.maxDurability()));
     }
 
     /**
@@ -145,12 +180,23 @@ class ItemDescribePropertyTest {
     void should_containExclusivityWarning_when_twoHandedSword(
             @ForAll("twoHandedSwordData") final EquipTestData equipData) {
 
-        final EquipmentItem equipment = new EquipmentItem(
-                "test_two_hand", "테스트 양손검", ItemType.WEAPON,
-                EquipmentKind.TWO_HANDED_SWORD, equipData.bonuses(), null, equipData.maxDurability());
+        final EquipmentItem equipment =
+                new EquipmentItem(
+                        "test_two_hand",
+                        "테스트 양손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.TWO_HANDED_SWORD,
+                        equipData.bonuses(),
+                        null,
+                        equipData.maxDurability());
 
-        final OwnedItem owned = new OwnedItem(
-                "test_two_hand", 1, StorageKind.INVENTORY, false, equipData.currentDurability());
+        final OwnedItem owned =
+                new OwnedItem(
+                        "test_two_hand",
+                        1,
+                        StorageKind.INVENTORY,
+                        false,
+                        equipData.currentDurability());
 
         final List<String> lines = inventoryService.describe(equipment, owned);
 
@@ -166,16 +212,29 @@ class ItemDescribePropertyTest {
     void should_notContainExclusivityWarning_when_notTwoHandedSword(
             @ForAll("nonTwoHandedSwordData") final EquipTestData equipData) {
 
-        final ItemType itemType = equipData.kind() == EquipmentKind.SHIELD
-                || equipData.kind() == EquipmentKind.ARMOR_BODY
-                ? ItemType.ARMOR : ItemType.WEAPON;
+        final ItemType itemType =
+                equipData.kind() == EquipmentKind.SHIELD
+                                || equipData.kind() == EquipmentKind.ARMOR_BODY
+                        ? ItemType.ARMOR
+                        : ItemType.WEAPON;
 
-        final EquipmentItem equipment = new EquipmentItem(
-                "test_equip", "테스트 장비", itemType,
-                equipData.kind(), equipData.bonuses(), null, equipData.maxDurability());
+        final EquipmentItem equipment =
+                new EquipmentItem(
+                        "test_equip",
+                        "테스트 장비",
+                        itemType,
+                        equipData.kind(),
+                        equipData.bonuses(),
+                        null,
+                        equipData.maxDurability());
 
-        final OwnedItem owned = new OwnedItem(
-                "test_equip", 1, StorageKind.INVENTORY, false, equipData.currentDurability());
+        final OwnedItem owned =
+                new OwnedItem(
+                        "test_equip",
+                        1,
+                        StorageKind.INVENTORY,
+                        false,
+                        equipData.currentDurability());
 
         final List<String> lines = inventoryService.describe(equipment, owned);
 
@@ -203,12 +262,18 @@ class ItemDescribePropertyTest {
     Arbitrary<EquipTestData> equipmentWithBonuses() {
         final Arbitrary<EquipmentKind> kindArb = Arbitraries.of(EquipmentKind.values());
         final Arbitrary<List<EquipBonus>> bonusesArb = bonusList();
-        final Arbitrary<Integer> maxDurArb = Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
+        final Arbitrary<Integer> maxDurArb =
+                Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
 
         return Combinators.combine(kindArb, bonusesArb, maxDurArb)
-                .flatAs((kind, bonuses, maxDur) ->
-                        Arbitraries.doubles().between(0.0, (double) maxDur)
-                                .map(curDur -> new EquipTestData(kind, bonuses, maxDur, curDur)));
+                .flatAs(
+                        (kind, bonuses, maxDur) ->
+                                Arbitraries.doubles()
+                                        .between(0.0, (double) maxDur)
+                                        .map(
+                                                curDur ->
+                                                        new EquipTestData(
+                                                                kind, bonuses, maxDur, curDur)));
     }
 
     /**
@@ -219,13 +284,21 @@ class ItemDescribePropertyTest {
     @Provide
     Arbitrary<EquipTestData> twoHandedSwordData() {
         final Arbitrary<List<EquipBonus>> bonusesArb = bonusList();
-        final Arbitrary<Integer> maxDurArb = Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
+        final Arbitrary<Integer> maxDurArb =
+                Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
 
         return Combinators.combine(bonusesArb, maxDurArb)
-                .flatAs((bonuses, maxDur) ->
-                        Arbitraries.doubles().between(0.0, (double) maxDur)
-                                .map(curDur -> new EquipTestData(
-                                        EquipmentKind.TWO_HANDED_SWORD, bonuses, maxDur, curDur)));
+                .flatAs(
+                        (bonuses, maxDur) ->
+                                Arbitraries.doubles()
+                                        .between(0.0, (double) maxDur)
+                                        .map(
+                                                curDur ->
+                                                        new EquipTestData(
+                                                                EquipmentKind.TWO_HANDED_SWORD,
+                                                                bonuses,
+                                                                maxDur,
+                                                                curDur)));
     }
 
     /**
@@ -235,15 +308,24 @@ class ItemDescribePropertyTest {
      */
     @Provide
     Arbitrary<EquipTestData> nonTwoHandedSwordData() {
-        final Arbitrary<EquipmentKind> kindArb = Arbitraries.of(
-                EquipmentKind.ONE_HANDED_SWORD, EquipmentKind.SHIELD, EquipmentKind.ARMOR_BODY);
+        final Arbitrary<EquipmentKind> kindArb =
+                Arbitraries.of(
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        EquipmentKind.SHIELD,
+                        EquipmentKind.ARMOR_BODY);
         final Arbitrary<List<EquipBonus>> bonusesArb = bonusList();
-        final Arbitrary<Integer> maxDurArb = Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
+        final Arbitrary<Integer> maxDurArb =
+                Arbitraries.integers().between(DURABILITY_MIN, DURABILITY_MAX);
 
         return Combinators.combine(kindArb, bonusesArb, maxDurArb)
-                .flatAs((kind, bonuses, maxDur) ->
-                        Arbitraries.doubles().between(0.0, (double) maxDur)
-                                .map(curDur -> new EquipTestData(kind, bonuses, maxDur, curDur)));
+                .flatAs(
+                        (kind, bonuses, maxDur) ->
+                                Arbitraries.doubles()
+                                        .between(0.0, (double) maxDur)
+                                        .map(
+                                                curDur ->
+                                                        new EquipTestData(
+                                                                kind, bonuses, maxDur, curDur)));
     }
 
     // ─── Helper Arbitraries ─────────────────────────────────────────────────
@@ -254,10 +336,11 @@ class ItemDescribePropertyTest {
      * @return EquipBonus 리스트의 Arbitrary
      */
     private Arbitrary<List<EquipBonus>> bonusList() {
-        final Arbitrary<EquipBonus> singleBonus = Combinators.combine(
-                        Arbitraries.of(BonusTarget.values()),
-                        Arbitraries.integers().between(BONUS_AMOUNT_MIN, BONUS_AMOUNT_MAX))
-                .as(EquipBonus::new);
+        final Arbitrary<EquipBonus> singleBonus =
+                Combinators.combine(
+                                Arbitraries.of(BonusTarget.values()),
+                                Arbitraries.integers().between(BONUS_AMOUNT_MIN, BONUS_AMOUNT_MAX))
+                        .as(EquipBonus::new);
         return singleBonus.list().ofMinSize(1).ofMaxSize(3);
     }
 
@@ -293,12 +376,14 @@ class ItemDescribePropertyTest {
     /**
      * 장비 테스트 데이터를 담는 레코드.
      *
-     * @param kind              장비 종류
-     * @param bonuses           보너스 목록
-     * @param maxDurability     최대 내구도
+     * @param kind 장비 종류
+     * @param bonuses 보너스 목록
+     * @param maxDurability 최대 내구도
      * @param currentDurability 현재 내구도
      */
-    record EquipTestData(EquipmentKind kind, List<EquipBonus> bonuses,
-                         int maxDurability, double currentDurability) {
-    }
+    record EquipTestData(
+            EquipmentKind kind,
+            List<EquipBonus> bonuses,
+            int maxDurability,
+            double currentDurability) {}
 }

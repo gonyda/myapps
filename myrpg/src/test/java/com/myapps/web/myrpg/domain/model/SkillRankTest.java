@@ -1,12 +1,10 @@
 package com.myapps.web.myrpg.domain.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * {@link SkillRank}의 라벨, 순서, next 체인, isMax, first()를 검증하는 단위 테스트.
- */
+import org.junit.jupiter.api.Test;
+
+/** {@link SkillRank}의 라벨, 순서, next 체인, isMax, first()를 검증하는 단위 테스트. */
 class SkillRankTest {
 
     @Test

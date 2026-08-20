@@ -1,22 +1,22 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static net.jqwik.api.Arbitraries.integers;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static net.jqwik.api.Arbitraries.integers;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 재능별 보조 바이탈 성장을 검증하는 프로퍼티 테스트.
  *
- * <p>{@link StatProgression#vitalMaxFor(int, TalentType)}가 재능의 보조 바이탈 보너스를
- * 올바르게 적용하는지 확인한다.
+ * <p>{@link StatProgression#vitalMaxFor(int, TalentType)}가 재능의 보조 바이탈 보너스를 올바르게 적용하는지 확인한다.
+ *
  * <ul>
- *   <li>{@code MELEE}: HP만 공통 + 5×(L-1), MP·Stamina는 공통</li>
- *   <li>{@code MAGIC}: MP만 공통 + 5×(L-1), HP·Stamina는 공통</li>
- *   <li>{@code ARCHERY}: 세 바이탈 모두 공통값(보조 보너스가 CRITICAL → STAT 계열이므로 바이탈 무영향)</li>
+ *   <li>{@code MELEE}: HP만 공통 + 5×(L-1), MP·Stamina는 공통
+ *   <li>{@code MAGIC}: MP만 공통 + 5×(L-1), HP·Stamina는 공통
+ *   <li>{@code ARCHERY}: 세 바이탈 모두 공통값(보조 보너스가 CRITICAL → STAT 계열이므로 바이탈 무영향)
  * </ul>
  *
  * <p><b>Validates: Requirements 7.1, 7.2, 7.4, 7.6, 8.1, 8.2</b>

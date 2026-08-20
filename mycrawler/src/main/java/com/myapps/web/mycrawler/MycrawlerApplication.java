@@ -11,10 +11,8 @@ import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
  *
  * <p>Playwright Java 기반 웹 크롤링 엔진을 제공하는 웹 애플리케이션입니다.
  */
-@SpringBootApplication(exclude = {
-        DataSourceAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class
-})
+@SpringBootApplication(
+        exclude = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 @ConfigurationPropertiesScan
 public class MycrawlerApplication {
 

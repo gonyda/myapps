@@ -1,33 +1,30 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.myapps.web.myrpg.application.exception.SkillDataException;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
-
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * 스킬 카탈로그의 hitCount·critBonus 파싱 검증 프로퍼티 테스트.
  *
- * <p>hitCount/critBonus 부재 시 기본값(1/0)으로 로드, 범위 밖이거나 숫자가 아닌 값이면
- * {@link SkillDataException} 발생, multiplierByRank 16키·단조 검증 유지를 확인한다.
+ * <p>hitCount/critBonus 부재 시 기본값(1/0)으로 로드, 범위 밖이거나 숫자가 아닌 값이면 {@link SkillDataException} 발생,
+ * multiplierByRank 16키·단조 검증 유지를 확인한다.
  *
  * <p>Feature: 009-skill-differentiation-and-battle-log, Property 6: 카탈로그 파싱 기본값·검증
  *
@@ -47,9 +44,7 @@ class SkillCatalogHitCountCritBonusPropertyTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final SkillCatalogService skillCatalogService = new SkillCatalogService(objectMapper);
 
-    /**
-     * hitCount와 critBonus가 부재하면 기본값(hitCount=1, critBonus=0)으로 로드된다.
-     */
+    /** hitCount와 critBonus가 부재하면 기본값(hitCount=1, critBonus=0)으로 로드된다. */
     @Property(tries = 100)
     void should_loadWithDefaults_when_hitCountAndCritBonusAbsent() {
         final String json = buildSingleDamageSkillJson(null, null);
@@ -66,7 +61,7 @@ class SkillCatalogHitCountCritBonusPropertyTest {
     /**
      * 유효 범위 내의 hitCount와 critBonus가 올바르게 파싱된다.
      *
-     * @param hitCount  유효 범위 [1,8] 내 hitCount
+     * @param hitCount 유효 범위 [1,8] 내 hitCount
      * @param critBonus 유효 범위 [0,100] 내 critBonus
      */
     @Property(tries = 100)
@@ -189,9 +184,7 @@ class SkillCatalogHitCountCritBonusPropertyTest {
                 .isInstanceOf(SkillDataException.class);
     }
 
-    /**
-     * 방어 스킬 노드에 hitCount/critBonus가 존재해도 무시되고 정상 파싱된다.
-     */
+    /** 방어 스킬 노드에 hitCount/critBonus가 존재해도 무시되고 정상 파싱된다. */
     @Property(tries = 100)
     void should_ignoreHitCountCritBonus_when_defenseSkill(
             @ForAll("validHitCount") final int hitCount,
@@ -302,8 +295,7 @@ class SkillCatalogHitCountCritBonusPropertyTest {
         return rootArray.toString();
     }
 
-    private String buildSkillJsonWithStringField(final String fieldName,
-                                                  final String stringValue) {
+    private String buildSkillJsonWithStringField(final String fieldName, final String stringValue) {
         final ArrayNode rootArray = objectMapper.createArrayNode();
         final ObjectNode skillNode = buildBaseDamageSkillNode();
         skillNode.put(fieldName, stringValue);
@@ -335,8 +327,8 @@ class SkillCatalogHitCountCritBonusPropertyTest {
         return rootArray.toString();
     }
 
-    private String buildDefenseSkillJsonWithHitCountCritBonus(final int hitCount,
-                                                              final int critBonus) {
+    private String buildDefenseSkillJsonWithHitCountCritBonus(
+            final int hitCount, final int critBonus) {
         final ArrayNode rootArray = objectMapper.createArrayNode();
         final ObjectNode skillNode = objectMapper.createObjectNode();
         skillNode.put("id", "defense_test");

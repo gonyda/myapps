@@ -1,10 +1,6 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
@@ -12,15 +8,16 @@ import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.VitalMax;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import org.junit.jupiter.api.Test;
 
 /**
  * AP(어빌리티 포인트)와 재능별 성장 계산의 예시 기반 단위 테스트.
  *
- * <p>신규 생성 AP 0, 레벨업 3회 시 AP 3, 환생 후 AP+1·재능 반영을 검증하고,
- * 재능별 스탯·바이탈 계산 샘플(MAGIC Lv.10→INT 55, ARCHERY Lv.10→Critical 86,
- * MELEE Lv.10→HP 235/MP·Stamina 190, ARCHERY Lv.10→세 바이탈 190)을 확인한다.
+ * <p>신규 생성 AP 0, 레벨업 3회 시 AP 3, 환생 후 AP+1·재능 반영을 검증하고, 재능별 스탯·바이탈 계산 샘플(MAGIC Lv.10→INT 55, ARCHERY
+ * Lv.10→Critical 86, MELEE Lv.10→HP 235/MP·Stamina 190, ARCHERY Lv.10→세 바이탈 190)을 확인한다.
  */
 class AbilityPointsAndTalentGrowthTest {
 
@@ -32,9 +29,7 @@ class AbilityPointsAndTalentGrowthTest {
     private final ProgressionService service =
             new ProgressionService(experiencePolicy, statProgression, FIXED_CLOCK);
 
-    /**
-     * 신규 캐릭터 생성 직후 AP가 0임을 검증한다.
-     */
+    /** 신규 캐릭터 생성 직후 AP가 0임을 검증한다. */
     @Test
     void should_haveZeroAP_when_newCharacterCreated() {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -45,8 +40,7 @@ class AbilityPointsAndTalentGrowthTest {
     /**
      * 레벨업 3회 시 AP가 3 증가함을 검증한다.
      *
-     * <p>레벨 1→2 필요 경험치 100, 레벨 2→3 필요 400, 레벨 3→4 필요 900.
-     * 각 레벨업을 유발할 만큼 경험치를 획득한 뒤 AP를 확인한다.
+     * <p>레벨 1→2 필요 경험치 100, 레벨 2→3 필요 400, 레벨 3→4 필요 900. 각 레벨업을 유발할 만큼 경험치를 획득한 뒤 AP를 확인한다.
      */
     @Test
     void should_haveThreeAP_when_levelUpThreeTimes() {
@@ -112,6 +106,7 @@ class AbilityPointsAndTalentGrowthTest {
      * MELEE 재능 Lv.10에서 HP 최대치 = 235, MP/Stamina = 190임을 검증한다.
      *
      * <p>HP 공식: 100 + 10×9 + 5×9 = 100 + 90 + 45 = 235.
+     *
      * <p>MP/Stamina 공식: 100 + 10×9 = 190 (바이탈 보너스 없음).
      */
     @Test
@@ -126,8 +121,7 @@ class AbilityPointsAndTalentGrowthTest {
     /**
      * ARCHERY 재능 Lv.10에서 세 바이탈(HP/MP/Stamina) 모두 190임을 검증한다.
      *
-     * <p>ARCHERY의 보조 보너스는 CRITICAL(스탯 계열)이므로 바이탈에 가산되지 않는다.
-     * 세 바이탈 공통: 100 + 10×9 = 190.
+     * <p>ARCHERY의 보조 보너스는 CRITICAL(스탯 계열)이므로 바이탈에 가산되지 않는다. 세 바이탈 공통: 100 + 10×9 = 190.
      */
     @Test
     void should_calculateArcheryAllVitalsAt190_when_level10() {

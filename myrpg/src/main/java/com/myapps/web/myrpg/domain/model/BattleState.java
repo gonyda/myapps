@@ -10,10 +10,8 @@ import jakarta.persistence.Table;
 /**
  * 진행 중인 전투의 상태를 영속 저장하는 JPA 엔티티.
  *
- * <p>캐릭터당 활성 전투는 최대 1건이며, 매 턴마다 몬스터 현재 HP와
- * 턴 수가 갱신된다. 전투 종료(승/패/도망) 시 {@code active}를 {@code false}로
- * 설정하여 비활성화한다. 브라우저 종료 후에도 활성 전투를 재개할 수 있도록
- * 전투 상태를 DB에 저장한다.
+ * <p>캐릭터당 활성 전투는 최대 1건이며, 매 턴마다 몬스터 현재 HP와 턴 수가 갱신된다. 전투 종료(승/패/도망) 시 {@code active}를 {@code
+ * false}로 설정하여 비활성화한다. 브라우저 종료 후에도 활성 전투를 재개할 수 있도록 전투 상태를 DB에 저장한다.
  */
 @Entity
 @Table(name = "battle_state")
@@ -41,24 +39,24 @@ public class BattleState {
     @Column(nullable = false)
     private boolean active;
 
-    /**
-     * JPA 전용 기본 생성자.
-     */
-    protected BattleState() {
-    }
+    /** JPA 전용 기본 생성자. */
+    protected BattleState() {}
 
     /**
      * 전투 시작 시 사용하는 생성자.
      *
      * <p>{@code turnCount}는 1로, {@code active}는 {@code true}로 초기화된다.
      *
-     * @param characterId    전투에 참여하는 캐릭터 ID
-     * @param monsterId      전투 대상 몬스터 식별자
+     * @param characterId 전투에 참여하는 캐릭터 ID
+     * @param monsterId 전투 대상 몬스터 식별자
      * @param monsterCurrentHp 몬스터의 현재(최대) HP
-     * @param ambush         기습 여부 ({@code true}이면 기습 전투)
+     * @param ambush 기습 여부 ({@code true}이면 기습 전투)
      */
-    public BattleState(final long characterId, final String monsterId,
-                       final int monsterCurrentHp, final boolean ambush) {
+    public BattleState(
+            final long characterId,
+            final String monsterId,
+            final int monsterCurrentHp,
+            final boolean ambush) {
         this.characterId = characterId;
         this.monsterId = monsterId;
         this.monsterCurrentHp = monsterCurrentHp;

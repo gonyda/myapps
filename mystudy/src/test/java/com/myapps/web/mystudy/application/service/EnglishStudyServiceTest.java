@@ -1,30 +1,25 @@
 package com.myapps.web.mystudy.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.myapps.web.mystudy.domain.model.EnglishStudy;
 import com.myapps.web.mystudy.domain.repository.EnglishStudyRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-/**
- * EnglishStudyService 단위 테스트.
- */
+/** EnglishStudyService 단위 테스트. */
 @ExtendWith(MockitoExtension.class)
 class EnglishStudyServiceTest {
 
-    @Mock
-    private EnglishStudyRepository englishStudyRepository;
+    @Mock private EnglishStudyRepository englishStudyRepository;
 
-    @InjectMocks
-    private EnglishStudyService englishStudyService;
+    @InjectMocks private EnglishStudyService englishStudyService;
 
     @Test
     void should_returnAllStudiesOrderByIdDesc_when_findAllOrderByIdDescCalled() {

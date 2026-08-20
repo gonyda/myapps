@@ -1,15 +1,9 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
@@ -22,21 +16,25 @@ import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 기본 지급 결과 프로퍼티 테스트.
  *
  * <p>신규 캐릭터 시드({@code seedDefault()})에 대해:
+ *
  * <ul>
- *   <li>INVENTORY에 초보자 장비 10종 + 포션 1스택(수량 5)이 생성되고</li>
- *   <li>한손검·방패·갑옷·투구·장갑·부츠 6종이 {@code equipped=true}(양손검·활·완드·스태프 false)이며</li>
- *   <li>모든 지급 장비의 {@code currentDurability == maxDurability(20)}이고</li>
- *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+17이다</li>
+ *   <li>INVENTORY에 초보자 장비 10종 + 포션 1스택(수량 5)이 생성되고
+ *   <li>한손검·방패·갑옷·투구·장갑·부츠 6종이 {@code equipped=true}(양손검·활·완드·스태프 false)이며
+ *   <li>모든 지급 장비의 {@code currentDurability == maxDurability(20)}이고
+ *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+17이다
  * </ul>
  *
  * <p>Feature: 006-gold-item-inventory, Property 18: 기본 지급 결과
@@ -79,15 +77,13 @@ class SeedDefaultItemsPropertyTest {
     void should_equipSixItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        final List<OwnedItem> equippedItems = savedItems.stream()
-                .filter(OwnedItem::isEquipped)
-                .toList();
+        final List<OwnedItem> equippedItems =
+                savedItems.stream().filter(OwnedItem::isEquipped).toList();
 
         assertThat(equippedItems).hasSize(6);
         assertThat(equippedItems.stream().map(OwnedItem::getItemId).toList())
                 .containsExactlyInAnyOrder(
-                        ONE_HAND_SWORD_ID, SHIELD_ID, ARMOR_ID,
-                        HELMET_ID, GLOVES_ID, BOOTS_ID);
+                        ONE_HAND_SWORD_ID, SHIELD_ID, ARMOR_ID, HELMET_ID, GLOVES_ID, BOOTS_ID);
     }
 
     /**
@@ -99,10 +95,11 @@ class SeedDefaultItemsPropertyTest {
     void should_notEquipTwoHandSword_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        final OwnedItem twoHandSword = savedItems.stream()
-                .filter(item -> TWO_HAND_SWORD_ID.equals(item.getItemId()))
-                .findFirst()
-                .orElseThrow();
+        final OwnedItem twoHandSword =
+                savedItems.stream()
+                        .filter(item -> TWO_HAND_SWORD_ID.equals(item.getItemId()))
+                        .findFirst()
+                        .orElseThrow();
 
         assertThat(twoHandSword.isEquipped()).isFalse();
     }
@@ -116,10 +113,11 @@ class SeedDefaultItemsPropertyTest {
     void should_savePotionWithQuantityFive_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        final OwnedItem potion = savedItems.stream()
-                .filter(item -> POTION_ID.equals(item.getItemId()))
-                .findFirst()
-                .orElseThrow();
+        final OwnedItem potion =
+                savedItems.stream()
+                        .filter(item -> POTION_ID.equals(item.getItemId()))
+                        .findFirst()
+                        .orElseThrow();
 
         assertThat(potion.getQuantity()).isEqualTo(POTION_QUANTITY);
         assertThat(potion.isEquipped()).isFalse();
@@ -134,9 +132,8 @@ class SeedDefaultItemsPropertyTest {
     void should_initializeDurabilityToMax_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        final List<OwnedItem> equipmentItems = savedItems.stream()
-                .filter(item -> !POTION_ID.equals(item.getItemId()))
-                .toList();
+        final List<OwnedItem> equipmentItems =
+                savedItems.stream().filter(item -> !POTION_ID.equals(item.getItemId())).toList();
 
         assertThat(equipmentItems).hasSize(10);
         for (final OwnedItem equipment : equipmentItems) {
@@ -157,13 +154,13 @@ class SeedDefaultItemsPropertyTest {
             @ForAll("dummyInt") final int dummy) {
 
         final List<OwnedItem> savedItems = executeSeedAndCapture();
-        final List<OwnedItem> equippedItems = savedItems.stream()
-                .filter(OwnedItem::isEquipped)
-                .toList();
+        final List<OwnedItem> equippedItems =
+                savedItems.stream().filter(OwnedItem::isEquipped).toList();
 
         final OwnedItemRepository mockRepo = mock(OwnedItemRepository.class);
         final ItemCatalogService mockCatalog = mock(ItemCatalogService.class);
-        final CharacterProgressRepository mockProgressRepo = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository mockProgressRepo =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = new StatProgression();
 
         when(mockRepo.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
@@ -171,11 +168,17 @@ class SeedDefaultItemsPropertyTest {
 
         setupCatalogForBonusTest(mockCatalog);
 
-        final InventoryService bonusService = new InventoryService(
-                mockRepo, mockCatalog, mockProgressRepo, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService bonusService =
+                new InventoryService(
+                        mockRepo,
+                        mockCatalog,
+                        mockProgressRepo,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
 
         final EquippedBonusResult result = bonusService.equippedBonus();
 
@@ -208,21 +211,30 @@ class SeedDefaultItemsPropertyTest {
     private List<OwnedItem> executeSeedAndCapture() {
         final OwnedItemRepository mockRepo = mock(OwnedItemRepository.class);
         final ItemCatalogService mockCatalog = mock(ItemCatalogService.class);
-        final CharacterProgressRepository mockProgressRepo = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository mockProgressRepo =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = new StatProgression();
 
         final List<OwnedItem> captured = new ArrayList<>();
-        when(mockRepo.save(any(OwnedItem.class))).thenAnswer(invocation -> {
-            final OwnedItem item = invocation.getArgument(0);
-            captured.add(item);
-            return item;
-        });
+        when(mockRepo.save(any(OwnedItem.class)))
+                .thenAnswer(
+                        invocation -> {
+                            final OwnedItem item = invocation.getArgument(0);
+                            captured.add(item);
+                            return item;
+                        });
 
-        final InventoryService service = new InventoryService(
-                mockRepo, mockCatalog, mockProgressRepo, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService service =
+                new InventoryService(
+                        mockRepo,
+                        mockCatalog,
+                        mockProgressRepo,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
         service.seedDefault();
 
         return captured;
@@ -234,41 +246,65 @@ class SeedDefaultItemsPropertyTest {
      * @param mockCatalog 모의 카탈로그 서비스
      */
     private void setupCatalogForBonusTest(final ItemCatalogService mockCatalog) {
-        final EquipmentItem oneHandSword = new EquipmentItem(
-                ONE_HAND_SWORD_ID, "초보자용 한손검", ItemType.WEAPON,
-                EquipmentKind.ONE_HANDED_SWORD,
-                List.of(new EquipBonus(BonusTarget.STR, 5)),
-                null, MAX_DURABILITY);
+        final EquipmentItem oneHandSword =
+                new EquipmentItem(
+                        ONE_HAND_SWORD_ID,
+                        "초보자용 한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(new EquipBonus(BonusTarget.STR, 5)),
+                        null,
+                        MAX_DURABILITY);
 
-        final EquipmentItem shield = new EquipmentItem(
-                SHIELD_ID, "초보자용 방패", ItemType.ARMOR,
-                EquipmentKind.SHIELD,
-                List.of(new EquipBonus(BonusTarget.DEF, 5)),
-                null, MAX_DURABILITY);
+        final EquipmentItem shield =
+                new EquipmentItem(
+                        SHIELD_ID,
+                        "초보자용 방패",
+                        ItemType.ARMOR,
+                        EquipmentKind.SHIELD,
+                        List.of(new EquipBonus(BonusTarget.DEF, 5)),
+                        null,
+                        MAX_DURABILITY);
 
-        final EquipmentItem armor = new EquipmentItem(
-                ARMOR_ID, "초보자용 갑옷", ItemType.ARMOR,
-                EquipmentKind.ARMOR_BODY,
-                List.of(new EquipBonus(BonusTarget.DEF, 5)),
-                null, MAX_DURABILITY);
+        final EquipmentItem armor =
+                new EquipmentItem(
+                        ARMOR_ID,
+                        "초보자용 갑옷",
+                        ItemType.ARMOR,
+                        EquipmentKind.ARMOR_BODY,
+                        List.of(new EquipBonus(BonusTarget.DEF, 5)),
+                        null,
+                        MAX_DURABILITY);
 
-        final EquipmentItem helmet = new EquipmentItem(
-                HELMET_ID, "초보자용 투구", ItemType.ARMOR,
-                EquipmentKind.HELMET,
-                List.of(new EquipBonus(BonusTarget.DEF, 3)),
-                null, MAX_DURABILITY);
+        final EquipmentItem helmet =
+                new EquipmentItem(
+                        HELMET_ID,
+                        "초보자용 투구",
+                        ItemType.ARMOR,
+                        EquipmentKind.HELMET,
+                        List.of(new EquipBonus(BonusTarget.DEF, 3)),
+                        null,
+                        MAX_DURABILITY);
 
-        final EquipmentItem gloves = new EquipmentItem(
-                GLOVES_ID, "초보자용 장갑", ItemType.ARMOR,
-                EquipmentKind.GLOVES,
-                List.of(new EquipBonus(BonusTarget.DEF, 2)),
-                null, MAX_DURABILITY);
+        final EquipmentItem gloves =
+                new EquipmentItem(
+                        GLOVES_ID,
+                        "초보자용 장갑",
+                        ItemType.ARMOR,
+                        EquipmentKind.GLOVES,
+                        List.of(new EquipBonus(BonusTarget.DEF, 2)),
+                        null,
+                        MAX_DURABILITY);
 
-        final EquipmentItem boots = new EquipmentItem(
-                BOOTS_ID, "초보자용 부츠", ItemType.ARMOR,
-                EquipmentKind.BOOTS,
-                List.of(new EquipBonus(BonusTarget.DEF, 2)),
-                null, MAX_DURABILITY);
+        final EquipmentItem boots =
+                new EquipmentItem(
+                        BOOTS_ID,
+                        "초보자용 부츠",
+                        ItemType.ARMOR,
+                        EquipmentKind.BOOTS,
+                        List.of(new EquipBonus(BonusTarget.DEF, 2)),
+                        null,
+                        MAX_DURABILITY);
 
         when(mockCatalog.byId(ONE_HAND_SWORD_ID)).thenReturn(Optional.of(oneHandSword));
         when(mockCatalog.byId(SHIELD_ID)).thenReturn(Optional.of(shield));

@@ -1,32 +1,29 @@
 package com.myapps.web.myrpg.domain.service;
 
-import java.util.Random;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.myrpg.domain.model.ResolvedTurn;
+import com.myapps.web.myrpg.domain.model.SkillType;
+import com.myapps.web.myrpg.domain.model.TurnInput;
+import java.util.Random;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-import net.jqwik.api.Tuple;
-
-import com.myapps.web.myrpg.domain.model.ResolvedTurn;
-import com.myapps.web.myrpg.domain.model.SkillType;
-import com.myapps.web.myrpg.domain.model.TurnInput;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 9칸 매트릭스 피해 산출의 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>모든 (플레이어 타입, 몬스터 타입) 9조합에 대해 {@link BattleResolver#resolve}가
- * 매트릭스 규칙을 따르는지 검증한다:
+ * <p>모든 (플레이어 타입, 몬스터 타입) 9조합에 대해 {@link BattleResolver#resolve}가 매트릭스 규칙을 따르는지 검증한다:
+ *
  * <ul>
- *   <li>공격 상성 승: 플레이어 &gt; 0, 몬스터 == 0</li>
- *   <li>방어 &gt; 일반 (방어 승): 플레이어 &gt; 0 (반격), 몬스터 &gt;= 0 (경감)</li>
- *   <li>공격 상성 패: 플레이어 == 0, 몬스터 &gt; 0</li>
- *   <li>일반 &lt; 방어 (일반 패): 플레이어 &gt;= 0 (경감), 몬스터 &gt; 0 (반격)</li>
- *   <li>공격 동일 무승부: 양쪽 &gt; 0</li>
- *   <li>방어 vs 방어: 양쪽 == 0</li>
+ *   <li>공격 상성 승: 플레이어 &gt; 0, 몬스터 == 0
+ *   <li>방어 &gt; 일반 (방어 승): 플레이어 &gt; 0 (반격), 몬스터 &gt;= 0 (경감)
+ *   <li>공격 상성 패: 플레이어 == 0, 몬스터 &gt; 0
+ *   <li>일반 &lt; 방어 (일반 패): 플레이어 &gt;= 0 (경감), 몬스터 &gt; 0 (반격)
+ *   <li>공격 동일 무승부: 양쪽 &gt; 0
+ *   <li>방어 vs 방어: 양쪽 == 0
  * </ul>
  *
  * <p>Feature: 008-battle-system, Property 6: 9칸 매트릭스 피해 산출
@@ -161,8 +158,7 @@ class BattleResolverMatrixPropertyTest {
      * @param seed 고정 시드
      */
     @Property(tries = 100)
-    void should_bothPositive_when_normalVsNormalDraw(
-            @ForAll("seeds") final long seed) {
+    void should_bothPositive_when_normalVsNormalDraw(@ForAll("seeds") final long seed) {
 
         final BattleResolver resolver = new BattleResolver(new Random(seed));
         final TurnInput input = createInput(SkillType.NORMAL, SkillType.NORMAL);
@@ -179,8 +175,7 @@ class BattleResolverMatrixPropertyTest {
      * @param seed 고정 시드
      */
     @Property(tries = 100)
-    void should_bothPositive_when_heavyVsHeavyDraw(
-            @ForAll("seeds") final long seed) {
+    void should_bothPositive_when_heavyVsHeavyDraw(@ForAll("seeds") final long seed) {
 
         final BattleResolver resolver = new BattleResolver(new Random(seed));
         final TurnInput input = createInput(SkillType.HEAVY, SkillType.HEAVY);
@@ -197,8 +192,7 @@ class BattleResolverMatrixPropertyTest {
      * @param seed 고정 시드
      */
     @Property(tries = 100)
-    void should_bothZero_when_defenseVsDefenseDraw(
-            @ForAll("seeds") final long seed) {
+    void should_bothZero_when_defenseVsDefenseDraw(@ForAll("seeds") final long seed) {
 
         final BattleResolver resolver = new BattleResolver(new Random(seed));
         final TurnInput input = createInput(SkillType.DEFENSE, SkillType.DEFENSE);
@@ -222,13 +216,13 @@ class BattleResolverMatrixPropertyTest {
     /**
      * 테스트용 TurnInput을 생성하는 헬퍼 메서드.
      *
-     * @param playerType  플레이어 스킬 타입
+     * @param playerType 플레이어 스킬 타입
      * @param monsterType 몬스터 스킬 타입
      * @return 표준 수치의 TurnInput
      */
     private TurnInput createInput(final SkillType playerType, final SkillType monsterType) {
-        final int monsterMultiplier = monsterType == SkillType.HEAVY
-                ? MONSTER_HEAVY_MULTIPLIER : DEFAULT_MULTIPLIER;
+        final int monsterMultiplier =
+                monsterType == SkillType.HEAVY ? MONSTER_HEAVY_MULTIPLIER : DEFAULT_MULTIPLIER;
         return new TurnInput(
                 playerType,
                 monsterType,
@@ -244,7 +238,6 @@ class BattleResolverMatrixPropertyTest {
                 DEFAULT_COUNTER_PERCENT,
                 DEFAULT_CRITICAL,
                 DEFAULT_CRITICAL,
-                1
-        );
+                1);
     }
 }

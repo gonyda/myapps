@@ -8,8 +8,7 @@ import jakarta.persistence.Id;
 /**
  * 영어 학습 데이터를 표현하는 JPA 엔티티.
  *
- * <p>회차별 한국어 문장과 영어 문장 쌍을 저장하며,
- * Oracle Cloud DB의 ENGLISH_STUDY 테이블에 매핑됩니다.
+ * <p>회차별 한국어 문장과 영어 문장 쌍을 저장하며, Oracle Cloud DB의 ENGLISH_STUDY 테이블에 매핑됩니다.
  */
 @Entity
 public class EnglishStudy {
@@ -24,11 +23,8 @@ public class EnglishStudy {
 
     private String englishSentence;
 
-    /**
-     * JPA 엔티티 hydration을 위한 기본 생성자.
-     */
-    public EnglishStudy() {
-    }
+    /** JPA 엔티티 hydration을 위한 기본 생성자. */
+    public EnglishStudy() {}
 
     /**
      * 엔티티의 고유 식별자를 반환합니다.

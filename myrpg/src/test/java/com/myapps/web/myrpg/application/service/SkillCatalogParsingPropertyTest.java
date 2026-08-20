@@ -1,34 +1,30 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.myapps.web.myrpg.application.exception.SkillDataException;
+import com.myapps.web.myrpg.domain.model.Skill;
+import com.myapps.web.myrpg.domain.model.SkillRank;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.application.exception.SkillDataException;
-import com.myapps.web.myrpg.domain.model.Skill;
-import com.myapps.web.myrpg.domain.model.SkillRank;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * 스킬 카탈로그 파싱 검증 프로퍼티 테스트.
  *
- * <p>유효한 스킬 JSON 입력은 올바른 크기의 불변 목록을 반환하고,
- * 결함(미지 type/talent, 중복 id, 필수 필드 누락, 랭크맵 15키)이 주입된 입력은
+ * <p>유효한 스킬 JSON 입력은 올바른 크기의 불변 목록을 반환하고, 결함(미지 type/talent, 중복 id, 필수 필드 누락, 랭크맵 15키)이 주입된 입력은
  * {@link SkillDataException}을 던짐을 검증한다.
  *
  * <p>Feature: 005-skill-system, Property 7: 카탈로그 검증
@@ -49,7 +45,9 @@ class SkillCatalogParsingPropertyTest {
 
     private static final String[] VALID_TYPES = {"NORMAL", "HEAVY", "DEFENSE"};
     private static final String[] VALID_TALENTS = {"MELEE", "ARCHERY", "MAGIC", "COMMON"};
-    private static final String[] REQUIRED_FIELDS = {"id", "label", "type", "talent", "resourceCost", "description"};
+    private static final String[] REQUIRED_FIELDS = {
+        "id", "label", "type", "talent", "resourceCost", "description"
+    };
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final SkillCatalogService skillCatalogService = new SkillCatalogService(objectMapper);
@@ -179,7 +177,8 @@ class SkillCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<SkillInputData>> validSkillDataset() {
-        return Arbitraries.integers().between(1, MAX_SKILL_COUNT)
+        return Arbitraries.integers()
+                .between(1, MAX_SKILL_COUNT)
                 .flatMap(this::buildUniqueSkillList);
     }
 
@@ -190,7 +189,8 @@ class SkillCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<SkillInputData>> validSkillDatasetAtLeastTwo() {
-        return Arbitraries.integers().between(2, MAX_SKILL_COUNT)
+        return Arbitraries.integers()
+                .between(2, MAX_SKILL_COUNT)
                 .flatMap(this::buildUniqueSkillList);
     }
 
@@ -237,9 +237,7 @@ class SkillCatalogParsingPropertyTest {
     // ── Helpers ──
 
     private Arbitrary<List<SkillInputData>> buildUniqueSkillList(final int count) {
-        return skillInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return skillInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private List<SkillInputData> ensureUniqueIds(final List<SkillInputData> rawList) {
@@ -247,46 +245,69 @@ class SkillCatalogParsingPropertyTest {
         for (int i = 0; i < rawList.size(); i++) {
             final SkillInputData original = rawList.get(i);
             final String uniqueId = original.id() + "_" + i;
-            result.add(new SkillInputData(
-                    uniqueId, original.label(), original.type(), original.talent(),
-                    original.resourceCost(), original.description()));
+            result.add(
+                    new SkillInputData(
+                            uniqueId,
+                            original.label(),
+                            original.type(),
+                            original.talent(),
+                            original.resourceCost(),
+                            original.description()));
         }
         return List.copyOf(result);
     }
 
     private Arbitrary<SkillInputData> skillInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> labels = Arbitraries.strings()
-                .alpha().ofMinLength(LABEL_MIN_LENGTH).ofMaxLength(LABEL_MAX_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> labels =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(LABEL_MIN_LENGTH)
+                        .ofMaxLength(LABEL_MAX_LENGTH);
         final Arbitrary<String> types = Arbitraries.of(VALID_TYPES);
         final Arbitrary<String> talents = Arbitraries.of(VALID_TALENTS);
-        final Arbitrary<Integer> costs = Arbitraries.integers()
-                .between(RESOURCE_COST_MIN, RESOURCE_COST_MAX);
-        final Arbitrary<String> summaries = Arbitraries.strings()
-                .alpha().ofMinLength(LABEL_MIN_LENGTH).ofMaxLength(LABEL_MAX_LENGTH);
+        final Arbitrary<Integer> costs =
+                Arbitraries.integers().between(RESOURCE_COST_MIN, RESOURCE_COST_MAX);
+        final Arbitrary<String> summaries =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(LABEL_MIN_LENGTH)
+                        .ofMaxLength(LABEL_MAX_LENGTH);
 
         return Combinators.combine(ids, labels, types, talents, costs, summaries)
                 .as(SkillInputData::new);
     }
 
-    private List<SkillInputData> injectUnknownType(final List<SkillInputData> dataset,
-                                                    final String invalidType) {
+    private List<SkillInputData> injectUnknownType(
+            final List<SkillInputData> dataset, final String invalidType) {
         final List<SkillInputData> result = new ArrayList<>(dataset);
         final SkillInputData first = result.getFirst();
-        result.set(0, new SkillInputData(
-                first.id(), first.label(), invalidType, first.talent(),
-                first.resourceCost(), first.description()));
+        result.set(
+                0,
+                new SkillInputData(
+                        first.id(),
+                        first.label(),
+                        invalidType,
+                        first.talent(),
+                        first.resourceCost(),
+                        first.description()));
         return List.copyOf(result);
     }
 
-    private List<SkillInputData> injectUnknownTalent(final List<SkillInputData> dataset,
-                                                      final String invalidTalent) {
+    private List<SkillInputData> injectUnknownTalent(
+            final List<SkillInputData> dataset, final String invalidTalent) {
         final List<SkillInputData> result = new ArrayList<>(dataset);
         final SkillInputData first = result.getFirst();
-        result.set(0, new SkillInputData(
-                first.id(), first.label(), first.type(), invalidTalent,
-                first.resourceCost(), first.description()));
+        result.set(
+                0,
+                new SkillInputData(
+                        first.id(),
+                        first.label(),
+                        first.type(),
+                        invalidTalent,
+                        first.resourceCost(),
+                        first.description()));
         return List.copyOf(result);
     }
 
@@ -294,9 +315,15 @@ class SkillCatalogParsingPropertyTest {
         final List<SkillInputData> result = new ArrayList<>(dataset);
         final SkillInputData first = result.getFirst();
         final SkillInputData second = result.get(1);
-        result.set(1, new SkillInputData(
-                first.id(), second.label(), second.type(), second.talent(),
-                second.resourceCost(), second.description()));
+        result.set(
+                1,
+                new SkillInputData(
+                        first.id(),
+                        second.label(),
+                        second.type(),
+                        second.talent(),
+                        second.resourceCost(),
+                        second.description()));
         return List.copyOf(result);
     }
 
@@ -309,8 +336,8 @@ class SkillCatalogParsingPropertyTest {
         return rootArray.toString();
     }
 
-    private String serializeToJsonWithMissingField(final List<SkillInputData> dataset,
-                                                    final String fieldToRemove) {
+    private String serializeToJsonWithMissingField(
+            final List<SkillInputData> dataset, final String fieldToRemove) {
         final ArrayNode rootArray = objectMapper.createArrayNode();
         for (int i = 0; i < dataset.size(); i++) {
             final SkillInputData data = dataset.get(i);
@@ -323,8 +350,8 @@ class SkillCatalogParsingPropertyTest {
         return rootArray.toString();
     }
 
-    private String serializeToJsonWithMissingRankKey(final List<SkillInputData> dataset,
-                                                     final SkillRank rankToRemove) {
+    private String serializeToJsonWithMissingRankKey(
+            final List<SkillInputData> dataset, final SkillRank rankToRemove) {
         final ArrayNode rootArray = objectMapper.createArrayNode();
         for (int i = 0; i < dataset.size(); i++) {
             final SkillInputData data = dataset.get(i);
@@ -352,9 +379,8 @@ class SkillCatalogParsingPropertyTest {
         return skillNode;
     }
 
-    private ObjectNode buildSkillNodeWithMissingRank(final SkillInputData data,
-                                                     final boolean injectDefect,
-                                                     final SkillRank rankToRemove) {
+    private ObjectNode buildSkillNodeWithMissingRank(
+            final SkillInputData data, final boolean injectDefect, final SkillRank rankToRemove) {
         final ObjectNode skillNode = objectMapper.createObjectNode();
         skillNode.put("id", data.id());
         skillNode.put("label", data.label());
@@ -390,8 +416,8 @@ class SkillCatalogParsingPropertyTest {
         }
     }
 
-    private void addRankMapMissingOne(final ObjectNode parent, final String fieldName,
-                                       final SkillRank rankToRemove) {
+    private void addRankMapMissingOne(
+            final ObjectNode parent, final String fieldName, final SkillRank rankToRemove) {
         final ObjectNode rankMap = parent.putObject(fieldName);
         int value = MULTIPLIER_MIN;
         for (final SkillRank rank : SkillRank.values()) {
@@ -409,11 +435,11 @@ class SkillCatalogParsingPropertyTest {
     /**
      * 프로퍼티 테스트용 스킬 입력 데이터 레코드.
      *
-     * @param id            스킬 고유 식별자
-     * @param label         표시용 라벨
-     * @param type          스킬 타입 문자열
-     * @param talent        스킬 재능 문자열
-     * @param resourceCost  자원 소모량
+     * @param id 스킬 고유 식별자
+     * @param label 표시용 라벨
+     * @param type 스킬 타입 문자열
+     * @param talent 스킬 재능 문자열
+     * @param resourceCost 자원 소모량
      * @param description 스킬 설명
      */
     record SkillInputData(
@@ -422,7 +448,5 @@ class SkillCatalogParsingPropertyTest {
             String type,
             String talent,
             int resourceCost,
-            String description
-    ) {
-    }
+            String description) {}
 }

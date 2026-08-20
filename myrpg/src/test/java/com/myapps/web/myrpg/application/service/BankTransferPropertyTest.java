@@ -1,10 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
 import com.myapps.web.myrpg.domain.model.Bank;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -12,20 +14,14 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * 은행 입출금 총량 보존 프로퍼티 테스트.
  *
- * <p>임의의 캐릭터 소지금(gold)과 은행 보관 골드(bankGold)에 대해,
- * 성공한 입금/출금 후 {@code gold + bankGold} 총합이 항상 보존되고,
- * 소지금 초과 입금·은행 잔액 초과 출금은 {@link InsufficientGoldException}으로
- * 거부되어 두 값이 모두 불변임을 검증한다.
+ * <p>임의의 캐릭터 소지금(gold)과 은행 보관 골드(bankGold)에 대해, 성공한 입금/출금 후 {@code gold + bankGold} 총합이 항상 보존되고,
+ * 소지금 초과 입금·은행 잔액 초과 출금은 {@link InsufficientGoldException}으로 거부되어 두 값이 모두 불변임을 검증한다.
  *
- * <p>BankService가 {@code ch.spendGold → bank.deposit} 및
- * {@code bank.withdraw → ch.gainGold}로 위임하는 구조이므로,
- * 순수 도메인 객체 호출로 동일 보존 속성을 직접 검증한다.
+ * <p>BankService가 {@code ch.spendGold → bank.deposit} 및 {@code bank.withdraw → ch.gainGold}로 위임하는
+ * 구조이므로, 순수 도메인 객체 호출로 동일 보존 속성을 직접 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 2: 은행 입출금 총량 보존
  *
@@ -88,8 +84,7 @@ class BankTransferPropertyTest {
     }
 
     /**
-     * 입금 금액이 소지금을 초과하면 {@link InsufficientGoldException}이 발생하고
-     * 양쪽 모두 변하지 않음을 검증한다.
+     * 입금 금액이 소지금을 초과하면 {@link InsufficientGoldException}이 발생하고 양쪽 모두 변하지 않음을 검증한다.
      *
      * @param tuple (initialGold, initialBankGold, depositAmount) 트리플: depositAmount > initialGold
      */
@@ -112,10 +107,10 @@ class BankTransferPropertyTest {
     }
 
     /**
-     * 출금 금액이 은행 잔액을 초과하면 {@link InsufficientGoldException}이 발생하고
-     * 양쪽 모두 변하지 않음을 검증한다.
+     * 출금 금액이 은행 잔액을 초과하면 {@link InsufficientGoldException}이 발생하고 양쪽 모두 변하지 않음을 검증한다.
      *
-     * @param tuple (initialGold, initialBankGold, withdrawAmount) 트리플: withdrawAmount > initialBankGold
+     * @param tuple (initialGold, initialBankGold, withdrawAmount) 트리플: withdrawAmount >
+     *     initialBankGold
      */
     @Property(tries = 100)
     void should_throwAndKeepBothUnchanged_when_withdrawExceedsBankGold(
@@ -138,59 +133,111 @@ class BankTransferPropertyTest {
     // ─── Providers ──────────────────────────────────────────────────────────
 
     /**
-     * 유효 입금 케이스를 생성하는 Arbitrary 제공자.
-     * initialGold ∈ [1, MAX_GOLD], initialBankGold ∈ [0, MAX_BANK_GOLD], depositAmount ∈ [1, initialGold]
+     * 유효 입금 케이스를 생성하는 Arbitrary 제공자. initialGold ∈ [1, MAX_GOLD], initialBankGold ∈ [0,
+     * MAX_BANK_GOLD], depositAmount ∈ [1, initialGold]
      *
      * @return (initialGold, initialBankGold, depositAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple3<Long, Long, Long>> validDeposit() {
-        return Arbitraries.longs().between(1L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(0L, MAX_BANK_GOLD)
-                        .flatMap(bankGold -> Arbitraries.longs().between(1L, gold)
-                                .map(amount -> Tuple.of(gold, bankGold, amount))));
+        return Arbitraries.longs()
+                .between(1L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(0L, MAX_BANK_GOLD)
+                                        .flatMap(
+                                                bankGold ->
+                                                        Arbitraries.longs()
+                                                                .between(1L, gold)
+                                                                .map(
+                                                                        amount ->
+                                                                                Tuple.of(
+                                                                                        gold,
+                                                                                        bankGold,
+                                                                                        amount))));
     }
 
     /**
-     * 유효 출금 케이스를 생성하는 Arbitrary 제공자.
-     * initialGold ∈ [0, MAX_GOLD], initialBankGold ∈ [1, MAX_BANK_GOLD], withdrawAmount ∈ [1, initialBankGold]
+     * 유효 출금 케이스를 생성하는 Arbitrary 제공자. initialGold ∈ [0, MAX_GOLD], initialBankGold ∈ [1,
+     * MAX_BANK_GOLD], withdrawAmount ∈ [1, initialBankGold]
      *
      * @return (initialGold, initialBankGold, withdrawAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple3<Long, Long, Long>> validWithdraw() {
-        return Arbitraries.longs().between(0L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(1L, MAX_BANK_GOLD)
-                        .flatMap(bankGold -> Arbitraries.longs().between(1L, bankGold)
-                                .map(amount -> Tuple.of(gold, bankGold, amount))));
+        return Arbitraries.longs()
+                .between(0L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(1L, MAX_BANK_GOLD)
+                                        .flatMap(
+                                                bankGold ->
+                                                        Arbitraries.longs()
+                                                                .between(1L, bankGold)
+                                                                .map(
+                                                                        amount ->
+                                                                                Tuple.of(
+                                                                                        gold,
+                                                                                        bankGold,
+                                                                                        amount))));
     }
 
     /**
-     * 입금 초과 케이스를 생성하는 Arbitrary 제공자.
-     * initialGold ∈ [0, MAX_AMOUNT], depositAmount ∈ [initialGold+1, initialGold+MAX_AMOUNT]
+     * 입금 초과 케이스를 생성하는 Arbitrary 제공자. initialGold ∈ [0, MAX_AMOUNT], depositAmount ∈ [initialGold+1,
+     * initialGold+MAX_AMOUNT]
      *
      * @return (initialGold, initialBankGold, depositAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple3<Long, Long, Long>> overflowDeposit() {
-        return Arbitraries.longs().between(0L, MAX_AMOUNT)
-                .flatMap(gold -> Arbitraries.longs().between(0L, MAX_BANK_GOLD)
-                        .flatMap(bankGold -> Arbitraries.longs().between(gold + 1L, gold + MAX_AMOUNT)
-                                .map(amount -> Tuple.of(gold, bankGold, amount))));
+        return Arbitraries.longs()
+                .between(0L, MAX_AMOUNT)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(0L, MAX_BANK_GOLD)
+                                        .flatMap(
+                                                bankGold ->
+                                                        Arbitraries.longs()
+                                                                .between(
+                                                                        gold + 1L,
+                                                                        gold + MAX_AMOUNT)
+                                                                .map(
+                                                                        amount ->
+                                                                                Tuple.of(
+                                                                                        gold,
+                                                                                        bankGold,
+                                                                                        amount))));
     }
 
     /**
-     * 출금 초과 케이스를 생성하는 Arbitrary 제공자.
-     * initialBankGold ∈ [0, MAX_AMOUNT], withdrawAmount ∈ [initialBankGold+1, initialBankGold+MAX_AMOUNT]
+     * 출금 초과 케이스를 생성하는 Arbitrary 제공자. initialBankGold ∈ [0, MAX_AMOUNT], withdrawAmount ∈
+     * [initialBankGold+1, initialBankGold+MAX_AMOUNT]
      *
      * @return (initialGold, initialBankGold, withdrawAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple3<Long, Long, Long>> overflowWithdraw() {
-        return Arbitraries.longs().between(0L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(0L, MAX_AMOUNT)
-                        .flatMap(bankGold -> Arbitraries.longs().between(bankGold + 1L, bankGold + MAX_AMOUNT)
-                                .map(amount -> Tuple.of(gold, bankGold, amount))));
+        return Arbitraries.longs()
+                .between(0L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(0L, MAX_AMOUNT)
+                                        .flatMap(
+                                                bankGold ->
+                                                        Arbitraries.longs()
+                                                                .between(
+                                                                        bankGold + 1L,
+                                                                        bankGold + MAX_AMOUNT)
+                                                                .map(
+                                                                        amount ->
+                                                                                Tuple.of(
+                                                                                        gold,
+                                                                                        bankGold,
+                                                                                        amount))));
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
@@ -203,26 +250,13 @@ class BankTransferPropertyTest {
      */
     private CharacterProgress createProgressWithGold(final long gold) {
         return new CharacterProgress(
-                "테스트",
-                1,
-                1,
-                0L,
-                TalentType.MELEE,
-                null,
-                100,
-                100,
-                100,
-                "tir-chonaill",
-                0,
-                gold
-        );
+                "테스트", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, gold);
     }
 
     /**
      * 지정된 골드 값을 가진 {@link Bank}를 생성한다.
      *
-     * <p>{@code Bank.createDefault()}로 골드 0 은행을 생성한 뒤,
-     * initialBankGold가 0보다 크면 deposit으로 잔액을 설정한다.
+     * <p>{@code Bank.createDefault()}로 골드 0 은행을 생성한 뒤, initialBankGold가 0보다 크면 deposit으로 잔액을 설정한다.
      *
      * @param initialBankGold 설정할 은행 보관 골드
      * @return 해당 골드를 보관한 Bank 인스턴스

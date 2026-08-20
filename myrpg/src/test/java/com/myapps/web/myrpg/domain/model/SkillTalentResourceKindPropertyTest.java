@@ -1,18 +1,18 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link SkillTalent}의 자원 종류 파생({@code resourceKind()})을 검증하는 프로퍼티 테스트.
  *
- * <p>MAGIC은 {@link ResourceKind#MP}를, 그 외(MELEE/ARCHERY/COMMON)는
- * {@link ResourceKind#STAMINA}를 반환하는지 검증한다.
+ * <p>MAGIC은 {@link ResourceKind#MP}를, 그 외(MELEE/ARCHERY/COMMON)는 {@link ResourceKind#STAMINA}를
+ * 반환하는지 검증한다.
  *
  * <p><b>Validates: Requirements 9.1</b>
  */
@@ -26,7 +26,8 @@ class SkillTalentResourceKindPropertyTest {
      * @param talent 임의의 SkillTalent 상수
      */
     @Property(tries = 100)
-    void should_deriveCorrectResourceKind_when_anySkillTalent(@ForAll("talents") final SkillTalent talent) {
+    void should_deriveCorrectResourceKind_when_anySkillTalent(
+            @ForAll("talents") final SkillTalent talent) {
         if (talent == SkillTalent.MAGIC) {
             assertThat(talent.resourceKind()).isEqualTo(ResourceKind.MP);
         } else {
@@ -40,7 +41,8 @@ class SkillTalentResourceKindPropertyTest {
      * @param talent 비-MAGIC SkillTalent 상수
      */
     @Property(tries = 100)
-    void should_returnStamina_when_nonMagicTalent(@ForAll("nonMagicTalents") final SkillTalent talent) {
+    void should_returnStamina_when_nonMagicTalent(
+            @ForAll("nonMagicTalents") final SkillTalent talent) {
         assertThat(talent.resourceKind()).isEqualTo(ResourceKind.STAMINA);
     }
 

@@ -1,21 +1,19 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.IntRange;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 캘린더 날짜 셀 표시 제한 로직에 대한 Property-Based 테스트.
  *
- * <p>Property 14: 날짜에 N개의 일정이 있을 때, 캘린더 날짜 셀에 표시되는
- * 일정 수는 min(N, 3)이어야 하고, N &gt; 3이면 "+{N-3}" 형식의 초과 텍스트를
- * 표시해야 한다.
+ * <p>Property 14: 날짜에 N개의 일정이 있을 때, 캘린더 날짜 셀에 표시되는 일정 수는 min(N, 3)이어야 하고, N &gt; 3이면 "+{N-3}" 형식의
+ * 초과 텍스트를 표시해야 한다.
  *
- * <p>이 테스트는 Thymeleaf 템플릿에서 사용할 표시 제한 로직을 순수 계산으로
- * 검증합니다. 컨트롤러는 전체 일정 목록을 모델에 전달하고, 템플릿이
- * 표시 제한을 처리합니다.
+ * <p>이 테스트는 Thymeleaf 템플릿에서 사용할 표시 제한 로직을 순수 계산으로 검증합니다. 컨트롤러는 전체 일정 목록을 모델에 전달하고, 템플릿이 표시 제한을
+ * 처리합니다.
  *
  * <p>Feature: mycalendar/001-couple-calendar, Property 14: Calendar day cell display limit
  */
@@ -113,8 +111,7 @@ class CalendarViewPropertyTest {
     /**
      * 초과 텍스트를 생성합니다.
      *
-     * <p>일정이 표시 제한을 초과하면 "+{초과수}" 형식의 문자열을 반환하고,
-     * 초과하지 않으면 null을 반환합니다.
+     * <p>일정이 표시 제한을 초과하면 "+{초과수}" 형식의 문자열을 반환하고, 초과하지 않으면 null을 반환합니다.
      *
      * @param totalSchedules 전체 일정 수
      * @return 초과 텍스트 또는 null

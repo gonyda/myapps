@@ -12,9 +12,8 @@ import jakarta.persistence.Table;
 /**
  * 캐릭터의 보유 아이템 인스턴스를 영속 저장하는 JPA 엔티티.
  *
- * <p>{@code owned_item} 테이블에 매핑되며, 아이템 카탈로그({@code item.json})의
- * id를 문자열로 참조한다. 소비형(포션)은 같은 {@code itemId}+{@code storage}가
- * 한 행으로 스택 누적되고, 장비(무기/방어구)는 개별 인스턴스로 저장된다.
+ * <p>{@code owned_item} 테이블에 매핑되며, 아이템 카탈로그({@code item.json})의 id를 문자열로 참조한다. 소비형(포션)은 같은 {@code
+ * itemId}+{@code storage}가 한 행으로 스택 누적되고, 장비(무기/방어구)는 개별 인스턴스로 저장된다.
  *
  * <p>계정=단일 캐릭터이므로 소유자 식별자를 두지 않는다(향후 다중 캐릭터 확장 시 추가).
  */
@@ -42,23 +41,24 @@ public class OwnedItem {
     @Column(name = "current_durability", nullable = false)
     private double currentDurability;
 
-    /**
-     * JPA 전용 기본 생성자.
-     */
-    protected OwnedItem() {
-    }
+    /** JPA 전용 기본 생성자. */
+    protected OwnedItem() {}
 
     /**
      * 전체 필드를 지정하는 생성자.
      *
-     * @param itemId            아이템 카탈로그 ID (item.json 참조)
-     * @param quantity          보유 수량 (소비형 스택, 장비는 1)
-     * @param storage           저장 위치 (INVENTORY 또는 BANK)
-     * @param equipped          장착 여부 (INVENTORY 장비만 true 가능)
+     * @param itemId 아이템 카탈로그 ID (item.json 참조)
+     * @param quantity 보유 수량 (소비형 스택, 장비는 1)
+     * @param storage 저장 위치 (INVENTORY 또는 BANK)
+     * @param equipped 장착 여부 (INVENTORY 장비만 true 가능)
      * @param currentDurability 현재 내구도 (장비만 의미, 포션은 0)
      */
-    public OwnedItem(final String itemId, final int quantity, final StorageKind storage,
-                     final boolean equipped, final double currentDurability) {
+    public OwnedItem(
+            final String itemId,
+            final int quantity,
+            final StorageKind storage,
+            final boolean equipped,
+            final double currentDurability) {
         this.itemId = itemId;
         this.quantity = quantity;
         this.storage = storage;
@@ -149,16 +149,12 @@ public class OwnedItem {
         this.storage = s;
     }
 
-    /**
-     * 장비를 장착 상태로 변경한다.
-     */
+    /** 장비를 장착 상태로 변경한다. */
     public void equip() {
         this.equipped = true;
     }
 
-    /**
-     * 장비를 장착 해제 상태로 변경한다.
-     */
+    /** 장비를 장착 해제 상태로 변경한다. */
     public void unequip() {
         this.equipped = false;
     }
@@ -166,9 +162,8 @@ public class OwnedItem {
     /**
      * 내구도를 지정된 양만큼 감소시킨다.
      *
-     * <p>전투에서 공격 턴당 0.05씩 감소한다(BattleService에서 호출).
-     * 본 스펙(006)에서는 메서드만 정의하며 실제 호출부는 구현하지 않는다.
-     * 제거 조건: 6순위 전투 스펙이 이 메서드를 호출하여 확정.
+     * <p>전투에서 공격 턴당 0.05씩 감소한다(BattleService에서 호출). 본 스펙(006)에서는 메서드만 정의하며 실제 호출부는 구현하지 않는다. 제거 조건:
+     * 6순위 전투 스펙이 이 메서드를 호출하여 확정.
      *
      * <p>결과가 0 미만이 되지 않도록 0으로 제한한다.
      *
@@ -181,11 +176,10 @@ public class OwnedItem {
     /**
      * 내구도를 지정된 양만큼 복구한다.
      *
-     * <p>대장간 수리에서 1포인트 단위로 복구할 때 사용된다.
-     * 복구 결과는 최대 내구도(max)를 초과할 수 없다.
+     * <p>대장간 수리에서 1포인트 단위로 복구할 때 사용된다. 복구 결과는 최대 내구도(max)를 초과할 수 없다.
      *
      * @param amount 복구할 내구도 양 (양수)
-     * @param max    내구도의 최대값
+     * @param max 내구도의 최대값
      */
     public void repairBy(final double amount, final double max) {
         this.currentDurability = Math.min(max, this.currentDurability + amount);
@@ -194,9 +188,8 @@ public class OwnedItem {
     /**
      * 내구도를 최대값으로 복구한다.
      *
-     * <p>7순위 대장간 스펙에서 수리비를 소모한 뒤 이 메서드를 호출하여 확정된다.
-     * 본 스펙(006)에서는 메서드만 정의하며 실제 호출부는 구현하지 않는다.
-     * 제거 조건: 7순위 대장간 스펙이 이 메서드를 호출하여 확정.
+     * <p>7순위 대장간 스펙에서 수리비를 소모한 뒤 이 메서드를 호출하여 확정된다. 본 스펙(006)에서는 메서드만 정의하며 실제 호출부는 구현하지 않는다. 제거 조건:
+     * 7순위 대장간 스펙이 이 메서드를 호출하여 확정.
      *
      * @param max 복구할 최대 내구도 값
      */

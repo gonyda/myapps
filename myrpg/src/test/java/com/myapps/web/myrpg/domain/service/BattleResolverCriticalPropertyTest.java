@@ -1,21 +1,20 @@
 package com.myapps.web.myrpg.domain.service;
 
-import java.util.Random;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 크리티컬 판정 및 배율의 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>고정 시드 {@link Random}에 대해 {@link BattleResolver#rollCritical}이
- * {@code random.nextInt(1000) < critical}과 정확히 동치이며, {@link BattleResolver#finalDamage}에서
- * 크리티컬 발동 시 비크리티컬 대비 1.5배(편차 전)를 반영하는지 검증한다.
+ * <p>고정 시드 {@link Random}에 대해 {@link BattleResolver#rollCritical}이 {@code random.nextInt(1000) <
+ * critical}과 정확히 동치이며, {@link BattleResolver#finalDamage}에서 크리티컬 발동 시 비크리티컬 대비 1.5배(편차 전)를 반영하는지
+ * 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 4: 크리티컬 판정·배율
  *
@@ -29,13 +28,12 @@ class BattleResolverCriticalPropertyTest {
     /**
      * rollCritical이 동일 시드의 random.nextInt(1000) &lt; critical과 정확히 일치하는지 검증한다.
      *
-     * @param seed     고정 시드 (0~9999)
+     * @param seed 고정 시드 (0~9999)
      * @param critical 크리티컬 수치 (0~1000)
      */
     @Property(tries = 100)
     void should_matchRandomRoll_when_fixedSeed(
-            @ForAll("seeds") final long seed,
-            @ForAll("criticals") final int critical) {
+            @ForAll("seeds") final long seed, @ForAll("criticals") final int critical) {
 
         final Random expectedRandom = new Random(seed);
         final boolean expectedResult = expectedRandom.nextInt(CRITICAL_ROLL_MAX) < critical;
@@ -76,30 +74,32 @@ class BattleResolverCriticalPropertyTest {
     /**
      * 크리티컬 발동 시 finalDamage가 비크리티컬 대비 1.5배 (편차 동일 시드)인지 검증한다.
      *
-     * <p>동일 시드에서 크리티컬/비크리티컬을 각각 산출하여, 편차 전 비율이 1.5배인지 확인한다.
-     * 편차(variance)는 동일 시드에서 동일 roll을 생산하므로 비율이 정확히 1.5가 된다.
+     * <p>동일 시드에서 크리티컬/비크리티컬을 각각 산출하여, 편차 전 비율이 1.5배인지 확인한다. 편차(variance)는 동일 시드에서 동일 roll을 생산하므로
+     * 비율이 정확히 1.5가 된다.
      *
-     * @param seed             고정 시드 (0~9999)
-     * @param baseDamage       기본피해 (10~200)
+     * @param seed 고정 시드 (0~9999)
+     * @param baseDamage 기본피해 (10~200)
      * @param affinityCoefficient 상성계수 (사용: 1.0)
      */
     @Property(tries = 100)
     void should_applyOnePointFiveMultiplier_when_critical(
-            @ForAll("seeds") final long seed,
-            @ForAll("baseDamages") final int baseDamage) {
+            @ForAll("seeds") final long seed, @ForAll("baseDamages") final int baseDamage) {
 
         final double affinityCoefficient = 1.0;
 
         final BattleResolver resolverCritical = new BattleResolver(new Random(seed));
-        final int criticalDamage = resolverCritical.finalDamage(baseDamage, affinityCoefficient, true);
+        final int criticalDamage =
+                resolverCritical.finalDamage(baseDamage, affinityCoefficient, true);
 
         final BattleResolver resolverNonCritical = new BattleResolver(new Random(seed));
-        final int nonCriticalDamage = resolverNonCritical.finalDamage(baseDamage, affinityCoefficient, false);
+        final int nonCriticalDamage =
+                resolverNonCritical.finalDamage(baseDamage, affinityCoefficient, false);
 
         // 동일 시드이므로 편차(variance)가 같다. 크리티컬 비율은 정확히 1.5.
         // round 차이로 인한 ±1 허용
         final double expectedCritDamage = nonCriticalDamage * CRITICAL_MULTIPLIER;
-        assertThat((double) criticalDamage).isCloseTo(expectedCritDamage, org.assertj.core.data.Offset.offset(1.0));
+        assertThat((double) criticalDamage)
+                .isCloseTo(expectedCritDamage, org.assertj.core.data.Offset.offset(1.0));
     }
 
     /**

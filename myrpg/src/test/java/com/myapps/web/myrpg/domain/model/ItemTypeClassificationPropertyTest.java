@@ -1,15 +1,14 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
+import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@link ItemType}의 분류 및 파싱이 정확한지 검증하는 프로퍼티 테스트.
@@ -28,7 +27,8 @@ class ItemTypeClassificationPropertyTest {
      * @param type 임의의 ItemType 열거 상수
      */
     @Property(tries = 100)
-    void should_returnMatchingEnum_when_fromStringWithValidCode(@ForAll("itemTypes") final ItemType type) {
+    void should_returnMatchingEnum_when_fromStringWithValidCode(
+            @ForAll("itemTypes") final ItemType type) {
         final Optional<ItemType> result = ItemType.fromString(type.code());
 
         assertThat(result).isPresent();
@@ -41,7 +41,8 @@ class ItemTypeClassificationPropertyTest {
      * @param unknownCode 유효하지 않은 임의의 문자열 코드
      */
     @Property(tries = 100)
-    void should_returnEmpty_when_fromStringWithUnknownCode(@ForAll("unknownCodes") final String unknownCode) {
+    void should_returnEmpty_when_fromStringWithUnknownCode(
+            @ForAll("unknownCodes") final String unknownCode) {
         final Optional<ItemType> result = ItemType.fromString(unknownCode);
 
         assertThat(result).isEmpty();
@@ -53,7 +54,8 @@ class ItemTypeClassificationPropertyTest {
      * @param type 임의의 ItemType 열거 상수
      */
     @Property(tries = 100)
-    void should_returnTrueOnlyForWeaponOrArmor_when_isEquipment(@ForAll("itemTypes") final ItemType type) {
+    void should_returnTrueOnlyForWeaponOrArmor_when_isEquipment(
+            @ForAll("itemTypes") final ItemType type) {
         if (EQUIPMENT_TYPES.contains(type)) {
             assertThat(type.isEquipment()).isTrue();
         } else {
@@ -79,7 +81,10 @@ class ItemTypeClassificationPropertyTest {
     @Provide
     Arbitrary<String> unknownCodes() {
         final Set<String> validCodes = Set.of("potion", "weapon", "armor");
-        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(20)
+        return Arbitraries.strings()
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(20)
                 .filter(code -> !validCodes.contains(code));
     }
 }

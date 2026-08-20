@@ -1,12 +1,5 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.myapps.web.myrpg.application.dto.ShopBuyItemView;
 import com.myapps.web.myrpg.application.dto.ShopSellItemView;
 import com.myapps.web.myrpg.application.dto.ShopView;
@@ -21,14 +14,17 @@ import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 상점(구매/판매) 핵심 비즈니스 로직을 담당하는 서비스.
  *
- * <p>아이템 판매가 계산, NPC별 구매 목록 조립, 구매/판매 오케스트레이션을 처리한다.
- * 판매가는 저장되지 않고 조회 시점에 매번 계산되며,
- * 기본가(buyPrice) 존재 시 {@code round(buyPrice * 0.5)},
- * 부재 시 카탈로그 보너스 합산({@code Σ amount * weightOf(target)})으로 배타 적용된다.
+ * <p>아이템 판매가 계산, NPC별 구매 목록 조립, 구매/판매 오케스트레이션을 처리한다. 판매가는 저장되지 않고 조회 시점에 매번 계산되며, 기본가(buyPrice) 존재
+ * 시 {@code round(buyPrice * 0.5)}, 부재 시 카탈로그 보너스 합산({@code Σ amount * weightOf(target)})으로 배타 적용된다.
  */
 @Service
 public class ShopService {
@@ -54,19 +50,20 @@ public class ShopService {
     /**
      * ShopService를 생성한다.
      *
-     * @param itemCatalogService   아이템 카탈로그 서비스
-     * @param npcService           NPC 카탈로그 서비스
-     * @param ownedItemRepository  보유 아이템 리포지토리
-     * @param inventoryService     인벤토리 서비스 (아이템 획득)
-     * @param characterService     캐릭터 진행상황 서비스 (턴 저장)
-     * @param actionLog            활동 로그 (세션 스코프)
+     * @param itemCatalogService 아이템 카탈로그 서비스
+     * @param npcService NPC 카탈로그 서비스
+     * @param ownedItemRepository 보유 아이템 리포지토리
+     * @param inventoryService 인벤토리 서비스 (아이템 획득)
+     * @param characterService 캐릭터 진행상황 서비스 (턴 저장)
+     * @param actionLog 활동 로그 (세션 스코프)
      */
-    public ShopService(final ItemCatalogService itemCatalogService,
-                       final NpcService npcService,
-                       final OwnedItemRepository ownedItemRepository,
-                       final InventoryService inventoryService,
-                       final CharacterService characterService,
-                       final ActionLog actionLog) {
+    public ShopService(
+            final ItemCatalogService itemCatalogService,
+            final NpcService npcService,
+            final OwnedItemRepository ownedItemRepository,
+            final InventoryService inventoryService,
+            final CharacterService characterService,
+            final ActionLog actionLog) {
         this.itemCatalogService = itemCatalogService;
         this.npcService = npcService;
         this.ownedItemRepository = ownedItemRepository;
@@ -78,25 +75,28 @@ public class ShopService {
     /**
      * 보유 아이템의 판매가(1개당)를 계산한다.
      *
-     * <p>공식: 기본가 + 인스턴스 보너스 (현재 인스턴스 보너스는 0).
-     * 기본가는 buyPrice 존재 시 {@code round(buyPrice * 0.5)},
-     * 부재 시 카탈로그 보너스 합산으로 배타 적용된다.
+     * <p>공식: 기본가 + 인스턴스 보너스 (현재 인스턴스 보너스는 0). 기본가는 buyPrice 존재 시 {@code round(buyPrice * 0.5)}, 부재
+     * 시 카탈로그 보너스 합산으로 배타 적용된다.
      *
      * @param ownedItem 판매가를 계산할 보유 아이템
      * @return 판매가 (골드)
      */
     public long sellValueOf(final OwnedItem ownedItem) {
-        final Item item = itemCatalogService.byId(ownedItem.getItemId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "카탈로그에 아이템이 없습니다: " + ownedItem.getItemId()));
+        final Item item =
+                itemCatalogService
+                        .byId(ownedItem.getItemId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "카탈로그에 아이템이 없습니다: " + ownedItem.getItemId()));
         return calculateSellValue(item);
     }
 
     /**
      * 카탈로그 아이템의 판매가를 계산한다.
      *
-     * <p>buyPrice가 존재하면 {@code round(buyPrice * 0.5)}를 반환하고,
-     * 없으면 장비의 카탈로그 보너스 합산을 반환한다. 포션은 buyPrice가 없으면 0이다.
+     * <p>buyPrice가 존재하면 {@code round(buyPrice * 0.5)}를 반환하고, 없으면 장비의 카탈로그 보너스 합산을 반환한다. 포션은
+     * buyPrice가 없으면 0이다.
      *
      * @param item 판매가를 계산할 카탈로그 아이템
      * @return 판매가 (골드)
@@ -130,10 +130,9 @@ public class ShopService {
     /**
      * 상점 팝업 뷰를 조립한다.
      *
-     * <p>NPC의 {@code shopItems} 중 buyPrice가 있는 아이템만 구매 목록으로,
-     * 인벤토리 아이템 전체를 판매 목록으로 구성한다.
+     * <p>NPC의 {@code shopItems} 중 buyPrice가 있는 아이템만 구매 목록으로, 인벤토리 아이템 전체를 판매 목록으로 구성한다.
      *
-     * @param npcId       대화 중인 NPC id
+     * @param npcId 대화 중인 NPC id
      * @param currentGold 현재 보유 골드
      * @return 상점 팝업 뷰
      */
@@ -146,8 +145,8 @@ public class ShopService {
     /**
      * NPC가 판매하는 구매 목록을 조립한다.
      *
-     * <p>NPC의 {@code shopItems} 중 카탈로그에 존재하고 buyPrice가 있는
-     * 아이템만 포함한다. NPC가 없거나 shopItems가 비어 있으면 빈 목록을 반환한다.
+     * <p>NPC의 {@code shopItems} 중 카탈로그에 존재하고 buyPrice가 있는 아이템만 포함한다. NPC가 없거나 shopItems가 비어 있으면 빈
+     * 목록을 반환한다.
      *
      * @param npcId NPC id
      * @return 구매 목록 (정의 순서 보존)
@@ -165,13 +164,15 @@ public class ShopService {
                 continue;
             }
             final Item item = itemOpt.get();
-            result.add(new ShopBuyItemView(
-                    item.id(),
-                    item.name(),
-                    item.type().label(),
-                    item.buyPrice(),
-                    inventoryService.describe(item, new OwnedItem(
-                            item.id(), 1, StorageKind.INVENTORY, false, 0))));
+            result.add(
+                    new ShopBuyItemView(
+                            item.id(),
+                            item.name(),
+                            item.type().label(),
+                            item.buyPrice(),
+                            inventoryService.describe(
+                                    item,
+                                    new OwnedItem(item.id(), 1, StorageKind.INVENTORY, false, 0))));
         }
         return List.copyOf(result);
     }
@@ -179,8 +180,7 @@ public class ShopService {
     /**
      * 인벤토리 아이템의 판매 목록을 조립한다.
      *
-     * <p>인벤토리({@code storage=INVENTORY}) 아이템 전체를 획득순으로 조회하고
-     * 각 행의 판매가를 계산하여 뷰로 변환한다.
+     * <p>인벤토리({@code storage=INVENTORY}) 아이템 전체를 획득순으로 조회하고 각 행의 판매가를 계산하여 뷰로 변환한다.
      *
      * @return 판매 목록
      */
@@ -190,17 +190,22 @@ public class ShopService {
 
         final List<ShopSellItemView> result = new ArrayList<>();
         for (final OwnedItem owned : inventoryItems) {
-            final Item catalogItem = itemCatalogService.byId(owned.getItemId())
-                    .orElseThrow(() -> new IllegalStateException(
-                            "카탈로그에 아이템이 없습니다: " + owned.getItemId()));
-            result.add(new ShopSellItemView(
-                    owned.getId(),
-                    catalogItem.name(),
-                    catalogItem.type().label(),
-                    owned.getQuantity(),
-                    sellValueOf(owned),
-                    owned.isEquipped(),
-                    inventoryService.describe(catalogItem, owned)));
+            final Item catalogItem =
+                    itemCatalogService
+                            .byId(owned.getItemId())
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalStateException(
+                                                    "카탈로그에 아이템이 없습니다: " + owned.getItemId()));
+            result.add(
+                    new ShopSellItemView(
+                            owned.getId(),
+                            catalogItem.name(),
+                            catalogItem.type().label(),
+                            owned.getQuantity(),
+                            sellValueOf(owned),
+                            owned.isEquipped(),
+                            inventoryService.describe(catalogItem, owned)));
         }
         return List.copyOf(result);
     }
@@ -208,31 +213,34 @@ public class ShopService {
     /**
      * 상점에서 아이템을 1개 구매한다.
      *
-     * <p>NPC의 {@code shopItems}에 포함되고 buyPrice가 있는 아이템만 구매 가능하다.
-     * 골드를 차감한 뒤 인벤토리에 아이템을 획득하고 행동 로그를 남긴다.
+     * <p>NPC의 {@code shopItems}에 포함되고 buyPrice가 있는 아이템만 구매 가능하다. 골드를 차감한 뒤 인벤토리에 아이템을 획득하고 행동 로그를
+     * 남긴다.
      *
      * @param progress 캐릭터 진행상황 (골드 차감 대상)
-     * @param npcId    대화 중인 NPC id
-     * @param itemId   구매할 아이템 카탈로그 ID
+     * @param npcId 대화 중인 NPC id
+     * @param itemId 구매할 아이템 카탈로그 ID
      * @throws IllegalArgumentException NPC 판매 목록에 없는 아이템 구매 시
      */
     @Transactional
     public void buy(final CharacterProgress progress, final String npcId, final String itemId) {
-        final Npc npc = npcService.byId(npcId)
-                .orElseThrow(() -> new IllegalArgumentException("NPC를 찾을 수 없습니다: " + npcId));
+        final Npc npc =
+                npcService
+                        .byId(npcId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("NPC를 찾을 수 없습니다: " + npcId));
 
         if (!npc.shopItems().contains(itemId)) {
-            throw new IllegalArgumentException(
-                    "해당 NPC가 판매하지 않는 아이템입니다: " + itemId);
+            throw new IllegalArgumentException("해당 NPC가 판매하지 않는 아이템입니다: " + itemId);
         }
 
-        final Item item = itemCatalogService.byId(itemId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "카탈로그에 아이템이 없습니다: " + itemId));
+        final Item item =
+                itemCatalogService
+                        .byId(itemId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("카탈로그에 아이템이 없습니다: " + itemId));
 
         if (item.buyPrice() == null) {
-            throw new IllegalArgumentException(
-                    "상점에서 판매하지 않는 아이템입니다: " + itemId);
+            throw new IllegalArgumentException("상점에서 판매하지 않는 아이템입니다: " + itemId);
         }
 
         progress.spendGold(item.buyPrice());
@@ -243,26 +251,34 @@ public class ShopService {
     /**
      * 인벤토리 아이템을 1개 판매한다.
      *
-     * <p>장착 중인 장비는 판매를 거부한다. 판매가는 {@code sellValueOf}로 계산하고,
-     * 수량을 1 감소시킨 뒤(0이면 행 삭제) 골드를 지급하고 행동 로그를 남긴다.
+     * <p>장착 중인 장비는 판매를 거부한다. 판매가는 {@code sellValueOf}로 계산하고, 수량을 1 감소시킨 뒤(0이면 행 삭제) 골드를 지급하고 행동 로그를
+     * 남긴다.
      *
-     * @param progress    캐릭터 진행상황 (골드 지급 대상)
+     * @param progress 캐릭터 진행상황 (골드 지급 대상)
      * @param ownedItemId 판매할 보유 아이템 PK
      * @throws EquipConflictException 장착 중인 장비 판매 시도 시
      */
     @Transactional
     public void sell(final CharacterProgress progress, final long ownedItemId) {
-        final OwnedItem owned = ownedItemRepository.findById(ownedItemId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
+        final OwnedItem owned =
+                ownedItemRepository
+                        .findById(ownedItemId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
 
         if (owned.isEquipped()) {
             throw new EquipConflictException("장착을 해제한 후 판매할 수 있습니다.");
         }
 
-        final Item catalogItem = itemCatalogService.byId(owned.getItemId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "카탈로그에 아이템이 없습니다: " + owned.getItemId()));
+        final Item catalogItem =
+                itemCatalogService
+                        .byId(owned.getItemId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "카탈로그에 아이템이 없습니다: " + owned.getItemId()));
 
         final long sellValue = sellValueOf(owned);
 

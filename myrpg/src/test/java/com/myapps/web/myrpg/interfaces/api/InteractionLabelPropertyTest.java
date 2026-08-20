@@ -1,16 +1,8 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
@@ -22,17 +14,22 @@ import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Combinators;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 상호작용 버튼 라벨 형식 프로퍼티 테스트.
  *
- * <p>임의 Npc에 대해 {@link PlayScreenViewHelper#buildInteractions(List)}가 생성하는
- * 라벨이 정확히 {@code name + " " + type.emoji()} 형식임을 검증한다.
- * 예: {@code "네리스 ⚒️"}.
+ * <p>임의 Npc에 대해 {@link PlayScreenViewHelper#buildInteractions(List)}가 생성하는 라벨이 정확히 {@code name + "
+ * " + type.emoji()} 형식임을 검증한다. 예: {@code "네리스 ⚒️"}.
  *
  * <p>Feature: 002-npc-system, Property 4: 상호작용 버튼 라벨 형식
  *
@@ -49,19 +46,22 @@ class InteractionLabelPropertyTest {
     InteractionLabelPropertyTest() {
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(
-                experiencePolicy, new StatProgression(), mock(SkillService.class), inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        experiencePolicy,
+                        new StatProgression(),
+                        mock(SkillService.class),
+                        inventoryService);
     }
 
     /**
-     * 임의 Npc에 대해 {@code buildInteractions}로 생성된 라벨이
-     * 정확히 {@code name + " (" + type.label() + ")"} 형식임을 검증한다.
+     * 임의 Npc에 대해 {@code buildInteractions}로 생성된 라벨이 정확히 {@code name + " (" + type.label() + ")"}
+     * 형식임을 검증한다.
      *
      * @param npc 임의 생성된 NPC
      */
     @Property(tries = 100)
-    void should_formatInteractionLabel_asNameWithTypeLabel(
-            @ForAll("npcs") final Npc npc) {
+    void should_formatInteractionLabel_asNameWithTypeLabel(@ForAll("npcs") final Npc npc) {
         // When
         final List<InteractionItem> interactions = helper.buildInteractions(List.of(npc));
 
@@ -77,8 +77,7 @@ class InteractionLabelPropertyTest {
     }
 
     /**
-     * 임의 Npc 목록에 대해 모든 항목의 라벨이 올바른 형식이며
-     * 입력 순서가 보존됨을 검증한다.
+     * 임의 Npc 목록에 대해 모든 항목의 라벨이 올바른 형식이며 입력 순서가 보존됨을 검증한다.
      *
      * @param npcList 임의 생성된 NPC 목록
      */
@@ -125,19 +124,15 @@ class InteractionLabelPropertyTest {
     }
 
     private Arbitrary<Npc> npcArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(3).ofMaxLength(10);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(2).ofMaxLength(8);
+        final Arbitrary<String> ids = Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(10);
+        final Arbitrary<String> names = Arbitraries.strings().alpha().ofMinLength(2).ofMaxLength(8);
         final Arbitrary<NpcType> types = Arbitraries.of(NpcType.values());
-        final Arbitrary<String> nodeIds = Arbitraries.of(
-                "tir-chonaill", "dunbarton", "bangor");
-        final Arbitrary<String> personalities = Arbitraries.strings()
-                .alpha().ofMinLength(3).ofMaxLength(15);
+        final Arbitrary<String> nodeIds = Arbitraries.of("tir-chonaill", "dunbarton", "bangor");
+        final Arbitrary<String> personalities =
+                Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(15);
         final Arbitrary<NpcLines> lines = npcLinesArbitrary();
 
-        return Combinators.combine(ids, names, types, nodeIds, personalities, lines)
-                .as(Npc::new);
+        return Combinators.combine(ids, names, types, nodeIds, personalities, lines).as(Npc::new);
     }
 
     private Arbitrary<NpcLines> npcLinesArbitrary() {
@@ -149,8 +144,12 @@ class InteractionLabelPropertyTest {
 
     private Arbitrary<List<String>> lineListArbitrary() {
         return Arbitraries.strings()
-                .alpha().ofMinLength(1).ofMaxLength(MAX_LINE_LENGTH)
-                .list().ofMinSize(0).ofMaxSize(MAX_LINE_COUNT);
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(MAX_LINE_LENGTH)
+                .list()
+                .ofMinSize(0)
+                .ofMaxSize(MAX_LINE_COUNT);
     }
 
     private Arbitrary<Map<String, List<String>>> byTimeMapArbitrary() {
@@ -160,21 +159,27 @@ class InteractionLabelPropertyTest {
         }
 
         return Arbitraries.of(timeKeys)
-                .set().ofMinSize(0).ofMaxSize(timeKeys.length)
-                .flatMap(keys -> {
-                    if (keys.isEmpty()) {
-                        return Arbitraries.just(Map.of());
-                    }
-                    final List<String> keyList = new ArrayList<>(keys);
-                    return lineListArbitrary()
-                            .list().ofSize(keyList.size())
-                            .map(valueLists -> {
-                                final Map<String, List<String>> map = new LinkedHashMap<>();
-                                for (int i = 0; i < keyList.size(); i++) {
-                                    map.put(keyList.get(i), valueLists.get(i));
-                                }
-                                return Map.copyOf(map);
-                            });
-                });
+                .set()
+                .ofMinSize(0)
+                .ofMaxSize(timeKeys.length)
+                .flatMap(
+                        keys -> {
+                            if (keys.isEmpty()) {
+                                return Arbitraries.just(Map.of());
+                            }
+                            final List<String> keyList = new ArrayList<>(keys);
+                            return lineListArbitrary()
+                                    .list()
+                                    .ofSize(keyList.size())
+                                    .map(
+                                            valueLists -> {
+                                                final Map<String, List<String>> map =
+                                                        new LinkedHashMap<>();
+                                                for (int i = 0; i < keyList.size(); i++) {
+                                                    map.put(keyList.get(i), valueLists.get(i));
+                                                }
+                                                return Map.copyOf(map);
+                                            });
+                        });
     }
 }

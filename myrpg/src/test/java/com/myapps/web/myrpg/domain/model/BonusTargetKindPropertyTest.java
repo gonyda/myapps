@@ -1,18 +1,16 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * 대상 종류 분류가 정확하고, {@link StatProgression}이 STAT 보너스를 바이탈에,
- * VITAL 보너스를 스탯에 가산하지 않음을 검증하는 프로퍼티 테스트.
+ * 대상 종류 분류가 정확하고, {@link StatProgression}이 STAT 보너스를 바이탈에, VITAL 보너스를 스탯에 가산하지 않음을 검증하는 프로퍼티 테스트.
  *
  * <p>Feature: 004-talent-and-ability-points, Property 8: 대상 종류 분류
  *
@@ -20,11 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BonusTargetKindPropertyTest {
 
-    private static final Set<BonusTarget> STAT_TARGETS = Set.of(
-            BonusTarget.STR, BonusTarget.DEX, BonusTarget.INT, BonusTarget.CRITICAL, BonusTarget.DEF);
+    private static final Set<BonusTarget> STAT_TARGETS =
+            Set.of(
+                    BonusTarget.STR,
+                    BonusTarget.DEX,
+                    BonusTarget.INT,
+                    BonusTarget.CRITICAL,
+                    BonusTarget.DEF);
 
-    private static final Set<BonusTarget> VITAL_TARGETS = Set.of(
-            BonusTarget.HP, BonusTarget.MP, BonusTarget.STAMINA);
+    private static final Set<BonusTarget> VITAL_TARGETS =
+            Set.of(BonusTarget.HP, BonusTarget.MP, BonusTarget.STAMINA);
 
     private static final int COMMON_VITAL_BASE = 100;
     private static final int COMMON_VITAL_PER_LEVEL = 10;
@@ -32,14 +35,14 @@ class BonusTargetKindPropertyTest {
     private final StatProgression statProgression = new StatProgression();
 
     /**
-     * 모든 {@link BonusTarget} 값에 대해, STR/DEX/INT/CRITICAL의 {@code kind()}는
-     * {@link BonusKind#STAT}이고, HP/MP/STAMINA의 {@code kind()}는
-     * {@link BonusKind#VITAL}인지 검증한다.
+     * 모든 {@link BonusTarget} 값에 대해, STR/DEX/INT/CRITICAL의 {@code kind()}는 {@link BonusKind#STAT}이고,
+     * HP/MP/STAMINA의 {@code kind()}는 {@link BonusKind#VITAL}인지 검증한다.
      *
      * @param target 임의의 BonusTarget 열거 상수
      */
     @Property(tries = 100)
-    void should_classifyKindCorrectly_forAllBonusTargets(@ForAll("bonusTargets") final BonusTarget target) {
+    void should_classifyKindCorrectly_forAllBonusTargets(
+            @ForAll("bonusTargets") final BonusTarget target) {
         if (STAT_TARGETS.contains(target)) {
             assertThat(target.kind()).isEqualTo(BonusKind.STAT);
         } else {
@@ -49,17 +52,17 @@ class BonusTargetKindPropertyTest {
     }
 
     /**
-     * 임의의 레벨 L과 재능 T에 대해, {@code levelStatsFor(L, T)}와 공통 스탯의 차이가
-     * 오직 재능의 {@link BonusKind#STAT} 대상에서만 발생하는지 검증한다.
+     * 임의의 레벨 L과 재능 T에 대해, {@code levelStatsFor(L, T)}와 공통 스탯의 차이가 오직 재능의 {@link BonusKind#STAT}
+     * 대상에서만 발생하는지 검증한다.
      *
      * <p>VITAL 계열 보너스(HP/MP/STAMINA)는 스탯 차이를 만들지 않아야 한다.
      *
-     * @param level  1 이상 100 이하의 임의 레벨
+     * @param level 1 이상 100 이하의 임의 레벨
      * @param talent 임의의 재능 유형
      */
     @Property(tries = 100)
-    void should_notApplyVitalBonusToStats(@ForAll("levels") final int level,
-                                          @ForAll("talents") final TalentType talent) {
+    void should_notApplyVitalBonusToStats(
+            @ForAll("levels") final int level, @ForAll("talents") final TalentType talent) {
         final Stats talentStats = statProgression.levelStatsFor(level, talent);
         final Stats common = statProgression.levelStatsFor(level);
 
@@ -81,17 +84,17 @@ class BonusTargetKindPropertyTest {
     }
 
     /**
-     * 임의의 레벨 L과 재능 T에 대해, {@code vitalMaxFor(L, T)}와 공통 바이탈의 차이가
-     * 오직 재능의 {@link BonusKind#VITAL} 대상에서만 발생하는지 검증한다.
+     * 임의의 레벨 L과 재능 T에 대해, {@code vitalMaxFor(L, T)}와 공통 바이탈의 차이가 오직 재능의 {@link BonusKind#VITAL}
+     * 대상에서만 발생하는지 검증한다.
      *
      * <p>STAT 계열 보너스(STR/DEX/INT/CRITICAL)는 바이탈 차이를 만들지 않아야 한다.
      *
-     * @param level  1 이상 100 이하의 임의 레벨
+     * @param level 1 이상 100 이하의 임의 레벨
      * @param talent 임의의 재능 유형
      */
     @Property(tries = 100)
-    void should_notApplyStatBonusToVitals(@ForAll("levels") final int level,
-                                          @ForAll("talents") final TalentType talent) {
+    void should_notApplyStatBonusToVitals(
+            @ForAll("levels") final int level, @ForAll("talents") final TalentType talent) {
         final VitalMax talentVital = statProgression.vitalMaxFor(level, talent);
         final int commonVital = COMMON_VITAL_BASE + COMMON_VITAL_PER_LEVEL * (level - 1);
 
@@ -115,8 +118,10 @@ class BonusTargetKindPropertyTest {
      * @return 재능의 주/보조 보너스 중 하나가 해당 STAT 대상이면 {@code true}
      */
     private boolean hasStatBonusTargeting(final TalentType talent, final BonusTarget target) {
-        return (talent.primary().target() == target && talent.primary().target().kind() == BonusKind.STAT)
-                || (talent.secondary().target() == target && talent.secondary().target().kind() == BonusKind.STAT);
+        return (talent.primary().target() == target
+                        && talent.primary().target().kind() == BonusKind.STAT)
+                || (talent.secondary().target() == target
+                        && talent.secondary().target().kind() == BonusKind.STAT);
     }
 
     /**
@@ -127,8 +132,10 @@ class BonusTargetKindPropertyTest {
      * @return 재능의 주/보조 보너스 중 하나가 해당 VITAL 대상이면 {@code true}
      */
     private boolean hasVitalBonusTargeting(final TalentType talent, final BonusTarget target) {
-        return (talent.primary().target() == target && talent.primary().target().kind() == BonusKind.VITAL)
-                || (talent.secondary().target() == target && talent.secondary().target().kind() == BonusKind.VITAL);
+        return (talent.primary().target() == target
+                        && talent.primary().target().kind() == BonusKind.VITAL)
+                || (talent.secondary().target() == target
+                        && talent.secondary().target().kind() == BonusKind.VITAL);
     }
 
     /**

@@ -1,5 +1,11 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import com.myapps.web.myrpg.application.dto.BankView;
+import com.myapps.web.myrpg.application.service.BankService;
+import com.myapps.web.myrpg.application.service.CharacterService;
+import com.myapps.web.myrpg.application.service.InventoryService;
+import com.myapps.web.myrpg.domain.model.Bank;
+import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,26 +13,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.myapps.web.myrpg.application.dto.BankView;
-import com.myapps.web.myrpg.application.service.BankService;
-import com.myapps.web.myrpg.application.service.CharacterService;
-import com.myapps.web.myrpg.application.service.InventoryService;
-import com.myapps.web.myrpg.domain.model.Bank;
-import com.myapps.web.myrpg.domain.model.CharacterProgress;
-
 /**
  * 은행 팝업·골드 입출금·아이템 맡기기/찾기를 처리하는 컨트롤러.
  *
- * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며,
- * 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
+ * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며, 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
  *
  * <p>엔드포인트 개요:
+ *
  * <ul>
- *   <li>{@code GET /bank} — 은행 팝업 fragment (좌 은행 / 우 소지품 목록 + 골드 + 입출금)</li>
- *   <li>{@code POST /bank/deposit} — 골드 입금 후 갱신된 은행 fragment</li>
- *   <li>{@code POST /bank/withdraw} — 골드 출금 후 갱신된 은행 fragment</li>
- *   <li>{@code POST /bank/item/deposit} — 아이템 맡기기 후 갱신된 은행 fragment</li>
- *   <li>{@code POST /bank/item/withdraw} — 아이템 찾기 후 갱신된 은행 fragment</li>
+ *   <li>{@code GET /bank} — 은행 팝업 fragment (좌 은행 / 우 소지품 목록 + 골드 + 입출금)
+ *   <li>{@code POST /bank/deposit} — 골드 입금 후 갱신된 은행 fragment
+ *   <li>{@code POST /bank/withdraw} — 골드 출금 후 갱신된 은행 fragment
+ *   <li>{@code POST /bank/item/deposit} — 아이템 맡기기 후 갱신된 은행 fragment
+ *   <li>{@code POST /bank/item/withdraw} — 아이템 찾기 후 갱신된 은행 fragment
  * </ul>
  */
 @Controller
@@ -42,13 +41,14 @@ public class BankController {
     /**
      * BankController를 생성한다.
      *
-     * @param bankService      은행 금고 관리 서비스
+     * @param bankService 은행 금고 관리 서비스
      * @param inventoryService 인벤토리 서비스 (뷰 조립·아이템 이동)
      * @param characterService 캐릭터 진행상황 서비스
      */
-    public BankController(final BankService bankService,
-                          final InventoryService inventoryService,
-                          final CharacterService characterService) {
+    public BankController(
+            final BankService bankService,
+            final InventoryService inventoryService,
+            final CharacterService characterService) {
         this.bankService = bankService;
         this.inventoryService = inventoryService;
         this.characterService = characterService;
@@ -57,8 +57,7 @@ public class BankController {
     /**
      * 은행 팝업 fragment를 반환한다.
      *
-     * <p>은행 보관 골드·보유 골드와 은행/소지품 두 아이템 목록을 조립하여
-     * 좌(은행)/우(소지품) 리스트 + 골드 2칸 + 입출금 구성의 팝업을 렌더한다.
+     * <p>은행 보관 골드·보유 골드와 은행/소지품 두 아이템 목록을 조립하여 좌(은행)/우(소지품) 리스트 + 골드 2칸 + 입출금 구성의 팝업을 렌더한다.
      *
      * @param model Spring MVC 모델
      * @return 은행 팝업 fragment 뷰 이름
@@ -73,12 +72,11 @@ public class BankController {
     /**
      * 골드 입금을 수행하고 갱신된 은행 팝업 fragment를 반환한다.
      *
-     * <p>단일 트랜잭션 내에서 소지금을 차감한 뒤 은행 골드를 증가시킨다.
-     * 소지금 부족 시 {@code InsufficientGoldException}이 발생하여
+     * <p>단일 트랜잭션 내에서 소지금을 차감한 뒤 은행 골드를 증가시킨다. 소지금 부족 시 {@code InsufficientGoldException}이 발생하여
      * {@code GlobalExceptionHandler}에서 처리된다.
      *
      * @param amount 입금할 금액 (최소 1, 상한 없음, 수수료 없음)
-     * @param model  Spring MVC 모델
+     * @param model Spring MVC 모델
      * @return 은행 팝업 fragment 뷰 이름
      */
     @PostMapping("/deposit")
@@ -95,12 +93,11 @@ public class BankController {
     /**
      * 골드 출금을 수행하고 갱신된 은행 팝업 fragment를 반환한다.
      *
-     * <p>단일 트랜잭션 내에서 은행 골드를 차감한 뒤 소지금을 증가시킨다.
-     * 은행 잔액 부족 시 {@code InsufficientGoldException}이 발생하여
+     * <p>단일 트랜잭션 내에서 은행 골드를 차감한 뒤 소지금을 증가시킨다. 은행 잔액 부족 시 {@code InsufficientGoldException}이 발생하여
      * {@code GlobalExceptionHandler}에서 처리된다.
      *
      * @param amount 출금할 금액 (최소 1, 상한 없음, 수수료 없음)
-     * @param model  Spring MVC 모델
+     * @param model Spring MVC 모델
      * @return 은행 팝업 fragment 뷰 이름
      */
     @PostMapping("/withdraw")
@@ -117,12 +114,11 @@ public class BankController {
     /**
      * 아이템을 인벤토리에서 은행으로 맡기고 갱신된 은행 팝업 fragment를 반환한다.
      *
-     * <p>장착 중 장비는 {@code EquipConflictException}으로,
-     * 은행 용량 초과는 {@code InventoryFullException}으로 거부되어
+     * <p>장착 중 장비는 {@code EquipConflictException}으로, 은행 용량 초과는 {@code InventoryFullException}으로 거부되어
      * {@code GlobalExceptionHandler}에서 처리된다.
      *
      * @param ownedItemId 맡길 보유 아이템 PK
-     * @param model       Spring MVC 모델
+     * @param model Spring MVC 모델
      * @return 은행 팝업 fragment 뷰 이름
      */
     @PostMapping("/item/deposit")
@@ -137,11 +133,10 @@ public class BankController {
     /**
      * 아이템을 은행에서 인벤토리로 찾고 갱신된 은행 팝업 fragment를 반환한다.
      *
-     * <p>인벤토리 용량 초과 시 {@code InventoryFullException}으로 거부되어
-     * {@code GlobalExceptionHandler}에서 처리된다.
+     * <p>인벤토리 용량 초과 시 {@code InventoryFullException}으로 거부되어 {@code GlobalExceptionHandler}에서 처리된다.
      *
      * @param ownedItemId 찾을 보유 아이템 PK
-     * @param model       Spring MVC 모델
+     * @param model Spring MVC 모델
      * @return 은행 팝업 fragment 뷰 이름
      */
     @PostMapping("/item/withdraw")

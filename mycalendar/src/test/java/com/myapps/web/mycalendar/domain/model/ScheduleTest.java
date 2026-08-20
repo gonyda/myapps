@@ -1,16 +1,13 @@
 package com.myapps.web.mycalendar.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * Schedule 엔티티의 생성 및 필드 업데이트를 검증합니다.
- */
+/** Schedule 엔티티의 생성 및 필드 업데이트를 검증합니다. */
 class ScheduleTest {
 
     @Test
@@ -28,7 +25,8 @@ class ScheduleTest {
     @Test
     @DisplayName("일정 필드를 업데이트하면 값이 변경된다")
     void should_updateFields_when_updateMethodsCalled() {
-        final Schedule schedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 8, 1), "원래 내용");
+        final Schedule schedule =
+                new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 8, 1), "원래 내용");
 
         schedule.updateCategory(Category.CHIWON);
         schedule.updateContent("수정된 내용");

@@ -1,21 +1,18 @@
 package com.myapps.web.myrpg.application.service;
 
+import com.myapps.web.myrpg.domain.model.ActionLog;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Random;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.annotation.SessionScope;
 
-import com.myapps.web.myrpg.domain.model.ActionLog;
-
 /**
  * 애플리케이션 서비스 계층의 인프라 빈 등록 설정.
  *
- * <p>{@link Clock}과 {@link Random}을 빈으로 등록하여
- * 테스트 시 고정 시각·고정 시드 주입이 가능하도록 합니다.
- * {@link ActionLog}는 HTTP 세션 스코프로 등록하여 세션 단위로 보관합니다.
+ * <p>{@link Clock}과 {@link Random}을 빈으로 등록하여 테스트 시 고정 시각·고정 시드 주입이 가능하도록 합니다. {@link ActionLog}는
+ * HTTP 세션 스코프로 등록하여 세션 단위로 보관합니다.
  */
 @Configuration
 public class ApplicationServiceConfiguration {

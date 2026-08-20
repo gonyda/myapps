@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 /**
  * 맵 노드 그래프의 도메인 집계(Aggregate).
  *
- * <p>애플리케이션 기동 시 {@code classpath:data/map.json}에서 1회 파싱되어 불변으로 메모리에 보관된다.
- * 영속 대상이 아니며, 노드 조회·좌표 이웃 탐색 등의 헬퍼를 제공한다.
+ * <p>애플리케이션 기동 시 {@code classpath:data/map.json}에서 1회 파싱되어 불변으로 메모리에 보관된다. 영속 대상이 아니며, 노드 조회·좌표 이웃
+ * 탐색 등의 헬퍼를 제공한다.
  */
 public final class MapGraph {
 
@@ -22,22 +22,23 @@ public final class MapGraph {
     /**
      * 맵 그래프를 구성한다.
      *
-     * @param nodes       모든 맵 노드 목록
-     * @param dungeons    던전 목록
+     * @param nodes 모든 맵 노드 목록
+     * @param dungeons 던전 목록
      * @param startNodeId 시작 노드 ID (예: "tir-chonaill")
      */
-    public MapGraph(final List<MapNode> nodes,
-                    final List<Dungeon> dungeons,
-                    final String startNodeId) {
+    public MapGraph(
+            final List<MapNode> nodes, final List<Dungeon> dungeons, final String startNodeId) {
         this.nodes = List.copyOf(nodes);
         this.dungeons = List.copyOf(dungeons);
         this.startNodeId = startNodeId;
-        this.byId = this.nodes.stream()
-                .collect(Collectors.toUnmodifiableMap(MapNode::id, node -> node));
-        this.byCoord = this.nodes.stream()
-                .collect(Collectors.toUnmodifiableMap(
-                        node -> coordKey(node.x(), node.y()),
-                        node -> node));
+        this.byId =
+                this.nodes.stream()
+                        .collect(Collectors.toUnmodifiableMap(MapNode::id, node -> node));
+        this.byCoord =
+                this.nodes.stream()
+                        .collect(
+                                Collectors.toUnmodifiableMap(
+                                        node -> coordKey(node.x(), node.y()), node -> node));
     }
 
     /**
@@ -109,13 +110,11 @@ public final class MapGraph {
      * 기준 노드에서 좌표 오프셋(dx, dy)만큼 떨어진 이웃 노드를 탐색한다.
      *
      * @param baseNode 기준 노드
-     * @param dx       X 좌표 오프셋
-     * @param dy       Y 좌표 오프셋
+     * @param dx X 좌표 오프셋
+     * @param dy Y 좌표 오프셋
      * @return 해당 좌표에 존재하는 노드를 감싼 {@code Optional}, 미존재 시 빈 {@code Optional}
      */
-    public Optional<MapNode> neighborByOffset(final MapNode baseNode,
-                                              final int dx,
-                                              final int dy) {
+    public Optional<MapNode> neighborByOffset(final MapNode baseNode, final int dx, final int dy) {
         final String key = coordKey(baseNode.x() + dx, baseNode.y() + dy);
         return Optional.ofNullable(byCoord.get(key));
     }

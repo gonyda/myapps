@@ -1,16 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
@@ -35,20 +31,22 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 /**
  * 사망 처리를 검증하는 통합 테스트.
  *
- * <p>HP 0 도달 시 {@code die()}가 호출되어 경험치 -10%, 풀 회복, 티르코네일 이동이
- * 수행되고, 골드/아이템이 불변이며, BattleState active=false가 되는지 검증한다.
+ * <p>HP 0 도달 시 {@code die()}가 호출되어 경험치 -10%, 풀 회복, 티르코네일 이동이 수행되고, 골드/아이템이 불변이며, BattleState
+ * active=false가 되는지 검증한다.
  *
  * <p><b>Validates: Requirements 11.3</b>
  */
@@ -67,9 +65,7 @@ class BattleServiceDeathTest {
     private CharacterService characterService;
     private BattleService battleService;
 
-    /**
-     * 각 테스트 전에 몬스터 피해가 치명적으로 높은 설정으로 BattleService를 구성한다.
-     */
+    /** 각 테스트 전에 몬스터 피해가 치명적으로 높은 설정으로 BattleService를 구성한다. */
     @BeforeEach
     void setUp() {
         battleStateRepo = mock(BattleStateRepository.class);
@@ -78,7 +74,9 @@ class BattleServiceDeathTest {
 
         final BattleResolver resolver = mock(BattleResolver.class);
         when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(5, LETHAL_MONSTER_DAMAGE, false, false, false, false, List.of()));
+                .thenReturn(
+                        new ResolvedTurn(
+                                5, LETHAL_MONSTER_DAMAGE, false, false, false, false, List.of()));
 
         final MonsterService monsterService = mock(MonsterService.class);
         when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(createMonster()));
@@ -94,15 +92,15 @@ class BattleServiceDeathTest {
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
 
         progressionService = mock(ProgressionService.class);
-        when(progressionService.die(any(CharacterProgress.class)))
-                .thenReturn(new DeathResult(10L));
+        when(progressionService.die(any(CharacterProgress.class))).thenReturn(new DeathResult(10L));
 
         characterService = mock(CharacterService.class);
         when(characterService.saveTurn(any(CharacterProgress.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
         final Random random = new Random(42L);
 
@@ -111,20 +109,31 @@ class BattleServiceDeathTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
-        battleService = new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+        battleService =
+                new BattleService(
+                        battleStateRepo,
+                        resolver,
+                        monsterService,
+                        aiService,
+                        rewardService,
+                        skillService,
+                        inventoryService,
+                        progressionService,
+                        characterService,
+                        statProgression,
+                        actionLog,
+                        random,
+                        skillCatalogService,
+                        characterSkillRepo,
+                        itemCatalogService);
     }
 
-    /**
-     * HP가 0에 도달하면 die()가 호출되고 outcome이 LOSE인지 검증한다.
-     */
+    /** HP가 0에 도달하면 die()가 호출되고 outcome이 LOSE인지 검증한다. */
     @Test
     @DisplayName("HP 0 도달 시 die()가 호출되고 outcome=LOSE")
     void should_callDie_when_hpReachesZero() {
@@ -135,17 +144,11 @@ class BattleServiceDeathTest {
         final BattleTurnResult result = battleService.takeTurn(progress, state, SKILL_ID);
 
         verify(progressionService).die(eq(progress));
-        assertThat(result.outcome())
-                .as("HP 0 시 outcome은 LOSE여야 한다")
-                .isEqualTo(Outcome.LOSE);
-        assertThat(result.battleEnded())
-                .as("사망 시 전투가 종료되어야 한다")
-                .isTrue();
+        assertThat(result.outcome()).as("HP 0 시 outcome은 LOSE여야 한다").isEqualTo(Outcome.LOSE);
+        assertThat(result.battleEnded()).as("사망 시 전투가 종료되어야 한다").isTrue();
     }
 
-    /**
-     * 사망 시 BattleState active가 false로 전환되는지 검증한다.
-     */
+    /** 사망 시 BattleState active가 false로 전환되는지 검증한다. */
     @Test
     @DisplayName("사망 시 BattleState active=false")
     void should_deactivateBattleState_when_death() {
@@ -155,14 +158,10 @@ class BattleServiceDeathTest {
 
         battleService.takeTurn(progress, state, SKILL_ID);
 
-        assertThat(state.isActive())
-                .as("사망 시 BattleState active는 false여야 한다")
-                .isFalse();
+        assertThat(state.isActive()).as("사망 시 BattleState active는 false여야 한다").isFalse();
     }
 
-    /**
-     * 사망 시 골드가 불변인지 검증한다.
-     */
+    /** 사망 시 골드가 불변인지 검증한다. */
     @Test
     @DisplayName("사망 시 골드는 불변")
     void should_preserveGold_when_death() {
@@ -172,14 +171,10 @@ class BattleServiceDeathTest {
 
         battleService.takeTurn(progress, state, SKILL_ID);
 
-        assertThat(progress.getGold())
-                .as("사망 후 골드는 변하지 않아야 한다")
-                .isEqualTo(INITIAL_GOLD);
+        assertThat(progress.getGold()).as("사망 후 골드는 변하지 않아야 한다").isEqualTo(INITIAL_GOLD);
     }
 
-    /**
-     * 사망 시 saveTurn과 BattleState가 저장되는지 검증한다.
-     */
+    /** 사망 시 saveTurn과 BattleState가 저장되는지 검증한다. */
     @Test
     @DisplayName("사망 시 saveTurn + BattleState 저장")
     void should_saveStateAndProgress_when_death() {
@@ -197,19 +192,43 @@ class BattleServiceDeathTest {
 
     private CharacterProgress createProgress(final int hp) {
         return new CharacterProgress(
-                "전사", 10, 10, INITIAL_EXP, TalentType.MELEE, null,
-                hp, 100, 100, "dunbarton", 0, INITIAL_GOLD);
+                "전사",
+                10,
+                10,
+                INITIAL_EXP,
+                TalentType.MELEE,
+                null,
+                hp,
+                100,
+                100,
+                "dunbarton",
+                0,
+                INITIAL_GOLD);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, 30L, new GoldDrop(10, 20), List.of(), List.of("소리", "행동1", "행동2"));
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                30L,
+                new GoldDrop(10, 20),
+                List.of(),
+                List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createDamageSkill() {
         return new DamageSkill(
-                SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 5,
+                SKILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                5,
                 createFullRankMap(100),
                 "테스트 스킬");
     }
@@ -223,6 +242,7 @@ class BattleServiceDeathTest {
                 Map.entry(SkillRank.R7, baseValue + 80), Map.entry(SkillRank.R6, baseValue + 90),
                 Map.entry(SkillRank.R5, baseValue + 100), Map.entry(SkillRank.R4, baseValue + 110),
                 Map.entry(SkillRank.R3, baseValue + 120), Map.entry(SkillRank.R2, baseValue + 130),
-                Map.entry(SkillRank.R1, baseValue + 140), Map.entry(SkillRank.MASTER, baseValue + 150));
+                Map.entry(SkillRank.R1, baseValue + 140),
+                        Map.entry(SkillRank.MASTER, baseValue + 150));
     }
 }

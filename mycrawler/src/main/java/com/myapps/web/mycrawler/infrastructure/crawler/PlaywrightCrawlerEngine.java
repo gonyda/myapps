@@ -1,11 +1,5 @@
 package com.myapps.web.mycrawler.infrastructure.crawler;
 
-import java.time.LocalDateTime;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
@@ -18,15 +12,18 @@ import com.myapps.web.mycrawler.domain.model.CrawlTarget;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
 import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Playwright Java를 사용한 크롤링 실행 엔진 구현체.
  *
- * <p>애플리케이션 시작 시 Playwright 인스턴스를 초기화하고 headless Chromium 브라우저를
- * 싱글톤으로 유지합니다. 요청마다 새로운 BrowserContext를 생성하여 격리된 세션으로 크롤링을 수행합니다.
+ * <p>애플리케이션 시작 시 Playwright 인스턴스를 초기화하고 headless Chromium 브라우저를 싱글톤으로 유지합니다. 요청마다 새로운
+ * BrowserContext를 생성하여 격리된 세션으로 크롤링을 수행합니다.
  */
 @Component
 public class PlaywrightCrawlerEngine implements CrawlerEngine {
@@ -48,10 +45,10 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
      * PlaywrightCrawlerEngine 인스턴스를 생성합니다.
      *
      * @param antiDetectionService 안티 디텍션 설정 및 행동 시뮬레이션 서비스
-     * @param crawlerConfig        크롤러 설정 정보
+     * @param crawlerConfig 크롤러 설정 정보
      */
-    public PlaywrightCrawlerEngine(final AntiDetectionService antiDetectionService,
-                                   final CrawlerConfig crawlerConfig) {
+    public PlaywrightCrawlerEngine(
+            final AntiDetectionService antiDetectionService, final CrawlerConfig crawlerConfig) {
         this.antiDetectionService = antiDetectionService;
         this.crawlerConfig = crawlerConfig;
     }
@@ -59,22 +56,19 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
     /**
      * 애플리케이션 시작 시 Playwright 인스턴스와 headless Chromium 브라우저를 초기화합니다.
      *
-     * <p>CrawlerConfig의 browsersPath가 설정되어 있으면 환경변수 PLAYWRIGHT_BROWSERS_PATH를
-     * 해당 값으로 설정하여 환경별 브라우저 바이너리 경로를 해소합니다.
+     * <p>CrawlerConfig의 browsersPath가 설정되어 있으면 환경변수 PLAYWRIGHT_BROWSERS_PATH를 해당 값으로 설정하여 환경별 브라우저
+     * 바이너리 경로를 해소합니다.
      */
     @PostConstruct
     public void initialize() {
         configureBrowsersPath();
         this.playwright = Playwright.create();
-        this.browser = playwright.chromium().launch(
-            new BrowserType.LaunchOptions().setHeadless(true)
-        );
+        this.browser =
+                playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
         log.info("Playwright Chromium 브라우저가 초기화되었습니다.");
     }
 
-    /**
-     * 애플리케이션 종료 시 브라우저와 Playwright 리소스를 정리합니다.
-     */
+    /** 애플리케이션 종료 시 브라우저와 Playwright 리소스를 정리합니다. */
     @PreDestroy
     public void shutdown() {
         if (browser != null) {
@@ -89,9 +83,8 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
     /**
      * {@inheritDoc}
      *
-     * <p>지정된 대상 URL에 대해 Playwright 크롤링을 수행합니다.
-     * 성공 시 SUCCESS CrawlResult를, 실패 시 FAILURE CrawlResult를 반환합니다.
-     * 어떠한 예외도 외부로 전파하지 않습니다.
+     * <p>지정된 대상 URL에 대해 Playwright 크롤링을 수행합니다. 성공 시 SUCCESS CrawlResult를, 실패 시 FAILURE CrawlResult를
+     * 반환합니다. 어떠한 예외도 외부로 전파하지 않습니다.
      */
     @Override
     public CrawlResult crawl(final CrawlTarget target, final TriggerSource triggerSource) {
@@ -101,12 +94,15 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
     /**
      * 지정된 브라우저 인스턴스를 사용하여 크롤링을 수행합니다.
      *
-     * @param target        크롤링 대상
+     * @param target 크롤링 대상
      * @param triggerSource 크롤링 트리거 출처
      * @param targetBrowser 사용할 브라우저 인스턴스
      * @return 크롤링 결과
      */
-    CrawlResult crawlWithBrowser(final CrawlTarget target, final TriggerSource triggerSource, final Browser targetBrowser) {
+    CrawlResult crawlWithBrowser(
+            final CrawlTarget target,
+            final TriggerSource triggerSource,
+            final Browser targetBrowser) {
         final LocalDateTime startTime = LocalDateTime.now();
         BrowserContext context = null;
 
@@ -119,12 +115,14 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
             final String content = navigateAndExtract(context, target.url());
             pageDelayMs = applyPageDelay();
             final LocalDateTime endTime = LocalDateTime.now();
-            final CrawlResult result = buildSuccessResult(target, triggerSource, content, startTime, endTime);
+            final CrawlResult result =
+                    buildSuccessResult(target, triggerSource, content, startTime, endTime);
             logCrawlResult(result, userAgent, viewport, pageDelayMs);
             return result;
         } catch (final Exception exception) {
             final LocalDateTime endTime = LocalDateTime.now();
-            final CrawlResult result = buildFailureResult(target, triggerSource, exception, startTime, endTime);
+            final CrawlResult result =
+                    buildFailureResult(target, triggerSource, exception, startTime, endTime);
             logCrawlResult(result, userAgent, viewport, pageDelayMs);
             return result;
         } finally {
@@ -151,14 +149,13 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
         }
     }
 
-    private BrowserContext createBrowserContext(final Browser targetBrowser,
-                                                final String userAgent,
-                                                final ViewportSize viewport) {
-        final BrowserContext context = targetBrowser.newContext(
-            new Browser.NewContextOptions()
-                .setUserAgent(userAgent)
-                .setViewportSize(viewport.width, viewport.height)
-        );
+    private BrowserContext createBrowserContext(
+            final Browser targetBrowser, final String userAgent, final ViewportSize viewport) {
+        final BrowserContext context =
+                targetBrowser.newContext(
+                        new Browser.NewContextOptions()
+                                .setUserAgent(userAgent)
+                                .setViewportSize(viewport.width, viewport.height));
 
         antiDetectionService.applyStealthSettings(context);
         return context;
@@ -171,46 +168,48 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
         return page.content();
     }
 
-    private CrawlResult buildSuccessResult(final CrawlTarget target,
-                                           final TriggerSource triggerSource,
-                                           final String content,
-                                           final LocalDateTime startTime,
-                                           final LocalDateTime endTime) {
+    private CrawlResult buildSuccessResult(
+            final CrawlTarget target,
+            final TriggerSource triggerSource,
+            final String content,
+            final LocalDateTime startTime,
+            final LocalDateTime endTime) {
         return new CrawlResult(
-            target.name(),
-            target.url(),
-            CrawlStatus.SUCCESS,
-            triggerSource,
-            content,
-            null,
-            startTime,
-            endTime
-        );
+                target.name(),
+                target.url(),
+                CrawlStatus.SUCCESS,
+                triggerSource,
+                content,
+                null,
+                startTime,
+                endTime);
     }
 
-    private CrawlResult buildFailureResult(final CrawlTarget target,
-                                           final TriggerSource triggerSource,
-                                           final Exception exception,
-                                           final LocalDateTime startTime,
-                                           final LocalDateTime endTime) {
+    private CrawlResult buildFailureResult(
+            final CrawlTarget target,
+            final TriggerSource triggerSource,
+            final Exception exception,
+            final LocalDateTime startTime,
+            final LocalDateTime endTime) {
         return new CrawlResult(
-            target.name(),
-            target.url(),
-            CrawlStatus.FAILURE,
-            triggerSource,
-            null,
-            exception.getMessage(),
-            startTime,
-            endTime
-        );
+                target.name(),
+                target.url(),
+                CrawlStatus.FAILURE,
+                triggerSource,
+                null,
+                exception.getMessage(),
+                startTime,
+                endTime);
     }
 
-    private void logCrawlResult(final CrawlResult result,
-                                final String userAgent,
-                                final ViewportSize viewport,
-                                final long pageDelayMs) {
-        log.info("""
-            
+    private void logCrawlResult(
+            final CrawlResult result,
+            final String userAgent,
+            final ViewportSize viewport,
+            final long pageDelayMs) {
+        log.info(
+                """
+
             ┌─── 크롤링 결과 ───────────────────────────────────
             │ 타겟       : {}
             │ 상태       : {}
@@ -225,15 +224,17 @@ public class PlaywrightCrawlerEngine implements CrawlerEngine {
             ├─── 응답 요약 ─────────────────────────────────────
             │ {}
             └───────────────────────────────────────────────────""",
-            result.targetName(),
-            result.status(),
-            result.targetUrl(),
-            result.durationMillis(),
-            userAgent,
-            viewport.width, viewport.height,
-            MOUSE_MOVE_COUNT, SCROLL_COUNT,
-            pageDelayMs,
-            result.contentSummary(CONTENT_SUMMARY_LENGTH));
+                result.targetName(),
+                result.status(),
+                result.targetUrl(),
+                result.durationMillis(),
+                userAgent,
+                viewport.width,
+                viewport.height,
+                MOUSE_MOVE_COUNT,
+                SCROLL_COUNT,
+                pageDelayMs,
+                result.contentSummary(CONTENT_SUMMARY_LENGTH));
 
         if (result.content() != null) {
             log.debug("크롤링 응답 전체 - 타겟: {}, 콘텐츠:\n{}", result.targetName(), result.content());

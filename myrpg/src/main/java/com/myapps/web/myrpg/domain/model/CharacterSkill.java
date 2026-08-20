@@ -12,11 +12,10 @@ import jakarta.persistence.Table;
 /**
  * 캐릭터의 보유 스킬 진행을 영속 저장하는 JPA 엔티티.
  *
- * <p>{@code character_skill} 테이블에 매핑되며, 스킬 카탈로그({@code skill.json})의
- * id를 문자열로 참조한다. 랭크업 시 카운트(사용 횟수·막타 처치)는 0으로 리셋된다.
+ * <p>{@code character_skill} 테이블에 매핑되며, 스킬 카탈로그({@code skill.json})의 id를 문자열로 참조한다. 랭크업 시 카운트(사용
+ * 횟수·막타 처치)는 0으로 리셋된다.
  *
- * <p>랭크업 영구 스탯 보너스와 랭크별 수치는 별도 컬럼으로 저장하지 않으며,
- * 랭크·카탈로그에서 매번 계산한다(Req 10.2).
+ * <p>랭크업 영구 스탯 보너스와 랭크별 수치는 별도 컬럼으로 저장하지 않으며, 랭크·카탈로그에서 매번 계산한다(Req 10.2).
  */
 @Entity
 @Table(name = "character_skill")
@@ -42,23 +41,24 @@ public class CharacterSkill {
     @Column(name = "kill_count", nullable = false)
     private int killCount;
 
-    /**
-     * JPA 전용 기본 생성자.
-     */
-    protected CharacterSkill() {
-    }
+    /** JPA 전용 기본 생성자. */
+    protected CharacterSkill() {}
 
     /**
      * 전체 필드를 지정하는 생성자.
      *
      * @param characterId 소유 캐릭터 ID
-     * @param skillId     스킬 카탈로그 ID (skill.json 참조)
-     * @param rank        현재 스킬 랭크
-     * @param usageCount  현재 랭크 사용 횟수
-     * @param killCount   현재 랭크 막타 처치 수
+     * @param skillId 스킬 카탈로그 ID (skill.json 참조)
+     * @param rank 현재 스킬 랭크
+     * @param usageCount 현재 랭크 사용 횟수
+     * @param killCount 현재 랭크 막타 처치 수
      */
-    public CharacterSkill(final Long characterId, final String skillId,
-                          final SkillRank rank, final int usageCount, final int killCount) {
+    public CharacterSkill(
+            final Long characterId,
+            final String skillId,
+            final SkillRank rank,
+            final int usageCount,
+            final int killCount) {
         this.characterId = characterId;
         this.skillId = skillId;
         this.rank = rank;
@@ -70,7 +70,7 @@ public class CharacterSkill {
      * 신규 스킬을 F 랭크·카운트 0으로 생성한다.
      *
      * @param characterId 소유 캐릭터 ID
-     * @param skillId     스킬 카탈로그 ID
+     * @param skillId 스킬 카탈로그 ID
      * @return 초기 상태의 CharacterSkill
      */
     public static CharacterSkill newSkill(final Long characterId, final String skillId) {
@@ -131,16 +131,12 @@ public class CharacterSkill {
         return killCount;
     }
 
-    /**
-     * 사용 횟수를 1 증가시킨다.
-     */
+    /** 사용 횟수를 1 증가시킨다. */
     public void increaseUsage() {
         this.usageCount++;
     }
 
-    /**
-     * 막타 처치 수를 1 증가시킨다.
-     */
+    /** 막타 처치 수를 1 증가시킨다. */
     public void increaseKill() {
         this.killCount++;
     }
@@ -148,8 +144,8 @@ public class CharacterSkill {
     /**
      * 사용 횟수를 지정 값으로 설정한다 (임시 드라이버용).
      *
-     * <p>전투(7순위)의 실제 사용 이벤트({@code onSkillUsed})가 구현되면
-     * 이 메서드를 호출하는 임시 드라이버({@code dev/fill-usage})는 제거된다.
+     * <p>전투(7순위)의 실제 사용 이벤트({@code onSkillUsed})가 구현되면 이 메서드를 호출하는 임시 드라이버({@code dev/fill-usage})는
+     * 제거된다.
      *
      * @param usageCount 설정할 사용 횟수
      */
@@ -160,8 +156,8 @@ public class CharacterSkill {
     /**
      * 막타 처치 수를 지정 값으로 설정한다 (임시 드라이버용).
      *
-     * <p>전투(7순위)의 실제 막타 이벤트({@code onSkillKill})가 구현되면
-     * 이 메서드를 호출하는 임시 드라이버({@code dev/fill-kill})는 제거된다.
+     * <p>전투(7순위)의 실제 막타 이벤트({@code onSkillKill})가 구현되면 이 메서드를 호출하는 임시 드라이버({@code dev/fill-kill})는
+     * 제거된다.
      *
      * @param killCount 설정할 막타 처치 수
      */

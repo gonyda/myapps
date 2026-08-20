@@ -1,24 +1,22 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.constraints.IntRange;
-
-import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
-import com.myapps.web.myrpg.application.service.SkillService;
-import com.myapps.web.myrpg.application.service.InventoryService;
-import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
-import com.myapps.web.myrpg.domain.model.StatProgression;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
+import com.myapps.web.myrpg.application.service.InventoryService;
+import com.myapps.web.myrpg.application.service.SkillService;
+import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
+import com.myapps.web.myrpg.domain.model.StatProgression;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
+
 /**
  * Critical 표시 포맷 프로퍼티 테스트.
  *
- * <p>임의의 0.1% 단위 정수 {@code t ≥ 0}에서
- * {@code formatCritical(t)} = {@code "{t/10}.{t%10}%"} 공식을 검증한다.
+ * <p>임의의 0.1% 단위 정수 {@code t ≥ 0}에서 {@code formatCritical(t)} = {@code "{t/10}.{t%10}%"} 공식을 검증한다.
  *
  * <p>Feature: 003-character-progression-and-rebirth, Property 11: Critical 표시 포맷
  *
@@ -31,8 +29,12 @@ class CriticalFormatPropertyTest {
     CriticalFormatPropertyTest() {
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(
-                new ExperiencePolicy(), new StatProgression(), mock(SkillService.class), inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        new ExperiencePolicy(),
+                        new StatProgression(),
+                        mock(SkillService.class),
+                        inventoryService);
     }
 
     /**

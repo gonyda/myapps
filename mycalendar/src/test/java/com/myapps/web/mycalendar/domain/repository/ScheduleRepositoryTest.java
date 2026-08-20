@@ -1,24 +1,21 @@
 package com.myapps.web.mycalendar.domain.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.mycalendar.domain.model.Category;
+import com.myapps.web.mycalendar.domain.model.Schedule;
 import java.time.LocalDate;
 import java.util.List;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.mycalendar.domain.model.Category;
-import com.myapps.web.mycalendar.domain.model.Schedule;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * ScheduleRepository 통합 테스트.
  *
- * <p>{@code @DataJpaTest}를 활용한 슬라이스 테스트로, 월별 조회 쿼리와
- * 삭제 동작을 검증합니다.
+ * <p>{@code @DataJpaTest}를 활용한 슬라이스 테스트로, 월별 조회 쿼리와 삭제 동작을 검증합니다.
  */
 @DataJpaTest
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
@@ -27,8 +24,8 @@ class ScheduleRepositoryTest {
     private final TestEntityManager entityManager;
     private final ScheduleRepository scheduleRepository;
 
-    ScheduleRepositoryTest(final TestEntityManager entityManager,
-                           final ScheduleRepository scheduleRepository) {
+    ScheduleRepositoryTest(
+            final TestEntityManager entityManager, final ScheduleRepository scheduleRepository) {
         this.entityManager = entityManager;
         this.scheduleRepository = scheduleRepository;
     }
@@ -36,7 +33,8 @@ class ScheduleRepositoryTest {
     @Test
     @DisplayName("Single_Day_Schedule이 대상 월에 포함되면 월별 조회에 반환된다")
     void should_returnSchedule_when_singleDayScheduleInTargetMonth() {
-        final Schedule schedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 15), "7월 일정");
+        final Schedule schedule =
+                new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 15), "7월 일정");
         entityManager.persistAndFlush(schedule);
         entityManager.clear();
 
@@ -82,7 +80,8 @@ class ScheduleRepositoryTest {
     @Test
     @DisplayName("다른 월의 Single_Day_Schedule은 월별 조회에서 제외된다")
     void should_excludeSchedule_when_singleDayScheduleInDifferentMonth() {
-        final Schedule schedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 8, 10), "8월 일정");
+        final Schedule schedule =
+                new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 8, 10), "8월 일정");
         entityManager.persistAndFlush(schedule);
         entityManager.clear();
 

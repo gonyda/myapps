@@ -1,28 +1,24 @@
 package com.myapps.web.mycrawler.application.service;
 
-import java.time.LocalDateTime;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.myapps.web.mycrawler.domain.model.CrawlResult;
 import com.myapps.web.mycrawler.domain.model.CrawlStatus;
 import com.myapps.web.mycrawler.domain.model.CrawlTarget;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
 import com.myapps.web.mycrawler.infrastructure.crawler.CrawlerEngine;
+import java.time.LocalDateTime;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 /**
  * 크롤링 실행의 오케스트레이션 서비스.
  *
- * <p>지정된 타겟에 대해 개별 크롤링을 수행하고,
- * 최근 결과를 메모리에 보관합니다. 중복 실행을 방지하며,
- * 타겟 실패를 안전하게 처리합니다.
+ * <p>지정된 타겟에 대해 개별 크롤링을 수행하고, 최근 결과를 메모리에 보관합니다. 중복 실행을 방지하며, 타겟 실패를 안전하게 처리합니다.
  */
 @Service
 public class CrawlerService {
@@ -43,8 +39,7 @@ public class CrawlerService {
      * @param crawlerEngine 크롤링 실행 엔진
      * @param crawlerConfig 크롤러 설정
      */
-    public CrawlerService(final CrawlerEngine crawlerEngine,
-                          final CrawlerConfig crawlerConfig) {
+    public CrawlerService(final CrawlerEngine crawlerEngine, final CrawlerConfig crawlerConfig) {
         this.crawlerEngine = crawlerEngine;
         this.crawlerConfig = crawlerConfig;
     }
@@ -52,17 +47,18 @@ public class CrawlerService {
     /**
      * 특정 타겟에 대해 크롤링을 실행합니다.
      *
-     * <p>지정된 이름의 타겟을 유효 타겟 목록에서 찾아 크롤링합니다.
-     * 이미 실행 중이거나 타겟을 찾을 수 없는 경우 null을 반환합니다.
+     * <p>지정된 이름의 타겟을 유효 타겟 목록에서 찾아 크롤링합니다. 이미 실행 중이거나 타겟을 찾을 수 없는 경우 null을 반환합니다.
      *
-     * @param targetName    크롤링할 타겟의 이름
+     * @param targetName 크롤링할 타겟의 이름
      * @param triggerSource 크롤링 트리거 출처
      * @return 크롤링 결과, 실행 불가 시 null
      */
     public CrawlResult executeSingle(final String targetName, final TriggerSource triggerSource) {
         if (!running.compareAndSet(false, true)) {
-            log.warn("크롤링이 이미 실행 중입니다. 단일 실행 요청을 무시합니다. targetName={}, triggerSource={}",
-                    targetName, triggerSource);
+            log.warn(
+                    "크롤링이 이미 실행 중입니다. 단일 실행 요청을 무시합니다. targetName={}, triggerSource={}",
+                    targetName,
+                    triggerSource);
             return null;
         }
 
@@ -93,7 +89,8 @@ public class CrawlerService {
         return running.get();
     }
 
-    private CrawlResult performSingleCrawl(final String targetName, final TriggerSource triggerSource) {
+    private CrawlResult performSingleCrawl(
+            final String targetName, final TriggerSource triggerSource) {
         final List<CrawlTarget> targets = crawlerConfig.validTargets();
         final CrawlTarget target = findTargetByName(targets, targetName);
 
@@ -108,17 +105,24 @@ public class CrawlerService {
         return result;
     }
 
-    private CrawlResult crawlTargetSafely(final CrawlTarget target, final TriggerSource triggerSource) {
+    private CrawlResult crawlTargetSafely(
+            final CrawlTarget target, final TriggerSource triggerSource) {
         try {
             return crawlerEngine.crawl(target, triggerSource);
         } catch (final Exception exception) {
-            log.error("크롤링 중 예기치 않은 오류 발생. targetName={}, error={}",
-                    target.name(), exception.getMessage(), exception);
+            log.error(
+                    "크롤링 중 예기치 않은 오류 발생. targetName={}, error={}",
+                    target.name(),
+                    exception.getMessage(),
+                    exception);
             return createFailureResult(target, triggerSource, exception);
         }
     }
 
-    private CrawlResult createFailureResult(final CrawlTarget target, final TriggerSource triggerSource, final Exception exception) {
+    private CrawlResult createFailureResult(
+            final CrawlTarget target,
+            final TriggerSource triggerSource,
+            final Exception exception) {
         final LocalDateTime now = LocalDateTime.now();
         return new CrawlResult(
                 target.name(),
@@ -128,8 +132,7 @@ public class CrawlerService {
                 null,
                 exception.getMessage(),
                 now,
-                now
-        );
+                now);
     }
 
     private void addToRecentResults(final CrawlResult result) {

@@ -5,8 +5,8 @@ import java.util.Optional;
 /**
  * 스킬의 공격/방어 유형을 정의하는 열거형.
  *
- * <p>각 상수는 한글 라벨을 보유하며, 카탈로그 파싱 시 문자열에서 안전하게 변환할 수 있도록
- * {@link #fromString(String)} 팩토리를 제공한다. 미지 문자열은 빈 {@code Optional}을 반환한다.
+ * <p>각 상수는 한글 라벨을 보유하며, 카탈로그 파싱 시 문자열에서 안전하게 변환할 수 있도록 {@link #fromString(String)} 팩토리를 제공한다. 미지
+ * 문자열은 빈 {@code Optional}을 반환한다.
  */
 public enum SkillType {
 
@@ -37,8 +37,7 @@ public enum SkillType {
     /**
      * 문자열로부터 {@code SkillType}을 안전하게 조회한다.
      *
-     * <p>상수명 비교는 대소문자를 구분한다(예: "NORMAL"). {@code null}, 공백,
-     * 알려지지 않은 문자열이면 빈 {@code Optional}을 반환한다.
+     * <p>상수명 비교는 대소문자를 구분한다(예: "NORMAL"). {@code null}, 공백, 알려지지 않은 문자열이면 빈 {@code Optional}을 반환한다.
      *
      * @param value 조회할 스킬 타입 상수명
      * @return 유효한 상수명이면 해당 {@code SkillType}을 담은 {@code Optional}, 그 외 빈 값

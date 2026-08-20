@@ -1,9 +1,8 @@
 package com.myapps.web.mystudy.application.service;
 
+import java.util.Random;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Random;
 
 /**
  * 퀴즈 서비스 관련 Bean 설정.

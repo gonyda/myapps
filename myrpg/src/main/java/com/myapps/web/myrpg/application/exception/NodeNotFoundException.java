@@ -20,7 +20,7 @@ public class NodeNotFoundException extends RuntimeException {
      * 오류 메시지와 원인 예외를 포함하여 예외를 생성합니다.
      *
      * @param message 노드 조회 실패 상세 메시지
-     * @param cause   원인 예외
+     * @param cause 원인 예외
      */
     public NodeNotFoundException(final String message, final Throwable cause) {
         super(message, cause);

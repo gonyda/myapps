@@ -1,23 +1,21 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link MonsterType} 매핑 완전성을 검증하는 프로퍼티 테스트.
  *
- * <p>모든 {@link MonsterType} 상수에 대해 label/actionLabels가 비어 있지 않고,
- * badge가 타입별 규약을 준수하며, fromType 왕복 변환이 정확하고,
- * 미지/null 코드는 빈 Optional을 반환함을 검증한다.
+ * <p>모든 {@link MonsterType} 상수에 대해 label/actionLabels가 비어 있지 않고, badge가 타입별 규약을 준수하며, fromType 왕복
+ * 변환이 정확하고, 미지/null 코드는 빈 Optional을 반환함을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 1: 몬스터 타입 완전성
  *
@@ -26,8 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MonsterTypeCompletenessPropertyTest {
 
     /**
-     * 모든 MonsterType 상수의 label()은 비어 있지 않은 문자열이고,
-     * actionLabels()는 비어 있지 않은 목록임을 검증한다.
+     * 모든 MonsterType 상수의 label()은 비어 있지 않은 문자열이고, actionLabels()는 비어 있지 않은 목록임을 검증한다.
      *
      * @param monsterType 임의의 MonsterType 상수
      */
@@ -83,9 +80,7 @@ class MonsterTypeCompletenessPropertyTest {
         assertThat(result).isEmpty();
     }
 
-    /**
-     * null 입력에 대해 fromType은 빈 Optional을 반환함을 검증한다.
-     */
+    /** null 입력에 대해 fromType은 빈 Optional을 반환함을 검증한다. */
     @Property(tries = 100)
     void should_returnEmpty_when_fromTypeWithNull() {
         final Optional<MonsterType> result = MonsterType.fromType(null);
@@ -111,7 +106,10 @@ class MonsterTypeCompletenessPropertyTest {
     @Provide
     Arbitrary<String> unknownTypes() {
         final Set<String> validTypes = Set.of("normal", "boss");
-        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(20)
+        return Arbitraries.strings()
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(20)
                 .filter(type -> !validTypes.contains(type));
     }
 }

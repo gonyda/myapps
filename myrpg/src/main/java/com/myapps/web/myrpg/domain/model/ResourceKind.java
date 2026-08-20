@@ -3,8 +3,8 @@ package com.myapps.web.myrpg.domain.model;
 /**
  * 스킬 사용 시 소모되는 자원의 종류를 정의하는 열거형.
  *
- * <p>{@code MAGIC} 재능 스킬은 {@code MP}를, 그 외 재능 스킬은 {@code STAMINA}를 소모한다.
- * 자원 종류는 {@code SkillTalent}에서 파생되며 {@code skill.json}에 별도 저장하지 않는다.
+ * <p>{@code MAGIC} 재능 스킬은 {@code MP}를, 그 외 재능 스킬은 {@code STAMINA}를 소모한다. 자원 종류는 {@code
+ * SkillTalent}에서 파생되며 {@code skill.json}에 별도 저장하지 않는다.
  */
 public enum ResourceKind {
 

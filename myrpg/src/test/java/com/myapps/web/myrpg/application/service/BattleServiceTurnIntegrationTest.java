@@ -1,16 +1,13 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.DropResult;
 import com.myapps.web.myrpg.application.dto.DroppedItem;
@@ -36,23 +33,23 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 /**
  * 전투 턴 오케스트레이션 통합 테스트.
  *
- * <p>협력자 호출을 Mockito verify로 검증한다:
- * {@code onSkillUsed}/{@code onSkillKill}, {@code reduceDurability(0.05)},
- * {@code saveTurn} + {@code BattleState} 저장,
- * 처치 시 {@code rollDrop} → {@code acquire} → {@code gainExperience}.
+ * <p>협력자 호출을 Mockito verify로 검증한다: {@code onSkillUsed}/{@code onSkillKill}, {@code
+ * reduceDurability(0.05)}, {@code saveTurn} + {@code BattleState} 저장, 처치 시 {@code rollDrop} →
+ * {@code acquire} → {@code gainExperience}.
  *
  * <p><b>Validates: Requirements 10.2, 10.3, 10.5, 13.1, 14.1, 14.2</b>
  */
@@ -80,9 +77,7 @@ class BattleServiceTurnIntegrationTest {
     private ItemCatalogService itemCatalogService;
     private BattleService battleService;
 
-    /**
-     * 각 테스트 전에 모든 모의 객체를 생성하고 BattleService를 구성한다.
-     */
+    /** 각 테스트 전에 모든 모의 객체를 생성하고 BattleService를 구성한다. */
     @BeforeEach
     void setUp() {
         battleStateRepo = mock(BattleStateRepository.class);
@@ -116,25 +111,37 @@ class BattleServiceTurnIntegrationTest {
 
         characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
 
         itemCatalogService = mock(ItemCatalogService.class);
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
         final Random random = new Random(42L);
 
-        battleService = new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+        battleService =
+                new BattleService(
+                        battleStateRepo,
+                        resolver,
+                        monsterService,
+                        aiService,
+                        rewardService,
+                        skillService,
+                        inventoryService,
+                        progressionService,
+                        characterService,
+                        statProgression,
+                        actionLog,
+                        random,
+                        skillCatalogService,
+                        characterSkillRepo,
+                        itemCatalogService);
     }
 
-    /**
-     * 일반 턴에서 onSkillUsed가 호출되는지 검증한다.
-     */
+    /** 일반 턴에서 onSkillUsed가 호출되는지 검증한다. */
     @Test
     @DisplayName("턴 진행 시 onSkillUsed가 호출된다")
     void should_callOnSkillUsed_when_turnProgresses() {
@@ -147,9 +154,7 @@ class BattleServiceTurnIntegrationTest {
         verify(skillService).onSkillUsed(any(), eq(SKILL_ID));
     }
 
-    /**
-     * 몬스터 처치 시 onSkillKill이 호출되는지 검증한다.
-     */
+    /** 몬스터 처치 시 onSkillKill이 호출되는지 검증한다. */
     @Test
     @DisplayName("몬스터 처치 시 onSkillKill이 호출된다")
     void should_callOnSkillKill_when_monsterKilled() {
@@ -168,9 +173,7 @@ class BattleServiceTurnIntegrationTest {
         verify(skillService).onSkillKill(any(), eq(SKILL_ID));
     }
 
-    /**
-     * 비방어 스킬 사용 시 reduceDurabilityAndAutoUnequip(0.05)가 호출되는지 검증한다.
-     */
+    /** 비방어 스킬 사용 시 reduceDurabilityAndAutoUnequip(0.05)가 호출되는지 검증한다. */
     @Test
     @DisplayName("공격 스킬 사용 시 내구도 감소가 호출된다")
     void should_callReduceDurability_when_attackSkillUsed() {
@@ -180,13 +183,11 @@ class BattleServiceTurnIntegrationTest {
 
         battleService.takeTurn(progress, state, SKILL_ID);
 
-        verify(inventoryService).reduceDurabilityAndAutoUnequip(
-                eq(progress), eq(DURABILITY_PER_ATTACK));
+        verify(inventoryService)
+                .reduceDurabilityAndAutoUnequip(eq(progress), eq(DURABILITY_PER_ATTACK));
     }
 
-    /**
-     * 턴 진행 시 saveTurn과 BattleState가 저장되는지 검증한다.
-     */
+    /** 턴 진행 시 saveTurn과 BattleState가 저장되는지 검증한다. */
     @Test
     @DisplayName("턴 진행 시 saveTurn과 BattleState가 저장된다")
     void should_saveTurnAndBattleState_when_turnProgresses() {
@@ -200,9 +201,7 @@ class BattleServiceTurnIntegrationTest {
         verify(battleStateRepo).save(eq(state));
     }
 
-    /**
-     * 몬스터 처치 시 rollDrop → acquire → gainExperience 체인이 호출되는지 검증한다.
-     */
+    /** 몬스터 처치 시 rollDrop → acquire → gainExperience 체인이 호출되는지 검증한다. */
     @Test
     @DisplayName("몬스터 처치 시 보상 체인(rollDrop → acquire → gainExperience)이 호출된다")
     void should_processRewardChain_when_monsterKilled() {
@@ -224,9 +223,7 @@ class BattleServiceTurnIntegrationTest {
         assertThat(result.outcome()).isEqualTo(Outcome.WIN);
     }
 
-    /**
-     * 비처치 턴에서는 onSkillKill이 호출되지 않는지 검증한다.
-     */
+    /** 비처치 턴에서는 onSkillKill이 호출되지 않는지 검증한다. */
     @Test
     @DisplayName("비처치 턴에서 onSkillKill은 호출되지 않는다")
     void should_notCallOnSkillKill_when_monsterNotKilled() {
@@ -243,20 +240,32 @@ class BattleServiceTurnIntegrationTest {
 
     private CharacterProgress createProgress(final int hp) {
         return new CharacterProgress(
-                "전사", 10, 10, 100L, TalentType.MELEE, null,
-                hp, 100, 100, "dunbarton", 0, 500L);
+                "전사", 10, 10, 100L, TalentType.MELEE, null, hp, 100, 100, "dunbarton", 0, 500L);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, MONSTER_EXP, new GoldDrop(10, 20), List.of(),
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                MONSTER_EXP,
+                new GoldDrop(10, 20),
+                List.of(),
                 List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createDamageSkill() {
         return new DamageSkill(
-                SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 5,
+                SKILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                5,
                 createFullRankMap(100),
                 "테스트 스킬");
     }
@@ -270,6 +279,7 @@ class BattleServiceTurnIntegrationTest {
                 Map.entry(SkillRank.R7, baseValue + 80), Map.entry(SkillRank.R6, baseValue + 90),
                 Map.entry(SkillRank.R5, baseValue + 100), Map.entry(SkillRank.R4, baseValue + 110),
                 Map.entry(SkillRank.R3, baseValue + 120), Map.entry(SkillRank.R2, baseValue + 130),
-                Map.entry(SkillRank.R1, baseValue + 140), Map.entry(SkillRank.MASTER, baseValue + 150));
+                Map.entry(SkillRank.R1, baseValue + 140),
+                        Map.entry(SkillRank.MASTER, baseValue + 150));
     }
 }

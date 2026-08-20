@@ -1,7 +1,9 @@
 package com.myapps.web.myrpg.domain.model;
 
-import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -9,15 +11,11 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * 골드 증감 불변식 프로퍼티 테스트.
  *
- * <p>임의의 초기 골드와 gain/spend 시퀀스에 대해, {@code gainGold}/{@code spendGold} 후
- * 소지금이 항상 0 이상이며, 소모 금액이 보유량을 초과하면
- * {@link InsufficientGoldException}을 던지고 소지금을 변경하지 않음을 검증한다.
+ * <p>임의의 초기 골드와 gain/spend 시퀀스에 대해, {@code gainGold}/{@code spendGold} 후 소지금이 항상 0 이상이며, 소모 금액이
+ * 보유량을 초과하면 {@link InsufficientGoldException}을 던지고 소지금을 변경하지 않음을 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 1: 골드 증감 불변식
  *
@@ -69,8 +67,7 @@ class GoldGainSpendPropertyTest {
     }
 
     /**
-     * spendGold(amount > gold) 시 {@link InsufficientGoldException}이 발생하고
-     * 소지금이 변하지 않음을 검증한다.
+     * spendGold(amount > gold) 시 {@link InsufficientGoldException}이 발생하고 소지금이 변하지 않음을 검증한다.
      *
      * @param tuple (initialGold, spendAmount) 쌍: spendAmount ∈ [initialGold+1, initialGold+5000]
      */
@@ -90,42 +87,52 @@ class GoldGainSpendPropertyTest {
     }
 
     /**
-     * 초기 골드 [0, 10000] 범위에서 선택되고, 획득량이 [1, 5000] 범위인
-     * 유효 골드 획득 케이스를 생성하는 Arbitrary 제공자.
+     * 초기 골드 [0, 10000] 범위에서 선택되고, 획득량이 [1, 5000] 범위인 유효 골드 획득 케이스를 생성하는 Arbitrary 제공자.
      *
      * @return (initialGold, gainAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Long, Long>> validGain() {
-        return Arbitraries.longs().between(0L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(1L, MAX_AMOUNT)
-                        .map(gain -> Tuple.of(gold, gain)));
+        return Arbitraries.longs()
+                .between(0L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(1L, MAX_AMOUNT)
+                                        .map(gain -> Tuple.of(gold, gain)));
     }
 
     /**
-     * 초기 골드 [1, 10000] 범위에서 선택되고, 소모량이 [1, initialGold] 범위인
-     * 유효 골드 소모 케이스를 생성하는 Arbitrary 제공자.
+     * 초기 골드 [1, 10000] 범위에서 선택되고, 소모량이 [1, initialGold] 범위인 유효 골드 소모 케이스를 생성하는 Arbitrary 제공자.
      *
      * @return (initialGold, spendAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Long, Long>> validSpend() {
-        return Arbitraries.longs().between(1L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(1L, gold)
-                        .map(spend -> Tuple.of(gold, spend)));
+        return Arbitraries.longs()
+                .between(1L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(1L, gold)
+                                        .map(spend -> Tuple.of(gold, spend)));
     }
 
     /**
-     * 초기 골드 [0, 5000] 범위에서 선택되고, 소모량이 [initialGold+1, initialGold+5000] 범위인
-     * 초과 소모 케이스를 생성하는 Arbitrary 제공자.
+     * 초기 골드 [0, 5000] 범위에서 선택되고, 소모량이 [initialGold+1, initialGold+5000] 범위인 초과 소모 케이스를 생성하는
+     * Arbitrary 제공자.
      *
      * @return (initialGold, spendAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Long, Long>> overflowSpend() {
-        return Arbitraries.longs().between(0L, MAX_AMOUNT)
-                .flatMap(gold -> Arbitraries.longs().between(gold + 1L, gold + MAX_AMOUNT)
-                        .map(spend -> Tuple.of(gold, spend)));
+        return Arbitraries.longs()
+                .between(0L, MAX_AMOUNT)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(gold + 1L, gold + MAX_AMOUNT)
+                                        .map(spend -> Tuple.of(gold, spend)));
     }
 
     /**
@@ -136,18 +143,6 @@ class GoldGainSpendPropertyTest {
      */
     private CharacterProgress createProgressWithGold(final long gold) {
         return new CharacterProgress(
-                "테스트",
-                1,
-                1,
-                0L,
-                TalentType.MELEE,
-                null,
-                100,
-                100,
-                100,
-                "tir-chonaill",
-                0,
-                gold
-        );
+                "테스트", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, gold);
     }
 }

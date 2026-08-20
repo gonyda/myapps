@@ -1,5 +1,12 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -7,20 +14,12 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * {@link SkillRankupBonus}의 합산 로직이 재능별 주 스탯에만
- * {@code Σ(order × 1)}을 가산하고, Critical·바이탈 계열은 항상 0인지 검증하는 프로퍼티 테스트.
+ * {@link SkillRankupBonus}의 합산 로직이 재능별 주 스탯에만 {@code Σ(order × 1)}을 가산하고, Critical·바이탈 계열은 항상 0인지
+ * 검증하는 프로퍼티 테스트.
  *
- * <p>임의의 보유 스킬 집합(각각 임의 재능·랭크)을 생성하고, 계산 결과가 수식과 일치하는지 확인한다.
- * F(order 0)는 0 기여, MASTER(order 15)는 15 기여.
+ * <p>임의의 보유 스킬 집합(각각 임의 재능·랭크)을 생성하고, 계산 결과가 수식과 일치하는지 확인한다. F(order 0)는 0 기여, MASTER(order 15)는 15
+ * 기여.
  *
  * <p><b>Validates: Requirements 8.1, 8.2, 8.3, 8.4</b>
  */
@@ -31,8 +30,7 @@ class SkillRankupBonusPropertyTest {
     private final SkillRankupBonus bonus = new SkillRankupBonus();
 
     /**
-     * 임의의 보유 스킬 목록에 대해 합산된 STR/DEX/INT/DEF가
-     * 각 재능별 order 합과 일치하는지 검증한다.
+     * 임의의 보유 스킬 목록에 대해 합산된 STR/DEX/INT/DEF가 각 재능별 order 합과 일치하는지 검증한다.
      *
      * <p>각 스킬은 고유 ID를 가지므로 lookup 함수에서 재능 충돌이 없다.
      *
@@ -42,9 +40,10 @@ class SkillRankupBonusPropertyTest {
     void should_sumOrderByTalent_when_anyOwnedSkills(
             @ForAll("uniqueSkillEntries") final List<SkillEntry> entries) {
 
-        final List<CharacterSkill> owned = entries.stream()
-                .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
-                .toList();
+        final List<CharacterSkill> owned =
+                entries.stream()
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
 
@@ -80,9 +79,10 @@ class SkillRankupBonusPropertyTest {
     void should_haveCriticalZero_when_anyOwnedSkills(
             @ForAll("uniqueSkillEntries") final List<SkillEntry> entries) {
 
-        final List<CharacterSkill> owned = entries.stream()
-                .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
-                .toList();
+        final List<CharacterSkill> owned =
+                entries.stream()
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
 
@@ -105,9 +105,10 @@ class SkillRankupBonusPropertyTest {
             entries.add(new SkillEntry("skill_" + i, talents.get(i), SkillRank.F));
         }
 
-        final List<CharacterSkill> owned = entries.stream()
-                .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
-                .toList();
+        final List<CharacterSkill> owned =
+                entries.stream()
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
 
@@ -124,8 +125,8 @@ class SkillRankupBonusPropertyTest {
     @Property(tries = 100)
     void should_contribute15_when_rankIsMaster(@ForAll("anyTalent") final SkillTalent talent) {
         final SkillEntry entry = new SkillEntry("master_skill", talent, SkillRank.MASTER);
-        final List<CharacterSkill> owned = List.of(
-                new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0));
+        final List<CharacterSkill> owned =
+                List.of(new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0));
 
         final Function<String, Optional<Skill>> lookup = buildLookup(List.of(entry));
 
@@ -157,17 +158,21 @@ class SkillRankupBonusPropertyTest {
         if (size == 0) {
             return Arbitraries.just(List.of());
         }
-        final Arbitrary<List<SkillTalent>> talents = Arbitraries.of(SkillTalent.values())
-                .list().ofSize(size);
-        final Arbitrary<List<SkillRank>> ranks = Arbitraries.of(SkillRank.values())
-                .list().ofSize(size);
-        return Combinators.combine(talents, ranks).as((talentList, rankList) -> {
-            final List<SkillEntry> result = new java.util.ArrayList<>();
-            for (int i = 0; i < size; i++) {
-                result.add(new SkillEntry("skill_" + i, talentList.get(i), rankList.get(i)));
-            }
-            return List.copyOf(result);
-        });
+        final Arbitrary<List<SkillTalent>> talents =
+                Arbitraries.of(SkillTalent.values()).list().ofSize(size);
+        final Arbitrary<List<SkillRank>> ranks =
+                Arbitraries.of(SkillRank.values()).list().ofSize(size);
+        return Combinators.combine(talents, ranks)
+                .as(
+                        (talentList, rankList) -> {
+                            final List<SkillEntry> result = new java.util.ArrayList<>();
+                            for (int i = 0; i < size; i++) {
+                                result.add(
+                                        new SkillEntry(
+                                                "skill_" + i, talentList.get(i), rankList.get(i)));
+                            }
+                            return List.copyOf(result);
+                        });
     }
 
     /**
@@ -213,7 +218,7 @@ class SkillRankupBonusPropertyTest {
     /**
      * 테스트용 DamageSkill을 생성한다.
      *
-     * @param id     스킬 ID
+     * @param id 스킬 ID
      * @param talent 재능
      * @return 더미 multiplierByRank를 가진 DamageSkill
      */
@@ -229,9 +234,8 @@ class SkillRankupBonusPropertyTest {
      * 프로퍼티 테스트 입력을 표현하는 내부 record.
      *
      * @param skillId 스킬 ID
-     * @param talent  재능 분류
-     * @param rank    랭크
+     * @param talent 재능 분류
+     * @param rank 랭크
      */
-    record SkillEntry(String skillId, SkillTalent talent, SkillRank rank) {
-    }
+    record SkillEntry(String skillId, SkillTalent talent, SkillRank rank) {}
 }

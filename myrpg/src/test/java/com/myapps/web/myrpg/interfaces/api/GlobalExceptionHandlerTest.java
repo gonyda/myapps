@@ -1,5 +1,11 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.stereotype.Controller;
@@ -7,36 +13,26 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
 /**
  * {@link GlobalExceptionHandler}의 {@link InsufficientAbilityPointsException} 핸들러 동작 검증.
  *
- * <p>AP 부족으로 승급이 거부될 때 HTTP 400과 사용자 안내 메시지가 반환되는지 확인한다.
- * 스탠드얼론 MockMvc를 사용하여 전체 컨텍스트 로드 없이 핸들러 로직만 검증한다.
+ * <p>AP 부족으로 승급이 거부될 때 HTTP 400과 사용자 안내 메시지가 반환되는지 확인한다. 스탠드얼론 MockMvc를 사용하여 전체 컨텍스트 로드 없이 핸들러 로직만
+ * 검증한다.
  */
 class GlobalExceptionHandlerTest {
 
     private MockMvc mockMvc;
 
-    /**
-     * 테스트 컨트롤러와 {@link GlobalExceptionHandler}로 MockMvc를 구성한다.
-     */
+    /** 테스트 컨트롤러와 {@link GlobalExceptionHandler}로 MockMvc를 구성한다. */
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new TestController())
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+        mockMvc =
+                MockMvcBuilders.standaloneSetup(new TestController())
+                        .setControllerAdvice(new GlobalExceptionHandler())
+                        .build();
     }
 
-    /**
-     * InsufficientAbilityPointsException 발생 시 400 상태, error 뷰, 안내 메시지를 반환하는지 검증한다.
-     */
+    /** InsufficientAbilityPointsException 발생 시 400 상태, error 뷰, 안내 메시지를 반환하는지 검증한다. */
     @Test
     void should_returnBadRequestWithMessage_when_insufficientAbilityPoints() throws Exception {
         mockMvc.perform(get("/test/insufficient-ap"))

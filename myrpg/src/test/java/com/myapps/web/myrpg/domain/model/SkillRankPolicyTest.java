@@ -1,16 +1,13 @@
 package com.myapps.web.myrpg.domain.model;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * {@link SkillRankPolicy}의 요구치·AP 경계 예시 단위 테스트.
- */
+/** {@link SkillRankPolicy}의 요구치·AP 경계 예시 단위 테스트. */
 class SkillRankPolicyTest {
 
     private final SkillRankPolicy policy = new SkillRankPolicy();

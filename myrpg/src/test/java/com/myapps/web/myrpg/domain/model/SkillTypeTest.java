@@ -1,14 +1,11 @@
 package com.myapps.web.myrpg.domain.model;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * {@link SkillType}의 라벨 및 {@code fromString} 변환을 검증하는 단위 테스트.
- */
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+
+/** {@link SkillType}의 라벨 및 {@code fromString} 변환을 검증하는 단위 테스트. */
 class SkillTypeTest {
 
     @Test

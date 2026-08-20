@@ -1,21 +1,19 @@
 package com.myapps.web.myrpg.domain.service;
 
-import java.util.Random;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 감산형 기본피해 공식의 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>임의의 공격력·스킬배율·방어력 조합에 대해 {@link BattleResolver#baseDamage}가
- * {@code max(1, floor(attackPower × multiplier / 100) − defense)}와 동치이며,
- * 방어력이 산출 피해를 초과해도 항상 최소 1을 반환하는지 검증한다.
+ * <p>임의의 공격력·스킬배율·방어력 조합에 대해 {@link BattleResolver#baseDamage}가 {@code max(1, floor(attackPower ×
+ * multiplier / 100) − defense)}와 동치이며, 방어력이 산출 피해를 초과해도 항상 최소 1을 반환하는지 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 2: 감산형 기본피해·최소 1
  *
@@ -30,9 +28,9 @@ class BattleResolverBaseDamagePropertyTest {
     /**
      * baseDamage는 공식 max(1, floor(atk*mult/100) - def)과 동치인지 검증한다.
      *
-     * @param attackPower            공격력 (1~500)
+     * @param attackPower 공격력 (1~500)
      * @param skillMultiplierPercent 스킬 배율% (50~300)
-     * @param targetDefense          대상 방어력 (0~300)
+     * @param targetDefense 대상 방어력 (0~300)
      */
     @Property(tries = 100)
     void should_matchFormula_when_anyValidInputs(
@@ -41,8 +39,10 @@ class BattleResolverBaseDamagePropertyTest {
             @ForAll("defenses") final int targetDefense) {
 
         final int actual = resolver.baseDamage(attackPower, skillMultiplierPercent, targetDefense);
-        final int expected = Math.max(1,
-                Math.floorDiv(attackPower * skillMultiplierPercent, 100) - targetDefense);
+        final int expected =
+                Math.max(
+                        1,
+                        Math.floorDiv(attackPower * skillMultiplierPercent, 100) - targetDefense);
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -50,9 +50,9 @@ class BattleResolverBaseDamagePropertyTest {
     /**
      * baseDamage는 항상 1 이상을 반환하는지 검증한다.
      *
-     * @param attackPower            공격력 (1~500)
+     * @param attackPower 공격력 (1~500)
      * @param skillMultiplierPercent 스킬 배율% (50~300)
-     * @param targetDefense          대상 방어력 (0~1000)
+     * @param targetDefense 대상 방어력 (0~1000)
      */
     @Property(tries = 100)
     void should_returnAtLeastOne_when_defenseExceedsDamage(
@@ -68,7 +68,7 @@ class BattleResolverBaseDamagePropertyTest {
     /**
      * 방어력이 원시 피해를 초과하면 정확히 1을 반환하는지 검증한다.
      *
-     * @param attackPower            공격력 (1~100)
+     * @param attackPower 공격력 (1~100)
      * @param skillMultiplierPercent 스킬 배율% (50~150)
      */
     @Property(tries = 100)

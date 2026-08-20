@@ -1,30 +1,25 @@
 package com.myapps.web.myrpg.domain.repository;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.myrpg.domain.model.BattleState;
+import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.model.BattleState;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 전투 상태 영속 왕복 프로퍼티 테스트.
  *
- * <p>{@code @DataJpaTest} 슬라이스와 jqwik {@code @Property}를 결합하여,
- * 임의의 유효한 {@link BattleState}를 저장 후 조회하면 모든 필드가 보존되는지,
- * {@link BattleStateRepository#findByCharacterIdAndActiveTrue(long)}가
- * 활성 전투만 반환하는지 검증한다.
+ * <p>{@code @DataJpaTest} 슬라이스와 jqwik {@code @Property}를 결합하여, 임의의 유효한 {@link BattleState}를 저장 후
+ * 조회하면 모든 필드가 보존되는지, {@link BattleStateRepository#findByCharacterIdAndActiveTrue(long)}가 활성 전투만
+ * 반환하는지 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 18: 전투 상태 영속 왕복
  *
@@ -47,8 +42,9 @@ class BattleStateRepositoryTest {
     private final BattleStateRepository battleStateRepository;
     private final TestEntityManager entityManager;
 
-    BattleStateRepositoryTest(final BattleStateRepository battleStateRepository,
-                              final TestEntityManager entityManager) {
+    BattleStateRepositoryTest(
+            final BattleStateRepository battleStateRepository,
+            final TestEntityManager entityManager) {
         this.battleStateRepository = battleStateRepository;
         this.entityManager = entityManager;
     }
@@ -58,10 +54,10 @@ class BattleStateRepositoryTest {
     /**
      * 임의의 유효한 BattleState를 저장→재조회 시 모든 필드가 보존되는지 검증한다.
      *
-     * @param characterId    캐릭터 ID
-     * @param monsterId      몬스터 식별자
+     * @param characterId 캐릭터 ID
+     * @param monsterId 몬스터 식별자
      * @param monsterCurrentHp 몬스터 현재 HP
-     * @param ambush         기습 여부
+     * @param ambush 기습 여부
      */
     @Property(tries = 100)
     void should_preserveAllFields_when_savedAndRetrieved(
@@ -88,11 +84,10 @@ class BattleStateRepositoryTest {
     }
 
     /**
-     * 동일 캐릭터에 활성·비활성 전투가 있을 때
-     * {@code findByCharacterIdAndActiveTrue}가 활성 전투만 반환하는지 검증한다.
+     * 동일 캐릭터에 활성·비활성 전투가 있을 때 {@code findByCharacterIdAndActiveTrue}가 활성 전투만 반환하는지 검증한다.
      *
-     * @param characterId    캐릭터 ID
-     * @param monsterId      몬스터 식별자
+     * @param characterId 캐릭터 ID
+     * @param monsterId 몬스터 식별자
      * @param monsterCurrentHp 몬스터 현재 HP
      */
     @Property(tries = 100)
@@ -101,15 +96,18 @@ class BattleStateRepositoryTest {
             @ForAll("monsterIds") final String monsterId,
             @ForAll("monsterHps") final int monsterCurrentHp) {
 
-        final BattleState activeState = new BattleState(characterId, monsterId, monsterCurrentHp, false);
+        final BattleState activeState =
+                new BattleState(characterId, monsterId, monsterCurrentHp, false);
         entityManager.persistAndFlush(activeState);
 
-        final BattleState inactiveState = new BattleState(characterId, monsterId, monsterCurrentHp, true);
+        final BattleState inactiveState =
+                new BattleState(characterId, monsterId, monsterCurrentHp, true);
         inactiveState.setActive(false);
         entityManager.persistAndFlush(inactiveState);
         entityManager.clear();
 
-        final Optional<BattleState> result = battleStateRepository.findByCharacterIdAndActiveTrue(characterId);
+        final Optional<BattleState> result =
+                battleStateRepository.findByCharacterIdAndActiveTrue(characterId);
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(activeState.getId());
@@ -117,11 +115,10 @@ class BattleStateRepositoryTest {
     }
 
     /**
-     * 비활성 전투만 있을 때 {@code findByCharacterIdAndActiveTrue}가
-     * 빈 {@code Optional}을 반환하는지 검증한다.
+     * 비활성 전투만 있을 때 {@code findByCharacterIdAndActiveTrue}가 빈 {@code Optional}을 반환하는지 검증한다.
      *
-     * @param characterId    캐릭터 ID
-     * @param monsterId      몬스터 식별자
+     * @param characterId 캐릭터 ID
+     * @param monsterId 몬스터 식별자
      * @param monsterCurrentHp 몬스터 현재 HP
      */
     @Property(tries = 100)
@@ -130,25 +127,26 @@ class BattleStateRepositoryTest {
             @ForAll("monsterIds") final String monsterId,
             @ForAll("monsterHps") final int monsterCurrentHp) {
 
-        final BattleState inactiveState = new BattleState(characterId, monsterId, monsterCurrentHp, false);
+        final BattleState inactiveState =
+                new BattleState(characterId, monsterId, monsterCurrentHp, false);
         inactiveState.setActive(false);
         entityManager.persistAndFlush(inactiveState);
         entityManager.clear();
 
-        final Optional<BattleState> result = battleStateRepository.findByCharacterIdAndActiveTrue(characterId);
+        final Optional<BattleState> result =
+                battleStateRepository.findByCharacterIdAndActiveTrue(characterId);
 
         assertThat(result).isEmpty();
     }
 
     /**
-     * 저장 후 monsterCurrentHp와 turnCount를 수정·재저장하면
-     * 재조회 시 갱신된 값이 보존되는지 검증한다.
+     * 저장 후 monsterCurrentHp와 turnCount를 수정·재저장하면 재조회 시 갱신된 값이 보존되는지 검증한다.
      *
-     * @param characterId    캐릭터 ID
-     * @param monsterId      몬스터 식별자
+     * @param characterId 캐릭터 ID
+     * @param monsterId 몬스터 식별자
      * @param monsterCurrentHp 초기 몬스터 HP
-     * @param updatedHp      갱신할 몬스터 HP
-     * @param updatedTurn    갱신할 턴 수
+     * @param updatedHp 갱신할 몬스터 HP
+     * @param updatedTurn 갱신할 턴 수
      */
     @Property(tries = 100)
     void should_persistUpdatedValues_when_hpAndTurnCountModified(

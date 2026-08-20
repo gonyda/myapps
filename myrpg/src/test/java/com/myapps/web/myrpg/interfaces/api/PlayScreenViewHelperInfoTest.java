@@ -1,15 +1,14 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.time.Duration;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
-import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -18,18 +17,16 @@ import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.VitalMax;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link PlayScreenViewHelper#buildInfo(CharacterProgress, RebirthStatus)} 단위 테스트.
  *
- * <p>StatLine 형식, 재능 라벨, 환생 경과/기록 없음 텍스트, AP 매핑,
- * 재능 효과 요약 매핑, 재능 반영 중앙 스탯, 바이탈별 게이지 max,
- * 스킬 랭크업 보너스 (+X) 반영을 검증한다.
+ * <p>StatLine 형식, 재능 라벨, 환생 경과/기록 없음 텍스트, AP 매핑, 재능 효과 요약 매핑, 재능 반영 중앙 스탯, 바이탈별 게이지 max, 스킬 랭크업 보너스
+ * (+X) 반영을 검증한다.
  *
  * <p><b>Validates: Requirements 4.1, 4.3, 8.4, 8.5, 8.6, 10.2, 10.3, 10.7</b>
  */
@@ -45,7 +42,12 @@ class PlayScreenViewHelperInfoTest {
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
         inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        new ExperiencePolicy(),
+                        new StatProgression(),
+                        skillService,
+                        inventoryService);
     }
 
     @Test
@@ -69,19 +71,20 @@ class PlayScreenViewHelperInfoTest {
     @Test
     void should_buildStatLines_when_higherLevelCharacter() {
         // Lv10 MELEE: STR=10+3*9+2*9=55, DEX=10+3*9=37, INT=37, CRIT=50+3*9=77(=7.7%), DEF=5+1*9=14
-        final CharacterProgress progress = new CharacterProgress(
-                "고니",
-                10,
-                10,
-                0L,
-                TalentType.MELEE,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                0, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        10,
+                        10,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        0,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -106,19 +109,20 @@ class PlayScreenViewHelperInfoTest {
 
     @Test
     void should_showTalentLabel_when_archeryTalent() {
-        final CharacterProgress progress = new CharacterProgress(
-                "궁수",
-                5,
-                5,
-                0L,
-                TalentType.ARCHERY,
-                null,
-                140,
-                140,
-                140,
-                "tir-chonaill",
-                0, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "궁수",
+                        5,
+                        5,
+                        0L,
+                        TalentType.ARCHERY,
+                        null,
+                        140,
+                        140,
+                        140,
+                        "tir-chonaill",
+                        0,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -163,19 +167,20 @@ class PlayScreenViewHelperInfoTest {
 
     @Test
     void should_showNicknameAndLevels_when_buildInfo() {
-        final CharacterProgress progress = new CharacterProgress(
-                "전사",
-                15,
-                30,
-                500L,
-                TalentType.MAGIC,
-                null,
-                240,
-                240,
-                240,
-                "dunbarton",
-                0, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        15,
+                        30,
+                        500L,
+                        TalentType.MAGIC,
+                        null,
+                        240,
+                        240,
+                        240,
+                        "dunbarton",
+                        0,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -189,19 +194,20 @@ class PlayScreenViewHelperInfoTest {
     @Test
     void should_buildVitalGauges_when_buildInfo() {
         // Lv5 MELEE: HP max = 100 + 10*4 + 5*4 = 160, MP/Stamina max = 100 + 10*4 = 140
-        final CharacterProgress progress = new CharacterProgress(
-                "고니",
-                5,
-                5,
-                0L,
-                TalentType.MELEE,
-                null,
-                70,
-                100,
-                140,
-                "tir-chonaill",
-                0, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        5,
+                        5,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        70,
+                        100,
+                        140,
+                        "tir-chonaill",
+                        0,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -223,19 +229,20 @@ class PlayScreenViewHelperInfoTest {
      */
     @Test
     void should_mapAbilityPoints_when_buildInfo() {
-        final CharacterProgress progress = new CharacterProgress(
-                "전사",
-                10,
-                15,
-                0L,
-                TalentType.MELEE,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                14, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        15,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        14,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -251,19 +258,9 @@ class PlayScreenViewHelperInfoTest {
      */
     @Test
     void should_mapTalentEffectSummary_when_buildInfo() {
-        final CharacterProgress progress = new CharacterProgress(
-                "마법사",
-                5,
-                5,
-                0L,
-                TalentType.MAGIC,
-                null,
-                140,
-                140,
-                140,
-                "dunbarton",
-                4, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "마법사", 5, 5, 0L, TalentType.MAGIC, null, 140, 140, 140, "dunbarton", 4, 0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -275,27 +272,28 @@ class PlayScreenViewHelperInfoTest {
     /**
      * ARCHERY Lv.10 재능 반영 중앙 스탯 본체를 검증한다.
      *
-     * <p>ARCHERY Lv.10: STR=37, DEX=55, INT=37, CRIT=86(="8.6%"), DEF=14.
-     * 주 스탯(DEX)과 보조(CRITICAL)에 재능 보너스가 반영된다.
+     * <p>ARCHERY Lv.10: STR=37, DEX=55, INT=37, CRIT=86(="8.6%"), DEF=14. 주 스탯(DEX)과 보조(CRITICAL)에
+     * 재능 보너스가 반영된다.
      *
      * <p><b>Validates: Requirements 4.1, 8.4</b>
      */
     @Test
     void should_reflectTalentInStats_when_archeryLevel10() {
         // ARCHERY Lv10: DEX=10+3*9+2*9=55, CRIT=50+3*9+1*9=86(=8.6%), STR/INT=37, DEF=14
-        final CharacterProgress progress = new CharacterProgress(
-                "궁수",
-                10,
-                10,
-                0L,
-                TalentType.ARCHERY,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                9, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "궁수",
+                        10,
+                        10,
+                        0L,
+                        TalentType.ARCHERY,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        9,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -321,19 +319,20 @@ class PlayScreenViewHelperInfoTest {
         final StatProgression statProgression = new StatProgression();
         final VitalMax expectedMax = statProgression.vitalMaxFor(10, TalentType.MAGIC);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "마법사",
-                10,
-                10,
-                0L,
-                TalentType.MAGIC,
-                null,
-                180,
-                200,
-                150,
-                "dunbarton",
-                9, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "마법사",
+                        10,
+                        10,
+                        0L,
+                        TalentType.MAGIC,
+                        null,
+                        180,
+                        200,
+                        150,
+                        "dunbarton",
+                        9,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -358,19 +357,20 @@ class PlayScreenViewHelperInfoTest {
         final StatProgression statProgression = new StatProgression();
         final VitalMax expectedMax = statProgression.vitalMaxFor(10, TalentType.ARCHERY);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "궁수",
-                10,
-                10,
-                0L,
-                TalentType.ARCHERY,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                9, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "궁수",
+                        10,
+                        10,
+                        0L,
+                        TalentType.ARCHERY,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        9,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -415,19 +415,20 @@ class PlayScreenViewHelperInfoTest {
         final Stats bonus = new Stats(3, 0, 0, 0, 2);
         when(skillService.rankupBonus(any())).thenReturn(bonus);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "전사",
-                10,
-                10,
-                0L,
-                TalentType.MELEE,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                6, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        10,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        6,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -441,8 +442,7 @@ class PlayScreenViewHelperInfoTest {
     }
 
     /**
-     * 기본 장착 장비(한손검 STR+5, 방패 DEF+5, 갑옷 DEF+5)의 STAT 보너스가
-     * StatLine 보너스에 합산되어 반영됨을 검증한다.
+     * 기본 장착 장비(한손검 STR+5, 방패 DEF+5, 갑옷 DEF+5)의 STAT 보너스가 StatLine 보너스에 합산되어 반영됨을 검증한다.
      *
      * <p>스킬 보너스 0 + 장비 STAT 보너스(STR+5, DEF+10) → "+5"/"+10" 표시.
      *
@@ -452,8 +452,8 @@ class PlayScreenViewHelperInfoTest {
     void should_reflectEquipStatBonus_when_defaultSeedEquipment() {
         final Stats equipStatBonus = new Stats(5, 0, 0, 0, 10);
         final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
-        when(inventoryService.equippedBonus()).thenReturn(
-                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+        when(inventoryService.equippedBonus())
+                .thenReturn(new EquippedBonusResult(equipStatBonus, equipVitalBonus));
 
         final CharacterProgress progress = CharacterProgress.createDefault();
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
@@ -482,22 +482,23 @@ class PlayScreenViewHelperInfoTest {
 
         final Stats equipStatBonus = new Stats(5, 0, 0, 0, 10);
         final VitalMax equipVitalBonus = new VitalMax(0, 0, 0);
-        when(inventoryService.equippedBonus()).thenReturn(
-                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+        when(inventoryService.equippedBonus())
+                .thenReturn(new EquippedBonusResult(equipStatBonus, equipVitalBonus));
 
-        final CharacterProgress progress = new CharacterProgress(
-                "전사",
-                10,
-                10,
-                0L,
-                TalentType.MELEE,
-                null,
-                190,
-                190,
-                190,
-                "tir-chonaill",
-                6, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        10,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        190,
+                        190,
+                        190,
+                        "tir-chonaill",
+                        6,
+                        0L);
         final RebirthStatus status = new RebirthStatus(true, false, null, null);
 
         final InfoPopupView info = helper.buildInfo(progress, status);
@@ -513,8 +514,8 @@ class PlayScreenViewHelperInfoTest {
     /**
      * 장비 VITAL 보너스가 게이지 최대값에 합산됨을 검증한다.
      *
-     * <p>Lv.1 MELEE: 기본 HP=100, MP=100, Stamina=100.
-     * 장비 VITAL 보너스(HP+20, MP+10, Stamina+5) → HP max=120, MP max=110, Stamina max=105.
+     * <p>Lv.1 MELEE: 기본 HP=100, MP=100, Stamina=100. 장비 VITAL 보너스(HP+20, MP+10, Stamina+5) → HP
+     * max=120, MP max=110, Stamina max=105.
      *
      * <p><b>Validates: Requirements 10.4, 10.5</b>
      */
@@ -522,8 +523,8 @@ class PlayScreenViewHelperInfoTest {
     void should_addVitalBonusToGaugeMax_when_equipmentHasVitalBonus() {
         final Stats equipStatBonus = Stats.ZERO;
         final VitalMax equipVitalBonus = new VitalMax(20, 10, 5);
-        when(inventoryService.equippedBonus()).thenReturn(
-                new EquippedBonusResult(equipStatBonus, equipVitalBonus));
+        when(inventoryService.equippedBonus())
+                .thenReturn(new EquippedBonusResult(equipStatBonus, equipVitalBonus));
 
         final CharacterProgress progress = CharacterProgress.createDefault();
         final RebirthStatus status = new RebirthStatus(true, false, null, null);

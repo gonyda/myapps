@@ -1,15 +1,9 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.List;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-
-import org.mockito.Mockito;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.ActionButton;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
@@ -25,18 +19,20 @@ import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.List;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Combinators;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import org.mockito.Mockito;
 
 /**
  * 몬스터 행동 버튼 조립 프로퍼티 테스트.
  *
- * <p>임의 Monster에 대해 {@link PlayScreenViewHelper#buildPlayScreen}이
- * TalkTarget.ofMonster를 통해 생성하는 {@code monsterActions} 라벨 목록이
- * {@code MonsterType.actionLabels()}와 개수·순서·값이 정확히 일치함을 검증한다.
+ * <p>임의 Monster에 대해 {@link PlayScreenViewHelper#buildPlayScreen}이 TalkTarget.ofMonster를 통해 생성하는
+ * {@code monsterActions} 라벨 목록이 {@code MonsterType.actionLabels()}와 개수·순서·값이 정확히 일치함을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 10: 몬스터 행동 버튼 조립
  *
@@ -53,14 +49,17 @@ class MonsterActionButtonsPropertyTest {
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(
-                new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        new ExperiencePolicy(),
+                        new StatProgression(),
+                        skillService,
+                        inventoryService);
     }
 
     /**
-     * 임의 Monster를 TalkTarget.ofMonster로 전달했을 때, 반환되는
-     * {@code monsterActions} 라벨 목록이 해당 몬스터 타입의 {@code actionLabels()}와
-     * 개수·순서·값이 정확히 동일함을 검증한다.
+     * 임의 Monster를 TalkTarget.ofMonster로 전달했을 때, 반환되는 {@code monsterActions} 라벨 목록이 해당 몬스터 타입의
+     * {@code actionLabels()}와 개수·순서·값이 정확히 동일함을 검증한다.
      *
      * @param monster 임의 생성된 몬스터
      */
@@ -73,17 +72,16 @@ class MonsterActionButtonsPropertyTest {
         final List<String> expectedLabels = monster.type().actionLabels();
 
         // When
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, null, null, null, null, talkTarget, List.of(), null);
+        final PlayScreenView view =
+                helper.buildPlayScreen(
+                        progress, null, null, null, null, talkTarget, List.of(), null);
 
         // Then
         final List<ActionButton> monsterActions = view.monsterActions();
         assertThat(monsterActions).isNotNull();
         assertThat(monsterActions).hasSize(expectedLabels.size());
 
-        final List<String> actualLabels = monsterActions.stream()
-                .map(ActionButton::label)
-                .toList();
+        final List<String> actualLabels = monsterActions.stream().map(ActionButton::label).toList();
         assertThat(actualLabels).isEqualTo(expectedLabels);
     }
 
@@ -110,10 +108,8 @@ class MonsterActionButtonsPropertyTest {
     }
 
     private Arbitrary<Monster> monsterArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(3).ofMaxLength(10);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(2).ofMaxLength(8);
+        final Arbitrary<String> ids = Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(10);
+        final Arbitrary<String> names = Arbitraries.strings().alpha().ofMinLength(2).ofMaxLength(8);
         final Arbitrary<MonsterType> types = Arbitraries.of(MonsterType.values());
         final Arbitrary<Integer> levels = Arbitraries.integers().between(1, 50);
         final Arbitrary<Integer> maxHps = Arbitraries.integers().between(1, 500);
@@ -122,22 +118,43 @@ class MonsterActionButtonsPropertyTest {
         final Arbitrary<Integer> criticals = Arbitraries.integers().between(0, 200);
         final Arbitrary<Long> experiences = Arbitraries.longs().between(1L, 1000L);
         final Arbitrary<GoldDrop> goldDrops = goldDropArbitrary();
-        final Arbitrary<List<String>> lines = Arbitraries.strings()
-                .alpha().ofMinLength(1).ofMaxLength(20)
-                .list().ofSize(LINES_COUNT);
+        final Arbitrary<List<String>> lines =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(1)
+                        .ofMaxLength(20)
+                        .list()
+                        .ofSize(LINES_COUNT);
 
-        return Combinators.combine(ids, names, types, levels, maxHps, attackPowers, defenses, criticals)
-                .flatAs((id, name, type, level, maxHp, attackPower, defense, critical) ->
-                        Combinators.combine(experiences, goldDrops, lines)
-                                .as((experience, goldDrop, lineList) ->
-                                        new Monster(id, name, type, level, maxHp, attackPower,
-                                                defense, critical, experience, goldDrop,
-                                                List.of(), lineList)));
+        return Combinators.combine(
+                        ids, names, types, levels, maxHps, attackPowers, defenses, criticals)
+                .flatAs(
+                        (id, name, type, level, maxHp, attackPower, defense, critical) ->
+                                Combinators.combine(experiences, goldDrops, lines)
+                                        .as(
+                                                (experience, goldDrop, lineList) ->
+                                                        new Monster(
+                                                                id,
+                                                                name,
+                                                                type,
+                                                                level,
+                                                                maxHp,
+                                                                attackPower,
+                                                                defense,
+                                                                critical,
+                                                                experience,
+                                                                goldDrop,
+                                                                List.of(),
+                                                                lineList)));
     }
 
     private Arbitrary<GoldDrop> goldDropArbitrary() {
-        return Arbitraries.integers().between(0, 50)
-                .flatMap(min -> Arbitraries.integers().between(min, min + 50)
-                        .map(max -> new GoldDrop(min, max)));
+        return Arbitraries.integers()
+                .between(0, 50)
+                .flatMap(
+                        min ->
+                                Arbitraries.integers()
+                                        .between(min, min + 50)
+                                        .map(max -> new GoldDrop(min, max)));
     }
 }

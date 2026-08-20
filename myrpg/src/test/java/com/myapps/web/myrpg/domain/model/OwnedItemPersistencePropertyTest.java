@@ -1,28 +1,25 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.List;
 import java.util.Optional;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * OwnedItem 엔티티의 영속 라운드트립 프로퍼티 테스트.
  *
- * <p>저장 후 조회 시 itemId·quantity·storage·equipped·currentDurability가
- * 모두 보존되는지 검증하며, 리포지토리 쿼리 메서드의 정확성도 확인한다.
+ * <p>저장 후 조회 시 itemId·quantity·storage·equipped·currentDurability가 모두 보존되는지 검증하며, 리포지토리 쿼리 메서드의
+ * 정확성도 확인한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 17: 영속 라운드트립
  *
@@ -43,8 +40,8 @@ class OwnedItemPersistencePropertyTest {
     private final TestEntityManager entityManager;
     private final OwnedItemRepository repository;
 
-    OwnedItemPersistencePropertyTest(final TestEntityManager entityManager,
-                                     final OwnedItemRepository repository) {
+    OwnedItemPersistencePropertyTest(
+            final TestEntityManager entityManager, final OwnedItemRepository repository) {
         this.entityManager = entityManager;
         this.repository = repository;
     }
@@ -52,13 +49,13 @@ class OwnedItemPersistencePropertyTest {
     // Feature: 006-gold-item-inventory, Property 17: 영속 라운드트립
 
     /**
-     * 임의의 유효한 OwnedItem을 저장 후 findById로 조회하면
-     * itemId·quantity·storage·equipped·currentDurability가 모두 보존되는지 검증한다.
+     * 임의의 유효한 OwnedItem을 저장 후 findById로 조회하면 itemId·quantity·storage·equipped·currentDurability가 모두
+     * 보존되는지 검증한다.
      *
-     * @param itemId            임의 아이템 카탈로그 ID
-     * @param quantity          보유 수량
-     * @param storage           저장 위치
-     * @param equipped          장착 여부
+     * @param itemId 임의 아이템 카탈로그 ID
+     * @param quantity 보유 수량
+     * @param storage 저장 위치
+     * @param equipped 장착 여부
      * @param currentDurability 현재 내구도
      */
     @Property(tries = 100)
@@ -71,7 +68,8 @@ class OwnedItemPersistencePropertyTest {
 
         final boolean effectiveEquipped = resolveEquipped(storage, equipped);
 
-        final OwnedItem item = new OwnedItem(itemId, quantity, storage, effectiveEquipped, currentDurability);
+        final OwnedItem item =
+                new OwnedItem(itemId, quantity, storage, effectiveEquipped, currentDurability);
 
         entityManager.persistAndFlush(item);
         final Long savedId = item.getId();
@@ -88,12 +86,11 @@ class OwnedItemPersistencePropertyTest {
     }
 
     /**
-     * 지정 저장 위치에 여러 아이템을 저장 후 findByStorageOrderById로 조회하면
-     * 해당 저장소 아이템만 ID 오름차순으로 반환되는지 검증한다.
+     * 지정 저장 위치에 여러 아이템을 저장 후 findByStorageOrderById로 조회하면 해당 저장소 아이템만 ID 오름차순으로 반환되는지 검증한다.
      *
-     * @param itemId1   첫 번째 아이템 ID
-     * @param itemId2   두 번째 아이템 ID
-     * @param quantity  보유 수량
+     * @param itemId1 첫 번째 아이템 ID
+     * @param itemId2 두 번째 아이템 ID
+     * @param quantity 보유 수량
      * @param durability 현재 내구도
      */
     @Property(tries = 100)
@@ -103,16 +100,20 @@ class OwnedItemPersistencePropertyTest {
             @ForAll("quantities") final int quantity,
             @ForAll("durabilities") final double durability) {
 
-        final OwnedItem inventoryItem1 = new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, false, durability);
-        final OwnedItem inventoryItem2 = new OwnedItem(itemId2, quantity, StorageKind.INVENTORY, false, durability);
-        final OwnedItem bankItem = new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
+        final OwnedItem inventoryItem1 =
+                new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, false, durability);
+        final OwnedItem inventoryItem2 =
+                new OwnedItem(itemId2, quantity, StorageKind.INVENTORY, false, durability);
+        final OwnedItem bankItem =
+                new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
 
         entityManager.persistAndFlush(inventoryItem1);
         entityManager.persistAndFlush(inventoryItem2);
         entityManager.persistAndFlush(bankItem);
         entityManager.clear();
 
-        final List<OwnedItem> inventoryItems = repository.findByStorageOrderById(StorageKind.INVENTORY);
+        final List<OwnedItem> inventoryItems =
+                repository.findByStorageOrderById(StorageKind.INVENTORY);
 
         assertThat(inventoryItems).hasSize(2);
         assertThat(inventoryItems).allMatch(i -> i.getStorage() == StorageKind.INVENTORY);
@@ -122,8 +123,8 @@ class OwnedItemPersistencePropertyTest {
     /**
      * 지정 저장 위치와 itemId로 조회 시 정확한 아이템이 반환되는지 검증한다.
      *
-     * @param itemId    대상 아이템 ID
-     * @param quantity  보유 수량
+     * @param itemId 대상 아이템 ID
+     * @param quantity 보유 수량
      * @param durability 현재 내구도
      */
     @Property(tries = 100)
@@ -132,11 +133,13 @@ class OwnedItemPersistencePropertyTest {
             @ForAll("quantities") final int quantity,
             @ForAll("durabilities") final double durability) {
 
-        final OwnedItem inventoryItem = new OwnedItem(itemId, quantity, StorageKind.INVENTORY, false, durability);
+        final OwnedItem inventoryItem =
+                new OwnedItem(itemId, quantity, StorageKind.INVENTORY, false, durability);
         entityManager.persistAndFlush(inventoryItem);
         entityManager.clear();
 
-        final Optional<OwnedItem> found = repository.findByStorageAndItemId(StorageKind.INVENTORY, itemId);
+        final Optional<OwnedItem> found =
+                repository.findByStorageAndItemId(StorageKind.INVENTORY, itemId);
 
         assertThat(found).isPresent();
         assertThat(found.get().getItemId()).isEqualTo(itemId);
@@ -147,9 +150,9 @@ class OwnedItemPersistencePropertyTest {
     /**
      * 지정 저장 위치의 항목 수가 정확히 반환되는지 검증한다.
      *
-     * @param itemId1   첫 번째 아이템 ID
-     * @param itemId2   두 번째 아이템 ID
-     * @param quantity  보유 수량
+     * @param itemId1 첫 번째 아이템 ID
+     * @param itemId2 두 번째 아이템 ID
+     * @param quantity 보유 수량
      * @param durability 현재 내구도
      */
     @Property(tries = 100)
@@ -159,9 +162,12 @@ class OwnedItemPersistencePropertyTest {
             @ForAll("quantities") final int quantity,
             @ForAll("durabilities") final double durability) {
 
-        final OwnedItem bankItem1 = new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
-        final OwnedItem bankItem2 = new OwnedItem(itemId2, quantity, StorageKind.BANK, false, durability);
-        final OwnedItem inventoryItem = new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, false, durability);
+        final OwnedItem bankItem1 =
+                new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
+        final OwnedItem bankItem2 =
+                new OwnedItem(itemId2, quantity, StorageKind.BANK, false, durability);
+        final OwnedItem inventoryItem =
+                new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, false, durability);
 
         entityManager.persistAndFlush(bankItem1);
         entityManager.persistAndFlush(bankItem2);
@@ -178,9 +184,9 @@ class OwnedItemPersistencePropertyTest {
     /**
      * 지정 저장 위치에서 장착 중인 장비만 반환되는지 검증한다.
      *
-     * @param itemId1   장착 중 아이템 ID
-     * @param itemId2   미장착 아이템 ID
-     * @param quantity  보유 수량
+     * @param itemId1 장착 중 아이템 ID
+     * @param itemId2 미장착 아이템 ID
+     * @param quantity 보유 수량
      * @param durability 현재 내구도
      */
     @Property(tries = 100)
@@ -190,16 +196,20 @@ class OwnedItemPersistencePropertyTest {
             @ForAll("quantities") final int quantity,
             @ForAll("durabilities") final double durability) {
 
-        final OwnedItem equippedItem = new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, true, durability);
-        final OwnedItem unequippedItem = new OwnedItem(itemId2, quantity, StorageKind.INVENTORY, false, durability);
-        final OwnedItem bankItem = new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
+        final OwnedItem equippedItem =
+                new OwnedItem(itemId1, quantity, StorageKind.INVENTORY, true, durability);
+        final OwnedItem unequippedItem =
+                new OwnedItem(itemId2, quantity, StorageKind.INVENTORY, false, durability);
+        final OwnedItem bankItem =
+                new OwnedItem(itemId1, quantity, StorageKind.BANK, false, durability);
 
         entityManager.persistAndFlush(equippedItem);
         entityManager.persistAndFlush(unequippedItem);
         entityManager.persistAndFlush(bankItem);
         entityManager.clear();
 
-        final List<OwnedItem> equipped = repository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        final List<OwnedItem> equipped =
+                repository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
 
         assertThat(equipped).hasSize(1);
         assertThat(equipped.get(0).getItemId()).isEqualTo(itemId1);
@@ -210,10 +220,9 @@ class OwnedItemPersistencePropertyTest {
     // ─── Helpers ────────────────────────────────────────────────────────────
 
     /**
-     * 비즈니스 규칙에 따라 장착 여부를 결정한다.
-     * BANK 저장소의 아이템은 장착할 수 없으므로 항상 false를 반환한다.
+     * 비즈니스 규칙에 따라 장착 여부를 결정한다. BANK 저장소의 아이템은 장착할 수 없으므로 항상 false를 반환한다.
      *
-     * @param storage  저장 위치
+     * @param storage 저장 위치
      * @param equipped 원래 장착 의도
      * @return 실효 장착 여부
      */
@@ -277,7 +286,6 @@ class OwnedItemPersistencePropertyTest {
      */
     @Provide
     Arbitrary<Double> durabilities() {
-        return Arbitraries.integers().between(0, 1000)
-                .map(i -> i / 10.0);
+        return Arbitraries.integers().between(0, 1000).map(i -> i / 10.0);
     }
 }

@@ -3,9 +3,8 @@ package com.myapps.web.myrpg.application.exception;
 /**
  * AP(어빌리티 포인트) 부족으로 스킬 랭크업이 거부될 때 발생하는 비즈니스 예외.
  *
- * <p>스킬 서비스가 랭크업 사전 검증에서 보유 AP가 소모 비용 미만임을 감지하면
- * 이 예외를 던진다. {@code GlobalExceptionHandler}가 포착하여 사용자에게
- * 승급 불가 안내를 반환한다.
+ * <p>스킬 서비스가 랭크업 사전 검증에서 보유 AP가 소모 비용 미만임을 감지하면 이 예외를 던진다. {@code GlobalExceptionHandler}가 포착하여
+ * 사용자에게 승급 불가 안내를 반환한다.
  *
  * <p>캐릭터 상태(랭크·카운트·AP)는 이 예외 발생 시 일절 변경되지 않는다.
  */

@@ -1,22 +1,18 @@
 package com.myapps.web.mycalendar.domain.service;
 
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import com.myapps.web.mycalendar.domain.model.Anniversary;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * AnniversaryCalculator 도메인 서비스 단위 테스트.
- */
+import com.myapps.web.mycalendar.domain.model.Anniversary;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/** AnniversaryCalculator 도메인 서비스 단위 테스트. */
 class AnniversaryCalculatorTest {
 
     private static final LocalDate BASE_DATE = LocalDate.of(2026, 6, 17);
@@ -128,10 +124,10 @@ class AnniversaryCalculatorTest {
         final LocalDate endOfMonth = targetMonth.atEndOfMonth();
 
         for (final Anniversary anniversary : result) {
-            assertTrue(!anniversary.date().isBefore(startOfMonth)
-                    && !anniversary.date().isAfter(endOfMonth),
-                    "기념일 " + anniversary.name() + "(" + anniversary.date()
-                            + ")이 월 범위를 벗어남");
+            assertTrue(
+                    !anniversary.date().isBefore(startOfMonth)
+                            && !anniversary.date().isAfter(endOfMonth),
+                    "기념일 " + anniversary.name() + "(" + anniversary.date() + ")이 월 범위를 벗어남");
         }
     }
 }

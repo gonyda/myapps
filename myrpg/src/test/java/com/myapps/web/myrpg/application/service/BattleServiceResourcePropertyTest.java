@@ -1,18 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -36,18 +28,23 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 자원 소모·부족 규칙을 검증하는 프로퍼티 테스트.
  *
- * <p>자원이 비용 미만이면 턴 미진행(resourceInsufficient=true, 피해 없음, 자원 불변),
- * 충분하면 정확히 비용만큼 차감되는지 검증한다.
+ * <p>자원이 비용 미만이면 턴 미진행(resourceInsufficient=true, 피해 없음, 자원 불변), 충분하면 정확히 비용만큼 차감되는지 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 10: 자원 소모·부족
  *
@@ -75,9 +72,20 @@ class BattleServiceResourcePropertyTest {
         final Random random = new Random(42L);
         final BattleService service = createMeleeService(random);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "전사", 10, 10, 100L, TalentType.MELEE, null,
-                HIGH_HP, 100, currentStamina, "dunbarton", 0, 500L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        10,
+                        100L,
+                        TalentType.MELEE,
+                        null,
+                        HIGH_HP,
+                        100,
+                        currentStamina,
+                        "dunbarton",
+                        0,
+                        500L);
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         state.setTurnCount(2);
 
@@ -89,12 +97,8 @@ class BattleServiceResourcePropertyTest {
         assertThat(result.insufficientKind())
                 .as("부족한 자원 종류는 STAMINA여야 한다")
                 .isEqualTo(ResourceKind.STAMINA);
-        assertThat(result.playerDamage())
-                .as("자원 부족 시 플레이어 피해는 0이어야 한다")
-                .isEqualTo(0);
-        assertThat(result.monsterDamage())
-                .as("자원 부족 시 몬스터 피해도 0이어야 한다")
-                .isEqualTo(0);
+        assertThat(result.playerDamage()).as("자원 부족 시 플레이어 피해는 0이어야 한다").isEqualTo(0);
+        assertThat(result.monsterDamage()).as("자원 부족 시 몬스터 피해도 0이어야 한다").isEqualTo(0);
         assertThat(progress.getStaminaCurrent())
                 .as("자원 부족 시 스태미나는 변하지 않아야 한다")
                 .isEqualTo(currentStamina);
@@ -106,14 +110,24 @@ class BattleServiceResourcePropertyTest {
      * @param currentMp 현재 MP (비용 미만)
      */
     @Property(tries = 100)
-    void should_returnInsufficient_when_mpBelowCost(
-            @ForAll("insufficientMp") final int currentMp) {
+    void should_returnInsufficient_when_mpBelowCost(@ForAll("insufficientMp") final int currentMp) {
         final Random random = new Random(99L);
         final BattleService service = createMagicService(random);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "마법사", 10, 10, 100L, TalentType.MAGIC, null,
-                HIGH_HP, currentMp, 100, "dunbarton", 0, 500L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "마법사",
+                        10,
+                        10,
+                        100L,
+                        TalentType.MAGIC,
+                        null,
+                        HIGH_HP,
+                        currentMp,
+                        100,
+                        "dunbarton",
+                        0,
+                        500L);
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         state.setTurnCount(2);
 
@@ -122,12 +136,8 @@ class BattleServiceResourcePropertyTest {
         assertThat(result.resourceInsufficient())
                 .as("MP 부족 시 resourceInsufficient 플래그가 true여야 한다")
                 .isTrue();
-        assertThat(result.insufficientKind())
-                .as("부족한 자원 종류는 MP여야 한다")
-                .isEqualTo(ResourceKind.MP);
-        assertThat(progress.getMpCurrent())
-                .as("자원 부족 시 MP는 변하지 않아야 한다")
-                .isEqualTo(currentMp);
+        assertThat(result.insufficientKind()).as("부족한 자원 종류는 MP여야 한다").isEqualTo(ResourceKind.MP);
+        assertThat(progress.getMpCurrent()).as("자원 부족 시 MP는 변하지 않아야 한다").isEqualTo(currentMp);
     }
 
     /**
@@ -141,9 +151,20 @@ class BattleServiceResourcePropertyTest {
         final Random random = new Random(42L);
         final BattleService service = createMeleeService(random);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "전사", 10, 10, 100L, TalentType.MELEE, null,
-                HIGH_HP, 100, currentStamina, "dunbarton", 0, 500L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "전사",
+                        10,
+                        10,
+                        100L,
+                        TalentType.MELEE,
+                        null,
+                        HIGH_HP,
+                        100,
+                        currentStamina,
+                        "dunbarton",
+                        0,
+                        500L);
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         state.setTurnCount(2);
 
@@ -160,14 +181,24 @@ class BattleServiceResourcePropertyTest {
      * @param currentMp 충분한 MP
      */
     @Property(tries = 100)
-    void should_deductExactCost_when_mpSufficient(
-            @ForAll("sufficientMp") final int currentMp) {
+    void should_deductExactCost_when_mpSufficient(@ForAll("sufficientMp") final int currentMp) {
         final Random random = new Random(99L);
         final BattleService service = createMagicService(random);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "마법사", 10, 10, 100L, TalentType.MAGIC, null,
-                HIGH_HP, currentMp, 100, "dunbarton", 0, 500L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "마법사",
+                        10,
+                        10,
+                        100L,
+                        TalentType.MAGIC,
+                        null,
+                        HIGH_HP,
+                        currentMp,
+                        100,
+                        "dunbarton",
+                        0,
+                        500L);
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         state.setTurnCount(2);
 
@@ -230,9 +261,8 @@ class BattleServiceResourcePropertyTest {
         return buildService(random, createMagicDamageSkill(), MAGIC_SKILL_ID);
     }
 
-    private BattleService buildService(final Random random,
-                                       final DamageSkill skill,
-                                       final String skillId) {
+    private BattleService buildService(
+            final Random random, final DamageSkill skill, final String skillId) {
         final BattleStateRepository battleStateRepo = mock(BattleStateRepository.class);
         when(battleStateRepo.save(any(BattleState.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -260,7 +290,8 @@ class BattleServiceResourcePropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
 
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
@@ -268,33 +299,63 @@ class BattleServiceResourcePropertyTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, 30L, new GoldDrop(10, 20), List.of(), List.of("소리", "행동1", "행동2"));
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                30L,
+                new GoldDrop(10, 20),
+                List.of(),
+                List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createMeleeDamageSkill() {
         return new DamageSkill(
-                MELEE_SKILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, STAMINA_COST,
+                MELEE_SKILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                STAMINA_COST,
                 createFullRankMap(100),
                 "근접 테스트 스킬");
     }
 
     private DamageSkill createMagicDamageSkill() {
         return new DamageSkill(
-                MAGIC_SKILL_ID, "파이어볼트", SkillType.NORMAL, SkillTalent.MAGIC, MP_COST,
+                MAGIC_SKILL_ID,
+                "파이어볼트",
+                SkillType.NORMAL,
+                SkillTalent.MAGIC,
+                MP_COST,
                 createFullRankMap(100),
                 "마법 테스트 스킬");
     }
@@ -308,6 +369,7 @@ class BattleServiceResourcePropertyTest {
                 Map.entry(SkillRank.R7, baseValue + 80), Map.entry(SkillRank.R6, baseValue + 90),
                 Map.entry(SkillRank.R5, baseValue + 100), Map.entry(SkillRank.R4, baseValue + 110),
                 Map.entry(SkillRank.R3, baseValue + 120), Map.entry(SkillRank.R2, baseValue + 130),
-                Map.entry(SkillRank.R1, baseValue + 140), Map.entry(SkillRank.MASTER, baseValue + 150));
+                Map.entry(SkillRank.R1, baseValue + 140),
+                        Map.entry(SkillRank.MASTER, baseValue + 150));
     }
 }

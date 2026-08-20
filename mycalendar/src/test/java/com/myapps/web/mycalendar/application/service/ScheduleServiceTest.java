@@ -1,16 +1,10 @@
 package com.myapps.web.mycalendar.application.service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
@@ -20,21 +14,22 @@ import com.myapps.web.mycalendar.application.exception.ScheduleNotFoundException
 import com.myapps.web.mycalendar.domain.model.Category;
 import com.myapps.web.mycalendar.domain.model.Schedule;
 import com.myapps.web.mycalendar.domain.repository.ScheduleRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-/**
- * ScheduleService 단위 테스트.
- */
+/** ScheduleService 단위 테스트. */
 @ExtendWith(MockitoExtension.class)
 class ScheduleServiceTest {
 
-    @Mock
-    private ScheduleRepository scheduleRepository;
+    @Mock private ScheduleRepository scheduleRepository;
 
     private ScheduleService scheduleService;
 
@@ -46,10 +41,15 @@ class ScheduleServiceTest {
     @Test
     void should_createSchedule_when_validCommand() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 1), null, LocalTime.of(18, 0), "저녁 데이트"
-        );
-        final Schedule savedSchedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "저녁 데이트");
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.DATE,
+                        LocalDate.of(2026, 7, 1),
+                        null,
+                        LocalTime.of(18, 0),
+                        "저녁 데이트");
+        final Schedule savedSchedule =
+                new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "저녁 데이트");
         when(scheduleRepository.save(any(Schedule.class))).thenReturn(savedSchedule);
 
         // when
@@ -65,11 +65,15 @@ class ScheduleServiceTest {
     @Test
     void should_createMultiDaySchedule_when_endDateProvided() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.SEUNGKWON, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 3),
-                null, "출장"
-        );
-        final Schedule savedSchedule = new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 1), "출장");
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.SEUNGKWON,
+                        LocalDate.of(2026, 7, 1),
+                        LocalDate.of(2026, 7, 3),
+                        null,
+                        "출장");
+        final Schedule savedSchedule =
+                new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 7, 1), "출장");
         savedSchedule.updateEndDate(LocalDate.of(2026, 7, 3));
         when(scheduleRepository.save(any(Schedule.class))).thenReturn(savedSchedule);
 
@@ -83,9 +87,9 @@ class ScheduleServiceTest {
     @Test
     void should_throwInvalidScheduleException_when_contentIsNull() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 1), null, null, null
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.DATE, LocalDate.of(2026, 7, 1), null, null, null);
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -96,9 +100,9 @@ class ScheduleServiceTest {
     @Test
     void should_throwInvalidScheduleException_when_contentIsBlank() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 1), null, null, "   "
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.DATE, LocalDate.of(2026, 7, 1), null, null, "   ");
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -110,9 +114,9 @@ class ScheduleServiceTest {
     void should_throwInvalidScheduleException_when_contentExceeds200() {
         // given
         final String longContent = "가".repeat(201);
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 1), null, null, longContent
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.DATE, LocalDate.of(2026, 7, 1), null, null, longContent);
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -123,9 +127,8 @@ class ScheduleServiceTest {
     @Test
     void should_throwInvalidScheduleException_when_categoryIsNull() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                null, LocalDate.of(2026, 7, 1), null, null, "일정 내용"
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(null, LocalDate.of(2026, 7, 1), null, null, "일정 내용");
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -136,9 +139,8 @@ class ScheduleServiceTest {
     @Test
     void should_throwInvalidScheduleException_when_startDateIsNull() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, null, null, null, "일정 내용"
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(Category.DATE, null, null, null, "일정 내용");
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -149,9 +151,13 @@ class ScheduleServiceTest {
     @Test
     void should_throwInvalidScheduleException_when_endDateBeforeStartDate() {
         // given
-        final ScheduleCreateCommand command = new ScheduleCreateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 5), LocalDate.of(2026, 7, 3), null, "일정 내용"
-        );
+        final ScheduleCreateCommand command =
+                new ScheduleCreateCommand(
+                        Category.DATE,
+                        LocalDate.of(2026, 7, 5),
+                        LocalDate.of(2026, 7, 3),
+                        null,
+                        "일정 내용");
 
         // when & then
         assertThatThrownBy(() -> scheduleService.create(command))
@@ -191,7 +197,8 @@ class ScheduleServiceTest {
         final LocalDate startOfMonth = LocalDate.of(2026, 7, 1);
         final LocalDate endOfMonth = LocalDate.of(2026, 7, 31);
         final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 15), "데이트");
-        when(scheduleRepository.findByMonth(startOfMonth, endOfMonth)).thenReturn(List.of(schedule));
+        when(scheduleRepository.findByMonth(startOfMonth, endOfMonth))
+                .thenReturn(List.of(schedule));
 
         // when
         final List<ScheduleResponse> responses = scheduleService.findByMonth(yearMonth);
@@ -207,10 +214,13 @@ class ScheduleServiceTest {
         final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "원본 내용");
         when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
 
-        final ScheduleUpdateCommand command = new ScheduleUpdateCommand(
-                Category.SEUNGKWON, LocalDate.of(2026, 7, 2), LocalDate.of(2026, 7, 5),
-                LocalTime.of(10, 0), "수정된 내용"
-        );
+        final ScheduleUpdateCommand command =
+                new ScheduleUpdateCommand(
+                        Category.SEUNGKWON,
+                        LocalDate.of(2026, 7, 2),
+                        LocalDate.of(2026, 7, 5),
+                        LocalTime.of(10, 0),
+                        "수정된 내용");
 
         // when
         final ScheduleResponse response = scheduleService.update(1L, command);
@@ -226,9 +236,9 @@ class ScheduleServiceTest {
     void should_throwScheduleNotFoundException_when_updateNonExistentSchedule() {
         // given
         when(scheduleRepository.findById(999L)).thenReturn(Optional.empty());
-        final ScheduleUpdateCommand command = new ScheduleUpdateCommand(
-                Category.DATE, LocalDate.of(2026, 7, 1), null, null, "수정 내용"
-        );
+        final ScheduleUpdateCommand command =
+                new ScheduleUpdateCommand(
+                        Category.DATE, LocalDate.of(2026, 7, 1), null, null, "수정 내용");
 
         // when & then
         assertThatThrownBy(() -> scheduleService.update(999L, command))

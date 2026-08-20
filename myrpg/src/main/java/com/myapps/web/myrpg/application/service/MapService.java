@@ -1,15 +1,5 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.exception.MapDataException;
@@ -19,18 +9,23 @@ import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
 import com.myapps.web.myrpg.domain.service.MapViewFactory;
-
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
  * 맵 데이터 로딩 및 조회 서비스.
  *
- * <p>애플리케이션 기동 시 {@code classpath:data/map.json}을 1회 파싱하여
- * 불변 {@link MapGraph}를 구성하고, 노드·던전 조회 기능을 제공합니다.
- * 로딩 시 양방향 링크 무결성을 검증하며, 위반 시 {@link MapDataException}을
- * 발생시켜 기동을 실패시킵니다.
+ * <p>애플리케이션 기동 시 {@code classpath:data/map.json}을 1회 파싱하여 불변 {@link MapGraph}를 구성하고, 노드·던전 조회 기능을
+ * 제공합니다. 로딩 시 양방향 링크 무결성을 검증하며, 위반 시 {@link MapDataException}을 발생시켜 기동을 실패시킵니다.
  */
 @Service
 public class MapService {
@@ -44,7 +39,7 @@ public class MapService {
     /**
      * MapService를 생성합니다.
      *
-     * @param objectMapper   Jackson 3 ObjectMapper
+     * @param objectMapper Jackson 3 ObjectMapper
      * @param mapViewFactory 미니맵/전체지도 격자 생성 팩토리
      */
     public MapService(final ObjectMapper objectMapper, final MapViewFactory mapViewFactory) {
@@ -76,8 +71,7 @@ public class MapService {
      */
     public MapNode node(final String id) {
         return mapGraph.byId(id)
-                .orElseThrow(() -> new NodeNotFoundException(
-                        "노드를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new NodeNotFoundException("노드를 찾을 수 없습니다: " + id));
     }
 
     /**
@@ -107,8 +101,8 @@ public class MapService {
      *
      * @param currentNodeId 현재 노드 ID
      * @return 미니맵 뷰 모델
-     * @throws com.myapps.web.myrpg.application.exception.MapViewGenerationException
-     *         현재 노드가 그래프에 존재하지 않을 때
+     * @throws com.myapps.web.myrpg.application.exception.MapViewGenerationException 현재 노드가 그래프에
+     *     존재하지 않을 때
      */
     public MinimapView minimap(final String currentNodeId) {
         return mapViewFactory.createMinimap(mapGraph, currentNodeId);
@@ -121,8 +115,8 @@ public class MapService {
      *
      * @param currentNodeId 현재 노드 ID
      * @return 전체지도 뷰 모델
-     * @throws com.myapps.web.myrpg.application.exception.MapViewGenerationException
-     *         현재 노드가 그래프에 존재하지 않을 때
+     * @throws com.myapps.web.myrpg.application.exception.MapViewGenerationException 현재 노드가 그래프에
+     *     존재하지 않을 때
      */
     public FullMapView fullMap(final String currentNodeId) {
         return mapViewFactory.createFullMap(mapGraph, currentNodeId);
@@ -133,8 +127,7 @@ public class MapService {
         try (InputStream inputStream = resource.getInputStream()) {
             return objectMapper.readTree(inputStream);
         } catch (final IOException exception) {
-            throw new MapDataException(
-                    "맵 JSON 파일 로딩 실패: " + MAP_JSON_PATH, exception);
+            throw new MapDataException("맵 JSON 파일 로딩 실패: " + MAP_JSON_PATH, exception);
         }
     }
 
@@ -159,13 +152,12 @@ public class MapService {
         final NodeType nodeType = NodeType.fromType(type).orElse(null);
         final int x = nodeJson.get("x").asInt();
         final int y = nodeJson.get("y").asInt();
-        final String dungeonId = nodeJson.has("dungeonId")
-                ? nodeJson.get("dungeonId").asText() : null;
-        final String theme = nodeJson.has("theme")
-                ? nodeJson.get("theme").asText() : null;
+        final String dungeonId =
+                nodeJson.has("dungeonId") ? nodeJson.get("dungeonId").asText() : null;
+        final String theme = nodeJson.has("theme") ? nodeJson.get("theme").asText() : null;
         final List<String> links = parseStringArray(nodeJson, "links");
-        final List<String> monsters = nodeJson.has("monsters")
-                ? parseStringArray(nodeJson, "monsters") : List.of();
+        final List<String> monsters =
+                nodeJson.has("monsters") ? parseStringArray(nodeJson, "monsters") : List.of();
 
         return new MapNode(id, name, type, nodeType, x, y, dungeonId, theme, links, monsters);
     }
@@ -207,23 +199,26 @@ public class MapService {
     }
 
     private void validateBidirectionalLinks(final List<MapNode> nodes) {
-        final Map<String, MapNode> nodeMap = nodes.stream()
-                .collect(Collectors.toUnmodifiableMap(
-                        MapNode::id, node -> node));
+        final Map<String, MapNode> nodeMap =
+                nodes.stream().collect(Collectors.toUnmodifiableMap(MapNode::id, node -> node));
 
         for (final MapNode node : nodes) {
             for (final String linkedId : node.links()) {
                 final MapNode linkedNode = nodeMap.get(linkedId);
                 if (linkedNode == null) {
                     throw new MapDataException(
-                            "노드 '" + node.id() + "'의 링크 대상 '" + linkedId
-                                    + "'가 존재하지 않습니다.");
+                            "노드 '" + node.id() + "'의 링크 대상 '" + linkedId + "'가 존재하지 않습니다.");
                 }
                 if (!linkedNode.links().contains(node.id())) {
                     throw new MapDataException(
-                            "양방향 링크 위반: 노드 '" + node.id() + "' → '"
-                                    + linkedId + "' 링크 존재, 그러나 '"
-                                    + linkedId + "' → '" + node.id()
+                            "양방향 링크 위반: 노드 '"
+                                    + node.id()
+                                    + "' → '"
+                                    + linkedId
+                                    + "' 링크 존재, 그러나 '"
+                                    + linkedId
+                                    + "' → '"
+                                    + node.id()
                                     + "' 역방향 링크 부재");
                 }
             }

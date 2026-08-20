@@ -1,16 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -19,9 +10,15 @@ import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * MovementService 단위 테스트.
@@ -31,11 +28,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MovementServiceTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(
-            Instant.parse("2025-06-15T10:00:00Z"), ZoneId.of("Asia/Seoul"));
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2025-06-15T10:00:00Z"), ZoneId.of("Asia/Seoul"));
 
-    @Mock
-    private MapService mapService;
+    @Mock private MapService mapService;
 
     private ActionLog actionLog;
     private MovementService movementService;
@@ -49,18 +45,37 @@ class MovementServiceTest {
     @Test
     void should_returnMoved_when_neighborIsConnected() {
         // given
-        final MapNode townNode = new MapNode("town-a", "마을A", "town", NodeType.TOWN,
-                0, 0, null, null, List.of("field-b"));
-        final MapNode fieldNode = new MapNode("field-b", "들판B", "field", NodeType.FIELD,
-                1, 0, null, null, List.of("town-a"));
+        final MapNode townNode =
+                new MapNode(
+                        "town-a",
+                        "마을A",
+                        "town",
+                        NodeType.TOWN,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("field-b"));
+        final MapNode fieldNode =
+                new MapNode(
+                        "field-b",
+                        "들판B",
+                        "field",
+                        NodeType.FIELD,
+                        1,
+                        0,
+                        null,
+                        null,
+                        List.of("town-a"));
 
         final MapGraph graph = new MapGraph(List.of(townNode, fieldNode), List.of(), "town-a");
 
         when(mapService.node("town-a")).thenReturn(townNode);
         when(mapService.graph()).thenReturn(graph);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -76,18 +91,38 @@ class MovementServiceTest {
     @Test
     void should_returnMoved_when_targetIsDungeonEntrance() {
         // given
-        final MapNode fieldNode = new MapNode("field-a", "들판A", "field", NodeType.FIELD,
-                0, 0, null, null, List.of("dungeon-entrance"));
-        final MapNode dungeonEntranceNode = new MapNode("dungeon-entrance", "던전입구", "dungeon",
-                NodeType.DUNGEON, 1, 0, "d1", null, List.of("field-a"));
+        final MapNode fieldNode =
+                new MapNode(
+                        "field-a",
+                        "들판A",
+                        "field",
+                        NodeType.FIELD,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("dungeon-entrance"));
+        final MapNode dungeonEntranceNode =
+                new MapNode(
+                        "dungeon-entrance",
+                        "던전입구",
+                        "dungeon",
+                        NodeType.DUNGEON,
+                        1,
+                        0,
+                        "d1",
+                        null,
+                        List.of("field-a"));
 
-        final MapGraph graph = new MapGraph(List.of(fieldNode, dungeonEntranceNode), List.of(), "field-a");
+        final MapGraph graph =
+                new MapGraph(List.of(fieldNode, dungeonEntranceNode), List.of(), "field-a");
 
         when(mapService.node("field-a")).thenReturn(fieldNode);
         when(mapService.graph()).thenReturn(graph);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "field-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "field-a", 0, 0L);
 
         // when
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -103,18 +138,37 @@ class MovementServiceTest {
     @Test
     void should_returnBlocked_when_noNeighborAtOffset() {
         // given
-        final MapNode townNode = new MapNode("town-a", "마을A", "town", NodeType.TOWN,
-                0, 0, null, null, List.of("field-b"));
-        final MapNode fieldNode = new MapNode("field-b", "들판B", "field", NodeType.FIELD,
-                1, 0, null, null, List.of("town-a"));
+        final MapNode townNode =
+                new MapNode(
+                        "town-a",
+                        "마을A",
+                        "town",
+                        NodeType.TOWN,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("field-b"));
+        final MapNode fieldNode =
+                new MapNode(
+                        "field-b",
+                        "들판B",
+                        "field",
+                        NodeType.FIELD,
+                        1,
+                        0,
+                        null,
+                        null,
+                        List.of("town-a"));
 
         final MapGraph graph = new MapGraph(List.of(townNode, fieldNode), List.of(), "town-a");
 
         when(mapService.node("town-a")).thenReturn(townNode);
         when(mapService.graph()).thenReturn(graph);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
 
         // when — no neighbor at (0, 1)
         final MovementResult result = movementService.move(progress, 0, 1);
@@ -127,18 +181,19 @@ class MovementServiceTest {
     @Test
     void should_returnBlocked_when_neighborExistsButNotLinked() {
         // given
-        final MapNode townNode = new MapNode("town-a", "마을A", "town", NodeType.TOWN,
-                0, 0, null, null, List.of());
-        final MapNode fieldNode = new MapNode("field-b", "들판B", "field", NodeType.FIELD,
-                1, 0, null, null, List.of());
+        final MapNode townNode =
+                new MapNode("town-a", "마을A", "town", NodeType.TOWN, 0, 0, null, null, List.of());
+        final MapNode fieldNode =
+                new MapNode("field-b", "들판B", "field", NodeType.FIELD, 1, 0, null, null, List.of());
 
         final MapGraph graph = new MapGraph(List.of(townNode, fieldNode), List.of(), "town-a");
 
         when(mapService.node("town-a")).thenReturn(townNode);
         when(mapService.graph()).thenReturn(graph);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
 
         // when — neighbor exists at (1,0) but not in links
         final MovementResult result = movementService.move(progress, 1, 0);
@@ -151,8 +206,20 @@ class MovementServiceTest {
     @Test
     void should_returnDungeonLocked_when_enterDungeonCalled() {
         // given
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "dungeon-entrance", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        1,
+                        1,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        "dungeon-entrance",
+                        0,
+                        0L);
 
         // when
         final MovementResult result = movementService.enterDungeon(progress, "d1");
@@ -167,11 +234,13 @@ class MovementServiceTest {
     @Test
     void should_returnDungeonLocked_regardlessOfDungeonId() {
         // given
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
 
         // when — even for non-existent dungeon
-        final MovementResult result = movementService.enterDungeon(progress, "non-existent-dungeon");
+        final MovementResult result =
+                movementService.enterDungeon(progress, "non-existent-dungeon");
 
         // then
         assertThat(result).isInstanceOf(MovementResult.DungeonLocked.class);
@@ -181,18 +250,37 @@ class MovementServiceTest {
     @Test
     void should_notAddMoveLogEntry_when_movementSucceeds() {
         // given
-        final MapNode townNode = new MapNode("town-a", "마을A", "town", NodeType.TOWN,
-                0, 0, null, null, List.of("field-b"));
-        final MapNode fieldNode = new MapNode("field-b", "들판B", "field", NodeType.FIELD,
-                1, 0, null, null, List.of("town-a"));
+        final MapNode townNode =
+                new MapNode(
+                        "town-a",
+                        "마을A",
+                        "town",
+                        NodeType.TOWN,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("field-b"));
+        final MapNode fieldNode =
+                new MapNode(
+                        "field-b",
+                        "들판B",
+                        "field",
+                        NodeType.FIELD,
+                        1,
+                        0,
+                        null,
+                        null,
+                        List.of("town-a"));
 
         final MapGraph graph = new MapGraph(List.of(townNode, fieldNode), List.of(), "town-a");
 
         when(mapService.node("town-a")).thenReturn(townNode);
         when(mapService.graph()).thenReturn(graph);
 
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "town-a", 0, 0L);
 
         // when
         movementService.move(progress, 1, 0);

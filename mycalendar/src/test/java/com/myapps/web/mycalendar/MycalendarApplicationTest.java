@@ -1,22 +1,20 @@
 package com.myapps.web.mycalendar;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.mycalendar.application.service.ScheduleService;
 import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
 import com.myapps.web.mycalendar.interfaces.api.CalendarController;
 import com.myapps.web.mycalendar.interfaces.api.ScheduleController;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 
 /**
  * 애플리케이션 컨텍스트 로드 및 핵심 빈 등록을 검증하는 통합 테스트.
  *
- * <p>Spring Boot 전체 컨텍스트가 올바르게 로드되며, 인증 메커니즘 없이
- * 모든 핵심 서비스와 컨트롤러가 정상 등록되는지 확인합니다.
+ * <p>Spring Boot 전체 컨텍스트가 올바르게 로드되며, 인증 메커니즘 없이 모든 핵심 서비스와 컨트롤러가 정상 등록되는지 확인합니다.
  */
 @SpringBootTest
 class MycalendarApplicationTest {
@@ -27,26 +25,20 @@ class MycalendarApplicationTest {
         this.applicationContext = applicationContext;
     }
 
-    /**
-     * 애플리케이션 컨텍스트가 정상적으로 로드되는지 검증한다.
-     */
+    /** 애플리케이션 컨텍스트가 정상적으로 로드되는지 검증한다. */
     @Test
     void should_loadContext_when_applicationStarts() {
         assertThat(applicationContext).isNotNull();
     }
 
-    /**
-     * 핵심 서비스 빈들이 컨텍스트에 등록되어 있는지 검증한다.
-     */
+    /** 핵심 서비스 빈들이 컨텍스트에 등록되어 있는지 검증한다. */
     @Test
     void should_registerServiceBeans_when_contextLoads() {
         assertThat(applicationContext.getBean(ScheduleService.class)).isNotNull();
         assertThat(applicationContext.getBean(AnniversaryCalculator.class)).isNotNull();
     }
 
-    /**
-     * 핵심 컨트롤러 빈들이 컨텍스트에 등록되어 있는지 검증한다.
-     */
+    /** 핵심 컨트롤러 빈들이 컨텍스트에 등록되어 있는지 검증한다. */
     @Test
     void should_registerControllerBeans_when_contextLoads() {
         assertThat(applicationContext.getBean(CalendarController.class)).isNotNull();

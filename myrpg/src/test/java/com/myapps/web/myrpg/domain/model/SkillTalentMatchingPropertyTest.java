@@ -1,20 +1,18 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link SkillTalent}의 재능 매칭({@code matchingTalent()})을 검증하는 프로퍼티 테스트.
  *
- * <p>MELEE/ARCHERY/MAGIC은 대응 {@link TalentType}을 반환하고,
- * COMMON은 빈 {@code Optional}을 반환하는지 검증한다.
+ * <p>MELEE/ARCHERY/MAGIC은 대응 {@link TalentType}을 반환하고, COMMON은 빈 {@code Optional}을 반환하는지 검증한다.
  *
  * <p><b>Validates: Requirements 2.2, 3.1, 3.2</b>
  */
@@ -23,13 +21,13 @@ class SkillTalentMatchingPropertyTest {
     // Feature: 005-skill-system, Property 4: 재능 매칭
 
     /**
-     * 전투 재능(MELEE/ARCHERY/MAGIC)은 대응 TalentType을 반환하고,
-     * COMMON은 빈 Optional을 반환하는지 검증한다.
+     * 전투 재능(MELEE/ARCHERY/MAGIC)은 대응 TalentType을 반환하고, COMMON은 빈 Optional을 반환하는지 검증한다.
      *
      * @param talent 임의의 SkillTalent 상수
      */
     @Property(tries = 100)
-    void should_matchCorrectTalentType_when_anySkillTalent(@ForAll("talents") final SkillTalent talent) {
+    void should_matchCorrectTalentType_when_anySkillTalent(
+            @ForAll("talents") final SkillTalent talent) {
         final Optional<TalentType> matching = talent.matchingTalent();
 
         switch (talent) {
@@ -46,7 +44,8 @@ class SkillTalentMatchingPropertyTest {
      * @param talent 임의의 SkillTalent 상수
      */
     @Property(tries = 100)
-    void should_havePresentMatchingTalent_when_notCommon(@ForAll("combatTalents") final SkillTalent talent) {
+    void should_havePresentMatchingTalent_when_notCommon(
+            @ForAll("combatTalents") final SkillTalent talent) {
         assertThat(talent.matchingTalent()).isPresent();
     }
 

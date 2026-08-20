@@ -1,5 +1,7 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -8,14 +10,11 @@ import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 import net.jqwik.api.constraints.IntRange;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * HP 감소·사망 전이 프로퍼티 테스트.
  *
- * <p>임의의 HP 현재값과 피해량에 대해, {@code damageHp(amount)} 호출 결과가
- * {@code max(0, hpCurrent − amount)}와 정확히 일치하고,
- * {@code isDead()}가 {@code hpCurrent == 0}과 동치임을 검증한다.
+ * <p>임의의 HP 현재값과 피해량에 대해, {@code damageHp(amount)} 호출 결과가 {@code max(0, hpCurrent − amount)}와 정확히
+ * 일치하고, {@code isDead()}가 {@code hpCurrent == 0}과 동치임을 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 11: HP 감소·사망 전이
  *
@@ -133,35 +132,45 @@ class CharacterProgressDamageHpPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Integer, Integer>> hpAndDamage() {
-        return Arbitraries.integers().between(1, MAX_HP)
-                .flatMap(hp -> Arbitraries.integers().between(0, MAX_DAMAGE)
-                        .map(damage -> Tuple.of(hp, damage)));
+        return Arbitraries.integers()
+                .between(1, MAX_HP)
+                .flatMap(
+                        hp ->
+                                Arbitraries.integers()
+                                        .between(0, MAX_DAMAGE)
+                                        .map(damage -> Tuple.of(hp, damage)));
     }
 
     /**
-     * 초기 HP [1, 10000] 범위에서 선택되고, 피해량이 (initialHp, 15000] 범위인
-     * 초과 피해 케이스를 생성한다.
+     * 초기 HP [1, 10000] 범위에서 선택되고, 피해량이 (initialHp, 15000] 범위인 초과 피해 케이스를 생성한다.
      *
      * @return (initialHp, excessDamage) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Integer, Integer>> excessDamage() {
-        return Arbitraries.integers().between(1, MAX_HP)
-                .flatMap(hp -> Arbitraries.integers().between(hp + 1, MAX_DAMAGE + 1)
-                        .map(damage -> Tuple.of(hp, damage)));
+        return Arbitraries.integers()
+                .between(1, MAX_HP)
+                .flatMap(
+                        hp ->
+                                Arbitraries.integers()
+                                        .between(hp + 1, MAX_DAMAGE + 1)
+                                        .map(damage -> Tuple.of(hp, damage)));
     }
 
     /**
-     * 초기 HP [2, 10000] 범위에서 선택되고, 피해량이 [1, initialHp-1] 범위인
-     * 부분 피해 케이스를 생성한다.
+     * 초기 HP [2, 10000] 범위에서 선택되고, 피해량이 [1, initialHp-1] 범위인 부분 피해 케이스를 생성한다.
      *
      * @return (initialHp, partialDamage) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Integer, Integer>> partialDamage() {
-        return Arbitraries.integers().between(2, MAX_HP)
-                .flatMap(hp -> Arbitraries.integers().between(1, hp - 1)
-                        .map(damage -> Tuple.of(hp, damage)));
+        return Arbitraries.integers()
+                .between(2, MAX_HP)
+                .flatMap(
+                        hp ->
+                                Arbitraries.integers()
+                                        .between(1, hp - 1)
+                                        .map(damage -> Tuple.of(hp, damage)));
     }
 
     // ─── Helper ─────────────────────────────────────────────────────────────
@@ -185,7 +194,6 @@ class CharacterProgressDamageHpPropertyTest {
                 100,
                 "tir-chonaill",
                 0,
-                0L
-        );
+                0L);
     }
 }

@@ -1,5 +1,9 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.Npc;
+import com.myapps.web.myrpg.domain.model.TimeOfDay;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -8,29 +12,21 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.domain.model.Npc;
-import com.myapps.web.myrpg.domain.model.TimeOfDay;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 노드별 NPC 조회 필터 및 순서 프로퍼티 테스트.
  *
- * <p>임의 NPC 데이터셋과 임의 노드 id(그래프에 없는 임의 문자열 포함)에 대해
- * {@code byNode(nodeId)}가 일치 Npc만 정의 순서대로 반환하며,
- * 미일치 시 오류 없이 빈 목록을 반환함을 검증한다.
+ * <p>임의 NPC 데이터셋과 임의 노드 id(그래프에 없는 임의 문자열 포함)에 대해 {@code byNode(nodeId)}가 일치 Npc만 정의 순서대로 반환하며, 미일치
+ * 시 오류 없이 빈 목록을 반환함을 검증한다.
  *
  * <p>Feature: 002-npc-system, Property 3: 노드별 NPC 조회 필터 및 순서
  *
@@ -48,12 +44,10 @@ class NpcServiceByNodePropertyTest {
     private static final int NAME_MAX_LENGTH = 8;
 
     private static final String[] VALID_TYPES = {
-            "chief", "blacksmith", "magic-school", "school", "healer", "bank"
+        "chief", "blacksmith", "magic-school", "school", "healer", "bank"
     };
 
-    private static final String[] NODE_IDS = {
-            "tir-chonaill", "dunbarton", "bangor", "emain-macha"
-    };
+    private static final String[] NODE_IDS = {"tir-chonaill", "dunbarton", "bangor", "emain-macha"};
 
     private static final String[] TIME_OF_DAY_KEYS;
 
@@ -68,8 +62,7 @@ class NpcServiceByNodePropertyTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 유효 데이터셋 내에 존재하는 nodeId로 조회하면,
-     * 해당 nodeId를 가진 Npc만 정의(원본) 순서대로 반환됨을 검증한다.
+     * 유효 데이터셋 내에 존재하는 nodeId로 조회하면, 해당 nodeId를 가진 Npc만 정의(원본) 순서대로 반환됨을 검증한다.
      *
      * @param dataset 임의 생성된 유효 NPC 데이터셋(최소 2개 항목, 유일 id)
      * @param nodeIdIndex 조회할 nodeId 선택 인덱스
@@ -106,8 +99,7 @@ class NpcServiceByNodePropertyTest {
     }
 
     /**
-     * 데이터셋에 존재하지 않는 임의 nodeId로 조회하면,
-     * 오류 없이 빈 목록을 반환함을 검증한다.
+     * 데이터셋에 존재하지 않는 임의 nodeId로 조회하면, 오류 없이 빈 목록을 반환함을 검증한다.
      *
      * @param dataset 임의 생성된 유효 NPC 데이터셋(최소 2개 항목, 유일 id)
      * @param nonExistentNodeId 데이터셋에 존재하지 않는 임의 문자열
@@ -135,7 +127,8 @@ class NpcServiceByNodePropertyTest {
      */
     @Provide
     Arbitrary<List<NpcInputData>> validNpcDataset() {
-        return Arbitraries.integers().between(MIN_NPC_COUNT, MAX_NPC_COUNT)
+        return Arbitraries.integers()
+                .between(MIN_NPC_COUNT, MAX_NPC_COUNT)
                 .flatMap(this::buildUniqueNpcList);
     }
 
@@ -158,7 +151,10 @@ class NpcServiceByNodePropertyTest {
      */
     @Provide
     Arbitrary<String> nonExistentNodeId() {
-        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(15)
+        return Arbitraries.strings()
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(15)
                 .filter(s -> !isKnownNodeId(s));
     }
 
@@ -167,9 +163,7 @@ class NpcServiceByNodePropertyTest {
     // ──────────────────────────────────────────────────────────────────────
 
     private Arbitrary<List<NpcInputData>> buildUniqueNpcList(final int count) {
-        return npcInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return npcInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private List<NpcInputData> ensureUniqueIds(final List<NpcInputData> rawList) {
@@ -177,59 +171,73 @@ class NpcServiceByNodePropertyTest {
         for (int i = 0; i < rawList.size(); i++) {
             final NpcInputData original = rawList.get(i);
             final String uniqueId = original.id() + "-" + i;
-            result.add(new NpcInputData(
-                    uniqueId,
-                    original.name(),
-                    original.typeString(),
-                    original.nodeId(),
-                    original.personality(),
-                    original.defaultLines(),
-                    original.byTime()
-            ));
+            result.add(
+                    new NpcInputData(
+                            uniqueId,
+                            original.name(),
+                            original.typeString(),
+                            original.nodeId(),
+                            original.personality(),
+                            original.defaultLines(),
+                            original.byTime()));
         }
         return List.copyOf(result);
     }
 
     private Arbitrary<NpcInputData> npcInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
         final Arbitrary<String> typeStrings = Arbitraries.of(VALID_TYPES);
         final Arbitrary<String> nodeIds = Arbitraries.of(NODE_IDS);
-        final Arbitrary<String> personalities = Arbitraries.strings()
-                .alpha().ofMinLength(0).ofMaxLength(MAX_LINE_LENGTH);
+        final Arbitrary<String> personalities =
+                Arbitraries.strings().alpha().ofMinLength(0).ofMaxLength(MAX_LINE_LENGTH);
         final Arbitrary<List<String>> defaultLines = lineListArbitrary();
         final Arbitrary<Map<String, List<String>>> byTime = byTimeMapArbitrary();
 
-        return Combinators.combine(ids, names, typeStrings, nodeIds, personalities, defaultLines, byTime)
+        return Combinators.combine(
+                        ids, names, typeStrings, nodeIds, personalities, defaultLines, byTime)
                 .as(NpcInputData::new);
     }
 
     private Arbitrary<List<String>> lineListArbitrary() {
         return Arbitraries.strings()
-                .alpha().ofMinLength(1).ofMaxLength(MAX_LINE_LENGTH)
-                .list().ofMinSize(0).ofMaxSize(MAX_LINE_COUNT);
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(MAX_LINE_LENGTH)
+                .list()
+                .ofMinSize(0)
+                .ofMaxSize(MAX_LINE_COUNT);
     }
 
     private Arbitrary<Map<String, List<String>>> byTimeMapArbitrary() {
         return Arbitraries.of(TIME_OF_DAY_KEYS)
-                .set().ofMinSize(0).ofMaxSize(TIME_OF_DAY_KEYS.length)
-                .flatMap(keys -> {
-                    if (keys.isEmpty()) {
-                        return Arbitraries.just(Map.of());
-                    }
-                    final List<String> keyList = new ArrayList<>(keys);
-                    return lineListArbitrary()
-                            .list().ofSize(keyList.size())
-                            .map(valueLists -> {
-                                final Map<String, List<String>> map = new LinkedHashMap<>();
-                                for (int i = 0; i < keyList.size(); i++) {
-                                    map.put(keyList.get(i), valueLists.get(i));
-                                }
-                                return Map.copyOf(map);
-                            });
-                });
+                .set()
+                .ofMinSize(0)
+                .ofMaxSize(TIME_OF_DAY_KEYS.length)
+                .flatMap(
+                        keys -> {
+                            if (keys.isEmpty()) {
+                                return Arbitraries.just(Map.of());
+                            }
+                            final List<String> keyList = new ArrayList<>(keys);
+                            return lineListArbitrary()
+                                    .list()
+                                    .ofSize(keyList.size())
+                                    .map(
+                                            valueLists -> {
+                                                final Map<String, List<String>> map =
+                                                        new LinkedHashMap<>();
+                                                for (int i = 0; i < keyList.size(); i++) {
+                                                    map.put(keyList.get(i), valueLists.get(i));
+                                                }
+                                                return Map.copyOf(map);
+                                            });
+                        });
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -238,8 +246,8 @@ class NpcServiceByNodePropertyTest {
 
     private NpcService buildServiceWithData(final List<NpcInputData> dataset) {
         final String json = serializeToJson(dataset);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         final NpcService npcService = new NpcService(objectMapper);
         final List<Npc> loaded = npcService.loadFromStream(inputStream);
@@ -307,13 +315,13 @@ class NpcServiceByNodePropertyTest {
     /**
      * 프로퍼티 테스트용 NPC 입력 데이터 레코드.
      *
-     * @param id           NPC 고유 식별자
-     * @param name         NPC 표시 이름
-     * @param typeString   NPC 유형 문자열
-     * @param nodeId       배치 노드 ID
-     * @param personality  성격 서술
+     * @param id NPC 고유 식별자
+     * @param name NPC 표시 이름
+     * @param typeString NPC 유형 문자열
+     * @param nodeId 배치 노드 ID
+     * @param personality 성격 서술
      * @param defaultLines 기본 대사 목록
-     * @param byTime       시간대별 대사 맵
+     * @param byTime 시간대별 대사 맵
      */
     record NpcInputData(
             String id,
@@ -322,7 +330,5 @@ class NpcServiceByNodePropertyTest {
             String nodeId,
             String personality,
             List<String> defaultLines,
-            Map<String, List<String>> byTime
-    ) {
-    }
+            Map<String, List<String>> byTime) {}
 }

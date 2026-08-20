@@ -3,8 +3,7 @@ package com.myapps.web.mycalendar.application.exception;
 /**
  * 일정 유효성 검증 실패 시 발생하는 예외.
  *
- * <p>필수 필드 누락, 글자 수 초과, 날짜 범위 오류 등의 상황에서 발생하며
- * HTTP 400 상태 코드에 매핑됩니다.
+ * <p>필수 필드 누락, 글자 수 초과, 날짜 범위 오류 등의 상황에서 발생하며 HTTP 400 상태 코드에 매핑됩니다.
  */
 public class InvalidScheduleException extends RuntimeException {
 

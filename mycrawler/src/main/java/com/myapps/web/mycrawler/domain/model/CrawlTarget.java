@@ -6,10 +6,6 @@ package com.myapps.web.mycrawler.domain.model;
  * <p>크롤링할 대상의 이름과 URL을 포함합니다.
  *
  * @param name 크롤링 대상의 식별 이름
- * @param url  크롤링할 대상 URL
+ * @param url 크롤링할 대상 URL
  */
-public record CrawlTarget(
-    String name,
-    String url
-) {
-}
+public record CrawlTarget(String name, String url) {}

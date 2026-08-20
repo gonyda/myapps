@@ -1,16 +1,8 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -24,17 +16,22 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 내구도 0 자동 해제 프로퍼티 테스트.
  *
- * <p>임의의 장비 내구도와 감소량에 대해, {@code reduceDurabilityAndAutoUnequip}이
- * 내구도 0 도달 시 장비를 자동 장착 해제하고, 보너스를 소멸시키며,
- * 활동 로그에 해제 메시지를 남기는지 검증한다.
+ * <p>임의의 장비 내구도와 감소량에 대해, {@code reduceDurabilityAndAutoUnequip}이 내구도 0 도달 시 장비를 자동 장착 해제하고, 보너스를
+ * 소멸시키며, 활동 로그에 해제 메시지를 남기는지 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 15: 내구도 0 자동 해제
  *
@@ -60,20 +57,35 @@ class DurabilityAutoUnequipPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
-        final ActionLog actionLog = new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final ActionLog actionLog =
+                new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
-        final CharacterSkillRepository characterSkillRepository = mock(CharacterSkillRepository.class);
+        final CharacterSkillRepository characterSkillRepository =
+                mock(CharacterSkillRepository.class);
 
-        final InventoryService service = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository,
-                new StatProgression(), actionLog, skillCatalogService, characterSkillRepository);
+        final InventoryService service =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        new StatProgression(),
+                        actionLog,
+                        skillCatalogService,
+                        characterSkillRepository);
 
-        final OwnedItem equippedItem = new OwnedItem(
-                ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
-        final EquipmentItem catalogItem = new EquipmentItem(
-                ITEM_ID, ITEM_NAME, ItemType.WEAPON, EquipmentKind.ONE_HANDED_SWORD,
-                List.of(), null, MAX_DURABILITY);
+        final OwnedItem equippedItem =
+                new OwnedItem(ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
+        final EquipmentItem catalogItem =
+                new EquipmentItem(
+                        ITEM_ID,
+                        ITEM_NAME,
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
 
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
                 .thenReturn(List.of(equippedItem));
@@ -99,20 +111,35 @@ class DurabilityAutoUnequipPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
-        final ActionLog actionLog = new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final ActionLog actionLog =
+                new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
-        final CharacterSkillRepository characterSkillRepository = mock(CharacterSkillRepository.class);
+        final CharacterSkillRepository characterSkillRepository =
+                mock(CharacterSkillRepository.class);
 
-        final InventoryService service = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository,
-                new StatProgression(), actionLog, skillCatalogService, characterSkillRepository);
+        final InventoryService service =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        new StatProgression(),
+                        actionLog,
+                        skillCatalogService,
+                        characterSkillRepository);
 
-        final OwnedItem equippedItem = new OwnedItem(
-                ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
-        final EquipmentItem catalogItem = new EquipmentItem(
-                ITEM_ID, ITEM_NAME, ItemType.WEAPON, EquipmentKind.ONE_HANDED_SWORD,
-                List.of(), null, MAX_DURABILITY);
+        final OwnedItem equippedItem =
+                new OwnedItem(ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
+        final EquipmentItem catalogItem =
+                new EquipmentItem(
+                        ITEM_ID,
+                        ITEM_NAME,
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
 
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
                 .thenReturn(List.of(equippedItem));
@@ -137,20 +164,35 @@ class DurabilityAutoUnequipPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
-        final ActionLog actionLog = new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final ActionLog actionLog =
+                new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
-        final CharacterSkillRepository characterSkillRepository = mock(CharacterSkillRepository.class);
+        final CharacterSkillRepository characterSkillRepository =
+                mock(CharacterSkillRepository.class);
 
-        final InventoryService service = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository,
-                new StatProgression(), actionLog, skillCatalogService, characterSkillRepository);
+        final InventoryService service =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        new StatProgression(),
+                        actionLog,
+                        skillCatalogService,
+                        characterSkillRepository);
 
-        final OwnedItem equippedItem = new OwnedItem(
-                ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
-        final EquipmentItem catalogItem = new EquipmentItem(
-                ITEM_ID, ITEM_NAME, ItemType.WEAPON, EquipmentKind.ONE_HANDED_SWORD,
-                List.of(), null, MAX_DURABILITY);
+        final OwnedItem equippedItem =
+                new OwnedItem(ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
+        final EquipmentItem catalogItem =
+                new EquipmentItem(
+                        ITEM_ID,
+                        ITEM_NAME,
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
 
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
                 .thenReturn(List.of(equippedItem));
@@ -178,20 +220,35 @@ class DurabilityAutoUnequipPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
-        final ActionLog actionLog = new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final ActionLog actionLog =
+                new ActionLog(Clock.fixed(Instant.now(), ZoneId.systemDefault()));
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
-        final CharacterSkillRepository characterSkillRepository = mock(CharacterSkillRepository.class);
+        final CharacterSkillRepository characterSkillRepository =
+                mock(CharacterSkillRepository.class);
 
-        final InventoryService service = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository,
-                new StatProgression(), actionLog, skillCatalogService, characterSkillRepository);
+        final InventoryService service =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        new StatProgression(),
+                        actionLog,
+                        skillCatalogService,
+                        characterSkillRepository);
 
-        final OwnedItem equippedItem = new OwnedItem(
-                ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
-        final EquipmentItem catalogItem = new EquipmentItem(
-                ITEM_ID, ITEM_NAME, ItemType.WEAPON, EquipmentKind.ONE_HANDED_SWORD,
-                List.of(), null, MAX_DURABILITY);
+        final OwnedItem equippedItem =
+                new OwnedItem(ITEM_ID, 1, StorageKind.INVENTORY, true, currentDurability);
+        final EquipmentItem catalogItem =
+                new EquipmentItem(
+                        ITEM_ID,
+                        ITEM_NAME,
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
 
         when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
                 .thenReturn(List.of(equippedItem));
@@ -214,8 +271,7 @@ class DurabilityAutoUnequipPropertyTest {
      */
     @Provide
     Arbitrary<Double> lowDurabilities() {
-        return Arbitraries.integers().between(1, 5)
-                .map(n -> n * 0.2);
+        return Arbitraries.integers().between(1, 5).map(n -> n * 0.2);
     }
 
     /**
@@ -225,8 +281,7 @@ class DurabilityAutoUnequipPropertyTest {
      */
     @Provide
     Arbitrary<Double> highDurabilities() {
-        return Arbitraries.integers().between(5, 100)
-                .map(n -> n * 0.2);
+        return Arbitraries.integers().between(5, 100).map(n -> n * 0.2);
     }
 
     // ─── Helper ─────────────────────────────────────────────────────────────
@@ -238,7 +293,6 @@ class DurabilityAutoUnequipPropertyTest {
      */
     private CharacterProgress createProgress() {
         return new CharacterProgress(
-                "테스트", 1, 1, 0L, TalentType.MELEE, null,
-                100, 100, 100, "tir-chonaill", 0, 0L);
+                "테스트", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, 0L);
     }
 }

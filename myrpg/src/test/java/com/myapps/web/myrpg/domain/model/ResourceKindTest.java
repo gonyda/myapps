@@ -1,12 +1,10 @@
 package com.myapps.web.myrpg.domain.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * {@link ResourceKind}의 라벨 및 상수 정의를 검증하는 단위 테스트.
- */
+import org.junit.jupiter.api.Test;
+
+/** {@link ResourceKind}의 라벨 및 상수 정의를 검증하는 단위 테스트. */
 class ResourceKindTest {
 
     @Test

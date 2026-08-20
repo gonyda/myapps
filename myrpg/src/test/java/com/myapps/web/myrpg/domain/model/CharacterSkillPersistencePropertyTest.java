@@ -1,23 +1,19 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import java.util.List;
 import java.util.Optional;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
-
-import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * CharacterSkill 엔티티의 영속 라운드트립 프로퍼티 테스트.
@@ -41,8 +37,8 @@ class CharacterSkillPersistencePropertyTest {
     private final TestEntityManager entityManager;
     private final CharacterSkillRepository repository;
 
-    CharacterSkillPersistencePropertyTest(final TestEntityManager entityManager,
-                                          final CharacterSkillRepository repository) {
+    CharacterSkillPersistencePropertyTest(
+            final TestEntityManager entityManager, final CharacterSkillRepository repository) {
         this.entityManager = entityManager;
         this.repository = repository;
     }
@@ -50,14 +46,13 @@ class CharacterSkillPersistencePropertyTest {
     // Feature: 005-skill-system, Property 16: 영속 라운드트립
 
     /**
-     * 임의의 유효한 CharacterSkill을 저장 후 findById로 조회하면
-     * skillId·rank·usageCount·killCount가 모두 보존되는지 검증한다.
+     * 임의의 유효한 CharacterSkill을 저장 후 findById로 조회하면 skillId·rank·usageCount·killCount가 모두 보존되는지 검증한다.
      *
      * @param characterId 임의 캐릭터 ID
-     * @param skillId     임의 스킬 카탈로그 ID
-     * @param rank        임의 스킬 랭크 (16종)
-     * @param usageCount  임의 사용 횟수
-     * @param killCount   임의 막타 처치 수
+     * @param skillId 임의 스킬 카탈로그 ID
+     * @param rank 임의 스킬 랭크 (16종)
+     * @param usageCount 임의 사용 횟수
+     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_preserveAllFields_when_savedAndFoundById(
@@ -67,7 +62,8 @@ class CharacterSkillPersistencePropertyTest {
             @ForAll("usageCounts") final int usageCount,
             @ForAll("killCounts") final int killCount) {
 
-        final CharacterSkill skill = new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
+        final CharacterSkill skill =
+                new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
 
         entityManager.persistAndFlush(skill);
         final Long savedId = skill.getId();
@@ -84,13 +80,12 @@ class CharacterSkillPersistencePropertyTest {
     }
 
     /**
-     * 동일 캐릭터의 여러 스킬을 저장 후 findByCharacterId로 조회하면
-     * 해당 캐릭터의 모든 스킬이 반환되는지 검증한다.
+     * 동일 캐릭터의 여러 스킬을 저장 후 findByCharacterId로 조회하면 해당 캐릭터의 모든 스킬이 반환되는지 검증한다.
      *
      * @param characterId 임의 캐릭터 ID
-     * @param rank        임의 스킬 랭크
-     * @param usageCount  임의 사용 횟수
-     * @param killCount   임의 막타 처치 수
+     * @param rank 임의 스킬 랭크
+     * @param usageCount 임의 사용 횟수
+     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_returnCorrectEntries_when_findByCharacterId(
@@ -100,9 +95,12 @@ class CharacterSkillPersistencePropertyTest {
             @ForAll("killCounts") final int killCount) {
 
         final long otherCharacterId = characterId + 1;
-        final CharacterSkill skill1 = new CharacterSkill(characterId, "smash", rank, usageCount, killCount);
-        final CharacterSkill skill2 = new CharacterSkill(characterId, "windmill", rank, usageCount, killCount);
-        final CharacterSkill otherSkill = new CharacterSkill(otherCharacterId, "firebolt", rank, usageCount, killCount);
+        final CharacterSkill skill1 =
+                new CharacterSkill(characterId, "smash", rank, usageCount, killCount);
+        final CharacterSkill skill2 =
+                new CharacterSkill(characterId, "windmill", rank, usageCount, killCount);
+        final CharacterSkill otherSkill =
+                new CharacterSkill(otherCharacterId, "firebolt", rank, usageCount, killCount);
 
         entityManager.persistAndFlush(skill1);
         entityManager.persistAndFlush(skill2);
@@ -113,19 +111,19 @@ class CharacterSkillPersistencePropertyTest {
 
         assertThat(results).hasSize(2);
         assertThat(results).allMatch(s -> s.getCharacterId().equals(characterId));
-        assertThat(results).extracting(CharacterSkill::getSkillId)
+        assertThat(results)
+                .extracting(CharacterSkill::getSkillId)
                 .containsExactlyInAnyOrder("smash", "windmill");
     }
 
     /**
-     * 특정 캐릭터의 특정 스킬을 저장 후 findByCharacterIdAndSkillId로 조회하면
-     * 정확한 엔트리가 반환되는지 검증한다.
+     * 특정 캐릭터의 특정 스킬을 저장 후 findByCharacterIdAndSkillId로 조회하면 정확한 엔트리가 반환되는지 검증한다.
      *
      * @param characterId 임의 캐릭터 ID
-     * @param skillId     임의 스킬 카탈로그 ID
-     * @param rank        임의 스킬 랭크
-     * @param usageCount  임의 사용 횟수
-     * @param killCount   임의 막타 처치 수
+     * @param skillId 임의 스킬 카탈로그 ID
+     * @param rank 임의 스킬 랭크
+     * @param usageCount 임의 사용 횟수
+     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_returnCorrectEntry_when_findByCharacterIdAndSkillId(
@@ -135,12 +133,14 @@ class CharacterSkillPersistencePropertyTest {
             @ForAll("usageCounts") final int usageCount,
             @ForAll("killCounts") final int killCount) {
 
-        final CharacterSkill skill = new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
+        final CharacterSkill skill =
+                new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
 
         entityManager.persistAndFlush(skill);
         entityManager.clear();
 
-        final Optional<CharacterSkill> found = repository.findByCharacterIdAndSkillId(characterId, skillId);
+        final Optional<CharacterSkill> found =
+                repository.findByCharacterIdAndSkillId(characterId, skillId);
 
         assertThat(found).isPresent();
         assertThat(found.get().getSkillId()).isEqualTo(skillId);

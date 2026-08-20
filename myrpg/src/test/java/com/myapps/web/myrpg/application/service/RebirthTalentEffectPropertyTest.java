@@ -1,14 +1,6 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -16,14 +8,19 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.VitalMax;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 환생 시 선택 재능이 올바르게 반영되고 AP가 지급되는지 검증하는 프로퍼티 테스트.
  *
- * <p>환생 가능한 캐릭터에 대해 {@code rebirth(p, T)} 호출 후:
- * talent==T, level=1, exp=0, 누적+1, AP+1,
+ * <p>환생 가능한 캐릭터에 대해 {@code rebirth(p, T)} 호출 후: talent==T, level=1, exp=0, 누적+1, AP+1,
  * HP/MP/Stamina 현재값이 {@code vitalMaxFor(1, T)}의 각 필드와 같음을 검증한다.
  *
  * <p>Feature: 004-talent-and-ability-points, Property 9: 환생 재능 반영과 AP 지급
@@ -45,19 +42,20 @@ class RebirthTalentEffectPropertyTest {
      * 환생 가능한 캐릭터에 선택 재능으로 환생 시 모든 필드가 올바르게 설정되는지 검증한다.
      *
      * <p>rebirth(p, T) 후:
+     *
      * <ul>
-     *   <li>talent == T (Req 12.1)</li>
-     *   <li>currentLevel == 1 (Req 12.2)</li>
-     *   <li>experience == 0 (Req 12.2)</li>
-     *   <li>accumulatedLevel == before + 1 (Req 3.3)</li>
-     *   <li>abilityPoints == before + 1 (Req 1.4)</li>
-     *   <li>HP/MP/Stamina == vitalMaxFor(1, T) 각 필드 (Req 12.3)</li>
+     *   <li>talent == T (Req 12.1)
+     *   <li>currentLevel == 1 (Req 12.2)
+     *   <li>experience == 0 (Req 12.2)
+     *   <li>accumulatedLevel == before + 1 (Req 3.3)
+     *   <li>abilityPoints == before + 1 (Req 1.4)
+     *   <li>HP/MP/Stamina == vitalMaxFor(1, T) 각 필드 (Req 12.3)
      * </ul>
      *
-     * @param level         현재 레벨 (2~100)
-     * @param accExtra      누적레벨 추가분
+     * @param level 현재 레벨 (2~100)
+     * @param accExtra 누적레벨 추가분
      * @param currentTalent 환생 전 현재 재능
-     * @param targetTalent  환생 시 선택할 재능
+     * @param targetTalent 환생 시 선택할 재능
      * @param abilityPoints 환생 전 보유 AP
      */
     @Property(tries = 100)
@@ -70,19 +68,20 @@ class RebirthTalentEffectPropertyTest {
 
         // Given: 환생 가능한 캐릭터 (lastRebirthAt=null → 첫 환생, 항상 가능)
         final int accumulatedLevel = level + accExtra;
-        final CharacterProgress progress = new CharacterProgress(
-                "테스트캐릭터",
-                level,
-                accumulatedLevel,
-                0L,
-                currentTalent,
-                null,
-                50,
-                50,
-                50,
-                "tir-chonaill",
-                abilityPoints, 0L
-        );
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "테스트캐릭터",
+                        level,
+                        accumulatedLevel,
+                        0L,
+                        currentTalent,
+                        null,
+                        50,
+                        50,
+                        50,
+                        "tir-chonaill",
+                        abilityPoints,
+                        0L);
 
         final int beforeAccLevel = progress.getAccumulatedLevel();
         final int beforeAP = progress.getAbilityPoints();
@@ -96,19 +95,13 @@ class RebirthTalentEffectPropertyTest {
                 .isInstanceOf(RebirthResult.Reborn.class);
 
         // Then: talent == T (Req 12.1)
-        assertThat(progress.getTalent())
-                .as("환생 후 재능은 선택한 재능이어야 한다")
-                .isEqualTo(targetTalent);
+        assertThat(progress.getTalent()).as("환생 후 재능은 선택한 재능이어야 한다").isEqualTo(targetTalent);
 
         // Then: currentLevel == 1 (Req 12.2)
-        assertThat(progress.getCurrentLevel())
-                .as("환생 후 레벨은 1이어야 한다")
-                .isEqualTo(1);
+        assertThat(progress.getCurrentLevel()).as("환생 후 레벨은 1이어야 한다").isEqualTo(1);
 
         // Then: experience == 0 (Req 12.2)
-        assertThat(progress.getExperience())
-                .as("환생 후 경험치는 0이어야 한다")
-                .isEqualTo(0L);
+        assertThat(progress.getExperience()).as("환생 후 경험치는 0이어야 한다").isEqualTo(0L);
 
         // Then: accumulatedLevel == before + 1 (Req 3.3)
         assertThat(progress.getAccumulatedLevel())

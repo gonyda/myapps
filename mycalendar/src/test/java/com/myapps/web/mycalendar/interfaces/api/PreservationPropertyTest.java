@@ -1,15 +1,18 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.service.ScheduleService;
 import com.myapps.web.mycalendar.domain.model.Category;
-
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -17,17 +20,11 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * 기존 동작 보존을 위한 Property-Based 테스트.
  *
- * <p>수정 전 코드에서 정상 동작하는 로직을 관찰하고, 해당 동작을
- * property-based test로 캡처합니다. 수정 후에도 동일한 결과를
- * 반환하여 기존 동작이 보존되는지 검증합니다.
+ * <p>수정 전 코드에서 정상 동작하는 로직을 관찰하고, 해당 동작을 property-based test로 캡처합니다. 수정 후에도 동일한 결과를 반환하여 기존 동작이
+ * 보존되는지 검증합니다.
  *
  * <p><b>Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6</b>
  */
@@ -40,8 +37,8 @@ class PreservationPropertyTest {
     private static final int MAX_CONTENT_LENGTH = 200;
 
     /**
-     * Property: 랜덤 year/month 조합으로 캘린더 네비게이션 시
-     * prev/next 월 계산이 YearMonth.minusMonths(1)/plusMonths(1)과 동일한지 확인합니다.
+     * Property: 랜덤 year/month 조합으로 캘린더 네비게이션 시 prev/next 월 계산이
+     * YearMonth.minusMonths(1)/plusMonths(1)과 동일한지 확인합니다.
      *
      * <p>특히 year 경계(12월→1월, 1월→12월)에서도 정확한 결과를 반환해야 합니다.
      *
@@ -49,8 +46,7 @@ class PreservationPropertyTest {
      */
     @Property(tries = 200)
     void should_calculateCorrectPrevNextMonth_when_givenRandomYearMonth(
-            @ForAll("validYears") final int year,
-            @ForAll("validMonths") final int month) {
+            @ForAll("validYears") final int year, @ForAll("validMonths") final int month) {
 
         final YearMonth yearMonth = YearMonth.of(year, month);
         final YearMonth expectedPrev = yearMonth.minusMonths(1);
@@ -96,11 +92,11 @@ class PreservationPropertyTest {
     }
 
     /**
-     * Property: 랜덤 ScheduleCreateCommand로 일정 생성 시
-     * 서비스가 반환하는 ScheduleResponse 데이터가 입력과 일관성이 있는지 확인합니다.
+     * Property: 랜덤 ScheduleCreateCommand로 일정 생성 시 서비스가 반환하는 ScheduleResponse 데이터가 입력과 일관성이 있는지
+     * 확인합니다.
      *
-     * <p>ScheduleService.create()가 정상 동작하여 입력된 category, startDate,
-     * endDate, scheduleTime, content가 응답에 정확히 반영되는지 검증합니다.
+     * <p>ScheduleService.create()가 정상 동작하여 입력된 category, startDate, endDate, scheduleTime, content가
+     * 응답에 정확히 반영되는지 검증합니다.
      *
      * <p><b>Validates: Requirements 3.1, 3.3</b>
      */
@@ -110,16 +106,16 @@ class PreservationPropertyTest {
 
         final ScheduleService mockService = mock(ScheduleService.class);
 
-        final ScheduleResponse expectedResponse = new ScheduleResponse(
-                1L,
-                command.category(),
-                command.startDate(),
-                command.endDate(),
-                command.scheduleTime(),
-                command.content(),
-                java.time.LocalDateTime.now(),
-                java.time.LocalDateTime.now()
-        );
+        final ScheduleResponse expectedResponse =
+                new ScheduleResponse(
+                        1L,
+                        command.category(),
+                        command.startDate(),
+                        command.endDate(),
+                        command.scheduleTime(),
+                        command.content(),
+                        java.time.LocalDateTime.now(),
+                        java.time.LocalDateTime.now());
 
         when(mockService.create(any(ScheduleCreateCommand.class))).thenReturn(expectedResponse);
 
@@ -133,8 +129,7 @@ class PreservationPropertyTest {
     }
 
     /**
-     * Property: CalendarViewHelper의 getSchedulesForDate가 날짜에 겹치는
-     * 일정만 정확히 필터링하는지 확인합니다.
+     * Property: CalendarViewHelper의 getSchedulesForDate가 날짜에 겹치는 일정만 정확히 필터링하는지 확인합니다.
      *
      * <p><b>Validates: Requirements 3.5</b>
      */
@@ -154,12 +149,11 @@ class PreservationPropertyTest {
         final ScheduleResponse singleDayMatch = createResponse(1L, targetDate, null);
 
         // startDate == targetDate - 2, endDate == targetDate + 2 → 일치해야 함
-        final ScheduleResponse rangeMatch = createResponse(2L,
-                targetDate.minusDays(2), targetDate.plusDays(2));
+        final ScheduleResponse rangeMatch =
+                createResponse(2L, targetDate.minusDays(2), targetDate.plusDays(2));
 
         // startDate == targetDate + 1 → 불일치
-        final ScheduleResponse noMatch = createResponse(3L,
-                targetDate.plusDays(1), null);
+        final ScheduleResponse noMatch = createResponse(3L, targetDate.plusDays(1), null);
 
         final List<ScheduleResponse> schedules = List.of(singleDayMatch, rangeMatch, noMatch);
 
@@ -212,46 +206,61 @@ class PreservationPropertyTest {
     /**
      * 유효한 ScheduleCreateCommand를 생성하는 arbitrary.
      *
-     * <p>랜덤 Category, startDate, optional endDate, optional scheduleTime,
-     * 1~200자 랜덤 content를 조합합니다.
+     * <p>랜덤 Category, startDate, optional endDate, optional scheduleTime, 1~200자 랜덤 content를 조합합니다.
      *
      * @return ScheduleCreateCommand arbitrary
      */
     @Provide
     Arbitrary<ScheduleCreateCommand> validScheduleCreateCommands() {
         final Arbitrary<Category> categories = Arbitraries.of(Category.values());
-        final Arbitrary<LocalDate> startDates = Arbitraries.integers()
-                .between(2020, 2030)
-                .flatMap(y -> Arbitraries.integers().between(1, 12)
-                        .flatMap(m -> Arbitraries.integers().between(1, 28)
-                                .map(d -> LocalDate.of(y, m, d))));
-        final Arbitrary<LocalDate> endDateOffsets = Arbitraries.integers()
-                .between(0, 30)
-                .map(offset -> LocalDate.of(2025, 1, 1).plusDays(offset));
-        final Arbitrary<LocalTime> scheduleTimes = Arbitraries.integers()
-                .between(0, 23)
-                .flatMap(h -> Arbitraries.integers().between(0, 59)
-                        .map(m -> LocalTime.of(h, m)));
-        final Arbitrary<String> contents = Arbitraries.strings()
-                .ofMinLength(1)
-                .ofMaxLength(MAX_CONTENT_LENGTH)
-                .alpha();
+        final Arbitrary<LocalDate> startDates =
+                Arbitraries.integers()
+                        .between(2020, 2030)
+                        .flatMap(
+                                y ->
+                                        Arbitraries.integers()
+                                                .between(1, 12)
+                                                .flatMap(
+                                                        m ->
+                                                                Arbitraries.integers()
+                                                                        .between(1, 28)
+                                                                        .map(
+                                                                                d ->
+                                                                                        LocalDate
+                                                                                                .of(
+                                                                                                        y,
+                                                                                                        m,
+                                                                                                        d))));
+        final Arbitrary<LocalDate> endDateOffsets =
+                Arbitraries.integers()
+                        .between(0, 30)
+                        .map(offset -> LocalDate.of(2025, 1, 1).plusDays(offset));
+        final Arbitrary<LocalTime> scheduleTimes =
+                Arbitraries.integers()
+                        .between(0, 23)
+                        .flatMap(
+                                h ->
+                                        Arbitraries.integers()
+                                                .between(0, 59)
+                                                .map(m -> LocalTime.of(h, m)));
+        final Arbitrary<String> contents =
+                Arbitraries.strings().ofMinLength(1).ofMaxLength(MAX_CONTENT_LENGTH).alpha();
 
         return Combinators.combine(categories, startDates, contents)
-                .as((category, startDate, content) -> {
-                    final LocalDate endDate = startDate.plusDays(
-                            (long) (Math.random() * 10));
-                    final LocalTime time = LocalTime.of(
-                            (int) (Math.random() * 24),
-                            (int) (Math.random() * 60));
-                    return new ScheduleCreateCommand(
-                            category, startDate, endDate, time, content);
-                });
+                .as(
+                        (category, startDate, content) -> {
+                            final LocalDate endDate =
+                                    startDate.plusDays((long) (Math.random() * 10));
+                            final LocalTime time =
+                                    LocalTime.of(
+                                            (int) (Math.random() * 24), (int) (Math.random() * 60));
+                            return new ScheduleCreateCommand(
+                                    category, startDate, endDate, time, content);
+                        });
     }
 
-    private ScheduleResponse createResponse(final Long id,
-                                            final LocalDate startDate,
-                                            final LocalDate endDate) {
+    private ScheduleResponse createResponse(
+            final Long id, final LocalDate startDate, final LocalDate endDate) {
         return new ScheduleResponse(
                 id,
                 Category.SEUNGKWON,
@@ -260,7 +269,6 @@ class PreservationPropertyTest {
                 null,
                 "테스트 일정",
                 java.time.LocalDateTime.of(2026, 1, 1, 0, 0),
-                java.time.LocalDateTime.of(2026, 1, 1, 0, 0)
-        );
+                java.time.LocalDateTime.of(2026, 1, 1, 0, 0));
     }
 }

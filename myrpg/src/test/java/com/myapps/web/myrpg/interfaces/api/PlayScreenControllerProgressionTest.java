@@ -1,14 +1,19 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.time.Duration;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
@@ -34,85 +39,64 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * {@link PlayScreenController}의 환생·정보 팝업 관련 웹 슬라이스 테스트.
  *
- * <p>GET / 요청의 정보 팝업 상/중/하 렌더링(재능 라벨, StatLine, 환생 버튼 상태),
- * 최대레벨 시 EXP "MAX" 표기,
- * POST /rebirth 가능/쿨다운 분기를 검증한다.
+ * <p>GET / 요청의 정보 팝업 상/중/하 렌더링(재능 라벨, StatLine, 환생 버튼 상태), 최대레벨 시 EXP "MAX" 표기, POST /rebirth
+ * 가능/쿨다운 분기를 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
 @Import(NodeViewAssembler.class)
 class PlayScreenControllerProgressionTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @MockitoBean
-    private CharacterService characterService;
+    @MockitoBean private CharacterService characterService;
 
-    @MockitoBean
-    private MapService mapService;
+    @MockitoBean private MapService mapService;
 
-    @MockitoBean
-    private AmbienceService ambienceService;
+    @MockitoBean private AmbienceService ambienceService;
 
-    @MockitoBean
-    private MovementService movementService;
+    @MockitoBean private MovementService movementService;
 
-    @MockitoBean
-    private NpcService npcService;
+    @MockitoBean private NpcService npcService;
 
-    @MockitoBean
-    private NpcDialogueService npcDialogueService;
+    @MockitoBean private NpcDialogueService npcDialogueService;
 
-    @MockitoBean
-    private ProgressionService progressionService;
+    @MockitoBean private ProgressionService progressionService;
 
-    @MockitoBean
-    private ActionLog actionLog;
+    @MockitoBean private ActionLog actionLog;
 
-    @MockitoBean
-    private PlayScreenViewHelper playScreenViewHelper;
+    @MockitoBean private PlayScreenViewHelper playScreenViewHelper;
 
-    @MockitoBean
-    private MonsterService monsterService;
+    @MockitoBean private MonsterService monsterService;
 
-    @MockitoBean
-    private MonsterDialogueService monsterDialogueService;
+    @MockitoBean private MonsterDialogueService monsterDialogueService;
 
-    @MockitoBean
-    private MonsterEncounterService monsterEncounterService;
+    @MockitoBean private MonsterEncounterService monsterEncounterService;
 
-    @MockitoBean
-    private BattleService battleService;
+    @MockitoBean private BattleService battleService;
 
     @org.junit.jupiter.api.BeforeEach
     void setUpBattleServiceDefault() {
-        org.mockito.Mockito.when(battleService.resumeIfActive(
-                org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
+        org.mockito.Mockito.when(
+                        battleService.resumeIfActive(
+                                org.mockito.ArgumentMatchers.any(CharacterProgress.class)))
                 .thenReturn(java.util.Optional.empty());
     }
 
     /**
-     * GET / 정보 팝업 상/중/하 영역이 올바르게 렌더링되는지 검증한다.
-     * 재능 라벨, StatLine(STR/DEX/INT/CRIT/DEF 본체+보너스), 환생 버튼 활성, 경과 텍스트를 확인한다.
+     * GET / 정보 팝업 상/중/하 영역이 올바르게 렌더링되는지 검증한다. 재능 라벨, StatLine(STR/DEX/INT/CRIT/DEF 본체+보너스), 환생 버튼
+     * 활성, 경과 텍스트를 확인한다.
      */
     @Test
     void should_renderInfoPopupTopMiddleBottom_when_rootAccessed() throws Exception {
@@ -134,9 +118,7 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(content().string(containsString("환생 후 3시간 15분 경과")));
     }
 
-    /**
-     * GET / 정보 팝업에서 환생 버튼이 비활성화되는지 검증한다.
-     */
+    /** GET / 정보 팝업에서 환생 버튼이 비활성화되는지 검증한다. */
     @Test
     void should_renderRebirthButtonDisabled_when_rebirthNotAvailable() throws Exception {
         final PlayScreenView view = buildViewWithInfo(false, "환생 기록 없음");
@@ -147,17 +129,18 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(content().string(containsString("disabled")));
     }
 
-    /**
-     * GET / 정보 팝업에서 환생 버튼이 활성화되는지 검증한다.
-     */
+    /** GET / 정보 팝업에서 환생 버튼이 활성화되는지 검증한다. */
     @Test
     void should_renderRebirthButtonEnabled_when_rebirthAvailable() throws Exception {
         final PlayScreenView view = buildViewWithInfo(true, "환생 후 25시간 0분 경과");
         stubCommonForGet(view);
 
-        final String html = mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+        final String html =
+                mockMvc.perform(get("/"))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
 
         // 환생 버튼에 disabled 속성이 없어야 한다.
         // 템플릿: th:attr="disabled=${view.info.rebirthAvailable} ? null : 'disabled'"
@@ -169,18 +152,25 @@ class PlayScreenControllerProgressionTest {
                 .doesNotContain("disabled=\"disabled\"");
     }
 
-    /**
-     * GET / 상단바에서 최대레벨(100)일 때 EXP 게이지에 "MAX"가 표시되는지 검증한다.
-     */
+    /** GET / 상단바에서 최대레벨(100)일 때 EXP 게이지에 "MAX"가 표시되는지 검증한다. */
     @Test
     void should_renderExpMax_when_levelIs100() throws Exception {
         final GaugeView expMax = new GaugeView(0, 0, 100, "MAX");
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         final TopBarView topBar = new TopBarView("고니", 100, expMax, gauge, gauge, gauge);
         final InfoPopupView info = buildInfo(true, "환생 후 25시간 0분 경과");
-        final PlayScreenView view = new PlayScreenView(
-                topBar, dummyMinimap(), dummyFullMap(), "평화로운 마을",
-                null, null, null, null, List.of(), info);
+        final PlayScreenView view =
+                new PlayScreenView(
+                        topBar,
+                        dummyMinimap(),
+                        dummyFullMap(),
+                        "평화로운 마을",
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(),
+                        info);
         stubCommonForGet(view);
 
         mockMvc.perform(get("/"))
@@ -188,9 +178,7 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(content().string(containsString("MAX")));
     }
 
-    /**
-     * POST /rebirth 환생 성공 시 saveTurn이 호출되고 "환생했습니다" 로그가 추가되는지 검증한다.
-     */
+    /** POST /rebirth 환생 성공 시 saveTurn이 호출되고 "환생했습니다" 로그가 추가되는지 검증한다. */
     @Test
     void should_saveTurnAndLogRebirth_when_rebirthSucceeds() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -211,9 +199,7 @@ class PlayScreenControllerProgressionTest {
         verify(actionLog).add("환생했습니다 (재능: 근접전투)", "system");
     }
 
-    /**
-     * POST /rebirth 쿨다운 활성 시 saveTurn이 호출되지 않고 남은 시간 안내 로그가 추가되는지 검증한다.
-     */
+    /** POST /rebirth 쿨다운 활성 시 saveTurn이 호출되지 않고 남은 시간 안내 로그가 추가되는지 검증한다. */
     @Test
     void should_notSaveTurnAndLogCooldown_when_rebirthCooldownActive() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -244,15 +230,32 @@ class PlayScreenControllerProgressionTest {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         final GaugeView exp = new GaugeView(500, 250000, 0, "500 / 250000");
         final TopBarView topBar = new TopBarView("고니", 10, exp, gauge, gauge, gauge);
-        final InfoPopupView info = new InfoPopupView(
-                "고니", 10, 12, "활",
-                5, "원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv",
-                gauge, gauge, gauge,
-                List.of(new StatLine("STR", "10", "+0")),
-                true, "환생 후 25시간 0분 경과");
-        final PlayScreenView view = new PlayScreenView(
-                topBar, dummyMinimap(), dummyFullMap(), "평화로운 마을",
-                null, null, null, null, List.of(), info);
+        final InfoPopupView info =
+                new InfoPopupView(
+                        "고니",
+                        10,
+                        12,
+                        "활",
+                        5,
+                        "원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv",
+                        gauge,
+                        gauge,
+                        gauge,
+                        List.of(new StatLine("STR", "10", "+0")),
+                        true,
+                        "환생 후 25시간 0분 경과");
+        final PlayScreenView view =
+                new PlayScreenView(
+                        topBar,
+                        dummyMinimap(),
+                        dummyFullMap(),
+                        "평화로운 마을",
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(),
+                        info);
         stubCommonForGet(view);
 
         mockMvc.perform(get("/"))
@@ -260,13 +263,11 @@ class PlayScreenControllerProgressionTest {
                 .andExpect(content().string(containsString("보유 AP")))
                 .andExpect(content().string(containsString(">5<")))
                 .andExpect(content().string(containsString("재능 효과")))
-                .andExpect(content().string(containsString("원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv")));
+                .andExpect(
+                        content().string(containsString("원거리 데미지 +10%, DEX +2/Lv, 치명 +0.1%/Lv")));
     }
 
-    /**
-     * POST /rebirth?talent=ARCHERY 요청 시 ARCHERY 재능으로 환생이 수행되고
-     * 응답 로그에 "활" 재능이 반영되는지 검증한다.
-     */
+    /** POST /rebirth?talent=ARCHERY 요청 시 ARCHERY 재능으로 환생이 수행되고 응답 로그에 "활" 재능이 반영되는지 검증한다. */
     @Test
     void should_rebirthWithArcheryTalent_when_talentParamIsArchery() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -288,10 +289,7 @@ class PlayScreenControllerProgressionTest {
         verify(actionLog).add("환생했습니다 (재능: 활)", "system");
     }
 
-    /**
-     * POST /rebirth (talent 파라미터 누락) 시 기본 재능 MELEE로 폴백되어
-     * 환생이 수행되는지 검증한다.
-     */
+    /** POST /rebirth (talent 파라미터 누락) 시 기본 재능 MELEE로 폴백되어 환생이 수행되는지 검증한다. */
     @Test
     void should_fallbackToMelee_when_talentParamMissing() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -311,10 +309,7 @@ class PlayScreenControllerProgressionTest {
         verify(actionLog).add("환생했습니다 (재능: 근접전투)", "system");
     }
 
-    /**
-     * POST /rebirth?talent=ARCHERY 쿨다운 활성 시 상태가 변경되지 않고
-     * saveTurn이 호출되지 않음을 검증한다.
-     */
+    /** POST /rebirth?talent=ARCHERY 쿨다운 활성 시 상태가 변경되지 않고 saveTurn이 호출되지 않음을 검증한다. */
     @Test
     void should_keepStateUnchanged_when_rebirthWithTalentDuringCooldown() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -351,11 +346,20 @@ class PlayScreenControllerProgressionTest {
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
     }
 
@@ -370,23 +374,40 @@ class PlayScreenControllerProgressionTest {
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
     }
 
-    private PlayScreenView buildViewWithInfo(final boolean rebirthAvailable,
-                                             final String elapsedText) {
+    private PlayScreenView buildViewWithInfo(
+            final boolean rebirthAvailable, final String elapsedText) {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         final GaugeView exp = new GaugeView(500, 250000, 0, "500 / 250000");
         final TopBarView topBar = new TopBarView("고니", 50, exp, gauge, gauge, gauge);
         final InfoPopupView info = buildInfo(rebirthAvailable, elapsedText);
         return new PlayScreenView(
-                topBar, dummyMinimap(), dummyFullMap(), "평화로운 마을",
-                null, null, null, null, List.of(), info);
+                topBar,
+                dummyMinimap(),
+                dummyFullMap(),
+                "평화로운 마을",
+                null,
+                null,
+                null,
+                null,
+                List.of(),
+                info);
     }
 
     private PlayScreenView buildDefaultView() {
@@ -394,24 +415,40 @@ class PlayScreenControllerProgressionTest {
         final TopBarView topBar = new TopBarView("고니", 1, gauge, gauge, gauge, gauge);
         final InfoPopupView info = buildInfo(true, "환생 기록 없음");
         return new PlayScreenView(
-                topBar, dummyMinimap(), dummyFullMap(), "평화로운 마을",
-                null, null, null, null, List.of(), info);
+                topBar,
+                dummyMinimap(),
+                dummyFullMap(),
+                "평화로운 마을",
+                null,
+                null,
+                null,
+                null,
+                List.of(),
+                info);
     }
 
     private InfoPopupView buildInfo(final boolean rebirthAvailable, final String elapsedText) {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
-        final List<StatLine> stats = List.of(
-                new StatLine("STR", "23", "+0"),
-                new StatLine("DEX", "15", "+0"),
-                new StatLine("INT", "10", "+0"),
-                new StatLine("CRIT", "5.0%", "+0.0%"),
-                new StatLine("DEF", "8", "+0")
-        );
+        final List<StatLine> stats =
+                List.of(
+                        new StatLine("STR", "23", "+0"),
+                        new StatLine("DEX", "15", "+0"),
+                        new StatLine("INT", "10", "+0"),
+                        new StatLine("CRIT", "5.0%", "+0.0%"),
+                        new StatLine("DEF", "8", "+0"));
         return new InfoPopupView(
-                "고니", 50, 51, "근접전투",
-                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
-                gauge, gauge, gauge,
-                stats, rebirthAvailable, elapsedText);
+                "고니",
+                50,
+                51,
+                "근접전투",
+                0,
+                "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
+                gauge,
+                gauge,
+                gauge,
+                stats,
+                rebirthAvailable,
+                elapsedText);
     }
 
     private MapNode dummyNode() {

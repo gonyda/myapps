@@ -1,9 +1,5 @@
 package com.myapps.web.mycalendar.domain.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,12 +10,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * 일정을 나타내는 핵심 도메인 엔티티.
  *
- * <p>커플 캘린더의 개별 일정 항목을 표현하며, 카테고리(승권/치원/데이트),
- * 날짜 범위, 시간, 내용을 포함합니다.
+ * <p>커플 캘린더의 개별 일정 항목을 표현하며, 카테고리(승권/치원/데이트), 날짜 범위, 시간, 내용을 포함합니다.
  */
 @Entity
 @Table(name = "schedule")
@@ -53,18 +51,15 @@ public class Schedule {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    /**
-     * JPA 전용 기본 생성자.
-     */
-    protected Schedule() {
-    }
+    /** JPA 전용 기본 생성자. */
+    protected Schedule() {}
 
     /**
      * 필수 필드를 받아 일정을 생성합니다.
      *
-     * @param category  일정 카테고리 (SEUNGKWON, CHIWON, DATE)
+     * @param category 일정 카테고리 (SEUNGKWON, CHIWON, DATE)
      * @param startDate 일정 시작 날짜
-     * @param content   일정 내용 (1자 이상 200자 이하)
+     * @param content 일정 내용 (1자 이상 200자 이하)
      */
     public Schedule(final Category category, final LocalDate startDate, final String content) {
         this.category = category;
@@ -72,9 +67,7 @@ public class Schedule {
         this.content = content;
     }
 
-    /**
-     * 엔티티가 영속화되기 전 생성 시각과 수정 시각을 설정합니다.
-     */
+    /** 엔티티가 영속화되기 전 생성 시각과 수정 시각을 설정합니다. */
     @PrePersist
     protected void onCreate() {
         final LocalDateTime now = LocalDateTime.now();
@@ -82,9 +75,7 @@ public class Schedule {
         this.updatedAt = now;
     }
 
-    /**
-     * 엔티티가 수정되기 전 수정 시각을 갱신합니다.
-     */
+    /** 엔티티가 수정되기 전 수정 시각을 갱신합니다. */
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
@@ -206,5 +197,4 @@ public class Schedule {
     public void updateScheduleTime(final LocalTime scheduleTime) {
         this.scheduleTime = scheduleTime;
     }
-
 }

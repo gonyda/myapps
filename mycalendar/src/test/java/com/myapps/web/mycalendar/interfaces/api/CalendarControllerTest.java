@@ -1,23 +1,5 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
-import com.myapps.web.mycalendar.application.service.ScheduleService;
-import com.myapps.web.mycalendar.domain.model.Anniversary;
-import com.myapps.web.mycalendar.domain.model.Category;
-import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -27,55 +9,60 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
+import com.myapps.web.mycalendar.application.service.ScheduleService;
+import com.myapps.web.mycalendar.domain.model.Anniversary;
+import com.myapps.web.mycalendar.domain.model.Category;
+import com.myapps.web.mycalendar.domain.service.AnniversaryCalculator;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
 /**
  * CalendarController의 웹 슬라이스 테스트.
  *
- * <p>MockMvc를 활용하여 루트 리다이렉트, 월별 캘린더 뷰 렌더링,
- * 모델 데이터 전달, D-Day 카운터 정확성을 검증합니다.
+ * <p>MockMvc를 활용하여 루트 리다이렉트, 월별 캘린더 뷰 렌더링, 모델 데이터 전달, D-Day 카운터 정확성을 검증합니다.
  */
 @WebMvcTest(CalendarController.class)
 class CalendarControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @MockitoBean
-    private ScheduleService scheduleService;
+    @MockitoBean private ScheduleService scheduleService;
 
-    @MockitoBean
-    private AnniversaryCalculator anniversaryCalculator;
+    @MockitoBean private AnniversaryCalculator anniversaryCalculator;
 
-    @MockitoBean
-    private CalendarViewHelper calendarViewHelper;
+    @MockitoBean private CalendarViewHelper calendarViewHelper;
 
-    /**
-     * GET / 요청 시 현재 월 캘린더 경로로 내부 포워딩되는지 검증합니다.
-     */
+    /** GET / 요청 시 현재 월 캘린더 경로로 내부 포워딩되는지 검증합니다. */
     @Test
     void should_forwardToCurrentMonth_when_rootPathAccessed() throws Exception {
         final LocalDate today = LocalDate.now();
         final String expectedUrl = "/calendar/" + today.getYear() + "/" + today.getMonthValue();
 
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(forwardedUrl(expectedUrl));
+        mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(forwardedUrl(expectedUrl));
     }
 
-    /**
-     * GET /calendar/{year}/{month} 요청 시 캘린더 뷰와 모델 속성을 검증합니다.
-     */
+    /** GET /calendar/{year}/{month} 요청 시 캘린더 뷰와 모델 속성을 검증합니다. */
     @Test
     void should_returnCalendarView_when_yearAndMonthProvided() throws Exception {
         final int year = 2026;
         final int month = 7;
         final YearMonth yearMonth = YearMonth.of(year, month);
         final List<ScheduleResponse> schedules = List.of();
-        final List<Anniversary> anniversaries = List.of(
-                new Anniversary(LocalDate.of(2026, 7, 17), "1주년")
-        );
+        final List<Anniversary> anniversaries =
+                List.of(new Anniversary(LocalDate.of(2026, 7, 17), "1주년"));
 
         when(scheduleService.findByMonth(yearMonth)).thenReturn(schedules);
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(yearMonth)).thenReturn(anniversaries);
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(31L);
 
@@ -94,17 +81,17 @@ class CalendarControllerTest {
                 .andExpect(model().attribute("nextMonth", 8));
     }
 
-    /**
-     * 1월의 이전 월이 전년도 12월로 계산되는지 검증합니다.
-     */
+    /** 1월의 이전 월이 전년도 12월로 계산되는지 검증합니다. */
     @Test
     void should_calculatePreviousYearDecember_when_januaryViewed() throws Exception {
         final int year = 2027;
         final int month = 1;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
-        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
+        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(199L);
 
         mockMvc.perform(get("/calendar/{year}/{month}", year, month))
@@ -115,17 +102,17 @@ class CalendarControllerTest {
                 .andExpect(model().attribute("nextMonth", 2));
     }
 
-    /**
-     * 12월의 다음 월이 다음 연도 1월로 계산되는지 검증합니다.
-     */
+    /** 12월의 다음 월이 다음 연도 1월로 계산되는지 검증합니다. */
     @Test
     void should_calculateNextYearJanuary_when_decemberViewed() throws Exception {
         final int year = 2026;
         final int month = 12;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
-        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
+        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(180L);
 
         mockMvc.perform(get("/calendar/{year}/{month}", year, month))
@@ -139,8 +126,8 @@ class CalendarControllerTest {
     /**
      * D-Day 카운터 모델 데이터가 정확하게 전달되는지 검증합니다.
      *
-     * <p>AnniversaryCalculator가 반환하는 D-Day 값이 모델에 올바르게 설정되며,
-     * 한국식 D-Day 계산(Base_Date를 1일로 산정) 결과가 반영되는지 확인합니다.
+     * <p>AnniversaryCalculator가 반환하는 D-Day 값이 모델에 올바르게 설정되며, 한국식 D-Day 계산(Base_Date를 1일로 산정) 결과가
+     * 반영되는지 확인합니다.
      */
     @Test
     void should_includeDDayCounter_when_calendarViewed() throws Exception {
@@ -149,8 +136,10 @@ class CalendarControllerTest {
         final long expectedDDay = 270L;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
-        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
+        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(expectedDDay);
 
         mockMvc.perform(get("/calendar/{year}/{month}", year, month))
@@ -162,25 +151,31 @@ class CalendarControllerTest {
     /**
      * 캘린더 뷰에 모든 필수 모델 속성이 존재하는지 검증합니다.
      *
-     * <p>year, month, schedules, anniversaries, dDay, today,
-     * prevYear, prevMonth, nextYear, nextMonth 속성이 모두 존재해야 합니다.
+     * <p>year, month, schedules, anniversaries, dDay, today, prevYear, prevMonth, nextYear,
+     * nextMonth 속성이 모두 존재해야 합니다.
      */
     @Test
     void should_includeAllModelAttributes_when_calendarViewed() throws Exception {
         final int year = 2026;
         final int month = 9;
         final LocalDateTime now = LocalDateTime.of(2026, 9, 15, 10, 0);
-        final List<ScheduleResponse> schedules = List.of(
-                new ScheduleResponse(1L, Category.DATE, LocalDate.of(2026, 9, 10),
-                        null, LocalTime.of(18, 0), "저녁 약속",
-                        now, now)
-        );
-        final List<Anniversary> anniversaries = List.of(
-                new Anniversary(LocalDate.of(2026, 9, 24), "100일")
-        );
+        final List<ScheduleResponse> schedules =
+                List.of(
+                        new ScheduleResponse(
+                                1L,
+                                Category.DATE,
+                                LocalDate.of(2026, 9, 10),
+                                null,
+                                LocalTime.of(18, 0),
+                                "저녁 약속",
+                                now,
+                                now));
+        final List<Anniversary> anniversaries =
+                List.of(new Anniversary(LocalDate.of(2026, 9, 24), "100일"));
 
         when(scheduleService.findByMonth(YearMonth.of(year, month))).thenReturn(schedules);
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.getAnniversariesForMonth(YearMonth.of(year, month)))
                 .thenReturn(anniversaries);
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(91L);
@@ -188,10 +183,18 @@ class CalendarControllerTest {
         mockMvc.perform(get("/calendar/{year}/{month}", year, month))
                 .andExpect(status().isOk())
                 .andExpect(view().name("calendar"))
-                .andExpect(model().attributeExists(
-                        "year", "month", "schedules", "anniversaries",
-                        "dDay", "today", "prevYear", "prevMonth",
-                        "nextYear", "nextMonth"))
+                .andExpect(
+                        model().attributeExists(
+                                        "year",
+                                        "month",
+                                        "schedules",
+                                        "anniversaries",
+                                        "dDay",
+                                        "today",
+                                        "prevYear",
+                                        "prevMonth",
+                                        "nextYear",
+                                        "nextMonth"))
                 .andExpect(model().attribute("year", year))
                 .andExpect(model().attribute("month", month))
                 .andExpect(model().attribute("schedules", schedules))
@@ -203,18 +206,23 @@ class CalendarControllerTest {
                 .andExpect(model().attribute("nextMonth", 10));
     }
 
-    /**
-     * GET /calendar/weekly?startDate= 요청 시 주간 일정 프래그먼트 뷰를 반환하는지 검증합니다.
-     */
+    /** GET /calendar/weekly?startDate= 요청 시 주간 일정 프래그먼트 뷰를 반환하는지 검증합니다. */
     @Test
     void should_returnWeeklyFragment_when_weeklyEndpointCalled() throws Exception {
         final LocalDate weekStart = LocalDate.of(2026, 7, 5);
         final LocalDate weekEnd = LocalDate.of(2026, 7, 11);
         final LocalDateTime now = LocalDateTime.of(2026, 7, 8, 10, 0);
-        final List<ScheduleResponse> schedules = List.of(
-                new ScheduleResponse(1L, Category.DATE, LocalDate.of(2026, 7, 8),
-                        null, LocalTime.of(18, 0), "데이트", now, now)
-        );
+        final List<ScheduleResponse> schedules =
+                List.of(
+                        new ScheduleResponse(
+                                1L,
+                                Category.DATE,
+                                LocalDate.of(2026, 7, 8),
+                                null,
+                                LocalTime.of(18, 0),
+                                "데이트",
+                                now,
+                                now));
 
         when(scheduleService.findByWeek(eq(weekStart), eq(weekEnd))).thenReturn(schedules);
 
@@ -224,9 +232,7 @@ class CalendarControllerTest {
                 .andExpect(model().attributeExists("weekStart", "weekEnd", "weeklyScheduleMap"));
     }
 
-    /**
-     * 주간 일정 조회 시 일정이 없으면 빈 맵이 모델에 전달되는지 검증합니다.
-     */
+    /** 주간 일정 조회 시 일정이 없으면 빈 맵이 모델에 전달되는지 검증합니다. */
     @Test
     void should_returnEmptyWeeklyMap_when_noSchedulesInWeek() throws Exception {
         final LocalDate weekStart = LocalDate.of(2026, 8, 3);
@@ -240,17 +246,17 @@ class CalendarControllerTest {
                 .andExpect(model().attributeExists("weeklyScheduleMap"));
     }
 
-    /**
-     * 캘린더 뷰에 주간 일정 관련 모델 속성이 포함되는지 검증합니다.
-     */
+    /** 캘린더 뷰에 주간 일정 관련 모델 속성이 포함되는지 검증합니다. */
     @Test
     void should_includeWeeklyAttributes_when_calendarViewed() throws Exception {
         final int year = 2026;
         final int month = 7;
 
         when(scheduleService.findByMonth(any(YearMonth.class))).thenReturn(List.of());
-        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
-        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class))).thenReturn(List.of());
+        when(scheduleService.findByWeek(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
+        when(anniversaryCalculator.getAnniversariesForMonth(any(YearMonth.class)))
+                .thenReturn(List.of());
         when(anniversaryCalculator.calculateDDay(any(LocalDate.class))).thenReturn(31L);
 
         mockMvc.perform(get("/calendar/{year}/{month}", year, month))

@@ -6,8 +6,7 @@ import java.util.Optional;
 /**
  * 아이템의 유형을 정의하는 열거형.
  *
- * <p>포션(소비형), 무기, 방어구로 분류하며 장비 여부 판별과
- * 문자열 코드↔enum 변환을 제공한다.
+ * <p>포션(소비형), 무기, 방어구로 분류하며 장비 여부 판별과 문자열 코드↔enum 변환을 제공한다.
  */
 public enum ItemType {
 
@@ -66,8 +65,6 @@ public enum ItemType {
      * @return 대응하는 {@code ItemType}, 또는 미지 코드이면 {@code Optional.empty()}
      */
     public static Optional<ItemType> fromString(final String code) {
-        return Arrays.stream(values())
-                .filter(type -> type.code.equals(code))
-                .findFirst();
+        return Arrays.stream(values()).filter(type -> type.code.equals(code)).findFirst();
     }
 }

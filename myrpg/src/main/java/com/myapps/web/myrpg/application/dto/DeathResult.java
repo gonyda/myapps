@@ -7,5 +7,4 @@ package com.myapps.web.myrpg.application.dto;
  *
  * @param experienceLost 사망으로 인해 차감된 경험치량
  */
-public record DeathResult(long experienceLost) {
-}
+public record DeathResult(long experienceLost) {}

@@ -1,18 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.myapps.web.myrpg.application.dto.BattleLogInput;
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.DeathResult;
-import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.DropResult;
+import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
@@ -38,24 +30,28 @@ import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 전투 오케스트레이션 애플리케이션 서비스.
  *
- * <p>전투 시작({@code start})·턴 진행({@code takeTurn})·도망({@code flee})·
- * 전투 재개({@code resumeIfActive})·전투 스킬 목록({@code combatSkills})을
- * 기존 서비스들을 조립하여 수행한다.
+ * <p>전투 시작({@code start})·턴 진행({@code takeTurn})·도망({@code flee})· 전투 재개({@code resumeIfActive})·전투
+ * 스킬 목록({@code combatSkills})을 기존 서비스들을 조립하여 수행한다.
  *
- * <p>자원 소모·재능 특성(활 1턴 선제·마법 캐스팅 실패)·선후공·
- * HP 감소·사망·보상·저장을 순서대로 처리하며, 각 턴 결과를
- * {@link BattleTurnResult}로 반환한다.
+ * <p>자원 소모·재능 특성(활 1턴 선제·마법 캐스팅 실패)·선후공· HP 감소·사망·보상·저장을 순서대로 처리하며, 각 턴 결과를 {@link
+ * BattleTurnResult}로 반환한다.
  *
  * <p>이연 seam:
+ *
  * <ul>
- *   <li>7순위(대장간) 스펙에서 수리 기능이 추가되면 전투 후 수리 권유 UI와 연동.
- *       현재는 파손 시 자동 해제까지만.</li>
- *   <li>인챈트 스펙 확정 후 보스 전용 드랍 테이블 및 인챈트 아이템 드랍을 연결.</li>
- *   <li>10순위(던전) 스펙에서 던전 노드 내 연속 전투와 보스 조우를 구현.</li>
+ *   <li>7순위(대장간) 스펙에서 수리 기능이 추가되면 전투 후 수리 권유 UI와 연동. 현재는 파손 시 자동 해제까지만.
+ *   <li>인챈트 스펙 확정 후 보스 전용 드랍 테이블 및 인챈트 아이템 드랍을 연결.
+ *   <li>10순위(던전) 스펙에서 던전 노드 내 연속 전투와 보스 조우를 구현.
  * </ul>
  */
 @Service
@@ -94,37 +90,38 @@ public class BattleService {
     /**
      * BattleService를 생성한다.
      *
-     * @param battleStateRepository   전투 상태 리포지토리
-     * @param resolver                순수 데미지 계산 서비스
-     * @param monsterService          몬스터 카탈로그 서비스
-     * @param monsterAiService        몬스터 AI 서비스
-     * @param monsterRewardService    몬스터 보상 서비스
-     * @param skillService            스킬 시스템 서비스
-     * @param inventoryService        인벤토리 서비스
-     * @param progressionService      경험치/사망 서비스
-     * @param characterService        캐릭터 저장 서비스
-     * @param statProgression         레벨 스탯 계산 정책
-     * @param actionLog               활동 로그
-     * @param random                  난수 생성기
-     * @param skillCatalogService     스킬 카탈로그 서비스
+     * @param battleStateRepository 전투 상태 리포지토리
+     * @param resolver 순수 데미지 계산 서비스
+     * @param monsterService 몬스터 카탈로그 서비스
+     * @param monsterAiService 몬스터 AI 서비스
+     * @param monsterRewardService 몬스터 보상 서비스
+     * @param skillService 스킬 시스템 서비스
+     * @param inventoryService 인벤토리 서비스
+     * @param progressionService 경험치/사망 서비스
+     * @param characterService 캐릭터 저장 서비스
+     * @param statProgression 레벨 스탯 계산 정책
+     * @param actionLog 활동 로그
+     * @param random 난수 생성기
+     * @param skillCatalogService 스킬 카탈로그 서비스
      * @param characterSkillRepository 캐릭터 보유 스킬 리포지토리
-     * @param itemCatalogService      아이템 카탈로그 서비스
+     * @param itemCatalogService 아이템 카탈로그 서비스
      */
-    public BattleService(final BattleStateRepository battleStateRepository,
-                         final BattleResolver resolver,
-                         final MonsterService monsterService,
-                         final MonsterAiService monsterAiService,
-                         final MonsterRewardService monsterRewardService,
-                         final SkillService skillService,
-                         final InventoryService inventoryService,
-                         final ProgressionService progressionService,
-                         final CharacterService characterService,
-                         final StatProgression statProgression,
-                         final ActionLog actionLog,
-                         final Random random,
-                         final SkillCatalogService skillCatalogService,
-                         final CharacterSkillRepository characterSkillRepository,
-                         final ItemCatalogService itemCatalogService) {
+    public BattleService(
+            final BattleStateRepository battleStateRepository,
+            final BattleResolver resolver,
+            final MonsterService monsterService,
+            final MonsterAiService monsterAiService,
+            final MonsterRewardService monsterRewardService,
+            final SkillService skillService,
+            final InventoryService inventoryService,
+            final ProgressionService progressionService,
+            final CharacterService characterService,
+            final StatProgression statProgression,
+            final ActionLog actionLog,
+            final Random random,
+            final SkillCatalogService skillCatalogService,
+            final CharacterSkillRepository characterSkillRepository,
+            final ItemCatalogService itemCatalogService) {
         this.battleStateRepository = battleStateRepository;
         this.resolver = resolver;
         this.monsterService = monsterService;
@@ -147,28 +144,25 @@ public class BattleService {
     /**
      * 전투를 시작한다.
      *
-     * <p>지정된 몬스터의 최대 HP로 {@link BattleState}를 생성하여 영속한다.
-     * 전투 시작 인트로 메시지는 컨트롤러가 {@code turnLog}로 표시하며,
-     * 하단 활동 로그에는 추가하지 않는다.
-     * 몬스터 카탈로그에서 해당 ID를 찾을 수 없으면 전투를 시작하지 않고
-     * {@code null}을 반환한다(예외 없이 안전 처리).
+     * <p>지정된 몬스터의 최대 HP로 {@link BattleState}를 생성하여 영속한다. 전투 시작 인트로 메시지는 컨트롤러가 {@code turnLog}로
+     * 표시하며, 하단 활동 로그에는 추가하지 않는다. 몬스터 카탈로그에서 해당 ID를 찾을 수 없으면 전투를 시작하지 않고 {@code null}을 반환한다(예외 없이 안전
+     * 처리).
      *
-     * @param progress  캐릭터 진행 상태
+     * @param progress 캐릭터 진행 상태
      * @param monsterId 전투 대상 몬스터 ID
-     * @param ambush    기습 여부
+     * @param ambush 기습 여부
      * @return 생성된 전투 상태, 몬스터 미지 시 {@code null}
      */
     @Transactional
-    public BattleState start(final CharacterProgress progress,
-                             final String monsterId,
-                             final boolean ambush) {
+    public BattleState start(
+            final CharacterProgress progress, final String monsterId, final boolean ambush) {
         final Optional<Monster> monsterOpt = monsterService.byId(monsterId);
         if (monsterOpt.isEmpty()) {
             return null;
         }
         final Monster monster = monsterOpt.get();
-        final BattleState state = new BattleState(
-                progress.getId(), monsterId, monster.maxHp(), ambush);
+        final BattleState state =
+                new BattleState(progress.getId(), monsterId, monster.maxHp(), ambush);
         final BattleState saved = battleStateRepository.save(state);
         return saved;
     }
@@ -176,24 +170,20 @@ public class BattleService {
     /**
      * 전투 턴을 진행한다.
      *
-     * <p>자원 검사·소모 → 마법 캐스팅 실패 판정 → 몬스터 행동 결정 →
-     * 재능 분기(활 1턴 선제 / 일반 매트릭스) → 선후공 결정·선공 처치 시 후공 스킵 →
-     * HP 적용 → 스킬 훅(사용/막타) → 내구도 감소 → 처치 보상 → 사망 처리 →
-     * 저장 순서로 한 턴을 오케스트레이션한다.
+     * <p>자원 검사·소모 → 마법 캐스팅 실패 판정 → 몬스터 행동 결정 → 재능 분기(활 1턴 선제 / 일반 매트릭스) → 선후공 결정·선공 처치 시 후공 스킵 → HP
+     * 적용 → 스킬 훅(사용/막타) → 내구도 감소 → 처치 보상 → 사망 처리 → 저장 순서로 한 턴을 오케스트레이션한다.
      *
-     * <p>전투 액션 로그(플레이어/몬스터 행동·선제·캐스팅 실패)는
-     * {@code BattleTurnResult.combatLines}에만 담기고, 하단 활동 로그에는 추가되지 않는다.
-     * 결산(처치 보상)·사망 라인만 하단 {@code actionLog}에 추가한다.
+     * <p>전투 액션 로그(플레이어/몬스터 행동·선제·캐스팅 실패)는 {@code BattleTurnResult.combatLines}에만 담기고, 하단 활동 로그에는
+     * 추가되지 않는다. 결산(처치 보상)·사망 라인만 하단 {@code actionLog}에 추가한다.
      *
      * @param progress 캐릭터 진행 상태
-     * @param state    현재 전투 상태
-     * @param skillId  플레이어가 선택한 스킬 ID
+     * @param state 현재 전투 상태
+     * @param skillId 플레이어가 선택한 스킬 ID
      * @return 턴 결과
      */
     @Transactional
-    public BattleTurnResult takeTurn(final CharacterProgress progress,
-                                     final BattleState state,
-                                     final String skillId) {
+    public BattleTurnResult takeTurn(
+            final CharacterProgress progress, final BattleState state, final String skillId) {
         final Optional<Monster> monsterOpt = monsterService.byId(state.getMonsterId());
         if (monsterOpt.isEmpty()) {
             return safeTerminateAndReturn(state);
@@ -217,8 +207,8 @@ public class BattleService {
         final boolean castFailure = checkMagicCastFailure(skill, combatLines);
 
         final SkillType monsterAction = monsterAiService.nextAction();
-        final SkillTalent equippedTalent = skill.talent() == SkillTalent.COMMON
-                ? SkillTalent.MELEE : skill.talent();
+        final SkillTalent equippedTalent =
+                skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
 
         int playerDamage = 0;
         int monsterDamage = 0;
@@ -230,8 +220,8 @@ public class BattleService {
         List<HitResult> playerHits = List.of();
 
         if (!castFailure) {
-            final TurnCombatResult combat = resolveCombat(
-                    progress, state, monster, skill, equippedTalent, monsterAction);
+            final TurnCombatResult combat =
+                    resolveCombat(progress, state, monster, skill, equippedTalent, monsterAction);
             playerDamage = combat.playerDamage;
             monsterDamage = combat.monsterDamage;
             playerCritical = combat.playerCritical;
@@ -254,9 +244,18 @@ public class BattleService {
         }
 
         applyDamage(progress, state, playerDamage, monsterDamage);
-        final BattleLogInput logInput = new BattleLogInput(
-                skill.label(), skill.type(), monster.name(), monsterAction,
-                playerDamage, monsterDamage, playerCritical, firstStrike, castFailure, playerHits);
+        final BattleLogInput logInput =
+                new BattleLogInput(
+                        skill.label(),
+                        skill.type(),
+                        monster.name(),
+                        monsterAction,
+                        playerDamage,
+                        monsterDamage,
+                        playerCritical,
+                        firstStrike,
+                        castFailure,
+                        playerHits);
         combatLines.addAll(logFormatter.combatLines(logInput));
 
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
@@ -290,25 +289,35 @@ public class BattleService {
         settlementLines.forEach(line -> actionLog.add(line, LOG_TYPE_COMBAT));
 
         return new BattleTurnResult(
-                skill.type(), playerDamage, monsterAction, monsterDamage,
-                playerCritical, monsterCritical, blocked, countered,
-                castFailure, firstStrike, false, null,
-                outcome != Outcome.NONE, outcome,
-                reward, experienceGained, playerHits, combatLines);
+                skill.type(),
+                playerDamage,
+                monsterAction,
+                monsterDamage,
+                playerCritical,
+                monsterCritical,
+                blocked,
+                countered,
+                castFailure,
+                firstStrike,
+                false,
+                null,
+                outcome != Outcome.NONE,
+                outcome,
+                reward,
+                experienceGained,
+                playerHits,
+                combatLines);
     }
 
     /**
      * 도망을 시도한다.
      *
-     * <p>50% 확률로 성공하며, 성공 시 전투를 종료하고 실패 시
-     * 몬스터의 일방 공격을 받은 뒤 전투를 계속한다.
-     * 도망 실패로 HP가 0이 되면 사망 처리를 수행한다.
+     * <p>50% 확률로 성공하며, 성공 시 전투를 종료하고 실패 시 몬스터의 일방 공격을 받은 뒤 전투를 계속한다. 도망 실패로 HP가 0이 되면 사망 처리를 수행한다.
      *
-     * <p>도망 성공 메시지는 하단 {@code actionLog}에 추가하고,
-     * 도망 실패(몬스터 피해) 메시지는 중앙 {@code combatLines}에만 담는다.
+     * <p>도망 성공 메시지는 하단 {@code actionLog}에 추가하고, 도망 실패(몬스터 피해) 메시지는 중앙 {@code combatLines}에만 담는다.
      *
      * @param progress 캐릭터 진행 상태
-     * @param state    현재 전투 상태
+     * @param state 현재 전투 상태
      * @return 도망 시도 결과
      */
     @Transactional
@@ -330,8 +339,7 @@ public class BattleService {
     /**
      * 활성 전투를 재개하기 위해 조회한다.
      *
-     * <p>활성 전투가 있으면 몬스터 카탈로그 존재를 검증하고,
-     * 소실된 경우 안전 종료 후 빈 {@code Optional}을 반환한다.
+     * <p>활성 전투가 있으면 몬스터 카탈로그 존재를 검증하고, 소실된 경우 안전 종료 후 빈 {@code Optional}을 반환한다.
      *
      * @param progress 캐릭터 진행 상태
      * @return 활성 전투 상태, 없거나 소실 시 빈 {@code Optional}
@@ -368,22 +376,23 @@ public class BattleService {
     /**
      * 착용 무기 재능·주스탯·장비/스킬 보너스로 공격력을 산출한다.
      *
-     * <p>공격력 = round(주스탯 × 재능계수). 주스탯은 레벨 스탯 + 장비 보너스 +
-     * 스킬 랭크업 보너스에서 재능별 대응 필드를 추출한다.
-     * 재능계수: 근접 1.0, 활 0.85, 마법 1.2.
+     * <p>공격력 = round(주스탯 × 재능계수). 주스탯은 레벨 스탯 + 장비 보너스 + 스킬 랭크업 보너스에서 재능별 대응 필드를 추출한다. 재능계수: 근접 1.0,
+     * 활 0.85, 마법 1.2.
      *
      * <p>밸런싱 튜닝값(재능계수)은 구현·밸런싱 단계에서 미세 조정 가능하다.
      */
     private int attackPower(final CharacterProgress progress, final SkillTalent equippedTalent) {
-        final Stats levelStats = statProgression.levelStatsFor(
-                progress.getCurrentLevel(), progress.getTalent());
+        final Stats levelStats =
+                statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
         final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
 
         final int totalStr = levelStats.str() + equipBonus.statBonus().str() + skillBonus.str();
         final int totalDex = levelStats.dex() + equipBonus.statBonus().dex() + skillBonus.dex();
-        final int totalInt = levelStats.intelligence()
-                + equipBonus.statBonus().intelligence() + skillBonus.intelligence();
+        final int totalInt =
+                levelStats.intelligence()
+                        + equipBonus.statBonus().intelligence()
+                        + skillBonus.intelligence();
 
         final int primaryStat = resolvePrimaryStat(equippedTalent, totalStr, totalDex, totalInt);
         final double coefficient = resolveCoefficient(equippedTalent);
@@ -391,8 +400,8 @@ public class BattleService {
         return (int) Math.round(primaryStat * coefficient);
     }
 
-    private int resolvePrimaryStat(final SkillTalent talent,
-                                   final int str, final int dex, final int intelligence) {
+    private int resolvePrimaryStat(
+            final SkillTalent talent, final int str, final int dex, final int intelligence) {
         return switch (talent) {
             case MELEE, COMMON -> str;
             case ARCHERY -> dex;
@@ -410,26 +419,25 @@ public class BattleService {
 
     // ─── Private: resource check ────────────────────────────────────────────
 
-    private boolean hasEnoughResource(final CharacterProgress progress,
-                                      final ResourceKind kind,
-                                      final int cost) {
+    private boolean hasEnoughResource(
+            final CharacterProgress progress, final ResourceKind kind, final int cost) {
         return switch (kind) {
             case STAMINA -> progress.getStaminaCurrent() >= cost;
             case MP -> progress.getMpCurrent() >= cost;
         };
     }
 
-    private void deductResource(final CharacterProgress progress,
-                                final ResourceKind kind,
-                                final int cost) {
+    private void deductResource(
+            final CharacterProgress progress, final ResourceKind kind, final int cost) {
         if (kind == ResourceKind.STAMINA) {
             final int current = progress.getStaminaCurrent();
-            progress.fullRecover(new VitalMax(
-                    progress.getHpCurrent(), progress.getMpCurrent(), current - cost));
+            progress.fullRecover(
+                    new VitalMax(progress.getHpCurrent(), progress.getMpCurrent(), current - cost));
         } else {
             final int current = progress.getMpCurrent();
-            progress.fullRecover(new VitalMax(
-                    progress.getHpCurrent(), current - cost, progress.getStaminaCurrent()));
+            progress.fullRecover(
+                    new VitalMax(
+                            progress.getHpCurrent(), current - cost, progress.getStaminaCurrent()));
         }
     }
 
@@ -449,12 +457,13 @@ public class BattleService {
 
     // ─── Private: combat resolution ─────────────────────────────────────────
 
-    private TurnCombatResult resolveCombat(final CharacterProgress progress,
-                                           final BattleState state,
-                                           final Monster monster,
-                                           final Skill skill,
-                                           final SkillTalent equippedTalent,
-                                           final SkillType monsterAction) {
+    private TurnCombatResult resolveCombat(
+            final CharacterProgress progress,
+            final BattleState state,
+            final Monster monster,
+            final Skill skill,
+            final SkillTalent equippedTalent,
+            final SkillType monsterAction) {
         if (isBowFirstStrike(state, equippedTalent)) {
             return resolveBowFirstStrike(progress, monster, skill, equippedTalent);
         }
@@ -465,28 +474,36 @@ public class BattleService {
         return state.getTurnCount() == 1 && equippedTalent == SkillTalent.ARCHERY;
     }
 
-    private TurnCombatResult resolveBowFirstStrike(final CharacterProgress progress,
-                                                    final Monster monster,
-                                                    final Skill skill,
-                                                    final SkillTalent equippedTalent) {
+    private TurnCombatResult resolveBowFirstStrike(
+            final CharacterProgress progress,
+            final Monster monster,
+            final Skill skill,
+            final SkillTalent equippedTalent) {
         final int playerAttack = attackPower(progress, equippedTalent);
         final int multiplier = resolvePlayerMultiplier(skill, progress);
         final int effectiveCritical = resolveEffectivePlayerCritical(skill, progress);
         final int hitCount = resolvePlayerHitCount(skill);
 
-        final List<HitResult> hits = resolver.multiHitDamage(
-                playerAttack, multiplier, monster.defense(), 1.0, effectiveCritical, hitCount);
+        final List<HitResult> hits =
+                resolver.multiHitDamage(
+                        playerAttack,
+                        multiplier,
+                        monster.defense(),
+                        1.0,
+                        effectiveCritical,
+                        hitCount);
         final int totalDamage = hits.stream().mapToInt(HitResult::damage).sum();
         final boolean anyCrit = hits.stream().anyMatch(HitResult::critical);
 
         return new TurnCombatResult(totalDamage, 0, anyCrit, false, false, false, true, hits);
     }
 
-    private TurnCombatResult resolveNormalCombat(final CharacterProgress progress,
-                                                  final Monster monster,
-                                                  final Skill skill,
-                                                  final SkillTalent equippedTalent,
-                                                  final SkillType monsterAction) {
+    private TurnCombatResult resolveNormalCombat(
+            final CharacterProgress progress,
+            final Monster monster,
+            final Skill skill,
+            final SkillTalent equippedTalent,
+            final SkillType monsterAction) {
         final int playerAttack = attackPower(progress, equippedTalent);
         final int playerMultiplier = resolvePlayerMultiplier(skill, progress);
         final int playerDefense = resolvePlayerDefense(progress);
@@ -494,24 +511,39 @@ public class BattleService {
         final int playerBlockRate = resolvePlayerBlockRate(skill, progress);
         final int playerCounterPercent = resolvePlayerCounterPercent(skill, progress);
         final int playerHitCount = resolvePlayerHitCount(skill);
-        final int monsterMultiplier = monsterAction == SkillType.HEAVY
-                ? MONSTER_HEAVY_MULTIPLIER : MONSTER_NORMAL_MULTIPLIER;
+        final int monsterMultiplier =
+                monsterAction == SkillType.HEAVY
+                        ? MONSTER_HEAVY_MULTIPLIER
+                        : MONSTER_NORMAL_MULTIPLIER;
 
-        final TurnInput input = new TurnInput(
-                skill.type(), monsterAction,
-                playerAttack, monster.attackPower(),
-                playerDefense, monster.defense(),
-                playerMultiplier, monsterMultiplier,
-                playerBlockRate, monster.defenseBlockRate(),
-                playerCounterPercent, monster.defenseCounterRate(),
-                playerCritical, monster.critical(),
-                playerHitCount);
+        final TurnInput input =
+                new TurnInput(
+                        skill.type(),
+                        monsterAction,
+                        playerAttack,
+                        monster.attackPower(),
+                        playerDefense,
+                        monster.defense(),
+                        playerMultiplier,
+                        monsterMultiplier,
+                        playerBlockRate,
+                        monster.defenseBlockRate(),
+                        playerCounterPercent,
+                        monster.defenseCounterRate(),
+                        playerCritical,
+                        monster.critical(),
+                        playerHitCount);
 
         final ResolvedTurn resolved = resolver.resolve(input);
         return new TurnCombatResult(
-                resolved.playerDamageToMonster(), resolved.monsterDamageToPlayer(),
-                resolved.playerCritical(), resolved.monsterCritical(),
-                resolved.blocked(), resolved.countered(), false, resolved.playerHits());
+                resolved.playerDamageToMonster(),
+                resolved.monsterDamageToPlayer(),
+                resolved.playerCritical(),
+                resolved.monsterCritical(),
+                resolved.blocked(),
+                resolved.countered(),
+                false,
+                resolved.playerHits());
     }
 
     // ─── Private: turn order ────────────────────────────────────────────────
@@ -519,8 +551,7 @@ public class BattleService {
     /**
      * 선후공을 결정한다.
      *
-     * <p>동일 타입 무승부: 50:50 랜덤. 일반↔방어(방어 승): 결정론적으로 공격자(일반)가 먼저.
-     * 그 외(한쪽만 피해 있는 경우): 피해를 주는 쪽이 먼저.
+     * <p>동일 타입 무승부: 50:50 랜덤. 일반↔방어(방어 승): 결정론적으로 공격자(일반)가 먼저. 그 외(한쪽만 피해 있는 경우): 피해를 주는 쪽이 먼저.
      *
      * @return {@code true}면 플레이어가 먼저 공격
      */
@@ -577,16 +608,16 @@ public class BattleService {
     }
 
     private int resolvePlayerDefense(final CharacterProgress progress) {
-        final Stats levelStats = statProgression.levelStatsFor(
-                progress.getCurrentLevel(), progress.getTalent());
+        final Stats levelStats =
+                statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
         final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
         return levelStats.defense() + equipBonus.statBonus().defense() + skillBonus.defense();
     }
 
     private int resolvePlayerCritical(final CharacterProgress progress) {
-        final Stats levelStats = statProgression.levelStatsFor(
-                progress.getCurrentLevel(), progress.getTalent());
+        final Stats levelStats =
+                statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
         final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
         return levelStats.critical() + equipBonus.statBonus().critical() + skillBonus.critical();
@@ -595,15 +626,15 @@ public class BattleService {
     /**
      * 스킬의 크리 보너스를 반영한 실효 크리티컬 수치를 산출한다.
      *
-     * <p>딜 스킬의 경우 스킬의 {@code critBonus}를 캐릭터 크리티컬에 가산하고,
-     * 상한({@code CRITICAL_ROLL_MAX = 1000})을 초과하지 않도록 보정한다.
-     * 방어 스킬이나 기타 스킬의 경우 보너스를 가산하지 않는다.
+     * <p>딜 스킬의 경우 스킬의 {@code critBonus}를 캐릭터 크리티컬에 가산하고, 상한({@code CRITICAL_ROLL_MAX = 1000})을 초과하지
+     * 않도록 보정한다. 방어 스킬이나 기타 스킬의 경우 보너스를 가산하지 않는다.
      *
-     * @param skill    플레이어가 사용하는 스킬
+     * @param skill 플레이어가 사용하는 스킬
      * @param progress 캐릭터 진행 상태
      * @return 실효 크리티컬 수치 (0~1000)
      */
-    private int resolveEffectivePlayerCritical(final Skill skill, final CharacterProgress progress) {
+    private int resolveEffectivePlayerCritical(
+            final Skill skill, final CharacterProgress progress) {
         final int baseCritical = resolvePlayerCritical(progress);
         final int bonus = (skill instanceof DamageSkill ds) ? ds.critBonus() : 0;
         return Math.min(CRITICAL_ROLL_MAX, baseCritical + bonus);
@@ -612,8 +643,7 @@ public class BattleService {
     /**
      * 스킬의 히트 수를 결정한다.
      *
-     * <p>딜 스킬의 경우 스킬에 설정된 {@code hitCount}를 반환하고,
-     * 방어 스킬이나 기타 스킬의 경우 1을 반환한다.
+     * <p>딜 스킬의 경우 스킬에 설정된 {@code hitCount}를 반환하고, 방어 스킬이나 기타 스킬의 경우 1을 반환한다.
      *
      * @param skill 플레이어가 사용하는 스킬
      * @return 히트 수 (1 이상)
@@ -624,27 +654,31 @@ public class BattleService {
 
     // ─── Private: monster-only damage (cast failure) ────────────────────────
 
-    private int resolveMonsterOnlyDamage(final CharacterProgress progress,
-                                         final Monster monster,
-                                         final SkillType monsterAction) {
+    private int resolveMonsterOnlyDamage(
+            final CharacterProgress progress,
+            final Monster monster,
+            final SkillType monsterAction) {
         if (monsterAction == SkillType.DEFENSE) {
             return 0;
         }
-        final int monsterMultiplier = monsterAction == SkillType.HEAVY
-                ? MONSTER_HEAVY_MULTIPLIER : MONSTER_NORMAL_MULTIPLIER;
+        final int monsterMultiplier =
+                monsterAction == SkillType.HEAVY
+                        ? MONSTER_HEAVY_MULTIPLIER
+                        : MONSTER_NORMAL_MULTIPLIER;
         final int playerDef = resolvePlayerDefense(progress);
-        final int baseDmg = resolver.baseDamage(
-                monster.attackPower(), monsterMultiplier, playerDef);
+        final int baseDmg =
+                resolver.baseDamage(monster.attackPower(), monsterMultiplier, playerDef);
         final boolean crit = resolver.rollCritical(monster.critical());
         return resolver.finalDamage(baseDmg, 1.0, crit);
     }
 
     // ─── Private: damage application ────────────────────────────────────────
 
-    private void applyDamage(final CharacterProgress progress,
-                             final BattleState state,
-                             final int playerDamage,
-                             final int monsterDamage) {
+    private void applyDamage(
+            final CharacterProgress progress,
+            final BattleState state,
+            final int playerDamage,
+            final int monsterDamage) {
         if (monsterDamage > 0) {
             progress.damageHp(monsterDamage);
         }
@@ -656,9 +690,8 @@ public class BattleService {
 
     // ─── Private: kill reward ───────────────────────────────────────────────
 
-    private DropResult processKillReward(final CharacterProgress progress,
-                                         final Monster monster,
-                                         final List<String> logLines) {
+    private DropResult processKillReward(
+            final CharacterProgress progress, final Monster monster, final List<String> logLines) {
         final DropResult drop = monsterRewardService.rollDrop(monster);
         inventoryService.acquire(progress, drop);
         progressionService.gainExperience(progress, monster.experience());
@@ -675,16 +708,15 @@ public class BattleService {
     }
 
     private String resolveItemName(final String itemId) {
-        return itemCatalogService.byId(itemId)
-                .map(Item::name)
-                .orElse(itemId);
+        return itemCatalogService.byId(itemId).map(Item::name).orElse(itemId);
     }
 
     // ─── Private: death ─────────────────────────────────────────────────────
 
-    private Outcome handleDeath(final CharacterProgress progress,
-                                final BattleState state,
-                                final List<String> logLines) {
+    private Outcome handleDeath(
+            final CharacterProgress progress,
+            final BattleState state,
+            final List<String> logLines) {
         final DeathResult deathResult = progressionService.die(progress);
         state.setActive(false);
         logLines.add("쓰러졌다… 티르코네일에서 부활 (경험치 -" + deathResult.experienceLost() + ")");
@@ -693,25 +725,38 @@ public class BattleService {
 
     // ─── Private: flee ──────────────────────────────────────────────────────
 
-    private BattleTurnResult handleFleeSuccess(final BattleState state,
-                                               final List<String> combatLines) {
+    private BattleTurnResult handleFleeSuccess(
+            final BattleState state, final List<String> combatLines) {
         state.setActive(false);
         battleStateRepository.save(state);
         actionLog.add("도망쳤다!", LOG_TYPE_COMBAT);
         return new BattleTurnResult(
-                null, 0, null, 0,
-                false, false, false, false,
-                false, false, false, null,
-                true, Outcome.FLED,
-                null, 0, List.of(), combatLines);
+                null,
+                0,
+                null,
+                0,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                null,
+                true,
+                Outcome.FLED,
+                null,
+                0,
+                List.of(),
+                combatLines);
     }
 
-    private BattleTurnResult handleFleeFailure(final CharacterProgress progress,
-                                               final BattleState state,
-                                               final Monster monster,
-                                               final List<String> combatLines) {
-        final int monsterDmg = resolveMonsterOnlyDamage(
-                progress, monster, SkillType.NORMAL);
+    private BattleTurnResult handleFleeFailure(
+            final CharacterProgress progress,
+            final BattleState state,
+            final Monster monster,
+            final List<String> combatLines) {
+        final int monsterDmg = resolveMonsterOnlyDamage(progress, monster, SkillType.NORMAL);
         progress.damageHp(monsterDmg);
 
         Outcome outcome = Outcome.NONE;
@@ -728,11 +773,24 @@ public class BattleService {
         characterService.saveTurn(progress);
 
         return new BattleTurnResult(
-                null, 0, SkillType.NORMAL, monsterDmg,
-                false, false, false, false,
-                false, false, false, null,
-                outcome != Outcome.NONE, outcome,
-                null, 0, List.of(), combatLines);
+                null,
+                0,
+                SkillType.NORMAL,
+                monsterDmg,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                null,
+                outcome != Outcome.NONE,
+                outcome,
+                null,
+                0,
+                List.of(),
+                combatLines);
     }
 
     // ─── Private: safe terminate / no-op results ────────────────────────────
@@ -741,30 +799,69 @@ public class BattleService {
         state.setActive(false);
         battleStateRepository.save(state);
         return new BattleTurnResult(
-                null, 0, null, 0,
-                false, false, false, false,
-                false, false, false, null,
-                true, Outcome.NONE,
-                null, 0, List.of(), List.of());
+                null,
+                0,
+                null,
+                0,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                null,
+                true,
+                Outcome.NONE,
+                null,
+                0,
+                List.of(),
+                List.of());
     }
 
     private BattleTurnResult buildNoOpResult() {
         return new BattleTurnResult(
-                null, 0, null, 0,
-                false, false, false, false,
-                false, false, false, null,
-                false, Outcome.NONE,
-                null, 0, List.of(), List.of());
+                null,
+                0,
+                null,
+                0,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                null,
+                false,
+                Outcome.NONE,
+                null,
+                0,
+                List.of(),
+                List.of());
     }
 
-    private BattleTurnResult buildInsufficientResult(final Skill skill,
-                                                     final ResourceKind insufficientKind) {
+    private BattleTurnResult buildInsufficientResult(
+            final Skill skill, final ResourceKind insufficientKind) {
         return new BattleTurnResult(
-                skill.type(), 0, null, 0,
-                false, false, false, false,
-                false, false, true, insufficientKind,
-                false, Outcome.NONE,
-                null, 0, List.of(), List.of());
+                skill.type(),
+                0,
+                null,
+                0,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                insufficientKind,
+                false,
+                Outcome.NONE,
+                null,
+                0,
+                List.of(),
+                List.of());
     }
 
     // ─── Private: internal record ───────────────────────────────────────────
@@ -777,6 +874,5 @@ public class BattleService {
             boolean blocked,
             boolean countered,
             boolean firstStrike,
-            List<HitResult> playerHits) {
-    }
+            List<HitResult> playerHits) {}
 }

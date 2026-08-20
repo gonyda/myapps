@@ -1,22 +1,21 @@
 package com.myapps.web.myrpg.domain.service;
 
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Tuple;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.domain.model.AffinityResult;
 import com.myapps.web.myrpg.domain.model.SkillType;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.Tuple;
 
 /**
  * 가위바위보 상성 판정의 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>모든 {@link SkillType} 조합에 대해 {@link RockPaperScissors#judge}가
- * 일반&gt;강, 강&gt;방어, 방어&gt;일반 순환 상성을 따르며, 대칭(역관계)이 성립하는지 검증한다.
+ * <p>모든 {@link SkillType} 조합에 대해 {@link RockPaperScissors#judge}가 일반&gt;강, 강&gt;방어, 방어&gt;일반 순환 상성을
+ * 따르며, 대칭(역관계)이 성립하는지 검증한다.
  *
  * <p>Feature: 008-battle-system, Property 1: 가위바위보 상성
  *
@@ -24,36 +23,28 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RockPaperScissorsPropertyTest {
 
-    /**
-     * 일반(NORMAL)이 강(HEAVY)을 이기는지 검증한다.
-     */
+    /** 일반(NORMAL)이 강(HEAVY)을 이기는지 검증한다. */
     @Property(tries = 100)
     void should_returnWin_when_normalVsHeavy() {
         final AffinityResult result = RockPaperScissors.judge(SkillType.NORMAL, SkillType.HEAVY);
         assertThat(result).isEqualTo(AffinityResult.WIN);
     }
 
-    /**
-     * 강(HEAVY)이 방어(DEFENSE)를 이기는지 검증한다.
-     */
+    /** 강(HEAVY)이 방어(DEFENSE)를 이기는지 검증한다. */
     @Property(tries = 100)
     void should_returnWin_when_heavyVsDefense() {
         final AffinityResult result = RockPaperScissors.judge(SkillType.HEAVY, SkillType.DEFENSE);
         assertThat(result).isEqualTo(AffinityResult.WIN);
     }
 
-    /**
-     * 방어(DEFENSE)가 일반(NORMAL)을 이기는지 검증한다.
-     */
+    /** 방어(DEFENSE)가 일반(NORMAL)을 이기는지 검증한다. */
     @Property(tries = 100)
     void should_returnWin_when_defenseVsNormal() {
         final AffinityResult result = RockPaperScissors.judge(SkillType.DEFENSE, SkillType.NORMAL);
         assertThat(result).isEqualTo(AffinityResult.WIN);
     }
 
-    /**
-     * 상성 역방향은 LOSE를 반환하는지 검증한다.
-     */
+    /** 상성 역방향은 LOSE를 반환하는지 검증한다. */
     @Property(tries = 100)
     void should_returnLose_when_reverseAffinity() {
         assertThat(RockPaperScissors.judge(SkillType.HEAVY, SkillType.NORMAL))
@@ -114,8 +105,8 @@ class RockPaperScissorsPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<SkillType, SkillType>> skillTypePairs() {
-        final Arbitrary<SkillType> types = Arbitraries.of(
-                SkillType.NORMAL, SkillType.HEAVY, SkillType.DEFENSE);
+        final Arbitrary<SkillType> types =
+                Arbitraries.of(SkillType.NORMAL, SkillType.HEAVY, SkillType.DEFENSE);
         return types.flatMap(mine -> types.map(other -> Tuple.of(mine, other)));
     }
 }

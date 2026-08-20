@@ -7,7 +7,4 @@ package com.myapps.web.myrpg.application.dto;
  *
  * @param label 버튼에 표시할 라벨 텍스트
  */
-public record ActionButton(
-        String label
-) {
-}
+public record ActionButton(String label) {}

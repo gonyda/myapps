@@ -1,15 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -23,14 +20,15 @@ import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * SkillService 핵심 메서드의 예시 단위 테스트.
@@ -43,32 +41,39 @@ class SkillServiceTest {
     private static final Long CHARACTER_ID = 1L;
     private static final String WINDMILL_ID = "windmill";
 
-    @Mock
-    private CharacterSkillRepository characterSkillRepository;
+    @Mock private CharacterSkillRepository characterSkillRepository;
 
-    @Mock
-    private CharacterProgressRepository characterProgressRepository;
+    @Mock private CharacterProgressRepository characterProgressRepository;
 
-    @Mock
-    private SkillCatalogService skillCatalogService;
+    @Mock private SkillCatalogService skillCatalogService;
 
     private SkillService skillService;
 
     @BeforeEach
     void setUp() {
-        skillService = new SkillService(characterSkillRepository, characterProgressRepository, skillCatalogService);
+        skillService =
+                new SkillService(
+                        characterSkillRepository, characterProgressRepository, skillCatalogService);
 
-        org.mockito.Mockito.lenient().when(skillCatalogService.byId(WINDMILL_ID))
-                .thenReturn(Optional.of(new DamageSkill(
-                        WINDMILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
-                        java.util.Map.of(SkillRank.F, 35, SkillRank.E, 38),
-                        "범위 공격")));
+        org.mockito.Mockito.lenient()
+                .when(skillCatalogService.byId(WINDMILL_ID))
+                .thenReturn(
+                        Optional.of(
+                                new DamageSkill(
+                                        WINDMILL_ID,
+                                        "윈드밀",
+                                        SkillType.NORMAL,
+                                        SkillTalent.MELEE,
+                                        7,
+                                        java.util.Map.of(SkillRank.F, 35, SkillRank.E, 38),
+                                        "범위 공격")));
     }
 
     @Test
     void should_rankUp_successfully_when_conditions_and_ap_are_met() {
         // F→E: 사용 5, 막타 1, AP 1
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -88,7 +93,8 @@ class SkillServiceTest {
     @Test
     void should_throw_InsufficientAbilityPointsException_when_ap_is_insufficient() {
         // F→E: 조건 충족이나 AP 0
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -108,7 +114,8 @@ class SkillServiceTest {
     @Test
     void should_return_false_when_conditions_not_met() {
         // 사용 횟수 부족 (F→E: 5 필요, 3만 있음)
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 1);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 1);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -123,7 +130,8 @@ class SkillServiceTest {
 
     @Test
     void should_return_false_when_rank_is_master() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 9999, 9999);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 9999, 9999);
         final CharacterProgress progress = createProgressWithAp(200);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -139,15 +147,21 @@ class SkillServiceTest {
     @Test
     void should_calculate_rankupBonus_from_owned_skills() {
         // windmill(MELEE, rank A=order 5) → STR +5
-        final CharacterSkill windmillA = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.A, 0, 0);
-        final DamageSkill windmillCatalog = new DamageSkill(
-                WINDMILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 15,
-                java.util.Map.of(), "범위 공격");
+        final CharacterSkill windmillA =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.A, 0, 0);
+        final DamageSkill windmillCatalog =
+                new DamageSkill(
+                        WINDMILL_ID,
+                        "윈드밀",
+                        SkillType.NORMAL,
+                        SkillTalent.MELEE,
+                        15,
+                        java.util.Map.of(),
+                        "범위 공격");
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
                 .thenReturn(List.of(windmillA));
-        when(skillCatalogService.byId(WINDMILL_ID))
-                .thenReturn(Optional.of(windmillCatalog));
+        when(skillCatalogService.byId(WINDMILL_ID)).thenReturn(Optional.of(windmillCatalog));
 
         final Stats bonus = skillService.rankupBonus(CHARACTER_ID);
 
@@ -161,39 +175,96 @@ class SkillServiceTest {
     @Test
     void should_calculate_all_masters_bonus_as_STR30_DEX30_INT30_DEF15() {
         // 7종 스킬 전부 MASTER(order=15): MELEE×2 + ARCHERY×2 + MAGIC×2 + COMMON×1
-        final CharacterSkill smashMaster = new CharacterSkill(CHARACTER_ID, "smash", SkillRank.MASTER, 0, 0);
-        final CharacterSkill windmillMaster = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
-        final CharacterSkill magnumMaster = new CharacterSkill(CHARACTER_ID, "magnum_shot", SkillRank.MASTER, 0, 0);
-        final CharacterSkill arrowMaster = new CharacterSkill(CHARACTER_ID, "arrow_revolver", SkillRank.MASTER, 0, 0);
-        final CharacterSkill fireboltMaster = new CharacterSkill(CHARACTER_ID, "firebolt", SkillRank.MASTER, 0, 0);
-        final CharacterSkill iceboltMaster = new CharacterSkill(CHARACTER_ID, "icebolt", SkillRank.MASTER, 0, 0);
-        final CharacterSkill defenseMaster = new CharacterSkill(CHARACTER_ID, "defense", SkillRank.MASTER, 0, 0);
+        final CharacterSkill smashMaster =
+                new CharacterSkill(CHARACTER_ID, "smash", SkillRank.MASTER, 0, 0);
+        final CharacterSkill windmillMaster =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
+        final CharacterSkill magnumMaster =
+                new CharacterSkill(CHARACTER_ID, "magnum_shot", SkillRank.MASTER, 0, 0);
+        final CharacterSkill arrowMaster =
+                new CharacterSkill(CHARACTER_ID, "arrow_revolver", SkillRank.MASTER, 0, 0);
+        final CharacterSkill fireboltMaster =
+                new CharacterSkill(CHARACTER_ID, "firebolt", SkillRank.MASTER, 0, 0);
+        final CharacterSkill iceboltMaster =
+                new CharacterSkill(CHARACTER_ID, "icebolt", SkillRank.MASTER, 0, 0);
+        final CharacterSkill defenseMaster =
+                new CharacterSkill(CHARACTER_ID, "defense", SkillRank.MASTER, 0, 0);
 
-        final DamageSkill smashCatalog = new DamageSkill(
-                "smash", "스매시", SkillType.HEAVY, SkillTalent.MELEE, 10,
-                java.util.Map.of(), "강력한 일격");
-        final DamageSkill windmillCatalog = new DamageSkill(
-                WINDMILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE, 7,
-                java.util.Map.of(), "범위 공격");
-        final DamageSkill magnumCatalog = new DamageSkill(
-                "magnum_shot", "매그넘 샷", SkillType.HEAVY, SkillTalent.ARCHERY, 12,
-                java.util.Map.of(), "강궁");
-        final DamageSkill arrowCatalog = new DamageSkill(
-                "arrow_revolver", "애로우 리볼버", SkillType.NORMAL, SkillTalent.ARCHERY, 8,
-                java.util.Map.of(), "연사");
-        final DamageSkill fireboltCatalog = new DamageSkill(
-                "firebolt", "파이어볼트", SkillType.NORMAL, SkillTalent.MAGIC, 15,
-                java.util.Map.of(), "화염");
-        final DamageSkill iceboltCatalog = new DamageSkill(
-                "icebolt", "아이스볼트", SkillType.NORMAL, SkillTalent.MAGIC, 12,
-                java.util.Map.of(), "빙결");
-        final DefenseSkill defenseCatalog = new DefenseSkill(
-                "defense", "디펜스", SkillType.DEFENSE, SkillTalent.COMMON, 5,
-                java.util.Map.of(), java.util.Map.of(), "방어");
+        final DamageSkill smashCatalog =
+                new DamageSkill(
+                        "smash",
+                        "스매시",
+                        SkillType.HEAVY,
+                        SkillTalent.MELEE,
+                        10,
+                        java.util.Map.of(),
+                        "강력한 일격");
+        final DamageSkill windmillCatalog =
+                new DamageSkill(
+                        WINDMILL_ID,
+                        "윈드밀",
+                        SkillType.NORMAL,
+                        SkillTalent.MELEE,
+                        7,
+                        java.util.Map.of(),
+                        "범위 공격");
+        final DamageSkill magnumCatalog =
+                new DamageSkill(
+                        "magnum_shot",
+                        "매그넘 샷",
+                        SkillType.HEAVY,
+                        SkillTalent.ARCHERY,
+                        12,
+                        java.util.Map.of(),
+                        "강궁");
+        final DamageSkill arrowCatalog =
+                new DamageSkill(
+                        "arrow_revolver",
+                        "애로우 리볼버",
+                        SkillType.NORMAL,
+                        SkillTalent.ARCHERY,
+                        8,
+                        java.util.Map.of(),
+                        "연사");
+        final DamageSkill fireboltCatalog =
+                new DamageSkill(
+                        "firebolt",
+                        "파이어볼트",
+                        SkillType.NORMAL,
+                        SkillTalent.MAGIC,
+                        15,
+                        java.util.Map.of(),
+                        "화염");
+        final DamageSkill iceboltCatalog =
+                new DamageSkill(
+                        "icebolt",
+                        "아이스볼트",
+                        SkillType.NORMAL,
+                        SkillTalent.MAGIC,
+                        12,
+                        java.util.Map.of(),
+                        "빙결");
+        final DefenseSkill defenseCatalog =
+                new DefenseSkill(
+                        "defense",
+                        "디펜스",
+                        SkillType.DEFENSE,
+                        SkillTalent.COMMON,
+                        5,
+                        java.util.Map.of(),
+                        java.util.Map.of(),
+                        "방어");
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
-                .thenReturn(List.of(smashMaster, windmillMaster, magnumMaster, arrowMaster,
-                        fireboltMaster, iceboltMaster, defenseMaster));
+                .thenReturn(
+                        List.of(
+                                smashMaster,
+                                windmillMaster,
+                                magnumMaster,
+                                arrowMaster,
+                                fireboltMaster,
+                                iceboltMaster,
+                                defenseMaster));
         when(skillCatalogService.byId("smash")).thenReturn(Optional.of(smashCatalog));
         when(skillCatalogService.byId(WINDMILL_ID)).thenReturn(Optional.of(windmillCatalog));
         when(skillCatalogService.byId("magnum_shot")).thenReturn(Optional.of(magnumCatalog));
@@ -237,7 +308,9 @@ class SkillServiceTest {
         when(skillCatalogService.byId(WINDMILL_ID))
                 .thenReturn(Optional.of(createDummySkill(WINDMILL_ID)));
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(
+                                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0)));
 
         skillService.learnSkill(CHARACTER_ID, WINDMILL_ID);
 
@@ -276,7 +349,8 @@ class SkillServiceTest {
 
     @Test
     void should_onSkillUsed_increment_usage() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
                 .thenReturn(Optional.of(skill));
         when(characterSkillRepository.save(any(CharacterSkill.class)))
@@ -289,7 +363,8 @@ class SkillServiceTest {
 
     @Test
     void should_onSkillKill_increment_kill() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 2);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 2);
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
                 .thenReturn(Optional.of(skill));
         when(characterSkillRepository.save(any(CharacterSkill.class)))
@@ -301,17 +376,27 @@ class SkillServiceTest {
     }
 
     private CharacterProgress createProgressWithAp(final int abilityPoints) {
-        final CharacterProgress progress = new CharacterProgress(
-                "테스트", 1, 1, 0L,
-                com.myapps.web.myrpg.domain.model.TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", abilityPoints, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "테스트",
+                        1,
+                        1,
+                        0L,
+                        com.myapps.web.myrpg.domain.model.TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        "tir-chonaill",
+                        abilityPoints,
+                        0L);
         setId(progress, CHARACTER_ID);
         return progress;
     }
 
     private Skill createDummySkill(final String id) {
-        return new DamageSkill(id, "더미", SkillType.NORMAL, SkillTalent.MELEE, 10,
-                java.util.Map.of(), "테스트용");
+        return new DamageSkill(
+                id, "더미", SkillType.NORMAL, SkillTalent.MELEE, 10, java.util.Map.of(), "테스트용");
     }
 
     private void setId(final CharacterProgress progress, final Long id) {

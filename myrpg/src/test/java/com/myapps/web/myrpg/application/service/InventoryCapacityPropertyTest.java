@@ -1,7 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.List;
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.exception.InventoryFullException;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
@@ -13,26 +18,19 @@ import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
+import java.util.List;
+import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * 저장소 용량 가드 프로퍼티 테스트.
  *
- * <p>신규 스택이 추가되어 항목 수가 30을 초과하면 {@link InventoryFullException}으로
- * 거부되고(상태 불변), 기존 스택에 누적되는 소비형 이동은 용량 검사를 통과한다.
+ * <p>신규 스택이 추가되어 항목 수가 30을 초과하면 {@link InventoryFullException}으로 거부되고(상태 불변), 기존 스택에 누적되는 소비형 이동은
+ * 용량 검사를 통과한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 10: 저장소 용량 가드
  *
@@ -47,8 +45,7 @@ class InventoryCapacityPropertyTest {
     // Feature: 006-gold-item-inventory, Property 10: 저장소 용량 가드
 
     /**
-     * 대상 저장소가 가득 찬 상태(30항목)에서 신규 스택이 추가되면
-     * {@link InventoryFullException}으로 거부되고 상태가 불변임을 검증한다.
+     * 대상 저장소가 가득 찬 상태(30항목)에서 신규 스택이 추가되면 {@link InventoryFullException}으로 거부되고 상태가 불변임을 검증한다.
      *
      * @param currentCount 현재 항목 수 (30 이상)
      */
@@ -58,22 +55,35 @@ class InventoryCapacityPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
 
-        final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
 
         // 장비를 인벤토리→은행 이동 시 은행이 가득 참
-        final EquipmentItem equipCatalog = new EquipmentItem(
-                WEAPON_ITEM_ID, "초보자 한손검", ItemType.WEAPON,
-                EquipmentKind.ONE_HANDED_SWORD, List.of(), null, 20);
+        final EquipmentItem equipCatalog =
+                new EquipmentItem(
+                        WEAPON_ITEM_ID,
+                        "초보자 한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        20);
 
-        final OwnedItem source = new OwnedItem(
-                WEAPON_ITEM_ID, 1, StorageKind.INVENTORY, false, 20.0);
+        final OwnedItem source =
+                new OwnedItem(WEAPON_ITEM_ID, 1, StorageKind.INVENTORY, false, 20.0);
         setOwnedItemId(source, 1L);
 
         when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(source));
@@ -88,8 +98,7 @@ class InventoryCapacityPropertyTest {
     }
 
     /**
-     * 대상 저장소가 가득 찬 상태(30항목)에서도 소비형이 기존 스택에 누적되면
-     * 용량 검사를 통과하고 이동이 성공함을 검증한다.
+     * 대상 저장소가 가득 찬 상태(30항목)에서도 소비형이 기존 스택에 누적되면 용량 검사를 통과하고 이동이 성공함을 검증한다.
      *
      * @param currentCount 현재 항목 수 (30 이상)
      */
@@ -99,23 +108,29 @@ class InventoryCapacityPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
 
-        final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
 
         final PotionItem potionCatalog = new PotionItem(POTION_ITEM_ID, "HP 포션", 50, 30);
 
-        final OwnedItem source = new OwnedItem(
-                POTION_ITEM_ID, 3, StorageKind.INVENTORY, false, 0);
+        final OwnedItem source = new OwnedItem(POTION_ITEM_ID, 3, StorageKind.INVENTORY, false, 0);
         setOwnedItemId(source, 1L);
 
-        final OwnedItem existingStack = new OwnedItem(
-                POTION_ITEM_ID, 5, StorageKind.BANK, false, 0);
+        final OwnedItem existingStack =
+                new OwnedItem(POTION_ITEM_ID, 5, StorageKind.BANK, false, 0);
         setOwnedItemId(existingStack, 2L);
 
         when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(source));
@@ -147,21 +162,34 @@ class InventoryCapacityPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
 
-        final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
 
-        final EquipmentItem equipCatalog = new EquipmentItem(
-                WEAPON_ITEM_ID, "초보자 한손검", ItemType.WEAPON,
-                EquipmentKind.ONE_HANDED_SWORD, List.of(), null, 20);
+        final EquipmentItem equipCatalog =
+                new EquipmentItem(
+                        WEAPON_ITEM_ID,
+                        "초보자 한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        20);
 
-        final OwnedItem source = new OwnedItem(
-                WEAPON_ITEM_ID, 1, StorageKind.INVENTORY, false, 20.0);
+        final OwnedItem source =
+                new OwnedItem(WEAPON_ITEM_ID, 1, StorageKind.INVENTORY, false, 20.0);
         setOwnedItemId(source, 1L);
 
         when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(source));
@@ -185,21 +213,33 @@ class InventoryCapacityPropertyTest {
 
         final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
-        final CharacterProgressRepository characterProgressRepository = mock(CharacterProgressRepository.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
         final StatProgression statProgression = mock(StatProgression.class);
 
-        final InventoryService inventoryService = new InventoryService(
-                ownedItemRepository, itemCatalogService, characterProgressRepository, statProgression,
-                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
 
-        final EquipmentItem equipCatalog = new EquipmentItem(
-                WEAPON_ITEM_ID, "초보자 한손검", ItemType.WEAPON,
-                EquipmentKind.ONE_HANDED_SWORD, List.of(), null, 20);
+        final EquipmentItem equipCatalog =
+                new EquipmentItem(
+                        WEAPON_ITEM_ID,
+                        "초보자 한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        20);
 
-        final OwnedItem source = new OwnedItem(
-                WEAPON_ITEM_ID, 1, StorageKind.BANK, false, 20.0);
+        final OwnedItem source = new OwnedItem(WEAPON_ITEM_ID, 1, StorageKind.BANK, false, 20.0);
         setOwnedItemId(source, 1L);
 
         when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(source));
@@ -241,7 +281,7 @@ class InventoryCapacityPropertyTest {
      * 리플렉션으로 OwnedItem의 id 필드를 설정한다.
      *
      * @param ownedItem 대상 엔티티
-     * @param id        설정할 ID 값
+     * @param id 설정할 ID 값
      */
     private void setOwnedItemId(final OwnedItem ownedItem, final Long id) {
         try {

@@ -1,7 +1,12 @@
 package com.myapps.web.mycalendar.interfaces.api;
 
+import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
+import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
+import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
+import com.myapps.web.mycalendar.application.service.ScheduleService;
+import com.myapps.web.mycalendar.domain.model.Category;
+import com.myapps.web.mycalendar.interfaces.dto.ScheduleForm;
 import java.time.LocalDate;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,18 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
-import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
-import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
-import com.myapps.web.mycalendar.application.service.ScheduleService;
-import com.myapps.web.mycalendar.domain.model.Category;
-import com.myapps.web.mycalendar.interfaces.dto.ScheduleForm;
-
 /**
  * 일정 CRUD를 처리하는 컨트롤러.
  *
- * <p>일정 생성, 조회, 수정, 삭제 요청을 처리하며
- * HTMX 부분 렌더링을 지원합니다.
+ * <p>일정 생성, 조회, 수정, 삭제 요청을 처리하며 HTMX 부분 렌더링을 지원합니다.
  */
 @Controller
 @RequestMapping("/schedules")
@@ -46,8 +43,7 @@ public class ScheduleController {
     /**
      * 일정 상세 정보를 JSON으로 반환합니다.
      *
-     * <p>캘린더 모달에서 일정 상세를 표시하기 위해 사용됩니다.
-     * 일정이 존재하지 않는 경우 404 응답을 반환합니다.
+     * <p>캘린더 모달에서 일정 상세를 표시하기 위해 사용됩니다. 일정이 존재하지 않는 경우 404 응답을 반환합니다.
      *
      * @param id 조회할 일정 ID
      * @return 일정 응답 JSON 또는 404
@@ -62,19 +58,18 @@ public class ScheduleController {
     /**
      * 일정 생성 폼을 렌더링합니다.
      *
-     * <p>선택적으로 {@code startDate} 쿼리 파라미터를 받아 폼의 시작일 필드를 미리 설정합니다.
-     * 캘린더 모달에서 날짜 셀 클릭 시 해당 날짜가 전달됩니다.
+     * <p>선택적으로 {@code startDate} 쿼리 파라미터를 받아 폼의 시작일 필드를 미리 설정합니다. 캘린더 모달에서 날짜 셀 클릭 시 해당 날짜가 전달됩니다.
      *
      * @param startDate 시작일 미리 설정 값 (yyyy-MM-dd 형식, 선택)
-     * @param model     뷰에 전달할 모델
+     * @param model 뷰에 전달할 모델
      * @return 일정 폼 뷰 이름
      */
     @GetMapping("/new")
-    public String newForm(@RequestParam(required = false) final String startDate,
-                          final Model model) {
+    public String newForm(
+            @RequestParam(required = false) final String startDate, final Model model) {
         final LocalDate parsedStartDate = parseStartDate(startDate);
-        model.addAttribute("scheduleForm",
-                new ScheduleForm(null, parsedStartDate, null, null, null));
+        model.addAttribute(
+                "scheduleForm", new ScheduleForm(null, parsedStartDate, null, null, null));
         model.addAttribute("scheduleId", null);
         model.addAttribute("categories", Category.values());
         return "schedule-form";
@@ -96,7 +91,7 @@ public class ScheduleController {
     /**
      * 일정 수정 폼을 렌더링합니다.
      *
-     * @param id    수정할 일정 ID
+     * @param id 수정할 일정 ID
      * @param model 뷰에 전달할 모델
      * @return 일정 폼 뷰 이름
      */
@@ -113,13 +108,13 @@ public class ScheduleController {
     /**
      * 일정을 수정하고 캘린더 뷰로 리다이렉트합니다.
      *
-     * @param id   수정할 일정 ID
+     * @param id 수정할 일정 ID
      * @param form 폼에서 바인딩된 일정 데이터
      * @return 캘린더 뷰 리다이렉트 URL
      */
     @PutMapping("/{id}")
-    public String update(@PathVariable("id") final Long id,
-                         @ModelAttribute final ScheduleForm form) {
+    public String update(
+            @PathVariable("id") final Long id, @ModelAttribute final ScheduleForm form) {
         final ScheduleUpdateCommand command = toUpdateCommand(form);
         scheduleService.update(id, command);
         return buildCalendarRedirect(form);
@@ -149,8 +144,7 @@ public class ScheduleController {
                 form.startDate(),
                 form.endDate(),
                 form.scheduleTime(),
-                form.content()
-        );
+                form.content());
     }
 
     private ScheduleUpdateCommand toUpdateCommand(final ScheduleForm form) {
@@ -159,8 +153,7 @@ public class ScheduleController {
                 form.startDate(),
                 form.endDate(),
                 form.scheduleTime(),
-                form.content()
-        );
+                form.content());
     }
 
     private ScheduleForm toScheduleForm(final ScheduleResponse response) {
@@ -169,8 +162,7 @@ public class ScheduleController {
                 response.startDate(),
                 response.endDate(),
                 response.scheduleTime(),
-                response.content()
-        );
+                response.content());
     }
 
     private String buildCalendarRedirect(final ScheduleForm form) {

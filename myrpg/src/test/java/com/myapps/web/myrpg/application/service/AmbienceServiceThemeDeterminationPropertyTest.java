@@ -1,5 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.AmbienceData;
+import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.domain.model.NodeType;
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Instant;
@@ -10,26 +15,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.domain.model.AmbienceData;
-import com.myapps.web.myrpg.domain.model.MapNode;
-import com.myapps.web.myrpg.domain.model.NodeType;
-
 import tools.jackson.databind.ObjectMapper;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Theme 결정 규칙 프로퍼티 테스트.
  *
- * <p>노드에 {@code theme} 값이 있으면 그 값을, 없으면 노드의 {@code type} 값을
- * 상황 멘트 후보 검색 키로 사용하는지 검증한다.
+ * <p>노드에 {@code theme} 값이 있으면 그 값을, 없으면 노드의 {@code type} 값을 상황 멘트 후보 검색 키로 사용하는지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 18: Theme 결정 규칙
  *
@@ -58,11 +54,10 @@ class AmbienceServiceThemeDeterminationPropertyTest {
     }
 
     /**
-     * 노드에 비어 있지 않은 {@code theme} 값이 설정되어 있으면,
-     * 서비스는 해당 theme 키의 후보 목록에서 멘트를 선택한다.
+     * 노드에 비어 있지 않은 {@code theme} 값이 설정되어 있으면, 서비스는 해당 theme 키의 후보 목록에서 멘트를 선택한다.
      *
-     * <p>커스텀 AmbienceData에 theme 키와 type 키를 서로 다른 후보 목록으로 배치하고,
-     * 노드의 theme이 설정된 경우 theme 키의 후보가 반환되는지 검증한다.
+     * <p>커스텀 AmbienceData에 theme 키와 type 키를 서로 다른 후보 목록으로 배치하고, 노드의 theme이 설정된 경우 theme 키의 후보가
+     * 반환되는지 검증한다.
      *
      * @param themeSuffix theme 값의 접미사 (비어 있지 않은 문자열)
      */
@@ -75,11 +70,20 @@ class AmbienceServiceThemeDeterminationPropertyTest {
 
         final Clock fixedClock = createFixedClock(FIXED_MONTH, FIXED_HOUR);
         final Random fixedRandom = new Random(42L);
-        final AmbienceService service = createServiceWithCustomData(fixedClock, fixedRandom, customData);
+        final AmbienceService service =
+                createServiceWithCustomData(fixedClock, fixedRandom, customData);
 
-        final MapNode node = new MapNode(
-                "test-node", "테스트마을", TYPE_KEY, NodeType.TOWN,
-                0, 0, null, themeValue, List.of());
+        final MapNode node =
+                new MapNode(
+                        "test-node",
+                        "테스트마을",
+                        TYPE_KEY,
+                        NodeType.TOWN,
+                        0,
+                        0,
+                        null,
+                        themeValue,
+                        List.of());
 
         final String result = service.ambience(node);
 
@@ -89,26 +93,25 @@ class AmbienceServiceThemeDeterminationPropertyTest {
     }
 
     /**
-     * 노드의 {@code theme} 값이 null이면,
-     * 서비스는 노드의 {@code type} 키의 후보 목록에서 멘트를 선택한다.
+     * 노드의 {@code theme} 값이 null이면, 서비스는 노드의 {@code type} 키의 후보 목록에서 멘트를 선택한다.
      *
      * @param month 임의의 월 값 (1~12, 시드 다양성 확보용)
-     * @param hour  임의의 시각 값 (0~23, 시드 다양성 확보용)
+     * @param hour 임의의 시각 값 (0~23, 시드 다양성 확보용)
      */
     @Property(tries = 100)
     void should_useTypeValue_when_themeIsNull(
-            @ForAll("validMonths") final int month,
-            @ForAll("validHours") final int hour) {
+            @ForAll("validMonths") final int month, @ForAll("validHours") final int hour) {
 
         final AmbienceData customData = createAllSeasonTodData(THEME_KEY, TYPE_KEY);
 
         final Clock fixedClock = createFixedClock(month, hour);
         final Random fixedRandom = new Random(42L);
-        final AmbienceService service = createServiceWithCustomData(fixedClock, fixedRandom, customData);
+        final AmbienceService service =
+                createServiceWithCustomData(fixedClock, fixedRandom, customData);
 
-        final MapNode node = new MapNode(
-                "test-node", "테스트마을", TYPE_KEY, NodeType.TOWN,
-                0, 0, null, null, List.of());
+        final MapNode node =
+                new MapNode(
+                        "test-node", "테스트마을", TYPE_KEY, NodeType.TOWN, 0, 0, null, null, List.of());
 
         final String result = service.ambience(node);
 
@@ -118,24 +121,31 @@ class AmbienceServiceThemeDeterminationPropertyTest {
     }
 
     /**
-     * 노드의 {@code theme} 값이 공백 문자열이면,
-     * 서비스는 노드의 {@code type} 키의 후보 목록에서 멘트를 선택한다.
+     * 노드의 {@code theme} 값이 공백 문자열이면, 서비스는 노드의 {@code type} 키의 후보 목록에서 멘트를 선택한다.
      *
      * @param blankTheme 공백 문자열 변형
      */
     @Property(tries = 100)
-    void should_useTypeValue_when_themeIsBlank(
-            @ForAll("blankStrings") final String blankTheme) {
+    void should_useTypeValue_when_themeIsBlank(@ForAll("blankStrings") final String blankTheme) {
 
         final AmbienceData customData = createAllSeasonTodData(THEME_KEY, TYPE_KEY);
 
         final Clock fixedClock = createFixedClock(FIXED_MONTH, FIXED_HOUR);
         final Random fixedRandom = new Random(42L);
-        final AmbienceService service = createServiceWithCustomData(fixedClock, fixedRandom, customData);
+        final AmbienceService service =
+                createServiceWithCustomData(fixedClock, fixedRandom, customData);
 
-        final MapNode node = new MapNode(
-                "test-node", "테스트마을", TYPE_KEY, NodeType.TOWN,
-                0, 0, null, blankTheme, List.of());
+        final MapNode node =
+                new MapNode(
+                        "test-node",
+                        "테스트마을",
+                        TYPE_KEY,
+                        NodeType.TOWN,
+                        0,
+                        0,
+                        null,
+                        blankTheme,
+                        List.of());
 
         final String result = service.ambience(node);
 
@@ -196,7 +206,7 @@ class AmbienceServiceThemeDeterminationPropertyTest {
      * 지정된 월과 시각으로 고정된 Clock을 생성한다.
      *
      * @param month 월 (1~12)
-     * @param hour  시각 (0~23)
+     * @param hour 시각 (0~23)
      * @return 고정된 Clock 인스턴스
      */
     private Clock createFixedClock(final int month, final int hour) {
@@ -208,8 +218,8 @@ class AmbienceServiceThemeDeterminationPropertyTest {
     /**
      * 커스텀 AmbienceData를 주입한 AmbienceService를 생성한다.
      *
-     * @param clock      고정된 Clock
-     * @param random     시드 고정 Random
+     * @param clock 고정된 Clock
+     * @param random 시드 고정 Random
      * @param customData 주입할 커스텀 AmbienceData
      * @return AmbienceService 인스턴스
      */
@@ -225,7 +235,7 @@ class AmbienceServiceThemeDeterminationPropertyTest {
     /**
      * 리플렉션을 통해 AmbienceService의 ambienceData 필드를 교체한다.
      *
-     * @param service    대상 서비스
+     * @param service 대상 서비스
      * @param customData 주입할 데이터
      */
     private void setAmbienceDataViaReflection(
@@ -245,7 +255,7 @@ class AmbienceServiceThemeDeterminationPropertyTest {
      * <p>FIXED_SEASON + FIXED_TOD 조합에만 후보를 배치한다.
      *
      * @param themeKey theme 키
-     * @param typeKey  type 키
+     * @param typeKey type 키
      * @return 커스텀 AmbienceData
      */
     private AmbienceData createCustomDataWithDistinctPools(
@@ -267,27 +277,22 @@ class AmbienceServiceThemeDeterminationPropertyTest {
         themes.put(themeKey, themeMap);
         themes.put(typeKey, typeMap);
 
-        return new AmbienceData(
-                realAmbienceData.season(),
-                realAmbienceData.timeOfDay(),
-                themes
-        );
+        return new AmbienceData(realAmbienceData.season(), realAmbienceData.timeOfDay(), themes);
     }
 
     /**
      * 모든 season × timeOfDay 조합에 후보를 배치한 커스텀 AmbienceData를 생성한다.
      *
-     * <p>theme 키에는 THEME_CANDIDATES, type 키에는 TYPE_CANDIDATES를 배치하여
-     * 어떤 시각이든 올바른 풀에서 선택되는지 검증할 수 있다.
+     * <p>theme 키에는 THEME_CANDIDATES, type 키에는 TYPE_CANDIDATES를 배치하여 어떤 시각이든 올바른 풀에서 선택되는지 검증할 수 있다.
      *
      * @param themeKey theme 키
-     * @param typeKey  type 키
+     * @param typeKey type 키
      * @return 커스텀 AmbienceData
      */
     private AmbienceData createAllSeasonTodData(final String themeKey, final String typeKey) {
         final List<String> seasons = List.of("spring", "summer", "autumn", "winter");
-        final List<String> timeOfDays = List.of(
-                "dawn", "morning", "afternoon", "late-afternoon", "night", "late-night");
+        final List<String> timeOfDays =
+                List.of("dawn", "morning", "afternoon", "late-afternoon", "night", "late-night");
 
         final Map<String, Map<String, List<String>>> themeMap = new HashMap<>();
         for (final String season : seasons) {
@@ -311,10 +316,6 @@ class AmbienceServiceThemeDeterminationPropertyTest {
         themes.put(themeKey, themeMap);
         themes.put(typeKey, typeMap);
 
-        return new AmbienceData(
-                realAmbienceData.season(),
-                realAmbienceData.timeOfDay(),
-                themes
-        );
+        return new AmbienceData(realAmbienceData.season(), realAmbienceData.timeOfDay(), themes);
     }
 }

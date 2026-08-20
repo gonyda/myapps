@@ -1,24 +1,21 @@
 package com.myapps.web.myrpg.domain.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.HitResult;
 import java.util.List;
 import java.util.Random;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import com.myapps.web.myrpg.domain.model.HitResult;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 히트별 독립 크리·편차의 결정성을 검증하는 프로퍼티 테스트.
  *
- * <p>고정 시드 {@link Random}과 동일 입력에 대해, 각 히트는 {@code rollCritical}(크리) →
- * {@code finalDamage}(편차) 순으로 난수를 소비하며, 동일 시드에서 히트별 크리 여부·피해가
- * 결정적으로 재현된다.
+ * <p>고정 시드 {@link Random}과 동일 입력에 대해, 각 히트는 {@code rollCritical}(크리) → {@code finalDamage}(편차) 순으로
+ * 난수를 소비하며, 동일 시드에서 히트별 크리 여부·피해가 결정적으로 재현된다.
  *
  * <p>Feature: 009-skill-differentiation-and-battle-log, Property 4: 히트별 독립 크리·편차(결정성)
  *
@@ -29,12 +26,12 @@ class BattleResolverMultiHitDeterminismPropertyTest {
     /**
      * 동일 시드·동일 입력으로 두 번 호출하면 히트별 결과가 동일한지 검증한다.
      *
-     * @param seed              난수 시드
-     * @param attackPower       공격력
+     * @param seed 난수 시드
+     * @param attackPower 공격력
      * @param multiplierPercent 1히트당 배율(%)
-     * @param defense           대상 방어력
-     * @param critChance        크리티컬 수치
-     * @param hitCount          히트 수
+     * @param defense 대상 방어력
+     * @param critChance 크리티컬 수치
+     * @param hitCount 히트 수
      */
     @Property(tries = 100)
     void should_reproduceSameResults_when_sameSeedAndInput(
@@ -48,12 +45,24 @@ class BattleResolverMultiHitDeterminismPropertyTest {
         final double affinityCoefficient = 1.0;
 
         final BattleResolver resolver1 = new BattleResolver(new Random(seed));
-        final List<HitResult> result1 = resolver1.multiHitDamage(
-                attackPower, multiplierPercent, defense, affinityCoefficient, critChance, hitCount);
+        final List<HitResult> result1 =
+                resolver1.multiHitDamage(
+                        attackPower,
+                        multiplierPercent,
+                        defense,
+                        affinityCoefficient,
+                        critChance,
+                        hitCount);
 
         final BattleResolver resolver2 = new BattleResolver(new Random(seed));
-        final List<HitResult> result2 = resolver2.multiHitDamage(
-                attackPower, multiplierPercent, defense, affinityCoefficient, critChance, hitCount);
+        final List<HitResult> result2 =
+                resolver2.multiHitDamage(
+                        attackPower,
+                        multiplierPercent,
+                        defense,
+                        affinityCoefficient,
+                        critChance,
+                        hitCount);
 
         assertThat(result1).hasSize(hitCount);
         assertThat(result2).hasSize(hitCount);
@@ -67,15 +76,14 @@ class BattleResolverMultiHitDeterminismPropertyTest {
     /**
      * 각 히트의 난수 소비 순서가 rollCritical→finalDamage(편차)임을 검증한다.
      *
-     * <p>multiHitDamage의 각 히트 결과를 수동으로 baseDamage→rollCritical→finalDamage
-     * 순서로 재현하여 히트별 일치를 확인한다.
+     * <p>multiHitDamage의 각 히트 결과를 수동으로 baseDamage→rollCritical→finalDamage 순서로 재현하여 히트별 일치를 확인한다.
      *
-     * @param seed              난수 시드
-     * @param attackPower       공격력
+     * @param seed 난수 시드
+     * @param attackPower 공격력
      * @param multiplierPercent 1히트당 배율(%)
-     * @param defense           대상 방어력
-     * @param critChance        크리티컬 수치
-     * @param hitCount          히트 수
+     * @param defense 대상 방어력
+     * @param critChance 크리티컬 수치
+     * @param hitCount 히트 수
      */
     @Property(tries = 100)
     void should_consumeRandomInCritThenVarianceOrder_when_multiHit(
@@ -90,8 +98,14 @@ class BattleResolverMultiHitDeterminismPropertyTest {
 
         // Get actual multiHitDamage results
         final BattleResolver multiResolver = new BattleResolver(new Random(seed));
-        final List<HitResult> actualHits = multiResolver.multiHitDamage(
-                attackPower, multiplierPercent, defense, affinityCoefficient, critChance, hitCount);
+        final List<HitResult> actualHits =
+                multiResolver.multiHitDamage(
+                        attackPower,
+                        multiplierPercent,
+                        defense,
+                        affinityCoefficient,
+                        critChance,
+                        hitCount);
 
         // Manually reproduce hit-by-hit using same random sequence
         final BattleResolver manualResolver = new BattleResolver(new Random(seed));

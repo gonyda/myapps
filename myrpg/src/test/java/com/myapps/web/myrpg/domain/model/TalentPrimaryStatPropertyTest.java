@@ -1,18 +1,18 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 재능별 주 스탯 성장을 검증하는 프로퍼티 테스트.
  *
- * <p>임의의 레벨 L ∈ [1,100]과 재능 3종에 대해, {@code levelStatsFor(L, talent)}의
- * 주 스탯이 {@code 공통값(L) + 2×(L-1)}이고, 주 스탯/보조 스탯이 아닌 스탯은 공통값과 동일한지 검증한다.
+ * <p>임의의 레벨 L ∈ [1,100]과 재능 3종에 대해, {@code levelStatsFor(L, talent)}의 주 스탯이 {@code 공통값(L) +
+ * 2×(L-1)}이고, 주 스탯/보조 스탯이 아닌 스탯은 공통값과 동일한지 검증한다.
  *
  * <p>Feature: 004-talent-and-ability-points, Property 5: 재능별 주 스탯 성장
  *
@@ -25,8 +25,7 @@ class TalentPrimaryStatPropertyTest {
     private final StatProgression statProgression = new StatProgression();
 
     /**
-     * MELEE 재능의 주 스탯(STR)이 공통값 + 2×(L-1)이고,
-     * 나머지 스탯(DEX, INT, CRITICAL, DEF)은 공통값과 동일한지 검증한다.
+     * MELEE 재능의 주 스탯(STR)이 공통값 + 2×(L-1)이고, 나머지 스탯(DEX, INT, CRITICAL, DEF)은 공통값과 동일한지 검증한다.
      *
      * <p>MELEE의 보조 보너스(HP)는 바이탈 계열이므로 스탯에 영향을 주지 않는다.
      *
@@ -49,11 +48,11 @@ class TalentPrimaryStatPropertyTest {
     }
 
     /**
-     * ARCHERY 재능의 주 스탯(DEX)이 공통값 + 2×(L-1)이고,
-     * 주 스탯/보조 스탯(CRITICAL)이 아닌 스탯(STR, INT, DEF)은 공통값과 동일한지 검증한다.
+     * ARCHERY 재능의 주 스탯(DEX)이 공통값 + 2×(L-1)이고, 주 스탯/보조 스탯(CRITICAL)이 아닌 스탯(STR, INT, DEF)은 공통값과 동일한지
+     * 검증한다.
      *
-     * <p>ARCHERY의 보조 보너스(CRITICAL, +1)는 스탯 계열이므로 Critical은 별도 증가한다.
-     * 이 프로퍼티에서는 주 스탯 검증에 집중하고, 보조 CRITICAL은 Property 7에서 검증한다.
+     * <p>ARCHERY의 보조 보너스(CRITICAL, +1)는 스탯 계열이므로 Critical은 별도 증가한다. 이 프로퍼티에서는 주 스탯 검증에 집중하고, 보조
+     * CRITICAL은 Property 7에서 검증한다.
      *
      * @param level 1 이상 100 이하의 임의 레벨
      */
@@ -73,8 +72,7 @@ class TalentPrimaryStatPropertyTest {
     }
 
     /**
-     * MAGIC 재능의 주 스탯(INT)이 공통값 + 2×(L-1)이고,
-     * 나머지 스탯(STR, DEX, CRITICAL, DEF)은 공통값과 동일한지 검증한다.
+     * MAGIC 재능의 주 스탯(INT)이 공통값 + 2×(L-1)이고, 나머지 스탯(STR, DEX, CRITICAL, DEF)은 공통값과 동일한지 검증한다.
      *
      * <p>MAGIC의 보조 보너스(MP)는 바이탈 계열이므로 스탯에 영향을 주지 않는다.
      *

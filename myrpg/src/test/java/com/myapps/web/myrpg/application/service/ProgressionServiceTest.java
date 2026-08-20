@@ -1,10 +1,6 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
@@ -12,8 +8,10 @@ import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import org.junit.jupiter.api.Test;
 
 /**
  * ProgressionService의 예시 기반 단위 테스트.
@@ -31,13 +29,25 @@ class ProgressionServiceTest {
             new ProgressionService(experiencePolicy, statProgression, FIXED_CLOCK);
 
     /**
-     * 사망 패널티: 레벨 1, 경험치 23/100 → 13/100.
-     * penalty = floor(100 × 0.10) = 10, newExp = max(0, 23 - 10) = 13, experienceLost = 10.
+     * 사망 패널티: 레벨 1, 경험치 23/100 → 13/100. penalty = floor(100 × 0.10) = 10, newExp = max(0, 23 - 10)
+     * = 13, experienceLost = 10.
      */
     @Test
     void should_reduceTo13_when_deathPenaltyAt23ExpLevel1() {
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 23L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        1,
+                        1,
+                        23L,
+                        TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        "tir-chonaill",
+                        0,
+                        0L);
 
         final DeathResult result = service.applyDeathPenalty(progress);
 
@@ -46,13 +56,25 @@ class ProgressionServiceTest {
     }
 
     /**
-     * 사망 패널티: 레벨 1, 경험치 5/100 → 0/100.
-     * penalty = floor(100 × 0.10) = 10, newExp = max(0, 5 - 10) = 0, experienceLost = 5 (실제 차감량).
+     * 사망 패널티: 레벨 1, 경험치 5/100 → 0/100. penalty = floor(100 × 0.10) = 10, newExp = max(0, 5 - 10) =
+     * 0, experienceLost = 5 (실제 차감량).
      */
     @Test
     void should_reduceTo0_when_deathPenaltyAt5ExpLevel1() {
-        final CharacterProgress progress = new CharacterProgress(
-                "고니", 1, 1, 5L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", 0, 0L);
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니",
+                        1,
+                        1,
+                        5L,
+                        TalentType.MELEE,
+                        null,
+                        100,
+                        100,
+                        100,
+                        "tir-chonaill",
+                        0,
+                        0L);
 
         final DeathResult result = service.applyDeathPenalty(progress);
 
@@ -60,9 +82,7 @@ class ProgressionServiceTest {
         assertThat(result.experienceLost()).isEqualTo(5L);
     }
 
-    /**
-     * 경험치 곡선 샘플: L1→100, L2→400, L10→10000.
-     */
+    /** 경험치 곡선 샘플: L1→100, L2→400, L10→10000. */
     @Test
     void should_returnCorrectCurveValues_when_queryingExperiencePolicy() {
         assertThat(experiencePolicy.requiredForNext(1)).isEqualTo(100L);
@@ -70,9 +90,7 @@ class ProgressionServiceTest {
         assertThat(experiencePolicy.requiredForNext(10)).isEqualTo(10000L);
     }
 
-    /**
-     * 신규 캐릭터 기본값: 재능 MELEE, 바이탈 100, Critical 50 (0.1%단위 = 5.0%).
-     */
+    /** 신규 캐릭터 기본값: 재능 MELEE, 바이탈 100, Critical 50 (0.1%단위 = 5.0%). */
     @Test
     void should_haveCorrectDefaults_when_createDefaultCharacter() {
         final CharacterProgress progress = CharacterProgress.createDefault();

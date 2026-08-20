@@ -8,10 +8,6 @@ import java.util.List;
  * <p>현재 활성 탭과 해당 탭에 맞는 스킬 행 목록을 포함한다.
  *
  * @param activeTab 현재 활성 탭 (null 또는 "melee"/"archery"/"magic"/"common")
- * @param rows      필터링된 스킬 행 목록
+ * @param rows 필터링된 스킬 행 목록
  */
-public record SkillListView(
-        String activeTab,
-        List<SkillRowView> rows
-) {
-}
+public record SkillListView(String activeTab, List<SkillRowView> rows) {}

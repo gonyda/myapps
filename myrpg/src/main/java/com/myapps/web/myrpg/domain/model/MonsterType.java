@@ -6,10 +6,8 @@ import java.util.Optional;
 /**
  * 몬스터의 유형을 나타내는 열거형.
  *
- * <p>각 상수는 타입 문자열, 한글 라벨, 버튼 배지, 행동 버튼 라벨 목록을 내장하여
- * 몬스터 타입 정보의 단일 소스 역할을 한다.
- * 새로운 몬스터 유형 추가 시 상수 하나만 추가하면 되며,
- * 라벨이나 행동 목록 누락 시 컴파일 오류가 발생한다.
+ * <p>각 상수는 타입 문자열, 한글 라벨, 버튼 배지, 행동 버튼 라벨 목록을 내장하여 몬스터 타입 정보의 단일 소스 역할을 한다. 새로운 몬스터 유형 추가 시 상수 하나만
+ * 추가하면 되며, 라벨이나 행동 목록 누락 시 컴파일 오류가 발생한다.
  */
 public enum MonsterType {
 
@@ -24,8 +22,11 @@ public enum MonsterType {
     private final String badge;
     private final List<String> actionLabels;
 
-    MonsterType(final String typeString, final String label, final String badge,
-                final List<String> actionLabels) {
+    MonsterType(
+            final String typeString,
+            final String label,
+            final String badge,
+            final List<String> actionLabels) {
         this.typeString = typeString;
         this.label = label;
         this.badge = badge;
@@ -53,8 +54,7 @@ public enum MonsterType {
     /**
      * 몬스터 유형의 버튼 배지를 반환한다.
      *
-     * <p>일반 몬스터는 빈 문자열, 보스 몬스터는 "👑"을 반환한다.
-     * 상호작용 버튼 라벨에서 이름 뒤에 붙는 접미사로 사용된다.
+     * <p>일반 몬스터는 빈 문자열, 보스 몬스터는 "👑"을 반환한다. 상호작용 버튼 라벨에서 이름 뒤에 붙는 접미사로 사용된다.
      *
      * @return 버튼 배지 문자열 (일반="", 보스="👑")
      */

@@ -1,22 +1,5 @@
 package com.myapps.web.mycrawler.application.service;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Arbitraries;
-
-import com.myapps.web.mycrawler.domain.model.TriggerSource;
-import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
-import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,23 +10,34 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.myapps.web.mycrawler.domain.model.TriggerSource;
+import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
+import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+
 /**
  * SchedulerService에 대한 Property-Based 테스트.
  *
- * <p>jqwik을 사용하여 다양한 유효하지 않은 cron 문자열에 대해
- * 스케줄러가 비활성화됨을 검증하고, 개별 순회 실행 방식의
- * 정확성을 다양한 타겟 목록에 대해 검증합니다.
+ * <p>jqwik을 사용하여 다양한 유효하지 않은 cron 문자열에 대해 스케줄러가 비활성화됨을 검증하고, 개별 순회 실행 방식의 정확성을 다양한 타겟 목록에 대해 검증합니다.
  *
  * <p><b>Validates: Requirements 3.5, 6.1, 6.2, 6.3</b>
  */
 class SchedulerServicePropertyTest {
 
     /**
-     * 유효하지 않은 cron 표현식으로 SchedulerService를 생성하면
-     * isEnabled()가 false를 반환함을 검증합니다.
+     * 유효하지 않은 cron 표현식으로 SchedulerService를 생성하면 isEnabled()가 false를 반환함을 검증합니다.
      *
-     * <p>null, 빈 문자열, 공백만 포함된 문자열, 파싱 불가능한 문자열 등
-     * 다양한 유효하지 않은 cron 입력에 대해 스케줄링이 비활성화됨을 확인합니다.
+     * <p>null, 빈 문자열, 공백만 포함된 문자열, 파싱 불가능한 문자열 등 다양한 유효하지 않은 cron 입력에 대해 스케줄링이 비활성화됨을 확인합니다.
      *
      * <p><b>Validates: Requirements 3.5</b>
      *
@@ -57,14 +51,14 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final CrawlerConfig crawlerConfig = new CrawlerConfig(invalidCron, 30L, "", List.of());
 
-        final SchedulerService schedulerService = new SchedulerService(mockCrawlerService, crawlerConfig, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, crawlerConfig, mockAntiDetectionService);
 
         assertThat(schedulerService.isEnabled()).isFalse();
     }
 
     /**
-     * null cron 표현식으로 SchedulerService를 생성하면
-     * isEnabled()가 false를 반환함을 검증합니다.
+     * null cron 표현식으로 SchedulerService를 생성하면 isEnabled()가 false를 반환함을 검증합니다.
      *
      * <p><b>Validates: Requirements 3.5</b>
      */
@@ -74,7 +68,8 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final CrawlerConfig crawlerConfig = new CrawlerConfig(null, 30L, "", List.of());
 
-        final SchedulerService schedulerService = new SchedulerService(mockCrawlerService, crawlerConfig, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, crawlerConfig, mockAntiDetectionService);
 
         assertThat(schedulerService.isEnabled()).isFalse();
     }
@@ -82,8 +77,7 @@ class SchedulerServicePropertyTest {
     /**
      * 유효하지 않은 cron 표현식을 생성하는 Arbitrary provider.
      *
-     * <p>빈 문자열, 공백 문자열, 파싱 불가능한 문자열, 필드 수가 부족한 문자열 등
-     * 다양한 유형의 무효한 cron 표현식을 생성합니다.
+     * <p>빈 문자열, 공백 문자열, 파싱 불가능한 문자열, 필드 수가 부족한 문자열 등 다양한 유형의 무효한 cron 표현식을 생성합니다.
      *
      * @return 유효하지 않은 cron 문자열의 Arbitrary
      */
@@ -91,25 +85,23 @@ class SchedulerServicePropertyTest {
     Arbitrary<String> invalidCronExpressions() {
         final Arbitrary<String> emptyStrings = Arbitraries.of("", "   ", "\t", "\n", "  \t\n  ");
 
-        final Arbitrary<String> unparseableStrings = Arbitraries.of(
-                "invalid",
-                "not-a-cron",
-                "* * *",
-                "abc def ghi",
-                "1 2 3",
-                "0 0 0",
-                "hello world",
-                "12345",
-                "*/invalid * * * * *",
-                "0 0 32 13 8 *",
-                "random-text-here",
-                "@ @ @ @ @ @"
-        );
+        final Arbitrary<String> unparseableStrings =
+                Arbitraries.of(
+                        "invalid",
+                        "not-a-cron",
+                        "* * *",
+                        "abc def ghi",
+                        "1 2 3",
+                        "0 0 0",
+                        "hello world",
+                        "12345",
+                        "*/invalid * * * * *",
+                        "0 0 32 13 8 *",
+                        "random-text-here",
+                        "@ @ @ @ @ @");
 
-        final Arbitrary<String> randomGarbage = Arbitraries.strings()
-                .alpha()
-                .ofMinLength(1)
-                .ofMaxLength(20);
+        final Arbitrary<String> randomGarbage =
+                Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(20);
 
         return Arbitraries.oneOf(emptyStrings, unparseableStrings, randomGarbage);
     }
@@ -136,24 +128,25 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final List<CrawlerConfig.TargetConfig> targets = generateValidTargets(targetCount);
         final CrawlerConfig config = new CrawlerConfig("0 0 */6 * * *", 30L, "", targets);
-        final SchedulerService schedulerService = new SchedulerService(
-                mockCrawlerService, config, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, config, mockAntiDetectionService);
 
         when(mockAntiDetectionService.randomInterTargetDelay()).thenReturn(0L);
 
         invokeExecuteCrawl(schedulerService);
 
-        verify(mockCrawlerService, times(targetCount)).executeSingle(anyString(), eq(TriggerSource.SCHEDULED));
+        verify(mockCrawlerService, times(targetCount))
+                .executeSingle(anyString(), eq(TriggerSource.SCHEDULED));
         for (final CrawlerConfig.TargetConfig target : targets) {
-            verify(mockCrawlerService, times(1)).executeSingle(target.name(), TriggerSource.SCHEDULED);
+            verify(mockCrawlerService, times(1))
+                    .executeSingle(target.name(), TriggerSource.SCHEDULED);
         }
     }
 
     /**
      * 일부 타겟이 실패(예외 또는 null 반환)해도 나머지 타겟이 모두 처리됨을 검증합니다.
      *
-     * <p>SchedulerService는 개별 타겟 실행 실패를 격리하여
-     * 나머지 타겟의 크롤링을 계속 진행해야 합니다.
+     * <p>SchedulerService는 개별 타겟 실행 실패를 격리하여 나머지 타겟의 크롤링을 계속 진행해야 합니다.
      *
      * <p><b>Validates: Requirements 6.2</b>
      *
@@ -167,8 +160,8 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final List<CrawlerConfig.TargetConfig> targets = generateValidTargets(targetCount);
         final CrawlerConfig config = new CrawlerConfig("0 0 */6 * * *", 30L, "", targets);
-        final SchedulerService schedulerService = new SchedulerService(
-                mockCrawlerService, config, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, config, mockAntiDetectionService);
 
         when(mockAntiDetectionService.randomInterTargetDelay()).thenReturn(0L);
 
@@ -185,14 +178,14 @@ class SchedulerServicePropertyTest {
         invokeExecuteCrawl(schedulerService);
 
         // 모든 타겟에 대해 executeSingle이 호출되어야 함
-        verify(mockCrawlerService, times(targetCount)).executeSingle(anyString(), eq(TriggerSource.SCHEDULED));
+        verify(mockCrawlerService, times(targetCount))
+                .executeSingle(anyString(), eq(TriggerSource.SCHEDULED));
     }
 
     /**
      * N개 타겟 실행 시 randomInterTargetDelay가 정확히 N-1번 호출됨을 검증합니다.
      *
-     * <p>타겟 간 딜레이는 마지막 타겟 이후에는 적용되지 않으므로,
-     * N개의 타겟에 대해 N-1번 호출되어야 합니다.
+     * <p>타겟 간 딜레이는 마지막 타겟 이후에는 적용되지 않으므로, N개의 타겟에 대해 N-1번 호출되어야 합니다.
      *
      * <p><b>Validates: Requirements 6.3</b>
      *
@@ -206,8 +199,8 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final List<CrawlerConfig.TargetConfig> targets = generateValidTargets(targetCount);
         final CrawlerConfig config = new CrawlerConfig("0 0 */6 * * *", 30L, "", targets);
-        final SchedulerService schedulerService = new SchedulerService(
-                mockCrawlerService, config, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, config, mockAntiDetectionService);
 
         when(mockAntiDetectionService.randomInterTargetDelay()).thenReturn(0L);
 
@@ -220,8 +213,7 @@ class SchedulerServicePropertyTest {
     /**
      * scheduledRunning이 true일 때 후속 executeCrawl 호출이 타겟을 처리하지 않음을 검증합니다.
      *
-     * <p>스케줄러 중복 실행을 방지하기 위해, scheduledRunning이 이미 true인 상태에서는
-     * executeSingle이 한 번도 호출되지 않아야 합니다.
+     * <p>스케줄러 중복 실행을 방지하기 위해, scheduledRunning이 이미 true인 상태에서는 executeSingle이 한 번도 호출되지 않아야 합니다.
      *
      * <p><b>Validates: Requirements 6.1</b>
      *
@@ -235,8 +227,8 @@ class SchedulerServicePropertyTest {
         final AntiDetectionService mockAntiDetectionService = mock(AntiDetectionService.class);
         final List<CrawlerConfig.TargetConfig> targets = generateValidTargets(targetCount);
         final CrawlerConfig config = new CrawlerConfig("0 0 */6 * * *", 30L, "", targets);
-        final SchedulerService schedulerService = new SchedulerService(
-                mockCrawlerService, config, mockAntiDetectionService);
+        final SchedulerService schedulerService =
+                new SchedulerService(mockCrawlerService, config, mockAntiDetectionService);
 
         setScheduledRunning(schedulerService, true);
 
@@ -270,8 +262,10 @@ class SchedulerServicePropertyTest {
 
     private List<CrawlerConfig.TargetConfig> generateValidTargets(final int count) {
         return IntStream.rangeClosed(1, count)
-                .mapToObj(i -> new CrawlerConfig.TargetConfig(
-                        "target-" + i, "https://example.com/target" + i))
+                .mapToObj(
+                        i ->
+                                new CrawlerConfig.TargetConfig(
+                                        "target-" + i, "https://example.com/target" + i))
                 .collect(Collectors.toList());
     }
 
@@ -281,11 +275,13 @@ class SchedulerServicePropertyTest {
         executeCrawlMethod.invoke(schedulerService);
     }
 
-    private void setScheduledRunning(final SchedulerService schedulerService,
-                                     final boolean value) throws Exception {
-        final Field scheduledRunningField = SchedulerService.class.getDeclaredField("scheduledRunning");
+    private void setScheduledRunning(final SchedulerService schedulerService, final boolean value)
+            throws Exception {
+        final Field scheduledRunningField =
+                SchedulerService.class.getDeclaredField("scheduledRunning");
         scheduledRunningField.setAccessible(true);
-        final AtomicBoolean scheduledRunning = (AtomicBoolean) scheduledRunningField.get(schedulerService);
+        final AtomicBoolean scheduledRunning =
+                (AtomicBoolean) scheduledRunningField.get(schedulerService);
         scheduledRunning.set(value);
     }
 }

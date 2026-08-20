@@ -1,11 +1,17 @@
 package com.myapps.web.myrpg.domain.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.application.dto.MinimapCell;
+import com.myapps.web.myrpg.application.dto.MinimapView;
+import com.myapps.web.myrpg.domain.model.MapGraph;
+import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.domain.model.NodeType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -13,20 +19,11 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 
-import com.myapps.web.myrpg.application.dto.MinimapCell;
-import com.myapps.web.myrpg.application.dto.MinimapView;
-import com.myapps.web.myrpg.domain.model.MapGraph;
-import com.myapps.web.myrpg.domain.model.MapNode;
-import com.myapps.web.myrpg.domain.model.NodeType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 미니맵 셀 구성 프로퍼티 테스트.
  *
- * <p>임의의 유효 맵 그래프와 현재 노드에 대해 {@link MapViewFactory#createMinimap}이
- * 생성하는 미니맵 셀이 윈도우 범위(dx∈[-4,4], dy∈[-2,2])와 정확히 일치하고,
- * 그리드 좌표·타입 문자열·현재 노드 플래그가 올바른지 검증한다.
+ * <p>임의의 유효 맵 그래프와 현재 노드에 대해 {@link MapViewFactory#createMinimap}이 생성하는 미니맵 셀이 윈도우 범위(dx∈[-4,4],
+ * dy∈[-2,2])와 정확히 일치하고, 그리드 좌표·타입 문자열·현재 노드 플래그가 올바른지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 4: 미니맵 셀 구성
  *
@@ -47,14 +44,14 @@ class MapViewFactoryMinimapPropertyTest {
     private final MapViewFactory mapViewFactory = new MapViewFactory();
 
     /**
-     * 미니맵 셀이 창 범위 내 노드와 정확히 일치하고(최대 45셀),
-     * 현재 노드가 항상 포함되며, 그리드 좌표·타입 문자열·current 플래그가 올바른지 검증한다.
+     * 미니맵 셀이 창 범위 내 노드와 정확히 일치하고(최대 45셀), 현재 노드가 항상 포함되며, 그리드 좌표·타입 문자열·current 플래그가 올바른지 검증한다.
      *
      * @param graphAndCurrent 임의 생성된 맵 그래프와 현재 노드 ID 튜플
      */
     @Property(tries = 100)
     void should_matchWindowRangeNodes_when_minimapCreated(
-            @ForAll("validGraphWithCurrentNode") final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
+            @ForAll("validGraphWithCurrentNode")
+                    final Tuple.Tuple2<MapGraph, String> graphAndCurrent) {
 
         final MapGraph graph = graphAndCurrent.get1();
         final String currentNodeId = graphAndCurrent.get2();
@@ -66,9 +63,8 @@ class MapViewFactoryMinimapPropertyTest {
 
         // Then 1: 셀 집합이 창 범위 내 노드와 정확히 일치
         final Set<String> expectedNodeIds = computeExpectedNodeIds(graph, currentNode);
-        final Set<String> actualNodeIds = cells.stream()
-                .map(MinimapCell::nodeId)
-                .collect(Collectors.toSet());
+        final Set<String> actualNodeIds =
+                cells.stream().map(MinimapCell::nodeId).collect(Collectors.toSet());
         assertThat(actualNodeIds).isEqualTo(expectedNodeIds);
 
         // Then 2: 최대 45셀
@@ -89,15 +85,11 @@ class MapViewFactoryMinimapPropertyTest {
             assertThat(cell.gridRow())
                     .as("gridRow for node %s", cell.nodeId())
                     .isEqualTo(expectedGridRow);
-            assertThat(cell.type())
-                    .as("type for node %s", cell.nodeId())
-                    .isEqualTo(node.type());
+            assertThat(cell.type()).as("type for node %s", cell.nodeId()).isEqualTo(node.type());
         }
 
         // Then 6: 정확히 하나의 셀만 current=true이며, 그것이 현재 노드
-        final List<MinimapCell> currentCells = cells.stream()
-                .filter(MinimapCell::current)
-                .toList();
+        final List<MinimapCell> currentCells = cells.stream().filter(MinimapCell::current).toList();
         assertThat(currentCells).hasSize(1);
         assertThat(currentCells.getFirst().nodeId()).isEqualTo(currentNodeId);
     }
@@ -109,24 +101,28 @@ class MapViewFactoryMinimapPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<MapGraph, String>> validGraphWithCurrentNode() {
-        return Arbitraries.integers().between(GRID_SIZE_MIN, GRID_SIZE_MAX)
+        return Arbitraries.integers()
+                .between(GRID_SIZE_MIN, GRID_SIZE_MAX)
                 .flatMap(this::buildGraphWithCurrentNode);
     }
 
-    private Arbitrary<Tuple.Tuple2<MapGraph, String>> buildGraphWithCurrentNode(final int gridSize) {
-        final Arbitrary<String> types = Arbitraries.of("town", "field", "dungeon", "shrine", "lake");
+    private Arbitrary<Tuple.Tuple2<MapGraph, String>> buildGraphWithCurrentNode(
+            final int gridSize) {
+        final Arbitrary<String> types =
+                Arbitraries.of("town", "field", "dungeon", "shrine", "lake");
         final int nodeCount = gridSize * gridSize;
 
-        return types.list().ofSize(nodeCount)
-                .flatMap(typeList -> {
-                    final List<MapNode> nodes = createGridNodes(gridSize, typeList);
-                    final MapGraph graph = new MapGraph(nodes, List.of(), nodes.getFirst().id());
-                    final List<String> nodeIds = nodes.stream()
-                            .map(MapNode::id)
-                            .toList();
-                    return Arbitraries.of(nodeIds)
-                            .map(currentId -> Tuple.of(graph, currentId));
-                });
+        return types.list()
+                .ofSize(nodeCount)
+                .flatMap(
+                        typeList -> {
+                            final List<MapNode> nodes = createGridNodes(gridSize, typeList);
+                            final MapGraph graph =
+                                    new MapGraph(nodes, List.of(), nodes.getFirst().id());
+                            final List<String> nodeIds = nodes.stream().map(MapNode::id).toList();
+                            return Arbitraries.of(nodeIds)
+                                    .map(currentId -> Tuple.of(graph, currentId));
+                        });
     }
 
     private List<MapNode> createGridNodes(final int gridSize, final List<String> typeList) {
@@ -155,8 +151,8 @@ class MapViewFactoryMinimapPropertyTest {
         return List.copyOf(nodes);
     }
 
-    private List<String> buildLinksForCell(final int row, final int col,
-                                           final int gridSize, final String[][] idGrid) {
+    private List<String> buildLinksForCell(
+            final int row, final int col, final int gridSize, final String[][] idGrid) {
         final List<String> links = new ArrayList<>();
 
         if (row > 0) {

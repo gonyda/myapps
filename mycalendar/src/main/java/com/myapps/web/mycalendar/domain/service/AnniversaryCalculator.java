@@ -1,20 +1,17 @@
 package com.myapps.web.mycalendar.domain.service;
 
+import com.myapps.web.mycalendar.domain.model.Anniversary;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
-import com.myapps.web.mycalendar.domain.model.Anniversary;
 
 /**
  * 기념일 및 D-Day를 계산하는 도메인 서비스.
  *
- * <p>Base_Date(사귄 날)를 기준으로 100일 단위, 연 단위 기념일을 계산하고,
- * 한국식 D-Day 계산 방식을 적용합니다. DB 조회 없이 상수만 사용합니다.
+ * <p>Base_Date(사귄 날)를 기준으로 100일 단위, 연 단위 기념일을 계산하고, 한국식 D-Day 계산 방식을 적용합니다. DB 조회 없이 상수만 사용합니다.
  */
 @Service
 public class AnniversaryCalculator {
@@ -27,8 +24,7 @@ public class AnniversaryCalculator {
     /**
      * 한국식 D-Day를 계산합니다.
      *
-     * <p>Base_Date를 1일로 산정하여, 주어진 날짜까지의 경과 일수를 반환합니다.
-     * 예를 들어 Base_Date 자체는 1, 그 다음 날은 2입니다.
+     * <p>Base_Date를 1일로 산정하여, 주어진 날짜까지의 경과 일수를 반환합니다. 예를 들어 Base_Date 자체는 1, 그 다음 날은 2입니다.
      *
      * @param today 계산 기준 날짜
      * @return 한국식 D-Day 값 (Base_Date가 1)
@@ -40,8 +36,7 @@ public class AnniversaryCalculator {
     /**
      * 100일 단위 기념일 목록을 계산합니다 (100일 ~ 1000일).
      *
-     * <p>Base_Date를 1일로 산정하므로, N일 기념일의 실제 날짜는
-     * BASE_DATE.plusDays(N - 1)입니다.
+     * <p>Base_Date를 1일로 산정하므로, N일 기념일의 실제 날짜는 BASE_DATE.plusDays(N - 1)입니다.
      *
      * @return 100일부터 1000일까지 10개의 기념일 목록
      */
@@ -76,8 +71,7 @@ public class AnniversaryCalculator {
     /**
      * 특정 월에 포함되는 기념일 목록을 반환합니다.
      *
-     * <p>100일 단위 기념일과 연 단위 기념일을 모두 합산한 뒤,
-     * 주어진 월의 1일부터 말일 사이에 해당하는 기념일만 필터링합니다.
+     * <p>100일 단위 기념일과 연 단위 기념일을 모두 합산한 뒤, 주어진 월의 1일부터 말일 사이에 해당하는 기념일만 필터링합니다.
      *
      * @param yearMonth 조회 대상 연월
      * @return 해당 월에 포함되는 기념일 목록
@@ -91,8 +85,10 @@ public class AnniversaryCalculator {
         allAnniversaries.addAll(calculateYearlyAnniversaries());
 
         return allAnniversaries.stream()
-                .filter(anniversary -> !anniversary.date().isBefore(startOfMonth)
-                        && !anniversary.date().isAfter(endOfMonth))
+                .filter(
+                        anniversary ->
+                                !anniversary.date().isBefore(startOfMonth)
+                                        && !anniversary.date().isAfter(endOfMonth))
                 .toList();
     }
 }

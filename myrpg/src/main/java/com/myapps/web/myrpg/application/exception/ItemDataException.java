@@ -20,7 +20,7 @@ public class ItemDataException extends RuntimeException {
      * 오류 메시지와 원인 예외를 포함하여 예외를 생성합니다.
      *
      * @param message 아이템 데이터 오류 상세 메시지
-     * @param cause   원인 예외
+     * @param cause 원인 예외
      */
     public ItemDataException(final String message, final Throwable cause) {
         super(message, cause);

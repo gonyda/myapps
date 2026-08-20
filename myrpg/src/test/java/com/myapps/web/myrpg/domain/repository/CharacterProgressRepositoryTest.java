@@ -1,5 +1,9 @@
 package com.myapps.web.myrpg.domain.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.TalentType;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -7,21 +11,15 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.TalentType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * CharacterProgress 영속 라운드트립 프로퍼티 테스트.
  *
- * <p>{@code @DataJpaTest} 슬라이스와 jqwik {@code @Property}를 결합하여,
- * 임의의 유효한 CharacterProgress를 저장 후 조회하면 모든 필드가 보존되는지 검증한다.
+ * <p>{@code @DataJpaTest} 슬라이스와 jqwik {@code @Property}를 결합하여, 임의의 유효한 CharacterProgress를 저장 후 조회하면
+ * 모든 필드가 보존되는지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 12: 진행상황 영속 라운드트립
  *
@@ -85,44 +83,73 @@ class CharacterProgressRepositoryTest {
      */
     @Provide
     Arbitrary<CharacterProgress> validCharacterProgress() {
-        final Arbitrary<String> nicknames = Arbitraries.strings()
-                .alpha()
-                .ofMinLength(NICKNAME_MIN_LENGTH)
-                .ofMaxLength(NICKNAME_MAX_LENGTH);
+        final Arbitrary<String> nicknames =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NICKNAME_MIN_LENGTH)
+                        .ofMaxLength(NICKNAME_MAX_LENGTH);
 
-        final Arbitrary<Integer> currentLevels = Arbitraries.integers()
-                .between(LEVEL_MIN, LEVEL_MAX);
+        final Arbitrary<Integer> currentLevels =
+                Arbitraries.integers().between(LEVEL_MIN, LEVEL_MAX);
 
-        final Arbitrary<Integer> accumulatedLevels = Arbitraries.integers()
-                .between(LEVEL_MIN, ACCUMULATED_LEVEL_MAX);
+        final Arbitrary<Integer> accumulatedLevels =
+                Arbitraries.integers().between(LEVEL_MIN, ACCUMULATED_LEVEL_MAX);
 
-        final Arbitrary<Long> experiences = Arbitraries.longs()
-                .between(0L, EXPERIENCE_MAX);
+        final Arbitrary<Long> experiences = Arbitraries.longs().between(0L, EXPERIENCE_MAX);
 
         final Arbitrary<TalentType> talents = Arbitraries.of(TalentType.values());
 
-        final Arbitrary<Integer> vitalCurrents = Arbitraries.integers()
-                .between(0, VITAL_CURRENT_MAX);
+        final Arbitrary<Integer> vitalCurrents =
+                Arbitraries.integers().between(0, VITAL_CURRENT_MAX);
 
-        final Arbitrary<String> nodeIds = Arbitraries.strings()
-                .withCharRange('a', 'z')
-                .withChars('-')
-                .ofMinLength(NODE_ID_MIN_LENGTH)
-                .ofMaxLength(NODE_ID_MAX_LENGTH)
-                .filter(s -> !s.isBlank());
+        final Arbitrary<String> nodeIds =
+                Arbitraries.strings()
+                        .withCharRange('a', 'z')
+                        .withChars('-')
+                        .ofMinLength(NODE_ID_MIN_LENGTH)
+                        .ofMaxLength(NODE_ID_MAX_LENGTH)
+                        .filter(s -> !s.isBlank());
 
         return Combinators.combine(
-                nicknames, currentLevels, accumulatedLevels, experiences,
-                talents, vitalCurrents, vitalCurrents, vitalCurrents
-        ).as((nickname, level, accumulated, exp, talent, hp, mp, stamina) ->
-                new CharacterProgress(nickname, level, accumulated, exp, talent, null,
-                        hp, mp, stamina, "tir-chonaill", 0, 0L)
-        ).flatMap(base -> nodeIds.map(nodeId ->
-                new CharacterProgress(base.getNickname(), base.getCurrentLevel(),
-                        base.getAccumulatedLevel(), base.getExperience(),
-                        base.getTalent(), null,
-                        base.getHpCurrent(), base.getMpCurrent(), base.getStaminaCurrent(),
-                        nodeId, 0, 0L)
-        ));
+                        nicknames,
+                        currentLevels,
+                        accumulatedLevels,
+                        experiences,
+                        talents,
+                        vitalCurrents,
+                        vitalCurrents,
+                        vitalCurrents)
+                .as(
+                        (nickname, level, accumulated, exp, talent, hp, mp, stamina) ->
+                                new CharacterProgress(
+                                        nickname,
+                                        level,
+                                        accumulated,
+                                        exp,
+                                        talent,
+                                        null,
+                                        hp,
+                                        mp,
+                                        stamina,
+                                        "tir-chonaill",
+                                        0,
+                                        0L))
+                .flatMap(
+                        base ->
+                                nodeIds.map(
+                                        nodeId ->
+                                                new CharacterProgress(
+                                                        base.getNickname(),
+                                                        base.getCurrentLevel(),
+                                                        base.getAccumulatedLevel(),
+                                                        base.getExperience(),
+                                                        base.getTalent(),
+                                                        null,
+                                                        base.getHpCurrent(),
+                                                        base.getMpCurrent(),
+                                                        base.getStaminaCurrent(),
+                                                        nodeId,
+                                                        0,
+                                                        0L)));
     }
 }

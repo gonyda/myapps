@@ -1,21 +1,10 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.springframework.ui.ExtendedModelMap;
-
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.application.dto.RepairView;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
@@ -27,22 +16,28 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.EquipBonus;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
-import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import org.springframework.ui.ExtendedModelMap;
 
 /**
  * 수리 시도 시 골드 소모 및 실패 비환불 불변 프로퍼티 테스트.
  *
- * <p>임의의 수리 시도에 대해, 수리 성공(95%) 시 내구도가 +1 되고 골드가 차감되며,
- * 수리 실패(5%) 시에도 차감된 수리비는 환불되지 않고 내구도는 유지됨을 검증한다.
+ * <p>임의의 수리 시도에 대해, 수리 성공(95%) 시 내구도가 +1 되고 골드가 차감되며, 수리 실패(5%) 시에도 차감된 수리비는 환불되지 않고 내구도는 유지됨을
+ * 검증한다.
  *
  * <p>Feature: 010-npc-actions-shop-repair-heal, Property 8: 수리 시도 시 골드 소모 및 실패 비환불 불변
  *
@@ -61,11 +56,12 @@ class RepairExecutionPropertyTest {
      * @param bonusAmount 임의 보너스 금액 (판매가 결정)
      */
     @Property(tries = 100)
-    void should_repairSuccess_increaseDurabilityAndSpendGold(@ForAll("bonusAmount") final int bonusAmount) {
+    void should_repairSuccess_increaseDurabilityAndSpendGold(
+            @ForAll("bonusAmount") final int bonusAmount) {
         final EquipmentItem equip = newEquipment(bonusAmount);
         final double initialDurability = 5.0;
-        final OwnedItem owned = new OwnedItem(
-                equip.id(), 1, StorageKind.INVENTORY, false, initialDurability);
+        final OwnedItem owned =
+                new OwnedItem(equip.id(), 1, StorageKind.INVENTORY, false, initialDurability);
         final long initialGold = 10_000L;
 
         final Fixture fixture = newFixture(equip, owned, initialGold, new AlwaysSuccessRandom());
@@ -85,11 +81,12 @@ class RepairExecutionPropertyTest {
      * @param bonusAmount 임의 보너스 금액 (판매가 결정)
      */
     @Property(tries = 100)
-    void should_repairFailure_keepDurabilityAndNoRefund(@ForAll("bonusAmount") final int bonusAmount) {
+    void should_repairFailure_keepDurabilityAndNoRefund(
+            @ForAll("bonusAmount") final int bonusAmount) {
         final EquipmentItem equip = newEquipment(bonusAmount);
         final double initialDurability = 5.0;
-        final OwnedItem owned = new OwnedItem(
-                equip.id(), 1, StorageKind.INVENTORY, false, initialDurability);
+        final OwnedItem owned =
+                new OwnedItem(equip.id(), 1, StorageKind.INVENTORY, false, initialDurability);
         final long initialGold = 10_000L;
 
         final Fixture fixture = newFixture(equip, owned, initialGold, new AlwaysFailureRandom());
@@ -116,9 +113,7 @@ class RepairExecutionPropertyTest {
 
     // ─── Helpers ───────────────────────────────────────────────────────────
 
-    /**
-     * 항상 수리 성공(95% 판정 미만)을 반환하는 Random.
-     */
+    /** 항상 수리 성공(95% 판정 미만)을 반환하는 Random. */
     private static class AlwaysSuccessRandom extends Random {
         @Override
         public int nextInt(final int bound) {
@@ -126,9 +121,7 @@ class RepairExecutionPropertyTest {
         }
     }
 
-    /**
-     * 항상 수리 실패(95% 판정 이상)를 반환하는 Random.
-     */
+    /** 항상 수리 실패(95% 판정 이상)를 반환하는 Random. */
     private static class AlwaysFailureRandom extends Random {
         @Override
         public int nextInt(final int bound) {
@@ -139,22 +132,29 @@ class RepairExecutionPropertyTest {
     /**
      * 테스트 픽스처: 수리 컨트롤러, 상점 서비스, 캐릭터 진행상황.
      *
-     * @param controller  수리 컨트롤러
+     * @param controller 수리 컨트롤러
      * @param shopService 상점 서비스 (판매가 계산)
-     * @param progress    캐릭터 진행상황 (골드 검증용)
+     * @param progress 캐릭터 진행상황 (골드 검증용)
      */
-    record Fixture(RepairController controller, ShopService shopService, CharacterProgress progress) {
-    }
+    record Fixture(
+            RepairController controller, ShopService shopService, CharacterProgress progress) {}
 
     private EquipmentItem newEquipment(final int bonusAmount) {
         return new EquipmentItem(
-                "test-sword", "테스트검", ItemType.WEAPON, EquipmentKind.ONE_HANDED_SWORD,
+                "test-sword",
+                "테스트검",
+                ItemType.WEAPON,
+                EquipmentKind.ONE_HANDED_SWORD,
                 List.of(new EquipBonus(BonusTarget.STR, bonusAmount)),
-                null, MAX_DURABILITY);
+                null,
+                MAX_DURABILITY);
     }
 
-    private Fixture newFixture(final EquipmentItem equip, final OwnedItem owned,
-                               final long initialGold, final Random random) {
+    private Fixture newFixture(
+            final EquipmentItem equip,
+            final OwnedItem owned,
+            final long initialGold,
+            final Random random) {
         IdTestHelper.setId(owned, OWNED_ITEM_ID);
         final CharacterProgress progress = CharacterProgress.createDefault();
         progress.gainGold(initialGold);
@@ -168,22 +168,24 @@ class RepairExecutionPropertyTest {
         final ItemCatalogService catalogService = mock(ItemCatalogService.class);
         when(catalogService.byId(anyString())).thenReturn(Optional.of(equip));
 
-        final ShopService shopService = new ShopService(
-                catalogService,
-                mock(NpcService.class),
-                repository,
-                mock(InventoryService.class),
-                characterService,
-                fixedAction());
+        final ShopService shopService =
+                new ShopService(
+                        catalogService,
+                        mock(NpcService.class),
+                        repository,
+                        mock(InventoryService.class),
+                        characterService,
+                        fixedAction());
 
-        final RepairController controller = new RepairController(
-                characterService,
-                shopService,
-                mock(InventoryService.class),
-                catalogService,
-                repository,
-                fixedAction(),
-                random);
+        final RepairController controller =
+                new RepairController(
+                        characterService,
+                        shopService,
+                        mock(InventoryService.class),
+                        catalogService,
+                        repository,
+                        fixedAction(),
+                        random);
 
         return new Fixture(controller, shopService, progress);
     }

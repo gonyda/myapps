@@ -1,18 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
-import net.jqwik.api.Arbitrary;
-import net.jqwik.api.Arbitraries;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -36,20 +30,23 @@ import com.myapps.web.myrpg.domain.model.TurnInput;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
 
 /**
  * 마법 캐스팅 실패를 검증하는 프로퍼티 테스트.
  *
- * <p>공격 마법 스킬에서 10% 확률로 캐스팅 실패하면 플레이어 피해 0, MP 소모,
- * 몬스터 행동 정상 처리. 방어(공통) 스킬은 실패하지 않는다.
+ * <p>공격 마법 스킬에서 10% 확률로 캐스팅 실패하면 플레이어 피해 0, MP 소모, 몬스터 행동 정상 처리. 방어(공통) 스킬은 실패하지 않는다.
  *
  * <p>Feature: 008-battle-system, Property 9: 마법 캐스팅 실패
  *
@@ -68,13 +65,13 @@ class BattleServiceMagicCastFailurePropertyTest {
     private static final int MAGIC_FAIL_THRESHOLD = 10;
 
     /**
-     * 시드가 캐스팅 실패를 유발하는 경우 플레이어 피해 0, castFailure=true를 검증한다.
-     * Random.nextInt(100) < 10 이면 캐스팅 실패.
+     * 시드가 캐스팅 실패를 유발하는 경우 플레이어 피해 0, castFailure=true를 검증한다. Random.nextInt(100) < 10 이면 캐스팅 실패.
      *
      * @param failSeed 실패를 유발하는 시드 (random.nextInt(100) < 10을 만족하도록 선별)
      */
     @Property(tries = 100)
-    void should_castFail_when_magicAttackAndRandomBelow10(@ForAll("failSeeds") final long failSeed) {
+    void should_castFail_when_magicAttackAndRandomBelow10(
+            @ForAll("failSeeds") final long failSeed) {
         final Random testRandom = new Random(failSeed);
         final int firstRoll = testRandom.nextInt(100);
         if (firstRoll >= MAGIC_FAIL_THRESHOLD) {
@@ -90,12 +87,8 @@ class BattleServiceMagicCastFailurePropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, MAGIC_SKILL_ID);
 
-        assertThat(result.castFailure())
-                .as("마법 캐스팅 실패 시 castFailure 플래그가 true여야 한다")
-                .isTrue();
-        assertThat(result.playerDamage())
-                .as("캐스팅 실패 시 플레이어가 몬스터에게 주는 피해는 0이어야 한다")
-                .isEqualTo(0);
+        assertThat(result.castFailure()).as("마법 캐스팅 실패 시 castFailure 플래그가 true여야 한다").isTrue();
+        assertThat(result.playerDamage()).as("캐스팅 실패 시 플레이어가 몬스터에게 주는 피해는 0이어야 한다").isEqualTo(0);
     }
 
     /**
@@ -141,9 +134,7 @@ class BattleServiceMagicCastFailurePropertyTest {
 
         final BattleTurnResult result = service.takeTurn(progress, state, DEFENSE_SKILL_ID);
 
-        assertThat(result.castFailure())
-                .as("방어 스킬은 캐스팅 실패하지 않아야 한다")
-                .isFalse();
+        assertThat(result.castFailure()).as("방어 스킬은 캐스팅 실패하지 않아야 한다").isFalse();
     }
 
     /**
@@ -211,10 +202,11 @@ class BattleServiceMagicCastFailurePropertyTest {
         return buildDefenseService(random);
     }
 
-    private BattleService buildService(final Random random,
-                                       final DamageSkill skill,
-                                       final String skillId,
-                                       final SkillType monsterAction) {
+    private BattleService buildService(
+            final Random random,
+            final DamageSkill skill,
+            final String skillId,
+            final SkillType monsterAction) {
         final BattleStateRepository battleStateRepo = mock(BattleStateRepository.class);
         when(battleStateRepo.save(any(BattleState.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -245,7 +237,8 @@ class BattleServiceMagicCastFailurePropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
 
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
@@ -253,15 +246,27 @@ class BattleServiceMagicCastFailurePropertyTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     private BattleService buildDefenseService(final Random random) {
@@ -292,47 +297,91 @@ class BattleServiceMagicCastFailurePropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final StatProgression statProgression = new StatProgression();
-        final Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock =
+                Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ActionLog actionLog = new ActionLog(clock);
 
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
-        when(skillCatalogService.byId(DEFENSE_SKILL_ID)).thenReturn(Optional.of(createDefenseSkill()));
+        when(skillCatalogService.byId(DEFENSE_SKILL_ID))
+                .thenReturn(Optional.of(createDefenseSkill()));
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, DEFENSE_SKILL_ID, SkillRank.F, 0, 0)));
+                .thenReturn(
+                        Optional.of(
+                                new CharacterSkill(
+                                        CHARACTER_ID, DEFENSE_SKILL_ID, SkillRank.F, 0, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 
         return new BattleService(
-                battleStateRepo, resolver, monsterService, aiService,
-                rewardService, skillService, inventoryService, progressionService,
-                characterService, statProgression, actionLog, random,
-                skillCatalogService, characterSkillRepo, itemCatalogService);
+                battleStateRepo,
+                resolver,
+                monsterService,
+                aiService,
+                rewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepo,
+                itemCatalogService);
     }
 
     private CharacterProgress createProgress(final int mp) {
         return new CharacterProgress(
-                "마법사", 10, 10, 100L, TalentType.MAGIC, null,
-                HIGH_HP, mp, 100, "dunbarton", 0, 500L);
+                "마법사",
+                10,
+                10,
+                100L,
+                TalentType.MAGIC,
+                null,
+                HIGH_HP,
+                mp,
+                100,
+                "dunbarton",
+                0,
+                500L);
     }
 
     private Monster createMonster() {
         return new Monster(
-                MONSTER_ID, "너구리", MonsterType.NORMAL, 5, MONSTER_MAX_HP,
-                20, 5, 50, 30L, new GoldDrop(10, 20), List.of(), List.of("소리", "행동1", "행동2"));
+                MONSTER_ID,
+                "너구리",
+                MonsterType.NORMAL,
+                5,
+                MONSTER_MAX_HP,
+                20,
+                5,
+                50,
+                30L,
+                new GoldDrop(10, 20),
+                List.of(),
+                List.of("소리", "행동1", "행동2"));
     }
 
     private DamageSkill createMagicDamageSkill() {
         return new DamageSkill(
-                MAGIC_SKILL_ID, "파이어볼트", SkillType.NORMAL, SkillTalent.MAGIC, MAGIC_COST,
+                MAGIC_SKILL_ID,
+                "파이어볼트",
+                SkillType.NORMAL,
+                SkillTalent.MAGIC,
+                MAGIC_COST,
                 createFullRankMap(100),
                 "마법 테스트 스킬");
     }
 
     private DefenseSkill createDefenseSkill() {
         return new DefenseSkill(
-                DEFENSE_SKILL_ID, "디펜스", SkillType.DEFENSE, SkillTalent.COMMON, 5,
+                DEFENSE_SKILL_ID,
+                "디펜스",
+                SkillType.DEFENSE,
+                SkillTalent.COMMON,
+                5,
                 createFullRankMap(30),
                 createFullRankMap(20),
                 "방어 테스트 스킬");
@@ -347,6 +396,7 @@ class BattleServiceMagicCastFailurePropertyTest {
                 Map.entry(SkillRank.R7, baseValue + 40), Map.entry(SkillRank.R6, baseValue + 45),
                 Map.entry(SkillRank.R5, baseValue + 50), Map.entry(SkillRank.R4, baseValue + 55),
                 Map.entry(SkillRank.R3, baseValue + 60), Map.entry(SkillRank.R2, baseValue + 65),
-                Map.entry(SkillRank.R1, baseValue + 70), Map.entry(SkillRank.MASTER, baseValue + 75));
+                Map.entry(SkillRank.R1, baseValue + 70),
+                        Map.entry(SkillRank.MASTER, baseValue + 75));
     }
 }

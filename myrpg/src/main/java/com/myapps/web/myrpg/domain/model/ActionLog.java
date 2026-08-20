@@ -10,9 +10,8 @@ import java.util.List;
 /**
  * 행동 로그를 관리하는 도메인 클래스.
  *
- * <p>HTTP 세션에 보관되며, 최대 10개의 로그 항목을 유지한다.
- * 초과 시 가장 오래된 항목부터 제거하고, 표시 시 타임스탬프 오름차순으로 정렬한다.
- * 타입이 지정되지 않은 항목은 기본적으로 {@code move} 타입으로 설정된다.
+ * <p>HTTP 세션에 보관되며, 최대 10개의 로그 항목을 유지한다. 초과 시 가장 오래된 항목부터 제거하고, 표시 시 타임스탬프 오름차순으로 정렬한다. 타입이 지정되지 않은
+ * 항목은 기본적으로 {@code move} 타입으로 설정된다.
  *
  * <p>테스트 용이성을 위해 {@link Clock}을 주입받아 결정적 타임스탬프를 생성한다.
  */
@@ -22,7 +21,8 @@ public class ActionLog {
     private static final String DEFAULT_TYPE = "move";
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT);
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT);
 
     private final Clock clock;
     private final List<ActionLogEntry> entries;
@@ -40,11 +40,10 @@ public class ActionLog {
     /**
      * 메시지와 타입으로 로그 항목을 추가한다.
      *
-     * <p>타입이 {@code null}이면 기본 타입 {@code move}가 사용된다.
-     * 항목 수가 최대치(10개)를 초과하면 가장 오래된 항목부터 제거한다.
+     * <p>타입이 {@code null}이면 기본 타입 {@code move}가 사용된다. 항목 수가 최대치(10개)를 초과하면 가장 오래된 항목부터 제거한다.
      *
      * @param message 로그 메시지 텍스트
-     * @param type    로그 타입 ({@code null}이면 {@code move})
+     * @param type 로그 타입 ({@code null}이면 {@code move})
      * @return 생성된 로그 항목
      */
     public ActionLogEntry add(final String message, final String type) {
@@ -98,9 +97,7 @@ public class ActionLog {
         return now.format(FORMATTER);
     }
 
-    /**
-     * 항목 수가 최대치를 초과하면 가장 오래된 항목부터 제거한다.
-     */
+    /** 항목 수가 최대치를 초과하면 가장 오래된 항목부터 제거한다. */
     private void trimExcess() {
         while (entries.size() > MAX_ENTRIES) {
             entries.removeFirst();

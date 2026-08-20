@@ -3,9 +3,8 @@ package com.myapps.web.myrpg.domain.model;
 /**
  * 재능 보너스가 적용되는 구체적인 대상을 정의하는 열거형.
  *
- * <p>스탯 계열({@code STR}/{@code DEX}/{@code INT}/{@code CRITICAL})과
- * 바이탈 계열({@code HP}/{@code MP}/{@code STAMINA})을 하나의 어휘로 통합하며,
- * 각 상수는 자신의 {@link BonusKind} 분류를 보유한다.
+ * <p>스탯 계열({@code STR}/{@code DEX}/{@code INT}/{@code CRITICAL})과 바이탈 계열({@code HP}/{@code
+ * MP}/{@code STAMINA})을 하나의 어휘로 통합하며, 각 상수는 자신의 {@link BonusKind} 분류를 보유한다.
  */
 public enum BonusTarget {
 

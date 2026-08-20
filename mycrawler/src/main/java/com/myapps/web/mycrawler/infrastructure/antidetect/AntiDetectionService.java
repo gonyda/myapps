@@ -1,22 +1,19 @@
 package com.myapps.web.mycrawler.infrastructure.antidetect;
 
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Mouse;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.ViewportSize;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 /**
  * 봇 탐지 회피를 위한 설정 및 행동 시뮬레이션 서비스.
  *
- * <p>User-Agent 랜덤화, 랜덤 딜레이, 마우스/스크롤 시뮬레이션,
- * viewport 랜덤화, navigator.webdriver 제거 등 다층 방어 전략을 제공합니다.
+ * <p>User-Agent 랜덤화, 랜덤 딜레이, 마우스/스크롤 시뮬레이션, viewport 랜덤화, navigator.webdriver 제거 등 다층 방어 전략을 제공합니다.
  */
 @Service
 public class AntiDetectionService {
@@ -41,16 +38,17 @@ public class AntiDetectionService {
     private static final int SCROLL_MAX_PIXELS = 500;
     private static final int SCROLL_COUNT = 2;
 
-    private static final List<String> USER_AGENTS = List.of(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
-    );
+    private static final List<String> USER_AGENTS =
+            List.of(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0");
 
-    private static final String STEALTH_SCRIPT = """
+    private static final String STEALTH_SCRIPT =
+            """
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined
             });
@@ -120,14 +118,12 @@ public class AntiDetectionService {
     /**
      * 사람의 브라우징 패턴을 시뮬레이션하기 위해 랜덤 마우스 이동과 스크롤을 수행합니다.
      *
-     * <p>페이지 내에서 랜덤한 좌표로 마우스를 이동하고,
-     * 랜덤한 양만큼 페이지를 스크롤합니다.
+     * <p>페이지 내에서 랜덤한 좌표로 마우스를 이동하고, 랜덤한 양만큼 페이지를 스크롤합니다.
      *
      * @param page 동작을 수행할 Playwright {@link Page} 인스턴스
      */
     public void simulateHumanBehavior(final Page page) {
-        log.debug("인간 행동 시뮬레이션 시작 — 마우스 이동 {}회, 스크롤 {}회 수행",
-                MOUSE_MOVE_COUNT, SCROLL_COUNT);
+        log.debug("인간 행동 시뮬레이션 시작 — 마우스 이동 {}회, 스크롤 {}회 수행", MOUSE_MOVE_COUNT, SCROLL_COUNT);
         performRandomMouseMovements(page);
         performRandomScrolls(page);
         log.debug("인간 행동 시뮬레이션 완료");
@@ -136,8 +132,7 @@ public class AntiDetectionService {
     /**
      * 브라우저 컨텍스트에 스텔스 설정을 적용합니다.
      *
-     * <p>navigator.webdriver 속성을 숨기고, Playwright 자동화 탐지 시그니처를 제거하는
-     * 초기화 스크립트를 주입합니다.
+     * <p>navigator.webdriver 속성을 숨기고, Playwright 자동화 탐지 시그니처를 제거하는 초기화 스크립트를 주입합니다.
      *
      * @param context 스텔스 설정을 적용할 Playwright {@link BrowserContext} 인스턴스
      */

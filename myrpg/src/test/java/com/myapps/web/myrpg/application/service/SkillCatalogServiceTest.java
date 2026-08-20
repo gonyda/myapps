@@ -1,13 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.myapps.web.myrpg.application.exception.SkillDataException;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
@@ -16,17 +10,19 @@ import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
-
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link SkillCatalogService}의 파싱·검증 로직 단위 테스트.
  *
- * <p>인메모리 JSON을 주입하여 정상 파싱, 필수 필드 누락, 미지 enum,
- * 중복 id, 랭크 맵 키 부족 시나리오를 검증합니다.
+ * <p>인메모리 JSON을 주입하여 정상 파싱, 필수 필드 누락, 미지 enum, 중복 id, 랭크 맵 키 부족 시나리오를 검증합니다.
  */
 class SkillCatalogServiceTest {
 
@@ -39,7 +35,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_parseDamageSkill_when_validNormalSkillJson() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "windmill",
                   "label": "윈드밀",
@@ -74,7 +71,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_parseDefenseSkill_when_validDefenseSkillJson() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "defense",
                   "label": "디펜스",
@@ -112,7 +110,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_rootIsNotArray() {
-        final String json = """
+        final String json =
+                """
                 {"id": "windmill"}
                 """;
 
@@ -123,7 +122,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_requiredFieldMissing() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "windmill",
                   "type": "NORMAL",
@@ -145,7 +145,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_unknownType() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "test",
                   "label": "테스트",
@@ -168,7 +169,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_unknownTalent() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "test",
                   "label": "테스트",
@@ -191,7 +193,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_duplicateIds() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "dup",
                   "label": "첫번째",
@@ -226,7 +229,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_throwSkillDataException_when_rankMapHasLessThan16Keys() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "test",
                   "label": "테스트",
@@ -247,7 +251,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_returnImmutableList_when_validInput() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "windmill",
                   "label": "윈드밀",
@@ -271,7 +276,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_returnSkill_when_byIdCalledWithExistingId() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "firebolt",
                   "label": "파이어볼트",
@@ -296,7 +302,8 @@ class SkillCatalogServiceTest {
 
     @Test
     void should_returnEmpty_when_byIdCalledWithNonExistingId() {
-        final String json = """
+        final String json =
+                """
                 [{
                   "id": "firebolt",
                   "label": "파이어볼트",
@@ -319,14 +326,14 @@ class SkillCatalogServiceTest {
     }
 
     private List<Skill> loadFromString(final String json) {
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
         return skillCatalogService.loadFromStream(inputStream);
     }
 
     private void loadIntoService(final String json) {
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
         final List<Skill> skills = skillCatalogService.loadFromStream(inputStream);
         try {
             final java.lang.reflect.Field field =

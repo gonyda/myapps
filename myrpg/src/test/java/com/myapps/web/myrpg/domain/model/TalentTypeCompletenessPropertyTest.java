@@ -1,20 +1,19 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * TalentType 재능 데이터 완비를 검증하는 프로퍼티 테스트.
  *
- * <p>모든 {@link TalentType} 상수(MELEE/ARCHERY/MAGIC)가 비어 있지 않은 {@code label()}과
- * {@code effectSummary()}를 보유하고, {@code primary()}/{@code secondary()}가 각각 유효한
- * {@link BonusTarget}과 비음수 {@code perLevel()}을 가지며, {@code damageBonusPercent()}가
- * 0 이상임을 검증한다.
+ * <p>모든 {@link TalentType} 상수(MELEE/ARCHERY/MAGIC)가 비어 있지 않은 {@code label()}과 {@code
+ * effectSummary()}를 보유하고, {@code primary()}/{@code secondary()}가 각각 유효한 {@link BonusTarget}과 비음수
+ * {@code perLevel()}을 가지며, {@code damageBonusPercent()}가 0 이상임을 검증한다.
  *
  * <p><b>Validates: Requirements 9.1, 9.2, 9.3, 10.1, 10.3, 11.1, 11.3, 11.5</b>
  */
@@ -22,13 +21,13 @@ class TalentTypeCompletenessPropertyTest {
 
     // Feature: 004-talent-and-ability-points, Property 13: 재능 데이터 완비
     /**
-     * 모든 TalentType 상수가 비어 있지 않은 라벨/효과 요약, 유효한 주·보조 보너스,
-     * 0 이상의 데미지 보너스 퍼센트를 보유하는지 검증한다.
+     * 모든 TalentType 상수가 비어 있지 않은 라벨/효과 요약, 유효한 주·보조 보너스, 0 이상의 데미지 보너스 퍼센트를 보유하는지 검증한다.
      *
      * @param talent 임의의 TalentType 상수
      */
     @Property(tries = 100)
-    void should_haveCompleteTalentData_when_anyTalentType(@ForAll("talents") final TalentType talent) {
+    void should_haveCompleteTalentData_when_anyTalentType(
+            @ForAll("talents") final TalentType talent) {
         // Then: label()은 비어 있지 않은 문자열
         assertThat(talent.label()).isNotNull().isNotBlank();
 

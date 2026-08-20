@@ -1,112 +1,60 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-20 (Asia/Seoul)
+> 최종 업데이트: 2026-08-20 21:54 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`.clinerules/cline-global-rules.md` 반영)
 
 > **전역 규칙 핵심 요약**:
 > - 개발 워크플로우: **Spec 문서 3종 → 사용자 검토 → 구현**
 > - **MCP 툴 우선 사용** (코드 탐색 시 `codegraph_explore` MCP 1순위)
-> - **빌드 검증**: 각 Task 완료 전 `mvn test` + `mvn clean install` `BUILD SUCCESS` 확인
+> - **빌드 및 4대 가드레일 검증**: 각 Task 완료 전 `mvn -B spotless:apply && mvn -B clean install -pl {modulename} -am && codegraph sync` 필수 실행 (-B: 토큰 절약)
 > - 소스 정리: 미사용 import 제거, 매직넘버 상수화, 메서드 분리 (50줄 초과 시)
 
-## 1. 완료된 작업 (Spec 010: NPC 행동 실기능)
+## 1. 완료된 작업: AI 코딩 품질 관리를 위한 4대 가드레일 도입
 
-**스펙명**: `myrpg/010-npc-actions-shop-repair-heal` — NPC 행동 실기능(상점 구매/판매 · 수리(대장간) · 치료(힐러집)) 및 인챈트 플레이스홀더
+| 가드레일 | 도구 / 플러그인 | 설정 및 역할 |
+|---|---|---|
+| **1. Spotless** | `com.diffplug.spotless:spotless-maven-plugin:2.44.5` | `googleJavaFormat(AOSP)` 기반 4칸 들여쓰기, 미사용 import 자동 제거, 개행 및 공백 정렬 |
+| **2. Error Prone** | `com.google.errorprone:error_prone_core:2.36.0` | `maven-compiler-plugin` 내부 `<annotationProcessorPaths>` 및 compilerArgs(`--add-exports`, `--add-opens`) 연결, 컴파일 타임 정적 결함 차단 |
+| **3. ArchUnit** | `com.tngtech.archunit:archunit-junit5:1.4.0` | Parent POM 공통 test 의존성 및 모듈별 `ArchitectureRuleTest.java` 작성 (Interfaces/Domain/Application 계층 규칙 강제) |
+| **4. JaCoCo** | `org.jacoco:jacoco-maven-plugin:0.8.13` | `prepare-agent`(initialize), `report`(verify), `check`(verify) 바인딩 및 커버리지 검증 |
+| **5. CodeGraph Sync** | `codegraph sync` | 변경된 코드베이스 인덱스를 지식 그래프에 즉시 동기화 |
 
 ### 진행 상태 요약
 
-| 단계 | 내용 | 상태 |
+| 항목 | 내용 | 상태 |
 |---|---|---|
-| A | 도메인 모델 및 데이터 확장 (`InventoryService`·`NpcService`·`OwnedItem`·`item.json`·`npc.json`) | ✅ 완료 (Task 1~3) |
-| B | 핵심 애플리케이션 서비스 (`ShopService`·DTO 5종) | ✅ 완료 (Task 4~6) |
-| C | 컨트롤러 계층 + **테스트 7종(Property 6~9 + @WebMvcTest 3종)** | ✅ 완료 (Task 7~8) |
-| D | UI 템플릿 및 정적 리소스 (`shop-popup.html`·`repair-popup.html`·`center.html`·`myrpg.css`·`myrpg.js`) | ✅ 완료 (Task 9~11) |
-| E | 최종 검증 및 회귀 확인 | ✅ 완료 (Task 12) |
-
-### Task 11 (D단계 체크포인트) 결과
-- `mvn test -pl myrpg`: **928 tests pass, 0 failures** ✅
-- `mvn clean install -pl myrpg -am`: **BUILD SUCCESS** ✅
-
-### Task 12 (최종 검증) 결과
-- `mvn test -pl myrpg`: **928 tests pass, 0 failures** ✅ (회귀 없음)
-- `mvn clean install -pl myrpg -am`: **BUILD SUCCESS** ✅
-- Code-style 정리: 수정된 Java 파일은 test 파일 2종(`NpcContextLoadSmokeTest.java`, `VisualJsPreservationAndJsonLoadingIntegrationTest.java`)이며, 미사용 import/변수 없음. HTML/CSS/JS는 code-style 대상 아님
-- 기존 001~009 기능(전투, 인벤토리, 스킬, 은행 등) 모두 무회귀 확인
+| A | Parent `pom.xml`에 4대 가드레일 의존성 및 플러그인 설정 | ✅ 완료 |
+| B | `mycalendar`, `mycrawler`, `myrpg`, `mystudy` 4개 모듈에 ArchUnit 아키텍처 검증 테스트 작성 | ✅ 완료 |
+| C | `mvn spotless:apply` 전체 모듈 코드 포맷팅 일괄 정렬 | ✅ 완료 |
+| D | `mvn spotless:apply && mvn clean install && codegraph sync` 전체 파이프라인 검증 통과 | ✅ 완료 (1,126개 테스트 통과, BUILD SUCCESS, CodeGraph 동기화) |
+| E | 스티어링 문서 3종 및 전역 룰(`.clinerules`) 검증 체인 갱신 | ✅ 완료 |
 
 ---
 
-## 작업 트리 (커밋 완료)
+## 작업 트리 (수정/신규 파일 목록)
 
-스펙 010 D/E 단계 산출물은 커밋 `8ac9bbc`로 main 브랜치에 반영 완료 (10 files, +551/-95):
-
-| 파일 | 변경 |
-|---|---|
-| `.clinerules/memory-bank/activeContext.md` | 메모리뱅크 갱신 |
-| `.kiro/specs/myrpg/010-npc-actions-shop-repair-heal/tasks.md` | 체크박스 완료 갱신 |
-| `myrpg/src/main/resources/static/css/myrpg.css` | 상점/수리 팝업 스타일 추가 |
-| `myrpg/src/main/resources/static/js/myrpg.js` | NPC 행동 라우팅, openShop/closeShop/openRepair/closeRepair/heal/refreshTopBar |
-| `myrpg/src/main/resources/templates/fragments/center.html` | talkingNpcId onclick 전달 |
-| `myrpg/src/main/resources/templates/fragments/repair-popup.html` | 신규 프래그먼트 |
-| `myrpg/src/main/resources/templates/fragments/shop-popup.html` | 신규 프래그먼트 |
-| `myrpg/src/main/resources/templates/play.html` | shop-popup/repair-popup include |
-| `myrpg/src/test/java/.../NpcContextLoadSmokeTest.java` | shopItems 로딩 + action beans 스모크 검증 |
-| `myrpg/src/test/java/.../VisualJsPreservationAndJsonLoadingIntegrationTest.java` | 신규 JS 함수/프래그먼트 검증 |
-
-- **커밋 `3b5d1cb`**: spec 문서 3종 + 메모리뱅크
-- **커밋 `b7ef2ed`**: 메모리뱅크 커밋 하이라이트 갱신
-- **커밋 `aa8ea01`**: A/B/C 단계 산출물 (40 files, +3740)
-- **커밋 `8ac9bbc`**: D/E 단계 산출물 — NPC 상점/수리/치료 UI 템플릿 및 JS 구현 완료 (10 files, +551/-95)
+| 파일 | 변경 구분 | 내용 |
+|---|---|---|
+| `pom.xml` | 수정 | Spotless, Error Prone, ArchUnit, JaCoCo 플러그인 및 의존성 구성, release 21 설정 |
+| `mycalendar/src/test/.../architecture/ArchitectureRuleTest.java` | 신규 | mycalendar 아키텍처 가드레일 테스트 |
+| `mycrawler/src/test/.../architecture/ArchitectureRuleTest.java` | 신규 | mycrawler 아키텍처 가드레일 테스트 |
+| `myrpg/src/test/.../architecture/ArchitectureRuleTest.java` | 신규 | myrpg 아키텍처 가드레일 테스트 |
+| `mystudy/src/test/.../architecture/ArchitectureRuleTest.java` | 신규 | mystudy 아키텍처 가드레일 테스트 |
+| `.kiro/steering/workflow/task-build-validation.md` | 수정 | 4대 가드레일 및 `mvn spotless:apply && mvn clean install && codegraph sync` 검증 체인 명문화 |
+| `.kiro/steering/project/pom-conventions.md` | 수정 | 4대 가드레일 플러그인 설정 컨벤션 추가 |
+| `.clinerules/cline-global-rules.md` | 수정 | 가드레일 검증 및 CodeGraph sync 워크플로우 반영 |
+| `.clinerules/memory-bank/activeContext.md` | 수정 | 4대 가드레일 도입 상태 및 최신화 |
 
 ---
 
-## 스펙 010 핵심 설계 (확정값)
+## 확정된 기술적 결정사항
 
-- **판매가 모델** (`ShopService`): `기본가 + 인스턴스보너스 × 가중치`
-  - `기본가` 배타 규칙: `buyPrice`는 `round(buyPrice × 0.5)` / 없으면 드랍 전용 `Σ(카탈로그 amount × weightOf)`
-  - `weightOf`: CRITICAL=1, 그 외(STR·DEX·INT·DEF·HP·MP·STAMINA)=10(`WEIGHT`) — CRITICAL 0.1%단위 보정
-  - 상수: `SELL_RATIO=0.5`, `WEIGHT=10`, `CRITICAL_WEIGHT=1`
-- **수리**: 1포인트 수리(`OwnedItem.repairBy(amount, max)`, max 상한) + 성공 확률 95% 고정, 수리비 = 판매가 그대로 재사용, 실패 시 골드 환불 없음
-- **치료**: 100골드 고정, HP/MP/스테미나 풀회복, 팝업 없이 `alert("치료되었습니다!")`
-- **NPC별 상점**: `npc.json`에 `shopItems` optional + NPC 마법학교/학교는 빈 목록
-- **item.json 신규**: `short_sword`(STR+8, buyPrice 300), `long_sword`(STR+12, buyPrice 700) — 초보 장비는 buyPrice 미지정(드랍 전용·상점 미판매)
-- **Correctness Property 1~10**: 각각 독립 jqwik `@Property(tries=100)` + `Mockito.mock()` 직접 사용, 태그 주석 `Feature: 010-npc-actions-shop-repair-heal, Property {번호}: …` 부착
-
-## 스펙 010 완료 대상 (GlobalExceptionHandler 재사용)
-
-- 골드 부족: `InsufficientGoldException`, 인벤토리 초과: `InventoryFullException`, 장착 충돌: `EquipConflictException` — 모두 기존 예외 재사용
-
-## 워크플로우 규칙
-
-- 각 Task 완료 전 `mvn test -pl myrpg` 통과 → `mvn clean install -pl myrpg -am` `BUILD SUCCESS` 확인 필수
-- 생성자 주입만(`@Autowired` 금지), Lombok/`var` 금지, VO/DTO는 `record`, 커스텀 예외(`RuntimeException` 직접 금지)
-- 소스 정리: 미사용 import 제거 · 매직넘버 상수(`private static final`) · 메서드 분리(50줄 초과 시)
-
-## 최근 커밋 하이라이트 (main 브랜치)
-
-| 해시 | 내용 |
-|---|---|
-| `8ac9bbc` | feat(myrpg): NPC 상점/수리/치료 UI 템플릿 및 JS 구현 완료 (스펙 010 D/E 단계) |
-| `aa8ea01` | feat(myrpg): NPC 상점 구매/판매·수리·치료 실기능 구현 (스펙 010 A/B/C 단계) |
-| `b7ef2ed` | docs: 메모리뱅크 최근 커밋 하이라이트 갱신 |
-| `3b5d1cb` | docs: 스펙 010 NPC 행동 실기능 spec 문서 3종 및 메모리뱅크 추가 |
-| `1c86cad` | docs(rules): `.clinerules` 정리 (스티어링 참조 섹션 재구성) |
-| `2fbed3` | fix: `formatDurability` Math.ceil 올림 처리 (M18) |
-| `02c6a1d` | feat: 인벤토리 용량 제한, 아이템 이동/스택 PBT |
-| `ce898e9` | 내구도 감소량 0.2→0.05 (M20) + 인벤토리 내구도 표시 개선 |
-| `ca274ee` | feat(mycalendar): 달력 하단 주간 일정 섹션 |
-| `0703df4` | feat: 첫 캐릭터 생성 시 초보자 장비 6종 자동 장착 |
-| `559c6b9` | fix: 너구리 attackPower 48→42 하향 |
-
-- 주요 스펙 커밋: 006 골드아이템(1fab054) → 007 몬스터(63d8aab) → 008 전투(a0a20355) → 009 스킬 차별화(4c89d7e) → 010 NPC 행동 실기능(aa8ea01 A/B/C + 8ac9bbc D/E)
-
-## 다음 단계 및 의사사항
-
-1. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시
-2. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
-3. 다음 스펙 예정: 스펙 011 (미정)
-
-## 프로젝트 개관
-
-- Monorepo (Maven multi-module): `myrpg`, `mycalendar`, `mycrawler`, `mystudy`
-- 각 모듈 DDD 4계층: application·domain·infrastructure·interfaces
+- **JDK 25 + `--release 21` 바이트코드 컴파일**:
+  - `JAVA_HOME` 및 런타임은 OpenJDK 25를 그대로 유지
+  - ArchUnit 1.4.0 및 JaCoCo 0.8.13의 바이트코드 파싱 안정성을 위해 컴파일 타깃을 `release 21`로 구성하여 모든 정적 분석/커버리지/아키텍처 도구 100% 정상 작동
+- **초경량 스마트 Tail 검증 체인 표준화**:
+  - `mvn -B -q spotless:apply -pl {modulename} && (mvn -B clean install -pl {modulename} -am > /tmp/mvn.log 2>&1 || (tail -n 30 /tmp/mvn.log && exit 1)) && tail -n 12 /tmp/mvn.log && codegraph sync`
+  - (루트 전체: `mvn -B -q spotless:apply && (mvn -B clean install > /tmp/mvn.log 2>&1 || (tail -n 30 /tmp/mvn.log && exit 1)) && tail -n 12 /tmp/mvn.log && codegraph sync`)
+- **테스트 작성 시 Given-When-Then BDD 패턴 필수 강제**:
+  - 모든 단위/통합 테스트에 `// given`, `// when`, `// then` 3단계를 명시하여 경계값, 실패 케이스, 엣지 케이스 등 다양한 테스트 케이스 도출 강제 (`code-style.md`, `task-build-validation.md` 반영)

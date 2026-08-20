@@ -9,6 +9,4 @@ import java.util.List;
  *
  * @param questions 퀴즈 문제 목록
  */
-public record QuizResponse(
-    List<QuizQuestionDto> questions
-) {}
+public record QuizResponse(List<QuizQuestionDto> questions) {}

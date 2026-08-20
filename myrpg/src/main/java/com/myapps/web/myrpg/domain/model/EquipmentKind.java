@@ -7,9 +7,8 @@ import java.util.Set;
 /**
  * 장비의 세부 종류를 정의하는 열거형.
  *
- * <p>각 종류는 한글 라벨, 기본 착용 슬롯({@code primarySlot}),
- * 착용 시 점유하는 슬롯 집합({@code requiredSlots})을 갖는다.
- * 양손 무기(양손검·활·스태프)는 주무기+보조손 두 슬롯을 동시에 점유하여 방패와 상호 배타적이다.
+ * <p>각 종류는 한글 라벨, 기본 착용 슬롯({@code primarySlot}), 착용 시 점유하는 슬롯 집합({@code requiredSlots})을 갖는다. 양손
+ * 무기(양손검·활·스태프)는 주무기+보조손 두 슬롯을 동시에 점유하여 방패와 상호 배타적이다.
  */
 public enum EquipmentKind {
 
@@ -47,7 +46,8 @@ public enum EquipmentKind {
     private final EquipSlot primarySlot;
     private final Set<EquipSlot> requiredSlots;
 
-    EquipmentKind(final String label, final EquipSlot primarySlot, final Set<EquipSlot> requiredSlots) {
+    EquipmentKind(
+            final String label, final EquipSlot primarySlot, final Set<EquipSlot> requiredSlots) {
         this.label = label;
         this.primarySlot = primarySlot;
         this.requiredSlots = requiredSlots;

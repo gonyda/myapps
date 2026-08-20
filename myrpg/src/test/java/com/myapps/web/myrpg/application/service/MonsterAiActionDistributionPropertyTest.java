@@ -1,25 +1,22 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.SkillType;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Random;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import com.myapps.web.myrpg.domain.model.SkillType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 몬스터 가위바위보 AI의 행동 분포 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>{@link MonsterAiService#actionFor(int)} 순수 함수가 0~99 입력에 대해
- * 정확히 34/33/33 분포(NORMAL/HEAVY/DEFENSE)를 만족하며,
- * 경계값(33/34/66/67)이 규칙과 일치함을 검증한다.
+ * <p>{@link MonsterAiService#actionFor(int)} 순수 함수가 0~99 입력에 대해 정확히 34/33/33
+ * 분포(NORMAL/HEAVY/DEFENSE)를 만족하며, 경계값(33/34/66/67)이 규칙과 일치함을 검증한다.
  *
  * <p>Feature: 007-monster-system, Property 7: 가위바위보 분포
  *
@@ -42,18 +39,13 @@ class MonsterAiActionDistributionPropertyTest {
      * @param roll 0 이상 100 미만의 임의 정수
      */
     @Property(tries = 100)
-    void should_returnCorrectType_when_rollInRange(
-            @ForAll("validRolls") final int roll) {
+    void should_returnCorrectType_when_rollInRange(@ForAll("validRolls") final int roll) {
         final SkillType result = service.actionFor(roll);
 
         if (roll < NORMAL_COUNT) {
-            assertThat(result)
-                    .as("roll=%d should map to NORMAL", roll)
-                    .isEqualTo(SkillType.NORMAL);
+            assertThat(result).as("roll=%d should map to NORMAL", roll).isEqualTo(SkillType.NORMAL);
         } else if (roll < NORMAL_COUNT + HEAVY_COUNT) {
-            assertThat(result)
-                    .as("roll=%d should map to HEAVY", roll)
-                    .isEqualTo(SkillType.HEAVY);
+            assertThat(result).as("roll=%d should map to HEAVY", roll).isEqualTo(SkillType.HEAVY);
         } else {
             assertThat(result)
                     .as("roll=%d should map to DEFENSE", roll)
@@ -68,15 +60,9 @@ class MonsterAiActionDistributionPropertyTest {
      */
     @Property(tries = 100)
     void should_mapBoundaryCorrectly_when_boundaryRolls() {
-        assertThat(service.actionFor(33))
-                .as("roll=33 is last NORMAL")
-                .isEqualTo(SkillType.NORMAL);
-        assertThat(service.actionFor(34))
-                .as("roll=34 is first HEAVY")
-                .isEqualTo(SkillType.HEAVY);
-        assertThat(service.actionFor(66))
-                .as("roll=66 is last HEAVY")
-                .isEqualTo(SkillType.HEAVY);
+        assertThat(service.actionFor(33)).as("roll=33 is last NORMAL").isEqualTo(SkillType.NORMAL);
+        assertThat(service.actionFor(34)).as("roll=34 is first HEAVY").isEqualTo(SkillType.HEAVY);
+        assertThat(service.actionFor(66)).as("roll=66 is last HEAVY").isEqualTo(SkillType.HEAVY);
         assertThat(service.actionFor(67))
                 .as("roll=67 is first DEFENSE")
                 .isEqualTo(SkillType.DEFENSE);

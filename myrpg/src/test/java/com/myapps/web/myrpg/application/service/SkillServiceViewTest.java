@@ -1,15 +1,7 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.SkillListView;
 import com.myapps.web.myrpg.application.dto.SkillRankUpView;
@@ -24,9 +16,15 @@ import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * SkillService 뷰 조립 메서드의 단위 테스트.
@@ -40,26 +38,27 @@ class SkillServiceViewTest {
     private static final String WINDMILL_ID = "windmill";
     private static final String DEFENSE_ID = "defense";
 
-    @Mock
-    private CharacterSkillRepository characterSkillRepository;
+    @Mock private CharacterSkillRepository characterSkillRepository;
 
-    @Mock
-    private CharacterProgressRepository characterProgressRepository;
+    @Mock private CharacterProgressRepository characterProgressRepository;
 
-    @Mock
-    private SkillCatalogService skillCatalogService;
+    @Mock private SkillCatalogService skillCatalogService;
 
     private SkillService skillService;
 
     @BeforeEach
     void setUp() {
-        skillService = new SkillService(characterSkillRepository, characterProgressRepository, skillCatalogService);
+        skillService =
+                new SkillService(
+                        characterSkillRepository, characterProgressRepository, skillCatalogService);
     }
 
     @Test
     void should_buildListView_with_all_tab_returning_all_skills() {
-        final CharacterSkill windmillSkill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
-        final CharacterSkill defenseSkill = new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.A, 50, 15);
+        final CharacterSkill windmillSkill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+        final CharacterSkill defenseSkill =
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.A, 50, 15);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -86,8 +85,10 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildListView_filtering_by_melee_tab() {
-        final CharacterSkill windmillSkill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
-        final CharacterSkill defenseSkill = new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+        final CharacterSkill windmillSkill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill defenseSkill =
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -106,7 +107,8 @@ class SkillServiceViewTest {
     @Test
     void should_buildListView_with_rankable_when_conditions_and_ap_met() {
         // F→E: usage 5, kill 1, AP 1
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -122,7 +124,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildListView_with_master_skill_showing_100_percent_and_maxed() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -139,7 +142,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildRankUpView_for_damage_skill_at_rank_F() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -170,7 +174,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildRankUpView_for_defense_skill_with_counter_values() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5, 1);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5, 1);
         final CharacterProgress progress = createProgressWithAp(5);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_ID))
@@ -191,7 +196,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildRankUpView_for_master_skill_with_null_nextRankLabel() {
-        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
         final CharacterProgress progress = createProgressWithAp(100);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -212,8 +218,10 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildListView_filtering_by_common_tab_showing_defense_only() {
-        final CharacterSkill windmillSkill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0);
-        final CharacterSkill defenseSkill = new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+        final CharacterSkill windmillSkill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0);
+        final CharacterSkill defenseSkill =
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -230,8 +238,8 @@ class SkillServiceViewTest {
     }
 
     private CharacterProgress createProgressWithAp(final int ap) {
-        return new CharacterProgress("고니", 1, 1, 0L, TalentType.MELEE,
-                null, 100, 100, 100, "tir-chonaill", ap, 0L);
+        return new CharacterProgress(
+                "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "tir-chonaill", ap, 0L);
     }
 
     private DamageSkill createWindmill() {
@@ -241,8 +249,14 @@ class SkillServiceViewTest {
             multiplierByRank.put(rank, base);
             base += 10;
         }
-        return new DamageSkill(WINDMILL_ID, "윈드밀", SkillType.NORMAL, SkillTalent.MELEE,
-                15, Map.copyOf(multiplierByRank), "전방위 공격");
+        return new DamageSkill(
+                WINDMILL_ID,
+                "윈드밀",
+                SkillType.NORMAL,
+                SkillTalent.MELEE,
+                15,
+                Map.copyOf(multiplierByRank),
+                "전방위 공격");
     }
 
     private DefenseSkill createDefense() {
@@ -256,7 +270,14 @@ class SkillServiceViewTest {
             blockBase += 3;
             counterBase += 5;
         }
-        return new DefenseSkill(DEFENSE_ID, "디펜스", SkillType.DEFENSE, SkillTalent.COMMON,
-                10, Map.copyOf(blockRateByRank), Map.copyOf(counterMultiplierByRank), "방어 및 반격");
+        return new DefenseSkill(
+                DEFENSE_ID,
+                "디펜스",
+                SkillType.DEFENSE,
+                SkillTalent.COMMON,
+                10,
+                Map.copyOf(blockRateByRank),
+                Map.copyOf(counterMultiplierByRank),
+                "방어 및 반격");
     }
 }

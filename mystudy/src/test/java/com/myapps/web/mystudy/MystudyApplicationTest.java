@@ -11,10 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class MystudyApplicationTest {
 
-    /**
-     * Spring Boot ApplicationContext가 정상적으로 로드되는지 검증합니다.
-     */
+    /** Spring Boot ApplicationContext가 정상적으로 로드되는지 검증합니다. */
     @Test
-    void should_loadContext_when_applicationStarts() {
-    }
+    void should_loadContext_when_applicationStarts() {}
 }

@@ -1,23 +1,19 @@
 package com.myapps.web.mycrawler.infrastructure.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.mycrawler.domain.model.CrawlTarget;
+import java.util.List;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import com.myapps.web.mycrawler.domain.model.CrawlTarget;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * CrawlerConfig의 크롤 타겟 유효성 검증 로직을 Property-Based 테스트로 검증합니다.
  *
- * <p>jqwik을 사용하여 임의의 타겟 설정 목록을 생성하고,
- * 무효한 항목이 validTargets() 결과에서 항상 제외됨을 검증합니다.
+ * <p>jqwik을 사용하여 임의의 타겟 설정 목록을 생성하고, 무효한 항목이 validTargets() 결과에서 항상 제외됨을 검증합니다.
  *
  * <p><b>Validates: Requirements 5.2, 5.5</b>
  */
@@ -31,17 +27,17 @@ class CrawlerConfigPropertyTest {
      * 이름이 null 또는 blank인 타겟은 validTargets() 결과에서 항상 제외됨을 검증합니다.
      *
      * @param invalidName null 또는 blank 이름
-     * @param validUrl    유효한 URL 문자열
+     * @param validUrl 유효한 URL 문자열
      */
     @Property(tries = 100)
     void targetsWithNullOrBlankNameAreExcluded(
             @ForAll("nullOrBlankStrings") final String invalidName,
             @ForAll("validUrls") final String validUrl) {
 
-        final List<CrawlerConfig.TargetConfig> targets = List.of(
-                new CrawlerConfig.TargetConfig(invalidName, validUrl)
-        );
-        final CrawlerConfig config = new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
+        final List<CrawlerConfig.TargetConfig> targets =
+                List.of(new CrawlerConfig.TargetConfig(invalidName, validUrl));
+        final CrawlerConfig config =
+                new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
 
         final List<CrawlTarget> result = config.validTargets();
 
@@ -51,7 +47,7 @@ class CrawlerConfigPropertyTest {
     /**
      * URL이 null 또는 blank인 타겟은 validTargets() 결과에서 항상 제외됨을 검증합니다.
      *
-     * @param validName  유효한 이름 문자열
+     * @param validName 유효한 이름 문자열
      * @param invalidUrl null 또는 blank URL
      */
     @Property(tries = 100)
@@ -59,10 +55,10 @@ class CrawlerConfigPropertyTest {
             @ForAll("validNames") final String validName,
             @ForAll("nullOrBlankStrings") final String invalidUrl) {
 
-        final List<CrawlerConfig.TargetConfig> targets = List.of(
-                new CrawlerConfig.TargetConfig(validName, invalidUrl)
-        );
-        final CrawlerConfig config = new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
+        final List<CrawlerConfig.TargetConfig> targets =
+                List.of(new CrawlerConfig.TargetConfig(validName, invalidUrl));
+        final CrawlerConfig config =
+                new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
 
         final List<CrawlTarget> result = config.validTargets();
 
@@ -72,7 +68,7 @@ class CrawlerConfigPropertyTest {
     /**
      * URL 형식이 유효하지 않은 타겟은 validTargets() 결과에서 항상 제외됨을 검증합니다.
      *
-     * @param validName  유효한 이름 문자열
+     * @param validName 유효한 이름 문자열
      * @param invalidUrl 무효한 URL 형식 문자열
      */
     @Property(tries = 100)
@@ -80,10 +76,10 @@ class CrawlerConfigPropertyTest {
             @ForAll("validNames") final String validName,
             @ForAll("invalidUrls") final String invalidUrl) {
 
-        final List<CrawlerConfig.TargetConfig> targets = List.of(
-                new CrawlerConfig.TargetConfig(validName, invalidUrl)
-        );
-        final CrawlerConfig config = new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
+        final List<CrawlerConfig.TargetConfig> targets =
+                List.of(new CrawlerConfig.TargetConfig(validName, invalidUrl));
+        final CrawlerConfig config =
+                new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
 
         final List<CrawlTarget> result = config.validTargets();
 
@@ -100,11 +96,12 @@ class CrawlerConfigPropertyTest {
         final String firstUrl = "https://first.example.com";
         final String secondUrl = "https://second.example.com";
 
-        final List<CrawlerConfig.TargetConfig> targets = List.of(
-                new CrawlerConfig.TargetConfig(duplicateName, firstUrl),
-                new CrawlerConfig.TargetConfig(duplicateName, secondUrl)
-        );
-        final CrawlerConfig config = new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
+        final List<CrawlerConfig.TargetConfig> targets =
+                List.of(
+                        new CrawlerConfig.TargetConfig(duplicateName, firstUrl),
+                        new CrawlerConfig.TargetConfig(duplicateName, secondUrl));
+        final CrawlerConfig config =
+                new CrawlerConfig(VALID_CRON, VALID_TIMEOUT, VALID_BROWSERS_PATH, targets);
 
         final List<CrawlTarget> result = config.validTargets();
 
@@ -120,15 +117,7 @@ class CrawlerConfigPropertyTest {
      */
     @Provide
     Arbitrary<String> nullOrBlankStrings() {
-        return Arbitraries.of(
-                null,
-                "",
-                " ",
-                "  ",
-                "\t",
-                "\n",
-                "   \t  "
-        );
+        return Arbitraries.of(null, "", " ", "  ", "\t", "\n", "   \t  ");
     }
 
     /**
@@ -138,10 +127,7 @@ class CrawlerConfigPropertyTest {
      */
     @Provide
     Arbitrary<String> validNames() {
-        return Arbitraries.strings()
-                .alpha()
-                .ofMinLength(1)
-                .ofMaxLength(30);
+        return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(30);
     }
 
     /**
@@ -167,20 +153,15 @@ class CrawlerConfigPropertyTest {
      */
     @Provide
     Arbitrary<String> invalidUrls() {
-        final Arbitrary<String> plainText = Arbitraries.strings()
-                .alpha()
-                .ofMinLength(3)
-                .ofMaxLength(20);
-        final Arbitrary<String> noHost = Arbitraries.of(
-                "http://",
-                "https://",
-                "://missing-scheme"
-        );
-        final Arbitrary<String> malformed = Arbitraries.strings()
-                .alpha()
-                .ofMinLength(3)
-                .ofMaxLength(15)
-                .map(s -> "not-a-url-" + s);
+        final Arbitrary<String> plainText =
+                Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(20);
+        final Arbitrary<String> noHost = Arbitraries.of("http://", "https://", "://missing-scheme");
+        final Arbitrary<String> malformed =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(3)
+                        .ofMaxLength(15)
+                        .map(s -> "not-a-url-" + s);
 
         return Arbitraries.oneOf(plainText, noHost, malformed);
     }

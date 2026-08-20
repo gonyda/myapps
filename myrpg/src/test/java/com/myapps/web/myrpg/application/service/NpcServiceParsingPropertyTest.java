@@ -1,5 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.myapps.web.myrpg.domain.model.Npc;
+import com.myapps.web.myrpg.domain.model.NpcType;
+import com.myapps.web.myrpg.domain.model.TimeOfDay;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -7,30 +12,21 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-
-import com.myapps.web.myrpg.domain.model.Npc;
-import com.myapps.web.myrpg.domain.model.NpcType;
-import com.myapps.web.myrpg.domain.model.TimeOfDay;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * NPC 데이터 파싱 라운드트립 프로퍼티 테스트.
  *
- * <p>유효한 NPC 데이터셋을 JSON으로 직렬화한 뒤 {@code NpcService.loadFromStream}으로
- * 파싱하여 모든 Npc의 필드가 순서까지 보존되고, {@code type}이 원본 문자열에 대응하는
- * {@code NpcType}으로 분류됨을 검증한다.
+ * <p>유효한 NPC 데이터셋을 JSON으로 직렬화한 뒤 {@code NpcService.loadFromStream}으로 파싱하여 모든 Npc의 필드가 순서까지 보존되고,
+ * {@code type}이 원본 문자열에 대응하는 {@code NpcType}으로 분류됨을 검증한다.
  *
  * <p>Feature: 002-npc-system, Property 1: NPC 데이터 파싱 라운드트립
  *
@@ -59,10 +55,10 @@ class NpcServiceParsingPropertyTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 유효한 NPC 데이터셋을 JSON으로 직렬화한 뒤 {@code NpcService.loadFromStream}으로
-     * 파싱하면, 모든 Npc의 {@code id}/{@code name}/{@code nodeId}/{@code personality}
-     * 및 {@code lines.default}·{@code lines.byTime}의 모든 원소가 순서까지 보존되고,
-     * 각 Npc의 {@code type}이 원본 문자열에 대응하는 {@code NpcType}으로 분류됨을 검증한다.
+     * 유효한 NPC 데이터셋을 JSON으로 직렬화한 뒤 {@code NpcService.loadFromStream}으로 파싱하면, 모든 Npc의 {@code
+     * id}/{@code name}/{@code nodeId}/{@code personality} 및 {@code lines.default}·{@code
+     * lines.byTime}의 모든 원소가 순서까지 보존되고, 각 Npc의 {@code type}이 원본 문자열에 대응하는 {@code NpcType}으로 분류됨을
+     * 검증한다.
      *
      * @param dataset 임의 생성된 유효 NPC 데이터셋
      */
@@ -71,8 +67,8 @@ class NpcServiceParsingPropertyTest {
             @ForAll("validNpcDataset") final List<NpcInputData> dataset) {
         // Given: 데이터셋을 JSON으로 직렬화
         final String json = serializeToJson(dataset);
-        final InputStream inputStream = new ByteArrayInputStream(
-                json.getBytes(StandardCharsets.UTF_8));
+        final InputStream inputStream =
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         // When: NpcService로 파싱
         final NpcService npcService = new NpcService(objectMapper);
@@ -115,14 +111,11 @@ class NpcServiceParsingPropertyTest {
      */
     @Provide
     Arbitrary<List<NpcInputData>> validNpcDataset() {
-        return Arbitraries.integers().between(1, MAX_NPC_COUNT)
-                .flatMap(this::buildUniqueNpcList);
+        return Arbitraries.integers().between(1, MAX_NPC_COUNT).flatMap(this::buildUniqueNpcList);
     }
 
     private Arbitrary<List<NpcInputData>> buildUniqueNpcList(final int count) {
-        return npcInputDataArbitrary()
-                .list().ofSize(count)
-                .map(this::ensureUniqueIds);
+        return npcInputDataArbitrary().list().ofSize(count).map(this::ensureUniqueIds);
     }
 
     private List<NpcInputData> ensureUniqueIds(final List<NpcInputData> rawList) {
@@ -130,61 +123,75 @@ class NpcServiceParsingPropertyTest {
         for (int i = 0; i < rawList.size(); i++) {
             final NpcInputData original = rawList.get(i);
             final String uniqueId = original.id() + "-" + i;
-            result.add(new NpcInputData(
-                    uniqueId,
-                    original.name(),
-                    original.typeString(),
-                    original.nodeId(),
-                    original.personality(),
-                    original.defaultLines(),
-                    original.byTime()
-            ));
+            result.add(
+                    new NpcInputData(
+                            uniqueId,
+                            original.name(),
+                            original.typeString(),
+                            original.nodeId(),
+                            original.personality(),
+                            original.defaultLines(),
+                            original.byTime()));
         }
         return List.copyOf(result);
     }
 
     private Arbitrary<NpcInputData> npcInputDataArbitrary() {
-        final Arbitrary<String> ids = Arbitraries.strings()
-                .alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
-        final Arbitrary<String> names = Arbitraries.strings()
-                .alpha().ofMinLength(NAME_MIN_LENGTH).ofMaxLength(NAME_MAX_LENGTH);
-        final Arbitrary<String> typeStrings = Arbitraries.of(
-                "chief", "blacksmith", "magic-school", "school", "healer", "bank");
-        final Arbitrary<String> nodeIds = Arbitraries.of(
-                "tir-chonaill", "dunbarton", "bangor", "emain-macha");
-        final Arbitrary<String> personalities = Arbitraries.strings()
-                .alpha().ofMinLength(0).ofMaxLength(MAX_LINE_LENGTH);
+        final Arbitrary<String> ids =
+                Arbitraries.strings().alpha().ofMinLength(ID_MIN_LENGTH).ofMaxLength(ID_MAX_LENGTH);
+        final Arbitrary<String> names =
+                Arbitraries.strings()
+                        .alpha()
+                        .ofMinLength(NAME_MIN_LENGTH)
+                        .ofMaxLength(NAME_MAX_LENGTH);
+        final Arbitrary<String> typeStrings =
+                Arbitraries.of("chief", "blacksmith", "magic-school", "school", "healer", "bank");
+        final Arbitrary<String> nodeIds =
+                Arbitraries.of("tir-chonaill", "dunbarton", "bangor", "emain-macha");
+        final Arbitrary<String> personalities =
+                Arbitraries.strings().alpha().ofMinLength(0).ofMaxLength(MAX_LINE_LENGTH);
         final Arbitrary<List<String>> defaultLines = lineListArbitrary();
         final Arbitrary<Map<String, List<String>>> byTime = byTimeMapArbitrary();
 
-        return Combinators.combine(ids, names, typeStrings, nodeIds, personalities, defaultLines, byTime)
+        return Combinators.combine(
+                        ids, names, typeStrings, nodeIds, personalities, defaultLines, byTime)
                 .as(NpcInputData::new);
     }
 
     private Arbitrary<List<String>> lineListArbitrary() {
         return Arbitraries.strings()
-                .alpha().ofMinLength(1).ofMaxLength(MAX_LINE_LENGTH)
-                .list().ofMinSize(0).ofMaxSize(MAX_LINE_COUNT);
+                .alpha()
+                .ofMinLength(1)
+                .ofMaxLength(MAX_LINE_LENGTH)
+                .list()
+                .ofMinSize(0)
+                .ofMaxSize(MAX_LINE_COUNT);
     }
 
     private Arbitrary<Map<String, List<String>>> byTimeMapArbitrary() {
         return Arbitraries.of(TIME_OF_DAY_KEYS)
-                .set().ofMinSize(0).ofMaxSize(TIME_OF_DAY_KEYS.length)
-                .flatMap(keys -> {
-                    if (keys.isEmpty()) {
-                        return Arbitraries.just(Map.of());
-                    }
-                    final List<String> keyList = new ArrayList<>(keys);
-                    return lineListArbitrary()
-                            .list().ofSize(keyList.size())
-                            .map(valueLists -> {
-                                final Map<String, List<String>> map = new LinkedHashMap<>();
-                                for (int i = 0; i < keyList.size(); i++) {
-                                    map.put(keyList.get(i), valueLists.get(i));
-                                }
-                                return Map.copyOf(map);
-                            });
-                });
+                .set()
+                .ofMinSize(0)
+                .ofMaxSize(TIME_OF_DAY_KEYS.length)
+                .flatMap(
+                        keys -> {
+                            if (keys.isEmpty()) {
+                                return Arbitraries.just(Map.of());
+                            }
+                            final List<String> keyList = new ArrayList<>(keys);
+                            return lineListArbitrary()
+                                    .list()
+                                    .ofSize(keyList.size())
+                                    .map(
+                                            valueLists -> {
+                                                final Map<String, List<String>> map =
+                                                        new LinkedHashMap<>();
+                                                for (int i = 0; i < keyList.size(); i++) {
+                                                    map.put(keyList.get(i), valueLists.get(i));
+                                                }
+                                                return Map.copyOf(map);
+                                            });
+                        });
     }
 
     private String serializeToJson(final List<NpcInputData> dataset) {
@@ -220,13 +227,13 @@ class NpcServiceParsingPropertyTest {
     /**
      * 프로퍼티 테스트용 NPC 입력 데이터 레코드.
      *
-     * @param id           NPC 고유 식별자
-     * @param name         NPC 표시 이름
-     * @param typeString   NPC 유형 문자열 (유효 6개 값 중 하나)
-     * @param nodeId       배치 노드 ID
-     * @param personality  성격 서술
+     * @param id NPC 고유 식별자
+     * @param name NPC 표시 이름
+     * @param typeString NPC 유형 문자열 (유효 6개 값 중 하나)
+     * @param nodeId 배치 노드 ID
+     * @param personality 성격 서술
      * @param defaultLines 기본 대사 목록
-     * @param byTime       시간대별 대사 맵
+     * @param byTime 시간대별 대사 맵
      */
     record NpcInputData(
             String id,
@@ -235,7 +242,5 @@ class NpcServiceParsingPropertyTest {
             String nodeId,
             String personality,
             List<String> defaultLines,
-            Map<String, List<String>> byTime
-    ) {
-    }
+            Map<String, List<String>> byTime) {}
 }

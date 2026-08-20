@@ -1,10 +1,9 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.FullMapView;
@@ -25,17 +24,16 @@ import com.myapps.web.myrpg.domain.model.NpcLines;
 import com.myapps.web.myrpg.domain.model.NpcType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link PlayScreenViewHelper}의 몬스터 관련 기능 단위 테스트.
  *
- * <p>NPC·몬스터 상호작용 합류 순서, TalkTarget.ofMonster 시 몬스터 슬롯 채움,
- * TalkTarget.ofNpc/EMPTY 시 몬스터 슬롯 null 동작을 검증한다.
+ * <p>NPC·몬스터 상호작용 합류 순서, TalkTarget.ofMonster 시 몬스터 슬롯 채움, TalkTarget.ofNpc/EMPTY 시 몬스터 슬롯 null 동작을
+ * 검증한다.
  *
  * <p><b>Validates: Requirements 10.2, 10.3, 11.6, 11.8</b>
  */
@@ -49,22 +47,27 @@ class PlayScreenViewHelperMonsterTest {
         when(skillService.rankupBonus(any())).thenReturn(Stats.ZERO);
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.equippedBonus()).thenReturn(EquippedBonusResult.ZERO);
-        helper = new PlayScreenViewHelper(
-                new ExperiencePolicy(), new StatProgression(), skillService, inventoryService);
+        helper =
+                new PlayScreenViewHelper(
+                        new ExperiencePolicy(),
+                        new StatProgression(),
+                        skillService,
+                        inventoryService);
     }
 
     @Test
     void should_mergeNpcFirstThenMonsters_when_buildInteractionsCalledWithBothLists() {
         // Given
         final NpcLines lines = new NpcLines(List.of("안녕"), Map.of());
-        final Npc neris = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "대장장이", lines);
+        final Npc neris =
+                new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "대장장이", lines);
         final Npc duncan = new Npc("duncan", "던컨", NpcType.CHIEF, "tir-chonaill", "촌장", lines);
         final Monster raccoon = createNormalMonster("raccoon", "너구리");
         final Monster wolf = createNormalMonster("wolf", "늑대");
 
         // When
-        final List<InteractionItem> result = helper.buildInteractions(
-                List.of(neris, duncan), List.of(raccoon, wolf));
+        final List<InteractionItem> result =
+                helper.buildInteractions(List.of(neris, duncan), List.of(raccoon, wolf));
 
         // Then
         assertThat(result).hasSize(4);
@@ -119,8 +122,9 @@ class PlayScreenViewHelperMonsterTest {
         final List<ActionLogEntry> logs = List.of();
 
         // When
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, minimap, fullMap, "숲속", null, talkTarget, logs, null);
+        final PlayScreenView view =
+                helper.buildPlayScreen(
+                        progress, minimap, fullMap, "숲속", null, talkTarget, logs, null);
 
         // Then — monster slots filled
         assertThat(view.monsterName()).isEqualTo("너구리");
@@ -141,13 +145,14 @@ class PlayScreenViewHelperMonsterTest {
         // Given
         final CharacterProgress progress = CharacterProgress.createDefault();
         final NpcLines lines = new NpcLines(List.of("반갑다"), Map.of());
-        final Npc neris = new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "대장장이", lines);
+        final Npc neris =
+                new Npc("neris", "네리스", NpcType.BLACKSMITH, "tir-chonaill", "대장장이", lines);
         final TalkTarget talkTarget = TalkTarget.ofNpc(neris, "반갑다.");
         final List<ActionLogEntry> logs = List.of();
 
         // When
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, null, null, "마을", null, talkTarget, logs, null);
+        final PlayScreenView view =
+                helper.buildPlayScreen(progress, null, null, "마을", null, talkTarget, logs, null);
 
         // Then — NPC slots filled
         assertThat(view.npcName()).isEqualTo("네리스");
@@ -168,8 +173,9 @@ class PlayScreenViewHelperMonsterTest {
         final List<ActionLogEntry> logs = List.of();
 
         // When
-        final PlayScreenView view = helper.buildPlayScreen(
-                progress, null, null, "평화로운 숲", null, TalkTarget.EMPTY, logs, null);
+        final PlayScreenView view =
+                helper.buildPlayScreen(
+                        progress, null, null, "평화로운 숲", null, TalkTarget.EMPTY, logs, null);
 
         // Then — both NPC and Monster slots null
         assertThat(view.npcName()).isNull();
@@ -190,8 +196,8 @@ class PlayScreenViewHelperMonsterTest {
         final Monster bear = createNormalMonster("bear", "곰");
 
         // When
-        final List<InteractionItem> result = helper.buildInteractions(
-                List.of(), List.of(raccoon, wolf, bear));
+        final List<InteractionItem> result =
+                helper.buildInteractions(List.of(), List.of(raccoon, wolf, bear));
 
         // Then — order preserved
         assertThat(result).hasSize(3);
@@ -210,12 +216,34 @@ class PlayScreenViewHelperMonsterTest {
     }
 
     private Monster createNormalMonster(final String id, final String name) {
-        return new Monster(id, name, MonsterType.NORMAL, 1, 25, 4, 1, 10,
-                15L, new GoldDrop(3, 10), List.of(), List.of("대사1", "대사2", "대사3"));
+        return new Monster(
+                id,
+                name,
+                MonsterType.NORMAL,
+                1,
+                25,
+                4,
+                1,
+                10,
+                15L,
+                new GoldDrop(3, 10),
+                List.of(),
+                List.of("대사1", "대사2", "대사3"));
     }
 
     private Monster createBossMonster(final String id, final String name) {
-        return new Monster(id, name, MonsterType.BOSS, 10, 200, 30, 15, 50,
-                500L, new GoldDrop(50, 100), List.of(), List.of("대사1", "대사2", "대사3"));
+        return new Monster(
+                id,
+                name,
+                MonsterType.BOSS,
+                10,
+                200,
+                30,
+                15,
+                50,
+                500L,
+                new GoldDrop(50, 100),
+                List.of(),
+                List.of("대사1", "대사2", "대사3"));
     }
 }

@@ -1,5 +1,8 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -7,16 +10,12 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.api.Tuple;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 내구도 초기화·감소·수리 프로퍼티 테스트.
  *
- * <p>임의의 장비 인스턴스에 대해, 지급 시 {@code currentDurability == maxDurability}이고,
- * {@code reduceDurability(d)}는 0 미만으로 내려가지 않으며,
- * {@code repairToMax(max)}는 {@code currentDurability == max}로 복구함을 검증한다.
+ * <p>임의의 장비 인스턴스에 대해, 지급 시 {@code currentDurability == maxDurability}이고, {@code
+ * reduceDurability(d)}는 0 미만으로 내려가지 않으며, {@code repairToMax(max)}는 {@code currentDurability ==
+ * max}로 복구함을 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 14: 내구도 초기화·감소·수리
  *
@@ -147,9 +146,13 @@ class DurabilityPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Double, Double>> durabilityAndReduce() {
-        return Arbitraries.doubles().between(0.1, MAX_DURABILITY_UPPER)
-                .flatMap(dur -> Arbitraries.doubles().between(0.0, REDUCE_UPPER)
-                        .map(reduce -> Tuple.of(dur, reduce)));
+        return Arbitraries.doubles()
+                .between(0.1, MAX_DURABILITY_UPPER)
+                .flatMap(
+                        dur ->
+                                Arbitraries.doubles()
+                                        .between(0.0, REDUCE_UPPER)
+                                        .map(reduce -> Tuple.of(dur, reduce)));
     }
 
     /**
@@ -159,24 +162,40 @@ class DurabilityPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple3<Double, Double, Double>> durabilityReduceAndRepair() {
-        return Arbitraries.doubles().between(0.1, MAX_DURABILITY_UPPER)
-                .flatMap(dur -> Arbitraries.doubles().between(0.0, REDUCE_UPPER)
-                        .flatMap(reduce -> Arbitraries.doubles().between(0.1, MAX_DURABILITY_UPPER)
-                                .map(repairMax -> Tuple.of(dur, reduce, repairMax))));
+        return Arbitraries.doubles()
+                .between(0.1, MAX_DURABILITY_UPPER)
+                .flatMap(
+                        dur ->
+                                Arbitraries.doubles()
+                                        .between(0.0, REDUCE_UPPER)
+                                        .flatMap(
+                                                reduce ->
+                                                        Arbitraries.doubles()
+                                                                .between(0.1, MAX_DURABILITY_UPPER)
+                                                                .map(
+                                                                        repairMax ->
+                                                                                Tuple.of(
+                                                                                        dur, reduce,
+                                                                                        repairMax))));
     }
 
     /**
-     * (maxDurability, 감소량 리스트) 쌍을 생성하는 Arbitrary 제공자.
-     * 감소량 합이 maxDurability를 초과하여 바닥(0)에 도달하도록 구성한다.
+     * (maxDurability, 감소량 리스트) 쌍을 생성하는 Arbitrary 제공자. 감소량 합이 maxDurability를 초과하여 바닥(0)에 도달하도록 구성한다.
      *
      * @return (maxDurability, reduceSequence) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<Tuple.Tuple2<Double, List<Double>>> durabilityAndReduceSequence() {
-        return Arbitraries.doubles().between(0.1, MAX_DURABILITY_UPPER)
-                .flatMap(dur -> Arbitraries.doubles().between(0.1, REDUCE_UPPER)
-                        .list().ofMinSize(1).ofMaxSize(MAX_REDUCE_SEQUENCE)
-                        .map(reductions -> Tuple.of(dur, reductions)));
+        return Arbitraries.doubles()
+                .between(0.1, MAX_DURABILITY_UPPER)
+                .flatMap(
+                        dur ->
+                                Arbitraries.doubles()
+                                        .between(0.1, REDUCE_UPPER)
+                                        .list()
+                                        .ofMinSize(1)
+                                        .ofMaxSize(MAX_REDUCE_SEQUENCE)
+                                        .map(reductions -> Tuple.of(dur, reductions)));
     }
 
     /**
@@ -186,12 +205,6 @@ class DurabilityPropertyTest {
      * @return 해당 내구도를 가진 OwnedItem 인스턴스
      */
     private OwnedItem createEquipmentWithDurability(final double durability) {
-        return new OwnedItem(
-                "test_equipment",
-                1,
-                StorageKind.INVENTORY,
-                false,
-                durability
-        );
+        return new OwnedItem("test_equipment", 1, StorageKind.INVENTORY, false, durability);
     }
 }

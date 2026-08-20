@@ -7,14 +7,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
@@ -26,38 +18,39 @@ import com.myapps.web.mycrawler.domain.model.CrawlTarget;
 import com.myapps.web.mycrawler.domain.model.TriggerSource;
 import com.myapps.web.mycrawler.infrastructure.antidetect.AntiDetectionService;
 import com.myapps.web.mycrawler.infrastructure.config.CrawlerConfig;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * PlaywrightCrawlerEngine 단위 테스트.
  *
- * <p>Playwright 클래스들을 Mock하여 크롤링 엔진의 성공/실패 시나리오 및
- * BrowserContext 정리 동작을 검증합니다.
+ * <p>Playwright 클래스들을 Mock하여 크롤링 엔진의 성공/실패 시나리오 및 BrowserContext 정리 동작을 검증합니다.
  */
 @ExtendWith(MockitoExtension.class)
 class PlaywrightCrawlerEngineTest {
 
-    @Mock
-    private AntiDetectionService antiDetectionService;
+    @Mock private AntiDetectionService antiDetectionService;
 
-    @Mock
-    private Browser browser;
+    @Mock private Browser browser;
 
-    @Mock
-    private BrowserContext browserContext;
+    @Mock private BrowserContext browserContext;
 
-    @Mock
-    private Page page;
+    @Mock private Page page;
 
     private PlaywrightCrawlerEngine engine;
 
     @BeforeEach
     void setUp() {
-        final CrawlerConfig crawlerConfig = new CrawlerConfig(
-            "0 0 */6 * * *",
-            30L,
-            null,
-            List.of(new CrawlerConfig.TargetConfig("test", "https://example.com"))
-        );
+        final CrawlerConfig crawlerConfig =
+                new CrawlerConfig(
+                        "0 0 */6 * * *",
+                        30L,
+                        null,
+                        List.of(new CrawlerConfig.TargetConfig("test", "https://example.com")));
         engine = new PlaywrightCrawlerEngine(antiDetectionService, crawlerConfig);
     }
 
@@ -100,10 +93,11 @@ class PlaywrightCrawlerEngineTest {
         doNothing().when(antiDetectionService).applyStealthSettings(browserContext);
         when(browserContext.newPage()).thenReturn(page);
         when(page.navigate(anyString(), any(Page.NavigateOptions.class)))
-            .thenThrow(new PlaywrightException("Timeout 30000ms exceeded"));
+                .thenThrow(new PlaywrightException("Timeout 30000ms exceeded"));
 
         // when
-        final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.SCHEDULED, browser);
+        final CrawlResult result =
+                engine.crawlWithBrowser(target, TriggerSource.SCHEDULED, browser);
 
         // then
         assertThat(result.status()).isEqualTo(CrawlStatus.FAILURE);
@@ -127,7 +121,7 @@ class PlaywrightCrawlerEngineTest {
         doNothing().when(antiDetectionService).applyStealthSettings(browserContext);
         when(browserContext.newPage()).thenReturn(page);
         when(page.navigate(anyString(), any(Page.NavigateOptions.class)))
-            .thenThrow(new PlaywrightException("net::ERR_NAME_NOT_RESOLVED"));
+                .thenThrow(new PlaywrightException("net::ERR_NAME_NOT_RESOLVED"));
 
         // when
         final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
@@ -167,7 +161,7 @@ class PlaywrightCrawlerEngineTest {
         doNothing().when(antiDetectionService).applyStealthSettings(browserContext);
         when(browserContext.newPage()).thenReturn(page);
         when(page.navigate(anyString(), any(Page.NavigateOptions.class)))
-            .thenThrow(new PlaywrightException("Connection refused"));
+                .thenThrow(new PlaywrightException("Connection refused"));
 
         // when
         engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);
@@ -209,7 +203,7 @@ class PlaywrightCrawlerEngineTest {
         doNothing().when(antiDetectionService).applyStealthSettings(browserContext);
         when(browserContext.newPage()).thenReturn(page);
         when(page.navigate(anyString(), any(Page.NavigateOptions.class)))
-            .thenThrow(new RuntimeException("Browser crashed"));
+                .thenThrow(new RuntimeException("Browser crashed"));
 
         // when
         final CrawlResult result = engine.crawlWithBrowser(target, TriggerSource.MANUAL, browser);

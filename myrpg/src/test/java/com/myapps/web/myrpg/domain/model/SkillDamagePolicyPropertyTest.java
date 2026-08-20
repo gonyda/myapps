@@ -1,5 +1,9 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.EnumMap;
+import java.util.Map;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
@@ -7,20 +11,16 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import java.util.EnumMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link SkillDamagePolicy}의 랭크별 수치가 단조 증가하고 조회가 정확한지 검증하는 프로퍼티 테스트.
  *
  * <p>임의의 유효한 16-key 단조 맵을 가진 딜스킬/디펜스 스킬에 대해:
+ *
  * <ul>
- *   <li>딜스킬: {@code multiplier(skill, rank) == multiplierByRank.get(rank)}</li>
- *   <li>디펜스: {@code blockRate(skill, rank) == blockRateByRank.get(rank)},
- *       {@code counterMultiplier(skill, rank) == counterMultiplierByRank.get(rank)}</li>
- *   <li>모든 맵의 값은 F→MASTER 순서로 단조 비감소</li>
+ *   <li>딜스킬: {@code multiplier(skill, rank) == multiplierByRank.get(rank)}
+ *   <li>디펜스: {@code blockRate(skill, rank) == blockRateByRank.get(rank)}, {@code
+ *       counterMultiplier(skill, rank) == counterMultiplierByRank.get(rank)}
+ *   <li>모든 맵의 값은 F→MASTER 순서로 단조 비감소
  * </ul>
  *
  * <p><b>Validates: Requirements 4.1, 4.2, 4.3, 4.4</b>
@@ -87,8 +87,7 @@ class SkillDamagePolicyPropertyTest {
     }
 
     /**
-     * 디펜스 스킬의 blockRateByRank와 counterMultiplierByRank가
-     * F→MASTER 순서로 단조 비감소인지 검증한다.
+     * 디펜스 스킬의 blockRateByRank와 counterMultiplierByRank가 F→MASTER 순서로 단조 비감소인지 검증한다.
      *
      * @param skill 임의로 생성된 유효한 DefenseSkill
      */
@@ -100,8 +99,7 @@ class SkillDamagePolicyPropertyTest {
     }
 
     /**
-     * 유효한 DamageSkill을 생성하는 Arbitrary 제공자.
-     * multiplierByRank는 16개 랭크 키를 모두 보유하며 단조 비감소 값을 가진다.
+     * 유효한 DamageSkill을 생성하는 Arbitrary 제공자. multiplierByRank는 16개 랭크 키를 모두 보유하며 단조 비감소 값을 가진다.
      *
      * @return DamageSkill Arbitrary
      */
@@ -109,17 +107,25 @@ class SkillDamagePolicyPropertyTest {
     Arbitrary<DamageSkill> damageSkills() {
         final Arbitrary<Map<SkillRank, Integer>> mapArb = monotoneRankMap();
         final Arbitrary<SkillType> typeArb = Arbitraries.of(SkillType.NORMAL, SkillType.HEAVY);
-        final Arbitrary<SkillTalent> talentArb = Arbitraries.of(SkillTalent.MELEE, SkillTalent.ARCHERY, SkillTalent.MAGIC);
+        final Arbitrary<SkillTalent> talentArb =
+                Arbitraries.of(SkillTalent.MELEE, SkillTalent.ARCHERY, SkillTalent.MAGIC);
 
         return Combinators.combine(typeArb, talentArb, mapArb)
-                .as((type, talent, multiplierMap) -> new DamageSkill(
-                        "test-damage", "테스트딜", type, talent,
-                        10, multiplierMap, "테스트 효과"));
+                .as(
+                        (type, talent, multiplierMap) ->
+                                new DamageSkill(
+                                        "test-damage",
+                                        "테스트딜",
+                                        type,
+                                        talent,
+                                        10,
+                                        multiplierMap,
+                                        "테스트 효과"));
     }
 
     /**
-     * 유효한 DefenseSkill을 생성하는 Arbitrary 제공자.
-     * blockRateByRank와 counterMultiplierByRank 모두 16개 키, 단조 비감소 값.
+     * 유효한 DefenseSkill을 생성하는 Arbitrary 제공자. blockRateByRank와 counterMultiplierByRank 모두 16개 키, 단조
+     * 비감소 값.
      *
      * @return DefenseSkill Arbitrary
      */
@@ -129,39 +135,45 @@ class SkillDamagePolicyPropertyTest {
         final Arbitrary<Map<SkillRank, Integer>> counterMapArb = monotoneRankMap();
 
         return Combinators.combine(blockMapArb, counterMapArb)
-                .as((blockMap, counterMap) -> new DefenseSkill(
-                        "test-defense", "테스트방어", SkillType.DEFENSE, SkillTalent.COMMON,
-                        5, blockMap, counterMap, "테스트 방어 효과"));
+                .as(
+                        (blockMap, counterMap) ->
+                                new DefenseSkill(
+                                        "test-defense",
+                                        "테스트방어",
+                                        SkillType.DEFENSE,
+                                        SkillTalent.COMMON,
+                                        5,
+                                        blockMap,
+                                        counterMap,
+                                        "테스트 방어 효과"));
     }
 
     /**
-     * 16개 랭크 키에 대해 단조 비감소하는 양수 값을 가진 맵을 생성한다.
-     * base(1~500)에서 시작하여 각 랭크마다 0~50의 증분을 누적한다.
+     * 16개 랭크 키에 대해 단조 비감소하는 양수 값을 가진 맵을 생성한다. base(1~500)에서 시작하여 각 랭크마다 0~50의 증분을 누적한다.
      *
      * @return 단조 비감소 16-key EnumMap Arbitrary
      */
     private Arbitrary<Map<SkillRank, Integer>> monotoneRankMap() {
         final Arbitrary<Integer> baseArb = Arbitraries.integers().between(1, 500);
-        final Arbitrary<int[]> incrementsArb = Arbitraries.integers().between(0, 50)
-                .array(int[].class).ofSize(RANK_COUNT - 1);
+        final Arbitrary<int[]> incrementsArb =
+                Arbitraries.integers().between(0, 50).array(int[].class).ofSize(RANK_COUNT - 1);
 
         return Combinators.combine(baseArb, incrementsArb)
-                .as((base, increments) -> {
-                    final Map<SkillRank, Integer> map = new EnumMap<>(SkillRank.class);
-                    final SkillRank[] ranks = SkillRank.values();
-                    int current = base;
-                    map.put(ranks[0], current);
-                    for (int i = 1; i < RANK_COUNT; i++) {
-                        current += increments[i - 1];
-                        map.put(ranks[i], current);
-                    }
-                    return map;
-                });
+                .as(
+                        (base, increments) -> {
+                            final Map<SkillRank, Integer> map = new EnumMap<>(SkillRank.class);
+                            final SkillRank[] ranks = SkillRank.values();
+                            int current = base;
+                            map.put(ranks[0], current);
+                            for (int i = 1; i < RANK_COUNT; i++) {
+                                current += increments[i - 1];
+                                map.put(ranks[i], current);
+                            }
+                            return map;
+                        });
     }
 
-    /**
-     * 맵의 값이 F→MASTER 순서로 단조 비감소인지 검증한다.
-     */
+    /** 맵의 값이 F→MASTER 순서로 단조 비감소인지 검증한다. */
     private void assertMonotonicNonDecreasing(final Map<SkillRank, Integer> map) {
         final SkillRank[] ranks = SkillRank.values();
         for (int i = 1; i < ranks.length; i++) {

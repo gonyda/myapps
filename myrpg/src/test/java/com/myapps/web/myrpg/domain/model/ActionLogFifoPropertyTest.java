@@ -1,23 +1,21 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
-
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 행동 로그 최대 10개 유지(FIFO) 프로퍼티를 검증하는 프로퍼티 테스트.
  *
- * <p>N개 항목을 추가한 후 로그 크기가 {@code min(N, 10)}이며,
- * 보존되는 항목이 가장 최근에 추가된 10개(FIFO 방식으로 오래된 항목 제거)인지 검증한다.
+ * <p>N개 항목을 추가한 후 로그 크기가 {@code min(N, 10)}이며, 보존되는 항목이 가장 최근에 추가된 10개(FIFO 방식으로 오래된 항목 제거)인지 검증한다.
  *
  * <p>Feature: 001-character-progress-and-map-movement, Property 20: 행동 로그 최대 10개 유지(FIFO)
  *
@@ -27,11 +25,11 @@ class ActionLogFifoPropertyTest {
 
     private static final int MAX_ENTRIES = 10;
     private static final ZoneId ZONE_ID = ZoneId.of("Asia/Seoul");
-    private static final long BASE_EPOCH_SECOND = Instant.parse("2025-01-01T00:00:00Z").getEpochSecond();
+    private static final long BASE_EPOCH_SECOND =
+            Instant.parse("2025-01-01T00:00:00Z").getEpochSecond();
 
     /**
-     * N개 항목 추가 후 로그 크기는 {@code min(N, 10)}이고,
-     * 보존된 항목은 마지막 10개(가장 최근 추가된 항목)인지 검증한다.
+     * N개 항목 추가 후 로그 크기는 {@code min(N, 10)}이고, 보존된 항목은 마지막 10개(가장 최근 추가된 항목)인지 검증한다.
      *
      * @param entryCount 추가할 항목 수 (1~50)
      */
@@ -69,8 +67,7 @@ class ActionLogFifoPropertyTest {
      * @param dummy 테스트 반복을 위한 임의 값 (사용하지 않음)
      */
     @Property(tries = 100)
-    void should_preserveAllEntries_when_exactlyTenAdded(
-            @ForAll("epochSeconds") final long dummy) {
+    void should_preserveAllEntries_when_exactlyTenAdded(@ForAll("epochSeconds") final long dummy) {
         // Given: 고정 Clock으로 ActionLog 생성
         final Clock fixedClock = Clock.fixed(Instant.ofEpochSecond(dummy), ZONE_ID);
         final ActionLog actionLog = new ActionLog(fixedClock);
@@ -90,8 +87,7 @@ class ActionLogFifoPropertyTest {
     }
 
     /**
-     * 항목이 삽입 순서(오름차순)대로 정렬되어 있는지 검증한다.
-     * FIFO 제거 후에도 남은 항목의 순서가 추가 순서와 일치해야 한다.
+     * 항목이 삽입 순서(오름차순)대로 정렬되어 있는지 검증한다. FIFO 제거 후에도 남은 항목의 순서가 추가 순서와 일치해야 한다.
      *
      * @param entryCount 추가할 항목 수 (1~50)
      */

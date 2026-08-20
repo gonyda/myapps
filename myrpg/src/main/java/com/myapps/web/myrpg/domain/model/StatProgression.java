@@ -3,12 +3,10 @@ package com.myapps.web.myrpg.domain.model;
 /**
  * 레벨과 재능으로부터 스탯과 최대 바이탈을 계산하는 순수 정책.
  *
- * <p>스킬 랭크업 보너스를 포함하지 않으며, 기본값·레벨 파생분·재능 보너스만 산출한다.
- * Critical은 0.1% 단위 정수로 계산한다(예: 50 = 5.0%).
+ * <p>스킬 랭크업 보너스를 포함하지 않으며, 기본값·레벨 파생분·재능 보너스만 산출한다. Critical은 0.1% 단위 정수로 계산한다(예: 50 = 5.0%).
  *
- * <p>재능 보너스는 {@link TalentType}이 보유한 주/보조 {@link TalentBonus}의
- * {@code perLevel × (level - 1)}을 대상 필드에만 가산하며,
- * {@link BonusKind}로 스탯/바이탈 적용을 분기한다.
+ * <p>재능 보너스는 {@link TalentType}이 보유한 주/보조 {@link TalentBonus}의 {@code perLevel × (level - 1)}을 대상
+ * 필드에만 가산하며, {@link BonusKind}로 스탯/바이탈 적용을 분기한다.
  */
 public class StatProgression {
 
@@ -42,17 +40,15 @@ public class StatProgression {
                 BASE_DEX + DEX_PER_LEVEL * levelDerived,
                 BASE_INT + INT_PER_LEVEL * levelDerived,
                 BASE_CRITICAL + CRITICAL_PER_LEVEL * levelDerived,
-                BASE_DEF + DEF_PER_LEVEL * levelDerived
-        );
+                BASE_DEF + DEF_PER_LEVEL * levelDerived);
     }
 
     /**
      * 주어진 레벨과 재능의 Level_Stat(공통 + 재능 스탯 계열 보너스)을 계산한다.
      *
-     * <p>공통 스탯에 재능의 주/보조 보너스 중 {@link BonusKind#STAT} 대상만 가산한다.
-     * 바이탈 계열 보너스는 스탯에 반영하지 않는다.
+     * <p>공통 스탯에 재능의 주/보조 보너스 중 {@link BonusKind#STAT} 대상만 가산한다. 바이탈 계열 보너스는 스탯에 반영하지 않는다.
      *
-     * @param level  현재 레벨 (1 이상)
+     * @param level 현재 레벨 (1 이상)
      * @param talent 선택 재능
      * @return 해당 레벨·재능의 스탯 (STR, DEX, INT, Critical(0.1%단위), DEF)
      */
@@ -70,8 +66,7 @@ public class StatProgression {
      *
      * @param level 현재 레벨 (1 이상)
      * @return 해당 레벨의 바이탈 최대치 (HP=MP=Stamina 동일)
-     * @deprecated 재능별 바이탈 최대치를 반환하는 {@link #vitalMaxFor(int, TalentType)} 사용 권장.
-     *             호출부 교체 완료 후 제거 예정.
+     * @deprecated 재능별 바이탈 최대치를 반환하는 {@link #vitalMaxFor(int, TalentType)} 사용 권장. 호출부 교체 완료 후 제거 예정.
      */
     @Deprecated
     public int vitalMaxFor(final int level) {
@@ -81,10 +76,10 @@ public class StatProgression {
     /**
      * 주어진 레벨과 재능의 바이탈별 최대치(공통 + 재능 바이탈 계열 보너스)를 계산한다.
      *
-     * <p>공통값 {@code 100 + 10×(level-1)}을 세 바이탈에 채운 뒤 재능의 주/보조 보너스 중
-     * {@link BonusKind#VITAL} 대상만 가산한다. 스탯 계열 보너스는 바이탈에 반영하지 않는다.
+     * <p>공통값 {@code 100 + 10×(level-1)}을 세 바이탈에 채운 뒤 재능의 주/보조 보너스 중 {@link BonusKind#VITAL} 대상만
+     * 가산한다. 스탯 계열 보너스는 바이탈에 반영하지 않는다.
      *
-     * @param level  현재 레벨 (1 이상)
+     * @param level 현재 레벨 (1 이상)
      * @param talent 선택 재능
      * @return 해당 레벨·재능의 바이탈별 최대치
      */
@@ -126,11 +121,12 @@ public class StatProgression {
      * <p>대상이 스탯 계열이면 바이탈을 변경하지 않고 그대로 반환한다.
      *
      * @param vitalMax 현재 바이탈 최대치
-     * @param bonus    적용할 재능 보너스
-     * @param level    현재 레벨
+     * @param bonus 적용할 재능 보너스
+     * @param level 현재 레벨
      * @return 보너스 적용 후 바이탈 최대치
      */
-    private VitalMax applyVitalBonus(final VitalMax vitalMax, final TalentBonus bonus, final int level) {
+    private VitalMax applyVitalBonus(
+            final VitalMax vitalMax, final TalentBonus bonus, final int level) {
         if (bonus.target().kind() != BonusKind.VITAL) {
             return vitalMax;
         }

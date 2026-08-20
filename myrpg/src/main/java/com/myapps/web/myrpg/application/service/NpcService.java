@@ -1,5 +1,10 @@
 package com.myapps.web.myrpg.application.service;
 
+import com.myapps.web.myrpg.application.exception.NpcDataException;
+import com.myapps.web.myrpg.domain.model.Npc;
+import com.myapps.web.myrpg.domain.model.NpcLines;
+import com.myapps.web.myrpg.domain.model.NpcType;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,25 +12,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
-import com.myapps.web.myrpg.application.exception.NpcDataException;
-import com.myapps.web.myrpg.domain.model.Npc;
-import com.myapps.web.myrpg.domain.model.NpcLines;
-import com.myapps.web.myrpg.domain.model.NpcType;
-
-import jakarta.annotation.PostConstruct;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
  * NPC 고정 데이터 로딩 및 조회 서비스.
  *
- * <p>애플리케이션 기동 시 {@code classpath:data/npc.json}을 1회 파싱하여
- * 불변 {@code List<Npc>}를 구성하고, 노드별·ID별 조회 기능을 제공합니다.
- * 데이터 무결성 위반 시 {@link NpcDataException}을 발생시켜 기동을 실패시킵니다.
+ * <p>애플리케이션 기동 시 {@code classpath:data/npc.json}을 1회 파싱하여 불변 {@code List<Npc>}를 구성하고, 노드별·ID별 조회
+ * 기능을 제공합니다. 데이터 무결성 위반 시 {@link NpcDataException}을 발생시켜 기동을 실패시킵니다.
  */
 @Service
 public class NpcService {
@@ -54,16 +50,14 @@ public class NpcService {
         try (InputStream inputStream = new ClassPathResource(NPC_JSON_PATH).getInputStream()) {
             this.npcs = loadFromStream(inputStream);
         } catch (final IOException exception) {
-            throw new NpcDataException(
-                    "NPC JSON 파일 로딩 실패: " + NPC_JSON_PATH, exception);
+            throw new NpcDataException("NPC JSON 파일 로딩 실패: " + NPC_JSON_PATH, exception);
         }
     }
 
     /**
      * 입력 스트림에서 NPC 데이터를 파싱하고 검증하여 불변 목록으로 반환합니다.
      *
-     * <p>파싱 로직이 리소스 로딩과 분리되어 있으므로, 프로퍼티 테스트에서
-     * 인메모리 데이터를 주입하여 검증할 수 있습니다.
+     * <p>파싱 로직이 리소스 로딩과 분리되어 있으므로, 프로퍼티 테스트에서 인메모리 데이터를 주입하여 검증할 수 있습니다.
      *
      * @param inputStream NPC JSON 데이터 입력 스트림
      * @return 검증 완료된 불변 NPC 목록 (정의 순서 보존)
@@ -150,12 +144,19 @@ public class NpcService {
         final String name = extractRequiredField(npcNode, "name");
         final String typeString = extractRequiredField(npcNode, "type");
         final String nodeId = extractRequiredField(npcNode, "nodeId");
-        final String personality = npcNode.has("personality")
-                ? npcNode.get("personality").asText() : "";
+        final String personality =
+                npcNode.has("personality") ? npcNode.get("personality").asText() : "";
 
-        final NpcType npcType = NpcType.fromType(typeString)
-                .orElseThrow(() -> new NpcDataException(
-                        "NPC '" + id + "'의 type '" + typeString + "'을(를) 분류할 수 없습니다."));
+        final NpcType npcType =
+                NpcType.fromType(typeString)
+                        .orElseThrow(
+                                () ->
+                                        new NpcDataException(
+                                                "NPC '"
+                                                        + id
+                                                        + "'의 type '"
+                                                        + typeString
+                                                        + "'을(를) 분류할 수 없습니다."));
 
         final NpcLines lines = parseLines(npcNode, id);
         final List<String> shopItems = parseStringList(npcNode.get("shopItems"));
@@ -212,8 +213,7 @@ public class NpcService {
         final Set<String> ids = new HashSet<>();
         for (final Npc npc : npcList) {
             if (!ids.add(npc.id())) {
-                throw new NpcDataException(
-                        "NPC id '" + npc.id() + "'이(가) 중복됩니다.");
+                throw new NpcDataException("NPC id '" + npc.id() + "'이(가) 중복됩니다.");
             }
         }
     }

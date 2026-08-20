@@ -1,21 +1,18 @@
 package com.myapps.web.myrpg.application.service;
 
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.MonsterType;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.model.Monster;
-import com.myapps.web.myrpg.domain.model.MonsterType;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * 실제 {@code data/monster.json} 및 {@code data/map.json} 로딩 통합 테스트.
  *
- * <p>Spring Boot 컨텍스트 전체를 기동하여 {@link MonsterService}가
- * 클래스패스 리소스를 정상 로드하고 교차검증을 통과하는지 검증합니다.
+ * <p>Spring Boot 컨텍스트 전체를 기동하여 {@link MonsterService}가 클래스패스 리소스를 정상 로드하고 교차검증을 통과하는지 검증합니다.
  *
  * <p><b>Validates: Requirements 1.1, 8.5</b>
  */
@@ -45,9 +42,7 @@ class MonsterServiceLoadIntegrationTest {
         this.monsterService = monsterService;
     }
 
-    /**
-     * 전체 몬스터 수가 1마리(너구리)인지 검증한다.
-     */
+    /** 전체 몬스터 수가 1마리(너구리)인지 검증한다. */
     @Test
     void should_loadOneMonster_when_applicationStarts() {
         final List<Monster> allMonsters = monsterService.all();
@@ -55,9 +50,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(allMonsters).hasSize(TOTAL_MONSTER_COUNT);
     }
 
-    /**
-     * 너구리(raccoon)의 모든 필드가 기대값과 일치하는지 검증한다.
-     */
+    /** 너구리(raccoon)의 모든 필드가 기대값과 일치하는지 검증한다. */
     @Test
     void should_haveCorrectRaccoonFields_when_loaded() {
         final Monster raccoon = monsterService.byId(RACCOON_ID).orElseThrow();
@@ -78,9 +71,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(raccoon.lines()).hasSize(RACCOON_LINES_COUNT);
     }
 
-    /**
-     * dugald-north 노드에 너구리가 배치되어 있는지 검증한다.
-     */
+    /** dugald-north 노드에 너구리가 배치되어 있는지 검증한다. */
     @Test
     void should_haveRaccoonInDugaldNorth_when_byNodeCalled() {
         final List<Monster> monsters = monsterService.byNode(DUGALD_NORTH_NODE_ID);
@@ -89,9 +80,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(monsters.getFirst().id()).isEqualTo(RACCOON_ID);
     }
 
-    /**
-     * tir-chonaill 노드에는 몬스터가 없음을 검증한다.
-     */
+    /** tir-chonaill 노드에는 몬스터가 없음을 검증한다. */
     @Test
     void should_returnEmptyList_when_byNodeCalledForTirChonaill() {
         final List<Monster> monsters = monsterService.byNode(TIR_CHONAILL_NODE_ID);
@@ -99,9 +88,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(monsters).isEmpty();
     }
 
-    /**
-     * 미존재 노드에 대해 빈 목록을 반환하는지 검증한다.
-     */
+    /** 미존재 노드에 대해 빈 목록을 반환하는지 검증한다. */
     @Test
     void should_returnEmptyList_when_byNodeCalledForUnknownNode() {
         final List<Monster> monsters = monsterService.byNode("non-existent-node");

@@ -1,20 +1,5 @@
 package com.myapps.web.mystudy.interfaces.api;
 
-import com.myapps.web.mystudy.application.dto.QuizQuestionDto;
-import com.myapps.web.mystudy.application.dto.QuizResponse;
-import com.myapps.web.mystudy.application.service.EnglishStudyService;
-import com.myapps.web.mystudy.application.service.QuizService;
-import com.myapps.web.mystudy.domain.model.EnglishStudy;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,6 +9,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.myapps.web.mystudy.application.dto.QuizQuestionDto;
+import com.myapps.web.mystudy.application.dto.QuizResponse;
+import com.myapps.web.mystudy.application.service.EnglishStudyService;
+import com.myapps.web.mystudy.application.service.QuizService;
+import com.myapps.web.mystudy.domain.model.EnglishStudy;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
+
 /**
  * EnglishStudyController의 HTTP 엔드포인트를 검증하는 슬라이스 테스트.
  *
@@ -32,17 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(EnglishStudyController.class)
 class EnglishStudyControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private EnglishStudyService englishStudyService;
+    @MockitoBean private EnglishStudyService englishStudyService;
 
-    @MockitoBean
-    private QuizService quizService;
+    @MockitoBean private QuizService quizService;
 
     @Test
     void should_returnThymeleafView_when_getEnglishStudyPage() throws Exception {
@@ -93,9 +88,10 @@ class EnglishStudyControllerTest {
 
         given(englishStudyService.save(any(EnglishStudy.class))).willReturn(savedStudy);
 
-        mockMvc.perform(post("/api/english-study")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(inputStudy)))
+        mockMvc.perform(
+                        post("/api/english-study")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(inputStudy)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.episode").value(3))
@@ -105,16 +101,11 @@ class EnglishStudyControllerTest {
 
     @Test
     void should_returnQuizWithQuestions_when_getApiQuiz() throws Exception {
-        final QuizQuestionDto question1 = new QuizQuestionDto(
-                "Hello",
-                List.of("안녕하세요", "감사합니다", "좋은 아침", "잘 가세요"),
-                0
-        );
-        final QuizQuestionDto question2 = new QuizQuestionDto(
-                "감사합니다",
-                List.of("Thank you", "Good morning", "Goodbye", "Hello"),
-                0
-        );
+        final QuizQuestionDto question1 =
+                new QuizQuestionDto("Hello", List.of("안녕하세요", "감사합니다", "좋은 아침", "잘 가세요"), 0);
+        final QuizQuestionDto question2 =
+                new QuizQuestionDto(
+                        "감사합니다", List.of("Thank you", "Good morning", "Goodbye", "Hello"), 0);
         final QuizResponse quizResponse = new QuizResponse(List.of(question1, question2));
 
         given(quizService.generateQuiz()).willReturn(quizResponse);

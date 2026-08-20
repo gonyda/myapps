@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * 전역 예외 처리 핸들러.
  *
- * <p>AdminController 등 컨트롤러에서 발생하는 처리되지 않은 예외를
- * 캐치하여 사용자에게 에러 페이지를 표시합니다.
+ * <p>AdminController 등 컨트롤러에서 발생하는 처리되지 않은 예외를 캐치하여 사용자에게 에러 페이지를 표시합니다.
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,7 +20,7 @@ public class GlobalExceptionHandler {
      * 모든 미처리 예외를 처리하여 에러 페이지를 반환합니다.
      *
      * @param exception 발생한 예외
-     * @param model     Thymeleaf 모델
+     * @param model Thymeleaf 모델
      * @return 에러 뷰 이름
      */
     @ExceptionHandler(Exception.class)

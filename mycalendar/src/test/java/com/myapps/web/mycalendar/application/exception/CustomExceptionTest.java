@@ -1,14 +1,12 @@
 package com.myapps.web.mycalendar.application.exception;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-/**
- * 커스텀 예외 클래스의 동작을 검증하는 단위 테스트.
- */
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/** 커스텀 예외 클래스의 동작을 검증하는 단위 테스트. */
 class CustomExceptionTest {
 
     @Test

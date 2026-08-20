@@ -6,10 +6,8 @@ import java.util.Optional;
 /**
  * NPC의 유형을 나타내는 열거형.
  *
- * <p>각 상수는 타입 문자열, 한글 라벨, 행동 버튼 라벨 목록을 내장하여
- * NPC 타입 정보의 단일 소스 역할을 한다.
- * 새로운 NPC 유형 추가 시 상수 하나만 추가하면 되며,
- * 라벨이나 행동 목록 누락 시 컴파일 오류가 발생한다.
+ * <p>각 상수는 타입 문자열, 한글 라벨, 행동 버튼 라벨 목록을 내장하여 NPC 타입 정보의 단일 소스 역할을 한다. 새로운 NPC 유형 추가 시 상수 하나만 추가하면
+ * 되며, 라벨이나 행동 목록 누락 시 컴파일 오류가 발생한다.
  */
 public enum NpcType {
 
@@ -36,7 +34,11 @@ public enum NpcType {
     private final String emoji;
     private final List<String> actionLabels;
 
-    NpcType(final String typeString, final String label, final String emoji, final List<String> actionLabels) {
+    NpcType(
+            final String typeString,
+            final String label,
+            final String emoji,
+            final List<String> actionLabels) {
         this.typeString = typeString;
         this.label = label;
         this.emoji = emoji;

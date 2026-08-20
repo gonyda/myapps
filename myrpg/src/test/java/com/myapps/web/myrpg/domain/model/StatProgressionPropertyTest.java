@@ -1,18 +1,18 @@
 package com.myapps.web.myrpg.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@link StatProgression}의 레벨 파생 스탯 계산 공식을 검증하는 프로퍼티 테스트.
  *
- * <p>임의의 레벨 L ∈ [1,100]에 대해 {@code levelStatsFor(L)}와 {@code vitalMaxFor(L)}가
- * 설계서에 정의된 공식과 일치하는지 검증한다.
+ * <p>임의의 레벨 L ∈ [1,100]에 대해 {@code levelStatsFor(L)}와 {@code vitalMaxFor(L)}가 설계서에 정의된 공식과 일치하는지
+ * 검증한다.
  *
  * <p>Feature: 003-character-progression-and-rebirth, Property 5: 레벨 파생 스탯 계산
  *

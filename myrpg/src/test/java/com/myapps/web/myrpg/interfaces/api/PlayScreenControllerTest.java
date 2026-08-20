@@ -1,14 +1,18 @@
 package com.myapps.web.myrpg.interfaces.api;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import com.myapps.web.myrpg.application.dto.FullMapView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
@@ -31,84 +35,61 @@ import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
 import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
-import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.MapNode;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * {@link PlayScreenController}의 웹 슬라이스 테스트.
  *
- * <p>GET / 요청 및 POST /move 요청에 대한 뷰 렌더링,
- * 이동 성공/거부 시 프래그먼트 반환 및 상태 저장을 검증한다.
+ * <p>GET / 요청 및 POST /move 요청에 대한 뷰 렌더링, 이동 성공/거부 시 프래그먼트 반환 및 상태 저장을 검증한다.
  */
 @WebMvcTest(PlayScreenController.class)
 @Import(NodeViewAssembler.class)
 class PlayScreenControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @MockitoBean
-    private CharacterService characterService;
+    @MockitoBean private CharacterService characterService;
 
-    @MockitoBean
-    private MapService mapService;
+    @MockitoBean private MapService mapService;
 
-    @MockitoBean
-    private AmbienceService ambienceService;
+    @MockitoBean private AmbienceService ambienceService;
 
-    @MockitoBean
-    private MovementService movementService;
+    @MockitoBean private MovementService movementService;
 
-    @MockitoBean
-    private NpcService npcService;
+    @MockitoBean private NpcService npcService;
 
-    @MockitoBean
-    private NpcDialogueService npcDialogueService;
+    @MockitoBean private NpcDialogueService npcDialogueService;
 
-    @MockitoBean
-    private ProgressionService progressionService;
+    @MockitoBean private ProgressionService progressionService;
 
-    @MockitoBean
-    private ActionLog actionLog;
+    @MockitoBean private ActionLog actionLog;
 
-    @MockitoBean
-    private PlayScreenViewHelper playScreenViewHelper;
+    @MockitoBean private PlayScreenViewHelper playScreenViewHelper;
 
-    @MockitoBean
-    private MonsterService monsterService;
+    @MockitoBean private MonsterService monsterService;
 
-    @MockitoBean
-    private MonsterDialogueService monsterDialogueService;
+    @MockitoBean private MonsterDialogueService monsterDialogueService;
 
-    @MockitoBean
-    private MonsterEncounterService monsterEncounterService;
+    @MockitoBean private MonsterEncounterService monsterEncounterService;
 
-    @MockitoBean
-    private BattleService battleService;
+    @MockitoBean private BattleService battleService;
 
     @org.junit.jupiter.api.BeforeEach
     void setUpBattleServiceDefault() {
-        when(battleService.resumeIfActive(any(CharacterProgress.class))).thenReturn(Optional.empty());
+        when(battleService.resumeIfActive(any(CharacterProgress.class)))
+                .thenReturn(Optional.empty());
     }
 
-    /**
-     * GET / 요청 시 play 뷰가 반환되는지 검증한다.
-     */
+    /** GET / 요청 시 play 뷰가 반환되는지 검증한다. */
     @Test
     void should_returnPlayView_when_rootAccessed() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -125,11 +106,20 @@ class PlayScreenControllerTest {
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
 
         mockMvc.perform(get("/"))
@@ -138,9 +128,7 @@ class PlayScreenControllerTest {
                 .andExpect(model().attributeExists("view"));
     }
 
-    /**
-     * POST /move 이동 성공 시 saveTurn이 호출되고 프래그먼트 뷰가 반환되는지 검증한다.
-     */
+    /** POST /move 이동 성공 시 saveTurn이 호출되고 프래그먼트 뷰가 반환되는지 검증한다. */
     @Test
     void should_saveTurnAndReturnFragment_when_moveSucceeds() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -150,7 +138,8 @@ class PlayScreenControllerTest {
         final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(moved);
+        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt()))
+                .thenReturn(moved);
         when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
@@ -161,16 +150,23 @@ class PlayScreenControllerTest {
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
 
-        mockMvc.perform(post("/move")
-                        .param("dx", "1")
-                        .param("dy", "0"))
+        mockMvc.perform(post("/move").param("dx", "1").param("dy", "0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"))
                 .andExpect(model().attributeExists("view"));
@@ -178,9 +174,7 @@ class PlayScreenControllerTest {
         verify(characterService).saveTurn(progress);
     }
 
-    /**
-     * POST /move 이동 거부 시 saveTurn이 호출되지 않고 안내 로그가 추가되는지 검증한다.
-     */
+    /** POST /move 이동 거부 시 saveTurn이 호출되지 않고 안내 로그가 추가되는지 검증한다. */
     @Test
     void should_notSave_when_moveBlocked() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -189,7 +183,8 @@ class PlayScreenControllerTest {
         final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(blocked);
+        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt()))
+                .thenReturn(blocked);
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
@@ -199,16 +194,23 @@ class PlayScreenControllerTest {
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
 
-        mockMvc.perform(post("/move")
-                        .param("dx", "0")
-                        .param("dy", "-1"))
+        mockMvc.perform(post("/move").param("dx", "0").param("dy", "-1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"));
 
@@ -216,9 +218,7 @@ class PlayScreenControllerTest {
         verify(actionLog, never()).add(anyString(), anyString());
     }
 
-    /**
-     * POST /move 던전 진입 거부 시 로그 없이 무시되는지 검증한다.
-     */
+    /** POST /move 던전 진입 거부 시 로그 없이 무시되는지 검증한다. */
     @Test
     void should_notSaveAndNotLog_when_dungeonLocked() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
@@ -227,7 +227,8 @@ class PlayScreenControllerTest {
         final RebirthStatus rebirthStatus = new RebirthStatus(true, false, null, null);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
-        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt())).thenReturn(locked);
+        when(movementService.move(any(CharacterProgress.class), anyInt(), anyInt()))
+                .thenReturn(locked);
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
@@ -237,16 +238,23 @@ class PlayScreenControllerTest {
         when(monsterService.byNode(anyString())).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(anyList(), anyList())).thenReturn(List.of());
         when(monsterEncounterService.rollPreemptiveStrike(anyList())).thenReturn(Optional.empty());
-        when(progressionService.rebirthStatus(any(CharacterProgress.class))).thenReturn(rebirthStatus);
+        when(progressionService.rebirthStatus(any(CharacterProgress.class)))
+                .thenReturn(rebirthStatus);
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                any(), any(), any(), anyString(), anyList(), isNull(), isNull(), any(), any()))
+                        any(),
+                        any(),
+                        any(),
+                        anyString(),
+                        anyList(),
+                        isNull(),
+                        isNull(),
+                        any(),
+                        any()))
                 .thenReturn(view);
 
-        mockMvc.perform(post("/move")
-                        .param("dx", "0")
-                        .param("dy", "1"))
+        mockMvc.perform(post("/move").param("dx", "0").param("dy", "1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/move-response"));
 
@@ -254,13 +262,10 @@ class PlayScreenControllerTest {
         verify(actionLog, never()).add(anyString(), anyString());
     }
 
-    /**
-     * POST /move에 파라미터가 없으면 400 응답을 반환하는지 검증한다.
-     */
+    /** POST /move에 파라미터가 없으면 400 응답을 반환하는지 검증한다. */
     @Test
     void should_returnBadRequest_when_moveParamsMissing() throws Exception {
-        mockMvc.perform(post("/move"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/move")).andExpect(status().isBadRequest());
     }
 
     private MapNode dummyNode() {
@@ -270,13 +275,20 @@ class PlayScreenControllerTest {
     private PlayScreenView createDummyView() {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         final TopBarView topBar = new TopBarView("고니", 1, gauge, gauge, gauge, gauge);
-        final InfoPopupView info = new InfoPopupView(
-                "고니", 1, 1, "근접전투",
-                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
-                gauge, gauge, gauge,
-                List.of(new StatLine("STR", "5", "+0")),
-                true, "환생 기록 없음"
-        );
+        final InfoPopupView info =
+                new InfoPopupView(
+                        "고니",
+                        1,
+                        1,
+                        "근접전투",
+                        0,
+                        "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
+                        gauge,
+                        gauge,
+                        gauge,
+                        List.of(new StatLine("STR", "5", "+0")),
+                        true,
+                        "환생 기록 없음");
         return new PlayScreenView(
                 topBar,
                 new MinimapView("테스트맵", List.of()),
@@ -287,18 +299,23 @@ class PlayScreenControllerTest {
                 null,
                 null,
                 List.of(),
-                info
-        );
+                info);
     }
 
     private InfoPopupView dummyInfo() {
         final GaugeView gauge = new GaugeView(100, 100, 100, "100 / 100");
         return new InfoPopupView(
-                "고니", 1, 1, "근접전투",
-                0, "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
-                gauge, gauge, gauge,
+                "고니",
+                1,
+                1,
+                "근접전투",
+                0,
+                "근접 데미지 +10%, STR +2/Lv, HP +5/Lv",
+                gauge,
+                gauge,
+                gauge,
                 List.of(new StatLine("STR", "5", "+0")),
-                true, "환생 기록 없음"
-        );
+                true,
+                "환생 기록 없음");
     }
 }

@@ -1,28 +1,24 @@
 package com.myapps.web.myrpg.domain.model;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.myapps.web.myrpg.domain.repository.BankRepository;
+import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import net.jqwik.spring.JqwikSpringSupport;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestConstructor;
 
-import com.myapps.web.myrpg.domain.repository.BankRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Bank 엔티티의 영속 라운드트립 및 단일 행 보장 프로퍼티 테스트.
  *
- * <p>저장 후 조회 시 {@code gold} 값이 보존되며,
- * {@code findFirstByOrderByIdAsc}가 항상 동일 행을 반환하여
- * 싱글 플레이어 은행의 단일 행 불변식을 검증한다.
+ * <p>저장 후 조회 시 {@code gold} 값이 보존되며, {@code findFirstByOrderByIdAsc}가 항상 동일 행을 반환하여 싱글 플레이어 은행의 단일
+ * 행 불변식을 검증한다.
  *
  * <p>Feature: 006-gold-item-inventory, Property 17: 영속 라운드트립
  *
@@ -38,8 +34,8 @@ class BankPersistencePropertyTest {
     private final TestEntityManager entityManager;
     private final BankRepository bankRepository;
 
-    BankPersistencePropertyTest(final TestEntityManager entityManager,
-                                final BankRepository bankRepository) {
+    BankPersistencePropertyTest(
+            final TestEntityManager entityManager, final BankRepository bankRepository) {
         this.entityManager = entityManager;
         this.bankRepository = bankRepository;
     }
@@ -47,14 +43,12 @@ class BankPersistencePropertyTest {
     // Feature: 006-gold-item-inventory, Property 17: 영속 라운드트립
 
     /**
-     * 임의의 gold 값으로 Bank를 저장 후 findById로 조회하면
-     * gold가 정확히 보존됨을 검증한다.
+     * 임의의 gold 값으로 Bank를 저장 후 findById로 조회하면 gold가 정확히 보존됨을 검증한다.
      *
      * @param initialGold 초기 은행 골드 값
      */
     @Property(tries = 100)
-    void should_preserveGold_when_savedAndFoundById(
-            @ForAll("goldValues") final long initialGold) {
+    void should_preserveGold_when_savedAndFoundById(@ForAll("goldValues") final long initialGold) {
 
         final Bank bank = Bank.createDefault();
         if (initialGold > 0) {
@@ -72,10 +66,9 @@ class BankPersistencePropertyTest {
     }
 
     /**
-     * deposit/withdraw 후 flush·clear하고 다시 조회하면
-     * 변경된 gold가 정확히 반영됨을 검증한다.
+     * deposit/withdraw 후 flush·clear하고 다시 조회하면 변경된 gold가 정확히 반영됨을 검증한다.
      *
-     * @param initialGold  초기 은행 골드 (1 이상, deposit 후 withdraw 가능하도록)
+     * @param initialGold 초기 은행 골드 (1 이상, deposit 후 withdraw 가능하도록)
      * @param withdrawAmount 출금할 금액 (1 이상, initialGold 이하)
      */
     @Property(tries = 100)
@@ -101,8 +94,8 @@ class BankPersistencePropertyTest {
     }
 
     /**
-     * findFirstByOrderByIdAsc가 저장된 행이 없을 때 빈 Optional을 반환하고,
-     * 한 행 저장 후에는 해당 행을 반환함을 검증한다 (loadOrCreateDefault 선례).
+     * findFirstByOrderByIdAsc가 저장된 행이 없을 때 빈 Optional을 반환하고, 한 행 저장 후에는 해당 행을 반환함을 검증한다
+     * (loadOrCreateDefault 선례).
      *
      * @param initialGold 초기 은행 골드 값
      */
@@ -129,10 +122,10 @@ class BankPersistencePropertyTest {
     }
 
     /**
-     * 여러 행이 저장되어도 findFirstByOrderByIdAsc는 항상 id가 가장 작은 행을 반환함을 검증한다.
-     * 이는 싱글 플레이어에서 은행 행이 유일함을 보장하는 쿼리 동작이다.
+     * 여러 행이 저장되어도 findFirstByOrderByIdAsc는 항상 id가 가장 작은 행을 반환함을 검증한다. 이는 싱글 플레이어에서 은행 행이 유일함을 보장하는
+     * 쿼리 동작이다.
      *
-     * @param firstGold  첫 번째 은행 행의 골드
+     * @param firstGold 첫 번째 은행 행의 골드
      * @param secondGold 두 번째 은행 행의 골드
      */
     @Property(tries = 100)
@@ -173,15 +166,18 @@ class BankPersistencePropertyTest {
     }
 
     /**
-     * 유효 출금 쌍을 생성하는 Arbitrary 제공자.
-     * initialGold ∈ [1, MAX_GOLD], withdrawAmount ∈ [1, initialGold]
+     * 유효 출금 쌍을 생성하는 Arbitrary 제공자. initialGold ∈ [1, MAX_GOLD], withdrawAmount ∈ [1, initialGold]
      *
      * @return (initialGold, withdrawAmount) 튜플의 Arbitrary
      */
     @Provide
     Arbitrary<net.jqwik.api.Tuple.Tuple2<Long, Long>> validWithdrawPair() {
-        return Arbitraries.longs().between(1L, MAX_GOLD)
-                .flatMap(gold -> Arbitraries.longs().between(1L, gold)
-                        .map(amount -> net.jqwik.api.Tuple.of(gold, amount)));
+        return Arbitraries.longs()
+                .between(1L, MAX_GOLD)
+                .flatMap(
+                        gold ->
+                                Arbitraries.longs()
+                                        .between(1L, gold)
+                                        .map(amount -> net.jqwik.api.Tuple.of(gold, amount)));
     }
 }
