@@ -27,7 +27,6 @@
 
     <modules>
         <module>mystudy</module>
-        <module>mycrawler</module>
         <module>mycalendar</module>
         <module>myrpg</module>
     </modules>
@@ -100,12 +99,6 @@
                 <groupId>net.jqwik</groupId>
                 <artifactId>jqwik-spring</artifactId>
                 <version>0.12.0</version>
-            </dependency>
-            <!-- Playwright Java -->
-            <dependency>
-                <groupId>com.microsoft.playwright</groupId>
-                <artifactId>playwright</artifactId>
-                <version>1.52.0</version>
             </dependency>
             <!-- ArchUnit JUnit5 -->
             <dependency>

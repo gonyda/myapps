@@ -39,7 +39,7 @@
         └── tasks.md
 ```
 
-- **모듈명**: Maven 모듈명과 동일 (myrpg, mycalendar, mycrawler, mystudy)
+- **모듈명**: Maven 모듈명과 동일 (myrpg, mycalendar, mystudy)
 - **순번**: 3자리 0-padded 숫자 (001, 002, ...)
 - **기능명**: kebab-case 영문 소문자
 

@@ -54,7 +54,7 @@ inclusion: manual
 ```
 
 스크립트가 수행하는 작업:
-1. 모듈명으로 포트 매핑 (`get_port` 함수: mystudy→8080, mycrawler→8081, mycalendar→8082)
+1. 모듈명으로 포트 매핑 (`get_port` 함수: mystudy→8080, mycalendar→8082, myrpg→8083)
 2. `/home/ubuntu/app/.env`에서 환경변수 로드 (DB_PASSWORD, JAVA_HOME)
 3. `git pull origin main`
 4. `mvn clean package -pl {module} -am -DskipTests`
@@ -103,7 +103,6 @@ curl -s http://localhost:{port} || tail -20 /home/ubuntu/app/myapps/{modulename}
 | 모듈 | 포트 |
 |------|------|
 | mystudy | 8080 |
-| mycrawler | 8081 |
 | mycalendar | 8082 |
 | myrpg | 8083 |
 
