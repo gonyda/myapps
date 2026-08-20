@@ -1,29 +1,59 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<!-- 수리 내용 fragment (fetch 응답용) -->
-<div th:fragment="repair-content" th:if="${repair != null}">
-    <div class="repair-list">
-        <th:block th:if="${repair.repairItems.isEmpty()}">
-            <div class="repair-empty">수리할 장비가 없습니다</div>
-        </th:block>
-        <div th:each="item : ${repair.repairItems}" class="repair-item-row">
-            <span class="item-name">
-                <span th:text="${item.name}">아이템</span>
-                <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
-            </span>
-            <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
-            <span class="item-durability"
-                  th:text="${item.currentDurabilityCeil} + '/' + ${item.maxDurability}">내구도</span>
-            <span class="item-price" th:text="${item.repairCost} + ' G'">수리비</span>
-            <button class="item-action-btn repair-btn"
-                    th:data-id="${item.ownedItemId}"
-                    onclick="repairItem(this.dataset.id)">수리</button>
+<!-- 수리 팝업 전체 오버레이 -->
+<div class="overlay repair-overlay" id="repairOverlay" th:fragment="repair-popup">
+    <div class="panel repair-panel">
+        <header class="panel-header">
+            <h3>수리</h3>
+            <button class="panel-close" onclick="closeRepair()" aria-label="닫기">✕</button>
+        </header>
+        <div class="panel-body repair-body" id="repairContent">
+            <!-- 수리 내용은 openRepair() fetch로 채워짐 -->
         </div>
     </div>
-    <div class="repair-gold-area">
-        <span class="gold-label">소지 골드</span>
-        <span class="gold-value" id="repairGoldValue" th:text="${repair.currentGold}">0</span>
+</div>
+
+<!-- 수리 내용 fragment (fetch 응답용) -->
+<div th:fragment="repair-content" th:if="${repair != null}">
+    <div class="repair-list" id="repairList">
+        <th:block th:if="${repair.repairItems.isEmpty()}">
+            <div class="inventory-empty">
+                <p>수리할 장비가 없습니다</p>
+            </div>
+        </th:block>
+        <div class="inventory-item" th:each="item : ${repair.repairItems}"
+             th:attr="data-owned-id=${item.ownedItemId}">
+            <div class="item-info">
+                <span class="item-name">
+                    <span th:text="${item.name}">아이템명</span>
+                    <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+                </span>
+                <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
+                <button class="item-detail-btn"
+                        th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                        th:data-name="${item.name}"
+                        onclick="openItemDetail(this)">🔍</button>
+            </div>
+            <div class="item-meta">
+                <span class="item-durability"
+                      th:text="'내구도 ' + ${item.currentDurabilityCeil} + '/' + ${item.maxDurability}">
+                    내구도 0/0
+                </span>
+                <span class="item-price" th:text="'💰 ' + ${item.repairCost} + 'G'">수리비</span>
+            </div>
+            <div class="item-actions">
+                <button class="item-action-btn repair-btn"
+                        th:attr="data-id=${item.ownedItemId}"
+                        th:title="'수리 성공 확률 95%'"
+                        onclick="repairItem(this.dataset.id)">수리 (95%)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 소지금 하단 바 -->
+    <div class="inventory-footer" th:if="${repair != null}">
+        <span class="gold-display">💰 보유 골드: <strong th:text="${repair.currentGold}">0</strong></span>
     </div>
 </div>
 </body>

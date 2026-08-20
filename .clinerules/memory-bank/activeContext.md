@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-19 (Asia/Seoul)
+> 최종 업데이트: 2026-08-20 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`.clinerules/cline-global-rules.md` 반영)
 
@@ -10,7 +10,7 @@
 > - **빌드 검증**: 각 Task 완료 전 `mvn test` + `mvn clean install` `BUILD SUCCESS` 확인
 > - 소스 정리: 미사용 import 제거, 매직넘버 상수화, 메서드 분리 (50줄 초과 시)
 
-## 1. 현재 작업 중 (Spec 010: NPC 행동 실기능) + 전역 규칙 반영
+## 1. 완료된 작업 (Spec 010: NPC 행동 실기능)
 
 **스펙명**: `myrpg/010-npc-actions-shop-repair-heal` — NPC 행동 실기능(상점 구매/판매 · 수리(대장간) · 치료(힐러집)) 및 인챈트 플레이스홀더
 
@@ -20,29 +20,43 @@
 |---|---|---|
 | A | 도메인 모델 및 데이터 확장 (`InventoryService`·`NpcService`·`OwnedItem`·`item.json`·`npc.json`) | ✅ 완료 (Task 1~3) |
 | B | 핵심 애플리케이션 서비스 (`ShopService`·DTO 5종) | ✅ 완료 (Task 4~6) |
-| C | 컨트롤러 계층 + **테스트 7종(Property 6~9 + @WebMvcTest 3종)** | ✅ **완료** (Task 7~8) |
-| D | UI 템플릿 및 정적 리소스 (`shop-popup.html`·`repair-popup.html`·`center.html`·`myrpg.css`·`myrpg.js`) | 🔄 진행 중 (Task 9~11, 9.1 스텁 완료) |
-| E | 최종 검증 및 회귀 확인 | ⬜ 미착수 (Task 12) |
+| C | 컨트롤러 계층 + **테스트 7종(Property 6~9 + @WebMvcTest 3종)** | ✅ 완료 (Task 7~8) |
+| D | UI 템플릿 및 정적 리소스 (`shop-popup.html`·`repair-popup.html`·`center.html`·`myrpg.css`·`myrpg.js`) | ✅ 완료 (Task 9~11) |
+| E | 최종 검증 및 회귀 확인 | ✅ 완료 (Task 12) |
 
-### 다음 단계: D단계 Task 9~11 (UI 템플릿 및 정적 리소스)
-- `shop-popup.html`: 은행의 모바일 세로 배치 패턴(상점물건 위 / 소지품 아래 / 골드 하단) 복제
-- `repair-popup.html`: 인벤토리의 `.inventory-item`/`.item-info`/`.item-meta` CSS 클래스 재사용
-- `center.html`: NPC 버튼 onclick에 `talkingNpcId` 주입 (`npcAction(label, npcId)` 연동)
-- `play.html`: shop-popup, repair-popup 프래그먼트 include
-- `myrpg.css`: 상점/수리 팝업 스타일
-- `myrpg.js`: `npcAction` 분기, `openShop`, `openRepair`, `heal`, `refreshTopBar`
+### Task 11 (D단계 체크포인트) 결과
+- `mvn test -pl myrpg`: **928 tests pass, 0 failures** ✅
+- `mvn clean install -pl myrpg -am`: **BUILD SUCCESS** ✅
+
+### Task 12 (최종 검증) 결과
+- `mvn test -pl myrpg`: **928 tests pass, 0 failures** ✅ (회귀 없음)
+- `mvn clean install -pl myrpg -am`: **BUILD SUCCESS** ✅
+- Code-style 정리: 수정된 Java 파일은 test 파일 2종(`NpcContextLoadSmokeTest.java`, `VisualJsPreservationAndJsonLoadingIntegrationTest.java`)이며, 미사용 import/변수 없음. HTML/CSS/JS는 code-style 대상 아님
+- 기존 001~009 기능(전투, 인벤토리, 스킬, 은행 등) 모두 무회귀 확인
 
 ---
 
-## 작업 트리 (커밋 완료 상태)
+## 작업 트리 (미커밋 상태)
 
-스펙 010의 A/B/C 단계 산출물은 `aa8ea01` 커밋으로 완료되었다. 현재 남은 작업은 D단계(UI)와 E단계(최종 검증)다.
+스펙 010의 D/E 단계 산출물은 아직 커밋되지 않았다. 스테이징되지 않은 변경사항:
+
+| 파일 | 변경 |
+|---|---|
+| `.clinerules/memory-bank/activeContext.md` ✅ (staged) | 메모리뱅크 갱신 |
+| `.kiro/specs/myrpg/010-npc-actions-shop-repair-heal/tasks.md` | 체크박스 완료 갱신 |
+| `myrpg/src/main/resources/static/css/myrpg.css` | 상점/수리 팝업 스타일 추가 |
+| `myrpg/src/main/resources/static/js/myrpg.js` | NPC 행동 라우팅, openShop/closeShop/openRepair/closeRepair/heal/refreshTopBar |
+| `myrpg/src/main/resources/templates/fragments/center.html` | talkingNpcId onclick 전달 |
+| `myrpg/src/main/resources/templates/fragments/repair-popup.html` | 신규 프래그먼트 |
+| `myrpg/src/main/resources/templates/fragments/shop-popup.html` | 신규 프래그먼트 |
+| `myrpg/src/main/resources/templates/play.html` | shop-popup/repair-popup include |
+| `myrpg/src/test/java/.../NpcContextLoadSmokeTest.java` | shopItems 로딩 + action beans 스모크 검증 |
+| `myrpg/src/test/java/.../VisualJsPreservationAndJsonLoadingIntegrationTest.java` | 신규 JS 함수/프래그먼트 검증 |
 
 - **커밋 `3b5d1cb`**: spec 문서 3종 + 메모리뱅크
 - **커밋 `b7ef2ed`**: 메모리뱅크 커밋 하이라이트 갱신
 - **커밋 `aa8ea01`**: A/B/C 단계 산출물 (40 files, +3740)
 
----
 ---
 
 ## 스펙 010 핵심 설계 (확정값)
@@ -56,8 +70,6 @@
 - **NPC별 상점**: `npc.json`에 `shopItems` optional + NPC 마법학교/학교는 빈 목록
 - **item.json 신규**: `short_sword`(STR+8, buyPrice 300), `long_sword`(STR+12, buyPrice 700) — 초보 장비는 buyPrice 미지정(드랍 전용·상점 미판매)
 - **Correctness Property 1~10**: 각각 독립 jqwik `@Property(tries=100)` + `Mockito.mock()` 직접 사용, 태그 주석 `Feature: 010-npc-actions-shop-repair-heal, Property {번호}: …` 부착
-
----
 
 ## 스펙 010 완료 대상 (GlobalExceptionHandler 재사용)
 
@@ -84,16 +96,14 @@
 | `0703df4` | feat: 첫 캐릭터 생성 시 초보자 장비 6종 자동 장착 |
 | `559c6b9` | fix: 너구리 attackPower 48→42 하향 |
 
-- 주요 스펙 커밋: 006 골드아이템(1fab054) → 007 몬스터(63d8aab) → 008 전투(a0a20355) → 009 스킬 차별화(4c89d7e) → 현재 010 진행 중
+- 주요 스펙 커밋: 006 골드아이템(1fab054) → 007 몬스터(63d8aab) → 008 전투(a0a20355) → 009 스킬 차별화(4c89d7e) → 010 NPC 행동 실기능(aa8ea01 A/B/C + D/E 미커밋)
 
 ## 다음 단계 및 의사사항
 
-1. **D단계 실행**: UI 템플릿 및 정적 리소스 (Task 9~11) — `shop-popup.html`, `repair-popup.html`, `center.html` `talkingNpcId` 주입, `play.html` include, `myrpg.css`, `myrpg.js` (`npcAction` 분기, `openShop`, `openRepair`, `heal`, `refreshTopBar`)
-2. **E단계**: 최종 검증 및 회귀 확인 (Task 12) — `@WebMvcTest` 컨트롤러 테스트 7종 + Property 6~9
-3. 스펙 010 완료 후 **커밋** — A/B/C 산출물은 `aa8ea01`로 커밋 완료, D/E 단계 완료 후 최종 커밋 예정
-4. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시(상세문서 `npc-actions-system.md` 삭제 — 현재는 보존 중)
-5. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
-6. 스펙 순서 적용: 스펙 문서 3종 → 사용자 검토 → tasks.md 기반 구현
+1. **스펙 010 D/E 단계 커밋 필요** — 9개 파일 미커밋 상태, `feature` 브랜치 생성 후 PR 권장
+2. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시
+3. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
+4. 다음 스펙 예정: 스펙 011 (미정)
 
 ## 프로젝트 개관
 

@@ -127,30 +127,30 @@
     - `HealControllerTest.java`[신규, `@WebMvcTest`] — `/heal` 100골드 차감, 풀회복, 골드 부족 시 예외 핸들링 검증
     - **Validates: Requirements 3.1, 3.3, 3.4, 8.1, 8.2, 8.3, 8.5, 8.6, 9.3, 9.4, 9.5, 9.6, 11.2, 11.3, 11.4, 11.5, 11.7**
 
-- [ ] 8. 체크포인트 — C단계 테스트 통과 및 빌드 확인
+- [x] 8. 체크포인트 — C단계 테스트 통과 및 빌드 확인
   - `mvn test -pl myrpg` 통과 + `mvn clean install -pl myrpg -am` `BUILD SUCCESS` 확인.
 
 ---
 
 ### D. UI 템플릿 및 정적 리소스 (프래그먼트, CSS, JS)
 
-- [ ] 9. HTML 프래그먼트 작성 및 center.html/play.html 연동
-  - [ ] 9.1 shop-popup.html 및 repair-popup.html 프래그먼트 신규 작성
+- [x] 9. HTML 프래그먼트 작성 및 center.html/play.html 연동
+  - [x] 9.1 shop-popup.html 및 repair-popup.html 프래그먼트 신규 작성
     - `resources/templates/fragments/shop-popup.html`[신규]: 모바일 세로 배치(상점 물건 위 / 내 소지품 아래 / 골드 하단), `[구매]`·`[판매]` 버튼, `[장착중]` 비활성화 배지, 상세보기(🔍) 모달 연동
     - `resources/templates/fragments/repair-popup.html`[신규]: `.inventory-item` CSS 클래스 재사용, 닳은 장비 목록, `[수리]` 버튼(비용·95% 표기), 소지금 하단 바, "수리할 장비가 없습니다" 빈 목록 처리
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 8.7, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-  - [ ] 9.2 center.html 및 play.html 확장
+  - [x] 9.2 center.html 및 play.html 확장
     - `resources/templates/fragments/center.html`[확장]: NPC 행동 버튼 onclick에 `talkingNpcId` 전달 (`onclick="npcAction('${action}', '${talkingNpcId}')"`)
     - `resources/templates/play.html`[확장]: `shop-popup` 및 `repair-popup` 프래그먼트 include 삽입
     - _Requirements: 3.2, 6.1, 10.1_
 
 - [ ] 10. CSS 스타일 및 myrpg.js NPC 행동 라우팅 구현
-  - [ ] 10.1 myrpg.css 상점/수리 팝업 스타일 추가
+  - [x] 10.1 myrpg.css 상점/수리 팝업 스타일 추가
     - `resources/static/css/myrpg.css`[확장]: `.shop-popup`, `.repair-popup`, `.shop-buy-list`, `.shop-sell-list` 등 모바일 세로 배치 및 스크롤 스타일 정의
     - _Requirements: 6.2, 10.1, 10.6_
 
-  - [ ] 10.2 myrpg.js NPC 행동 라우팅, openShop, openRepair, heal, refreshTopBar 구현
+  - [x] 10.2 myrpg.js NPC 행동 라우팅, openShop, openRepair, heal, refreshTopBar 구현
     - `resources/static/js/myrpg.js`[확장]:
       - `npcAction(label, npcId)` 분기: `은행`→`openBank()`, `상점`→`openShop(npcId)`, `수리`→`openRepair()`, `치료받기`→`heal()`, `인챈트`→`alert("추후 설계 예정입니다.")`, 그 외→기존 안내
       - `openShop(npcId)` / `buyShopItem(npcId, itemId)` / `sellShopItem(npcId, ownedItemId)`: GET/POST AJAX 및 상점 팝업 DOM 스왑, 상단바 갱신
@@ -159,19 +159,19 @@
       - `refreshTopBar()` 함수 추출: 상단바 DOM 갱신 로직 단일화(`usePotion`, `heal`, `buy`, `sell`, `repair` 공통 사용)
     - _Requirements: 11.1, 11.6, 12.2, 13.1, 13.2, 13.3, 13.4, 13.5_
 
-  - [ ] 10.3 정적 리소스 및 스모크 테스트 갱신
+  - [x] 10.3 정적 리소스 및 스모크 테스트 갱신
     - `NpcContextLoadSmokeTest.java`[확장] — 신규 팝업 렌더 및 NPC 행동 스모크 검증
     - `VisualJsPreservationAndJsonLoadingIntegrationTest.java`[갱신] — `shop-popup.html`·`repair-popup.html`·`center.html`·`myrpg.js` 리소스 기대값 반영
     - _Requirements: 15.4_
 
-- [ ] 11. 체크포인트 — D단계 테스트 통과 및 빌드 확인
+- [x] 11. 체크포인트 — D단계 테스트 통과 및 빌드 확인
   - `mvn test -pl myrpg` 통과 + `mvn clean install -pl myrpg -am` `BUILD SUCCESS` 확인.
 
 ---
 
 ### E. 최종 검증 및 회귀 확인
 
-- [ ] 12. 전체 테스트 스위트 및 통합 빌드 검증
+- [x] 12. 전체 테스트 스위트 및 통합 빌드 검증
   - `mvn test -pl myrpg` 전체 테스트 통과 확인
   - `mvn clean install -pl myrpg -am` `BUILD SUCCESS` 확인
   - 기존 001~009 기능(전투, 인벤토리, 스킬, 은행 등) 무회귀 확인

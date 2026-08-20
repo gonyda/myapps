@@ -75,6 +75,12 @@
     <!-- 은행 팝업 -->
     <div th:replace="~{fragments/bank-popup :: bank-popup}"></div>
 
+    <!-- 상점 팝업 -->
+    <div th:replace="~{fragments/shop-popup :: shop-popup}"></div>
+
+    <!-- 수리 팝업 -->
+    <div th:replace="~{fragments/repair-popup :: repair-popup}"></div>
+
     <script th:src="@{/js/myrpg.js}"></script>
     <div id="battleActiveSignal" th:if="${battleActive}" style="display:none"></div>
 </body>

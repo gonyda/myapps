@@ -446,13 +446,149 @@ function handleTurnResultSignal(container) {
     }
 }
 
-// ===== NPC 행동 버튼 (라벨에 따라 분기) =====
-function npcAction(label) {
+// ===== 상단바 DOM 갱신 공통 함수 =====
+function refreshTopBar() {
+    fetch('/').then(function (r) { return r.text(); }).then(function (page) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = page;
+        var newTopBar = tmp.querySelector('.top-bar');
+        if (newTopBar) {
+            var oldTopBar = document.querySelector('.top-bar');
+            if (oldTopBar) { oldTopBar.replaceWith(newTopBar); }
+        }
+    });
+}
+
+// ===== NPC 행동 버튼 (라벨 및 talkingNpcId에 따라 분기) =====
+function npcAction(label, npcId) {
     if (label === '은행') {
         openBank();
+    } else if (label === '상점') {
+        openShop(npcId);
+    } else if (label === '수리') {
+        openRepair();
+    } else if (label === '치료받기') {
+        heal();
+    } else if (label === '인챈트') {
+        alert("추후 설계 예정입니다.");
     } else {
         alert("구현 예정입니다");
     }
+}
+
+// ===== 치료 (힐러집) =====
+function heal() {
+    fetch('/heal', { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '골드가 부족합니다.');
+                    return null;
+                });
+            }
+            return response;
+        })
+        .then(function (response) {
+            if (!response) { return; }
+            refreshTopBar();
+            alert("치료되었습니다!");
+        });
+}
+
+// ===== 상점 팝업 열기/닫기 및 구매/판매 =====
+function openShop(npcId) {
+    var url = npcId ? '/shop?npcId=' + encodeURIComponent(npcId) : '/shop';
+    fetch(url)
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('shopContent').innerHTML = html;
+            document.getElementById('shopOverlay').classList.add('open');
+        });
+}
+
+function closeShop() {
+    document.getElementById('shopOverlay').classList.remove('open');
+}
+
+function buyShopItem(npcId, itemId) {
+    fetch('/shop/buy?npcId=' + encodeURIComponent(npcId) + '&itemId=' + encodeURIComponent(itemId), { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '구매할 수 없습니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            document.getElementById('shopContent').innerHTML = html;
+            refreshTopBar();
+        });
+}
+
+function sellShopItem(npcId, ownedItemId) {
+    var url = '/shop/sell?ownedItemId=' + ownedItemId + (npcId ? '&npcId=' + encodeURIComponent(npcId) : '');
+    fetch(url, { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '판매할 수 없습니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            document.getElementById('shopContent').innerHTML = html;
+            refreshTopBar();
+        });
+}
+
+// ===== 수리 팝업 열기/닫기 및 수리 실행 =====
+function openRepair() {
+    fetch('/repair')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('repairContent').innerHTML = html;
+            document.getElementById('repairOverlay').classList.add('open');
+        });
+}
+
+function closeRepair() {
+    document.getElementById('repairOverlay').classList.remove('open');
+}
+
+function repairItem(ownedItemId) {
+    fetch('/repair?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function (html) {
+                    var container = document.createElement('div');
+                    container.innerHTML = html;
+                    var msg = container.querySelector('.error-message') || container.querySelector('p');
+                    alert(msg ? msg.textContent : '수리할 수 없습니다.');
+                    return null;
+                });
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            document.getElementById('repairContent').innerHTML = html;
+            refreshTopBar();
+        });
 }
 
 // ===== 인벤토리 팝업 열기/닫기 =====
@@ -477,16 +613,7 @@ function usePotion(ownedItemId) {
             if (html) {
                 document.getElementById('inventoryListArea').innerHTML = html;
             }
-            // 상단바 HP 게이지 갱신
-            fetch('/').then(function (r) { return r.text(); }).then(function (page) {
-                var tmp = document.createElement('div');
-                tmp.innerHTML = page;
-                var newTopBar = tmp.querySelector('.top-bar');
-                if (newTopBar) {
-                    var oldTopBar = document.querySelector('.top-bar');
-                    if (oldTopBar) { oldTopBar.replaceWith(newTopBar); }
-                }
-            });
+            refreshTopBar();
         });
 }
 

@@ -50,7 +50,9 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
             "templates/fragments/full-map.html",
             "templates/fragments/move-response.html",
             "templates/fragments/monster-response.html",
-            "templates/fragments/battle-view.html"
+            "templates/fragments/battle-view.html",
+            "templates/fragments/shop-popup.html",
+            "templates/fragments/repair-popup.html"
     );
 
     private static final List<String> CSS_DESIGN_TOKENS = List.of(
@@ -64,7 +66,12 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     );
 
     private static final List<String> JS_POPUP_FUNCTIONS = List.of(
-            "openPanel", "closePanel", "openMap", "closeMap"
+            "openPanel", "closePanel", "openMap", "closeMap",
+            "openShop", "closeShop", "openRepair", "closeRepair"
+    );
+
+    private static final List<String> JS_NPC_ACTION_FUNCTIONS = List.of(
+            "npcAction", "heal", "buyShopItem", "sellShopItem", "repairItem", "refreshTopBar"
     );
 
     private static final List<String> JS_MONSTER_FUNCTIONS = List.of(
@@ -124,6 +131,20 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
         for (final String function : JS_POPUP_FUNCTIONS) {
             assertThat(js)
                     .as("팝업 함수 '%s' 존재 확인", function)
+                    .contains(function);
+        }
+    }
+
+    /**
+     * JS 파일이 NPC 액션 및 상점/수리/치료 함수를 보존하는지 검증한다 (Req 010).
+     */
+    @Test
+    void should_containNpcActionFunctions_when_jsMyrpgLoaded() throws IOException {
+        final String js = loadClasspathResource(JS_PATH);
+
+        for (final String function : JS_NPC_ACTION_FUNCTIONS) {
+            assertThat(js)
+                    .as("NPC 액션 JS 함수 '%s' 존재 확인", function)
                     .contains(function);
         }
     }
@@ -236,6 +257,8 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
         assertThat(playHtml).contains("fragments/action-log");
         assertThat(playHtml).contains("fragments/panel-popup");
         assertThat(playHtml).contains("fragments/full-map");
+        assertThat(playHtml).contains("fragments/shop-popup");
+        assertThat(playHtml).contains("fragments/repair-popup");
     }
 
     // ========== Req 4.5: JSON 역직렬화 및 양방향 링크 검증 ==========
