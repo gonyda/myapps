@@ -36,13 +36,13 @@
 
 ---
 
-## 작업 트리 (미커밋 상태)
+## 작업 트리 (커밋 완료)
 
-스펙 010의 D/E 단계 산출물은 아직 커밋되지 않았다. 스테이징되지 않은 변경사항:
+스펙 010 D/E 단계 산출물은 커밋 `8ac9bbc`로 main 브랜치에 반영 완료 (10 files, +551/-95):
 
 | 파일 | 변경 |
 |---|---|
-| `.clinerules/memory-bank/activeContext.md` ✅ (staged) | 메모리뱅크 갱신 |
+| `.clinerules/memory-bank/activeContext.md` | 메모리뱅크 갱신 |
 | `.kiro/specs/myrpg/010-npc-actions-shop-repair-heal/tasks.md` | 체크박스 완료 갱신 |
 | `myrpg/src/main/resources/static/css/myrpg.css` | 상점/수리 팝업 스타일 추가 |
 | `myrpg/src/main/resources/static/js/myrpg.js` | NPC 행동 라우팅, openShop/closeShop/openRepair/closeRepair/heal/refreshTopBar |
@@ -56,6 +56,7 @@
 - **커밋 `3b5d1cb`**: spec 문서 3종 + 메모리뱅크
 - **커밋 `b7ef2ed`**: 메모리뱅크 커밋 하이라이트 갱신
 - **커밋 `aa8ea01`**: A/B/C 단계 산출물 (40 files, +3740)
+- **커밋 `8ac9bbc`**: D/E 단계 산출물 — NPC 상점/수리/치료 UI 템플릿 및 JS 구현 완료 (10 files, +551/-95)
 
 ---
 
@@ -85,6 +86,7 @@
 
 | 해시 | 내용 |
 |---|---|
+| `8ac9bbc` | feat(myrpg): NPC 상점/수리/치료 UI 템플릿 및 JS 구현 완료 (스펙 010 D/E 단계) |
 | `aa8ea01` | feat(myrpg): NPC 상점 구매/판매·수리·치료 실기능 구현 (스펙 010 A/B/C 단계) |
 | `b7ef2ed` | docs: 메모리뱅크 최근 커밋 하이라이트 갱신 |
 | `3b5d1cb` | docs: 스펙 010 NPC 행동 실기능 spec 문서 3종 및 메모리뱅크 추가 |
@@ -96,14 +98,13 @@
 | `0703df4` | feat: 첫 캐릭터 생성 시 초보자 장비 6종 자동 장착 |
 | `559c6b9` | fix: 너구리 attackPower 48→42 하향 |
 
-- 주요 스펙 커밋: 006 골드아이템(1fab054) → 007 몬스터(63d8aab) → 008 전투(a0a20355) → 009 스킬 차별화(4c89d7e) → 010 NPC 행동 실기능(aa8ea01 A/B/C + D/E 미커밋)
+- 주요 스펙 커밋: 006 골드아이템(1fab054) → 007 몬스터(63d8aab) → 008 전투(a0a20355) → 009 스킬 차별화(4c89d7e) → 010 NPC 행동 실기능(aa8ea01 A/B/C + 8ac9bbc D/E)
 
 ## 다음 단계 및 의사사항
 
-1. **스펙 010 D/E 단계 커밋 필요** — 9개 파일 미커밋 상태, `feature` 브랜치 생성 후 PR 권장
-2. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시
-3. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
-4. 다음 스펙 예정: 스펙 011 (미정)
+1. 로드맵 갱신: `docs/todo.md` 7순위 NPC 기능 완료 표시
+2. ⚠️ `data-balance-guide.md`(스티어링) 내구도 문구(0.2/100턴)가 실제 코드(0.05)와 불일치 — 추후 갱신 필요
+3. 다음 스펙 예정: 스펙 011 (미정)
 
 ## 프로젝트 개관
 
