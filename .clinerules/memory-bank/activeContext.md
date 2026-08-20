@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-20 22:36 (Asia/Seoul)
+> 최종 업데이트: 2026-08-20 22:40 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`.clinerules/cline-global-rules.md` 반영)
 
@@ -11,6 +11,17 @@
 > - 소스 정리: 미사용 import 제거, 매직넘버 상수화, 메서드 분리 (50줄 초과 시)
 
 ## 1. 최근 작업 내역
+
+### 1.0. mycrawler 삭제 커밋 푸시 및 3개 모듈 서버 재배포 (2026-08-20 22:40)
+- **커밋**: `963e9ce` — `chore: mycrawler 모듈 삭제 및 인프라/설정 정리` (47 files, +31/-4930)
+- **푸시**: `bd10a99..963e9ce main -> main` (GitHub `gonyda/myapps`)
+- **서버 재배포 완료** (Oracle Cloud `/home/ubuntu/app/deploy.sh`):
+  | 모듈 | 포트 | PID | 결과 |
+  |---|---|---|---|
+  | mystudy | 8080 | 2607435 | DEPLOY_SUCCESS |
+  | mycalendar | 8082 | 2607668 | DEPLOY_SUCCESS |
+  | myrpg | 8083 | 2607912 | DEPLOY_SUCCESS |
+- **참고**: `deploy.sh`에 실행 권한(x)이 없어 `bash deploy.sh <모듈>`로 실행함
 
 ### 1.1. mycrawler 모듈 완전 삭제 및 인프라/설정 정리 (2026-08-20)
 - **삭제 대상**: `mycrawler/` 모듈 및 `.kiro/specs/mycrawler/` 스펙 디렉토리 완전 삭제
