@@ -34,7 +34,7 @@ fileMatchPattern: "**/pom.xml"
 - Child Module의 `<dependencies>`에는 `<version>` 태그 절대 금지
 - 플러그인 버전도 Parent POM의 `<pluginManagement>`에서만 선언
 
-## 4대 품질 가드레일 플러그인 설정
+## 5대 품질 가드레일 플러그인 설정
 
 ### 1. Spotless (`spotless-maven-plugin`)
 - 코드 스타일 강제 및 import 정리
@@ -50,7 +50,11 @@ fileMatchPattern: "**/pom.xml"
 
 ### 4. JaCoCo (`jacoco-maven-plugin`)
 - `prepare-agent`(initialize), `report`(verify), `check`(verify) 바인딩
-- 커버리지 최소 기준 검증
+- 커버리지 최소 기준 검증 (라인 80%, 브랜치 70%)
+
+### 5. PMD & CPD (`maven-pmd-plugin`)
+- 복잡도(`CyclomaticComplexity`, `CognitiveComplexity`), 메서드 크기(`NcssCount`), 안티패턴, 중복 코드(`CPD`) 검증
+- 루트 `pmd-ruleset.xml` 기반 선별 룰셋 적용
 
 ## Parent POM 공통 의존성
 

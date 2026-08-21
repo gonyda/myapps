@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="myapps-pmd-ruleset"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        myapps 프로젝트 전용 PMD 룰셋.
+        복잡도 제어, 비대한 메서드 분리, 안티패턴 방지, 코드 냄새 감지에 집중한다.
+    </description>
+
+    <!-- ============================================================
+         1. 복잡도 및 크기 제어 (Complexity & Size)
+         ============================================================ -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="120"/>
+            <property name="methodReportLevel" value="15"/>
+            <property name="cycloOptions" value="ignoreBooleanPaths"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/CognitiveComplexity">
+        <properties>
+            <property name="reportLevel" value="20"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/NcssCount">
+        <properties>
+            <property name="methodReportLevel" value="60"/>
+            <property name="classReportLevel" value="700"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/ExcessiveParameterList">
+        <properties>
+            <property name="minimum" value="6"/>
+            <!-- DI 주입 및 도메인 생성자는 예외 처리 -->
+            <property name="violationSuppressXPath" value="//ConstructorDeclaration"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts">
+        <properties>
+            <property name="problemDepth" value="4"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/CollapsibleIfStatements"/>
+
+    <!-- ============================================================
+         2. 베스트 프랙티스 (Best Practices)
+         ============================================================ -->
+    <rule ref="category/java/bestpractices.xml/SystemPrintln"/>
+
+    <!-- ============================================================
+         3. 에러 프론 (Error Prone)
+         ============================================================ -->
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock"/>
+
+    <!-- ============================================================
+         4. 성능 (Performance)
+         ============================================================ -->
+    <rule ref="category/java/performance.xml/ConsecutiveLiteralAppends"/>
+    <rule ref="category/java/performance.xml/RedundantFieldInitializer"/>
+
+</ruleset>

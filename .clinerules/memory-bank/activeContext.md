@@ -69,14 +69,23 @@
   - Oracle Cloud 원격 서버 (`/home/ubuntu/app/deploy.sh`): `mycrawler` 포트 매핑 케이스 제거 및 스크립트 갱신
 - **검증**: `mystudy`, `mycalendar`, `myrpg` 3개 모듈 `BUILD SUCCESS` 및 CodeGraph 동기화 완료
 
-### 1.2. AI 코딩 품질 관리를 위한 4대 가드레일 도입
+### 1.6. PMD & CPD 정적 분석 가드레일 도입 (2026-08-22 00:25)
+- **도입 배경**: 기존 4대 가드레일에 더해 복잡도/메서드 크기/안티패턴 관리 및 중복 코드 검출을 위해 PMD 7 도입
+- **설정 내용**:
+  - `pmd-ruleset.xml`: 복잡도(`CyclomaticComplexity`, `CognitiveComplexity`), 메서드 크기(`NcssCount`), 안티패턴 방지 등 선별 룰셋 정의
+  - `pom.xml`: `maven-pmd-plugin:3.26.0` (PMD 7.11.0 + ASM 9.8 Java 25 지원) 추가 및 `verify` 페이즈에 `check`, `cpd-check` 바인딩
+  - `PlayScreenViewHelper.java` 및 `InventoryService.java`: CPD 중복 코드 및 Collapsible if 리팩토링 완료
+- **검증**: 전체 모듈(`mystudy`, `mycalendar`, `myrpg`) 5대 가드레일 통합 빌드 `BUILD SUCCESS` 및 CodeGraph 동기화 완료
+
+### 1.2. AI 코딩 품질 관리를 위한 5대 가드레일 구성
 | 가드레일 | 도구 / 플러그인 | 설정 및 역할 |
 |---|---|---|
 | **1. Spotless** | `com.diffplug.spotless:spotless-maven-plugin:2.44.5` | `googleJavaFormat(AOSP)` 기반 4칸 들여쓰기, 미사용 import 자동 제거, 개행 및 공백 정렬 |
 | **2. Error Prone** | `com.google.errorprone:error_prone_core:2.36.0` | `maven-compiler-plugin` 내부 `<annotationProcessorPaths>` 및 compilerArgs(`--add-exports`, `--add-opens`) 연결, 컴파일 타임 정적 결함 차단 |
 | **3. ArchUnit** | `com.tngtech.archunit:archunit-junit5:1.4.0` | Parent POM 공통 test 의존성 및 모듈별 `ArchitectureRuleTest.java` 작성 (Interfaces/Domain/Application 계층 규칙 강제) |
 | **4. JaCoCo** | `org.jacoco:jacoco-maven-plugin:0.8.13` | `prepare-agent`(initialize), `report`(verify), `check`(verify) 바인딩 및 커버리지 검증 |
-| **5. CodeGraph Sync** | `codegraph sync` | 변경된 코드베이스 인덱스를 지식 그래프에 즉시 동기화 |
+| **5. PMD & CPD** | `org.apache.maven.plugins:maven-pmd-plugin:3.26.0` | `pmd-ruleset.xml` 기반 복잡도/메서드 크기/안티패턴 및 중복 코드(`CPD`) 검증 |
+| **6. CodeGraph Sync** | `codegraph sync` | 변경된 코드베이스 인덱스를 지식 그래프에 즉시 동기화 |
 
 ---
 
@@ -103,9 +112,11 @@
 | `.clinerules/cline-global-rules.md` | 수정 | SSOT 원칙 기반 전면 리팩토링 (가드레일 명령·Spec 포맷·CodeGraph 상세 중복 제거, steering 참조 인덱스 구조화, §1~§4 재구성) |
 | `mycrawler/` | 삭제 | 모듈 소스코드, 리소스, 테스트 전체 삭제 |
 | `.kiro/specs/mycrawler/` | 삭제 | 크롤러 스펙 문서 전체 삭제 |
-| `pom.xml` | 수정 | mycrawler 모듈 및 playwright 의존성 제거 |
-| `.vscode/tasks.json` | 수정 | mycrawler 로컬 실행 태스크 제거 |
-| `.kiro/steering/infra/deployment.md` | 수정 | 포트 매핑 및 배포 설명에서 mycrawler 제거 |
-| `.clinerules/cline-global-rules.md` | 수정 | 모듈 목록 예시 최신화 |
-| Oracle Cloud `/home/ubuntu/app/deploy.sh` | 수정 | get_port() 함수 내 mycrawler 케이스 제거 |
-| `.clinerules/memory-bank/activeContext.md` | 수정 | mycrawler 삭제 및 모듈 구성 최신화 |
+| `pmd-ruleset.xml` | 신규 | PMD 7 맞춤형 선별 룰셋 (복잡도/크기/안티패턴) |
+| `pom.xml` | 수정 | `maven-pmd-plugin` (PMD 7.11.0, ASM 9.8) 설정 및 check/cpd-check 바인딩 |
+| `myrpg/src/main/java/.../InventoryService.java` | 수정 | Collapsible if 조건문 결합 리팩토링 |
+| `myrpg/src/main/java/.../PlayScreenViewHelper.java` | 수정 | CPD 중복 코드 제거 및 VitalGauges 공통 메서드 추출 |
+| `.kiro/steering/project/pom-conventions.md` | 수정 | 5대 가드레일 (PMD 추가) 반영 |
+| `.kiro/steering/workflow/task-build-validation.md` | 수정 | 5대 가드레일 검증 파이프라인 최신화 |
+| `.clinerules/cline-global-rules.md` | 수정 | 5대 가드레일 및 스티어링 인덱스 갱신 |
+| `.clinerules/memory-bank/activeContext.md` | 수정 | PMD 가드레일 도입 작업 내역 반영 |

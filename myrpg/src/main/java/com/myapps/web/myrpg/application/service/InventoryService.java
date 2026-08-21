@@ -572,10 +572,9 @@ public class InventoryService {
                 continue;
             }
             final Item catalogItem = catalogOpt.get();
-            if (catalogItem instanceof EquipmentItem equipItem) {
-                if (equipItem.kind().requiredSlots().contains(slot)) {
-                    return Optional.of(equipped);
-                }
+            if (catalogItem instanceof EquipmentItem equipItem
+                    && equipItem.kind().requiredSlots().contains(slot)) {
+                return Optional.of(equipped);
             }
         }
         return Optional.empty();
@@ -594,10 +593,9 @@ public class InventoryService {
                 continue;
             }
             final Item catalogItem = catalogOpt.get();
-            if (catalogItem instanceof EquipmentItem equipItem) {
-                if (equipItem.kind().primarySlot() == primarySlot) {
-                    equipped.unequip();
-                }
+            if (catalogItem instanceof EquipmentItem equipItem
+                    && equipItem.kind().primarySlot() == primarySlot) {
+                equipped.unequip();
             }
         }
     }

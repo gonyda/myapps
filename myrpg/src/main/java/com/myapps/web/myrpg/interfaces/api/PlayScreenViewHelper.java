@@ -97,17 +97,9 @@ public class PlayScreenViewHelper {
     public TopBarView buildTopBar(final CharacterProgress progress) {
         final int level = progress.getCurrentLevel();
         final GaugeView exp = buildExpGauge(progress, level);
-        final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
-        final VitalMax vitalMax =
-                baseVitalMax
-                        .withHpDelta(equipBonus.vitalBonus().hp())
-                        .withMpDelta(equipBonus.vitalBonus().mp())
-                        .withStaminaDelta(equipBonus.vitalBonus().stamina());
-        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
-        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
-        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
-        return new TopBarView(progress.getNickname(), level, exp, hp, mp, stamina);
+        final VitalGauges gauges = buildVitalGauges(progress);
+        return new TopBarView(
+                progress.getNickname(), level, exp, gauges.hp(), gauges.mp(), gauges.stamina());
     }
 
     /**
@@ -318,16 +310,8 @@ public class PlayScreenViewHelper {
             final CharacterProgress progress, final RebirthStatus rebirthStatus) {
         final int level = progress.getCurrentLevel();
         final TalentType talent = progress.getTalent();
-        final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, talent);
+        final VitalGauges gauges = buildVitalGauges(progress);
         final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
-        final VitalMax vitalMax =
-                baseVitalMax
-                        .withHpDelta(equipBonus.vitalBonus().hp())
-                        .withMpDelta(equipBonus.vitalBonus().mp())
-                        .withStaminaDelta(equipBonus.vitalBonus().stamina());
-        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
-        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
-        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
 
         final Stats levelStats = statProgression.levelStatsFor(level, talent);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
@@ -343,9 +327,9 @@ public class PlayScreenViewHelper {
                 talent.label(),
                 progress.getAbilityPoints(),
                 talent.effectSummary(),
-                hp,
-                mp,
-                stamina,
+                gauges.hp(),
+                gauges.mp(),
+                gauges.stamina(),
                 stats,
                 rebirthStatus.available(),
                 elapsedText);
@@ -395,6 +379,23 @@ public class PlayScreenViewHelper {
         final long hours = totalMinutes / MINUTES_PER_HOUR;
         final long minutes = totalMinutes % MINUTES_PER_HOUR;
         return "환생 후 " + hours + "시간 " + minutes + "분 경과";
+    }
+
+    private record VitalGauges(GaugeView hp, GaugeView mp, GaugeView stamina) {}
+
+    private VitalGauges buildVitalGauges(final CharacterProgress progress) {
+        final int level = progress.getCurrentLevel();
+        final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
+        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final VitalMax vitalMax =
+                baseVitalMax
+                        .withHpDelta(equipBonus.vitalBonus().hp())
+                        .withMpDelta(equipBonus.vitalBonus().mp())
+                        .withStaminaDelta(equipBonus.vitalBonus().stamina());
+        final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
+        final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
+        final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
+        return new VitalGauges(hp, mp, stamina);
     }
 
     private GaugeView buildExpGauge(final CharacterProgress progress, final int level) {

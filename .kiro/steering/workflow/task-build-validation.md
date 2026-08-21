@@ -4,17 +4,18 @@ inclusion: always
 
 # Task Build Validation & Quality Guardrails
 
-## 규칙: 모든 Task는 4대 가드레일 검증 및 빌드 성공으로 완료해야 합니다
+## 규칙: 모든 Task는 5대 가드레일 검증 및 빌드 성공으로 완료해야 합니다
 
 **Task 구현 및 소스 코드 작성이 끝날 때마다, Task 완료 처리 전에 반드시 아래 검증 명령어를 실행하여 성공을 확인해야 합니다.**
 
-### 4대 품질 가드레일 및 검증 파이프라인
+### 5대 품질 가드레일 및 검증 파이프라인
 
 1. **Spotless (`spotless-maven-plugin`)**: Java 소스 포맷팅 자동 교정 및 미사용 import 정리
 2. **Error Prone (`maven-compiler-plugin`)**: 정적 결함 및 잠재적 버그 컴파일 타임 즉시 차단
 3. **ArchUnit (`archunit-junit5`)**: 계층형 아키텍처 규칙 및 의존성 방향 검증
-4. **JaCoCo (`jacoco-maven-plugin`)**: 테스트 실행 계측 및 커버리지 80% 기준 검증
-5. **CodeGraph Sync (`codegraph sync`)**: 지식 그래프 인덱스 최신 동기화
+4. **JaCoCo (`jacoco-maven-plugin`)**: 테스트 실행 계측 및 커버리지 80% 기준 검증 (라인 80%, 브랜치 70%)
+5. **PMD & CPD (`maven-pmd-plugin`)**: 복잡도/메서드 크기/안티패턴 검증 및 중복 코드 검출
+6. **CodeGraph Sync (`codegraph sync`)**: 지식 그래프 인덱스 최신 동기화
 
 ---
 
@@ -41,7 +42,7 @@ mvn -B -q spotless:apply && (mvn -B clean install > /tmp/mvn.log 2>&1 || (tail -
 | 단계 | 결과 | Task 처리 |
 |---|---|---|
 | 전체 파이프라인 | `BUILD SUCCESS` & `codegraph sync Done` | Task 완료(completed)로 처리 |
-| Spotless / 컴파일 / 테스트 / JaCoCo | `BUILD FAILURE` | Task 실패 — 터미널에 출력된 에러 원인 분석 후 수정 및 재검증 |
+| Spotless / 컴파일 / 테스트 / JaCoCo / PMD | `BUILD FAILURE` | Task 실패 — 터미널에 출력된 에러 원인 분석 후 수정 및 재검증 |
 
 ### 빌드 실패 시 행동 지침
 
@@ -49,7 +50,8 @@ mvn -B -q spotless:apply && (mvn -B clean install > /tmp/mvn.log 2>&1 || (tail -
 2. Spotless 포맷팅 위반 여부 확인 (`mvn spotless:apply`로 자동 해결)
 3. Error Prone 컴파일 경고/오류 메시지 분석 및 버그 수정
 4. ArchUnit 아키텍처 위반(계층 침범 등), JaCoCo 80% 커버리지 미달, 또는 단위 테스트 실패 수정
-5. 검증 명령어 재실행 후 `BUILD SUCCESS` 및 `codegraph sync` 확인 시 완료 처리
+5. PMD 복잡도 초과 또는 CPD 중복 코드 경고 분석 및 리팩토링
+6. 검증 명령어 재실행 후 `BUILD SUCCESS` 및 `codegraph sync` 확인 시 완료 처리
 
 ---
 

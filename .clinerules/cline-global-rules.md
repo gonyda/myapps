@@ -60,7 +60,7 @@
 
 - **빌드 및 품질 가드레일 검증**: `.kiro/steering/workflow/task-build-validation.md`
   - **참조 시점**: 각 Task 완료 후 빌드 및 가드레일 검증이 필요할 때 읽습니다.
-  - **참조 목적**: 4대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo) 검증 파이프라인과 성공/실패 처리 기준을 확인하기 위해 참조합니다.
+  - **참조 목적**: 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) 검증 파이프라인과 성공/실패 처리 기준을 확인하기 위해 참조합니다.
 
 ### 2.3. 프로젝트 설정 관련
 
@@ -70,7 +70,7 @@
 
 - **POM 컨벤션**: `.kiro/steering/project/pom-conventions.md`
   - **참조 시점**: `pom.xml` 파일을 수정하거나 의존성을 추가/제거할 때 읽습니다.
-  - **참조 목적**: 모듈 구조, 의존성 버전 관리, 4대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo) 설정을 준수하기 위해 참조합니다.
+  - **참조 목적**: 모듈 구조, 의존성 버전 관리, 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) 설정을 준수하기 위해 참조합니다.
 
 - **기술 스택**: `.kiro/steering/project/tech-stack.md`
   - **참조 시점**: 기술 스택을 선정하거나 변경할 때, 새 라이브러리/프레임워크 도입을 검토할 때 읽습니다.

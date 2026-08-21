@@ -182,6 +182,7 @@ public class BattleService {
      * @return 턴 결과
      */
     @Transactional
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity"})
     public BattleTurnResult takeTurn(
             final CharacterProgress progress, final BattleState state, final String skillId) {
         final Optional<Monster> monsterOpt = monsterService.byId(state.getMonsterId());
