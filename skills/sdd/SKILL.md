@@ -5,9 +5,6 @@ description: SDD (Spec-Driven Development) 프로세스의 단일 진실 공급�
 
 # SDD (Spec-Driven Development) Skill
 
-> **이 문서는 SDD 프로세스의 단일 진실 공급원(SSOT)입니다.**
-> Kiro, Cline, Antigravity 등 모든 AI Agent는 이 문서를 읽고 동일한 SDD 워크플로우를 수행합니다.
-
 ## 개요
 
 SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → 구현 → 검증의 5단계로 이루어지는 개발 방법론입니다. 모든 코드 변경은 Spec 문서 3종 작성으로 시작하며, 사용자 검토 후 구현합니다.
@@ -47,18 +44,17 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 
 - `tasks.md`에 정의된 순서대로 Task를 하나씩 구현
 - 각 Task 완료 시 반드시 5대 품질 가드레일 검증 실행:
-  - Spotless (`./mvnw spotless:apply`)
-  - Error Prone (`./mvnw compile-all`)
-  - ArchUnit (`./mvnw archunit`)
-  - JaCoCo (`./mvnw test-coverage` — 80% 커버리지)
-  - PMD & CPD (`./mvnw pmd:check pmd:cpd-check`)
+  - Spotless
+  - Error Prone
+  - ArchUnit
+  - JaCoCo
+  - PMD & CPD
 - 상세 검증 명령어 및 기준은 `rules/workflow/task-build-validation.md` 준수
 - 코드 변경 후 `codegraph sync` 실행하여 지식 그래프 동기화
 
-### 5. Memory Bank 갱신 & 커밋 (Memory Sync & Commit)
+### 5. Memory Bank 갱신
 
 - `memory-bank/activeContext.md`에 작업 결과(진행 상태, 작업 트리, 확정 설계값, 다음 단계) 즉시 갱신
-- `rules/workflow/git-workflow.md`의 커밋 메시지 컨벤션에 맞춰 커밋/PR 진행
 
 ---
 
@@ -76,7 +72,7 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 ```
 
 - 폴더 구조 및 네이밍 규칙: `rules/project/spec-conventions.md` 참고
-- Spec 문서는 툴(Kiro/Cline/Antigravity)에 종속되지 않는 범용 마크다운 형식
+- Spec 문서는 범용 마크다운 형식
 
 ---
 
