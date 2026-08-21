@@ -248,6 +248,48 @@ public class {ModuleName}Application {
 }
 ```
 
+## 아키텍처 규칙 테스트 템플릿 (ArchitectureRuleTest)
+
+모든 신규 모듈은 `src/test/java/com/myapps/{web|batch}/{modulename}/architecture/ArchitectureRuleTest.java`에 ArchUnit 가드레일 테스트를 반드시 작성합니다.
+
+```java
+package com.myapps.web.{modulename}.architecture;
+
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
+import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchRule;
+
+/** {ModuleName} 모듈의 계층형 아키텍처 가드레일 검증 테스트. */
+@AnalyzeClasses(
+        packages = "com.myapps.web.{modulename}",
+        importOptions = ImportOption.DoNotIncludeTests.class)
+class ArchitectureRuleTest {
+
+    @ArchTest
+    static final ArchRule interfaces_should_not_be_accessed_by_application_or_domain =
+            noClasses()
+                    .that()
+                    .resideInAnyPackage(
+                            "com.myapps.web.{modulename}.application..",
+                            "com.myapps.web.{modulename}.domain..")
+                    .should()
+                    .dependOnClassesThat()
+                    .resideInAPackage("com.myapps.web.{modulename}.interfaces..");
+
+    @ArchTest
+    static final ArchRule controllers_should_only_reside_in_interfaces =
+            classes()
+                    .that()
+                    .haveSimpleNameEndingWith("Controller")
+                    .should()
+                    .resideInAPackage("com.myapps.web.{modulename}.interfaces.api..");
+}
+```
+
 ## Parent POM 업데이트
 
 루트 `pom.xml`의 `<modules>` 섹션에 기존 모듈 뒤에 추가:
@@ -267,6 +309,7 @@ public class {ModuleName}Application {
 - [ ] `application.yml` 생성
 - [ ] `application-local.yml` 생성 (로컬 DB 설정)
 - [ ] `application-prod.yml` 생성 (운영 DB 설정 + server.port)
+- [ ] `ArchitectureRuleTest.java` 아키텍처 가드레일 테스트 생성
 - [ ] Parent POM `<modules>`에 모듈명 추가
 - [ ] `deployment.md` 포트 규칙 표에 새 모듈 포트 추가
 - [ ] 기존 모듈 `pom.xml` 변경 없음 확인

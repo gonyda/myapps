@@ -25,6 +25,7 @@ fileMatchPattern: "**/pom.xml"
   <errorprone.version>2.36.0</errorprone.version>
   <archunit.version>1.4.0</archunit.version>
   <jacoco.version>0.8.13</jacoco.version>
+  <pmd.version>3.26.0</pmd.version>
 </properties>
 ```
 

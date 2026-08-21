@@ -90,18 +90,22 @@ myapps/                                # Git 레포지토리 루트
   Task 완료마다 Spotless → Error Prone → ArchUnit → JaCoCo → PMD/CPD 검증
   코드 변경 후 `codegraph sync` 동기화
        ↓
-[5. Memory Bank 갱신 & 커밋]
-  activeContext.md 갱신 → git-workflow.md 규격에 맞춰 커밋
+[5. Memory Bank 갱신]
+  activeContext.md에 작업 결과 및 다음 단계 즉시 갱신
 ```
 
 ### 5대 품질 가드레일 (Task 완료 필수 조건)
-1. **Spotless**: Java 소스 포맷팅 자동 교정 (`./mvnw spotless:apply`)
-2. **Error Prone**: 정적 결함 컴파일 타임 차단 (`./mvnw compile-all`)
-3. **ArchUnit**: 계층형 아키텍처 규칙 강제 (`./mvnw archunit`)
-4. **JaCoCo**: 테스트 커버리지 80% 달성 검증 (`./mvnw test-coverage`)
-5. **PMD & CPD**: 복잡도/안티패턴/중복 코드 검증 (`./mvnw pmd:check pmd:cpd-check`)
+1. **Spotless**: Java 소스 포맷팅 자동 교정
+2. **Error Prone**: 정적 결함 컴파일 타임 차단
+3. **ArchUnit**: 계층형 아키텍처 규칙 강제
+4. **JaCoCo**: 테스트 커버리지 80% 달성 검증
+5. **PMD & CPD**: 복잡도/안티패턴/중복 코드 검증
 
-> 상세 검증 명령어와 허용 기준은 `rules/workflow/task-build-validation.md`를 준수합니다.
+> **통합 검증 파이프라인 (Task 완료 시 필수 실행)**:
+> ```bash
+> mvn -B -q spotless:apply -pl {modulename} && (mvn -B clean install -pl {modulename} -am > /tmp/mvn.log 2>&1 || (tail -n 30 /tmp/mvn.log && exit 1)) && tail -n 12 /tmp/mvn.log && codegraph sync
+> ```
+> 상세 규칙 및 실패 시 대처법은 `rules/workflow/task-build-validation.md`를 준수합니다.
 
 ---
 
@@ -109,7 +113,7 @@ myapps/                                # Git 레포지토리 루트
 
 코드베이스 분석 및 시스템 작업 시 다음 우선순위로 툴을 사용합니다:
 
-1. **CodeGraph** (`codegraph_explore`): 코드 구조, 심볼 선언, 호출 관계 파악 시 1순위 사용 (MCP 미지원 시 터미널 `codegraph explore` 실행)
+1. **CodeGraph** (`codegraph_explore`): 코드 구조, 심볼 선언, 호출 관계 파악 시 1순위 사용
 2. **Oracle Cloud SSH** (`oracle-cloud-ssh`): 원격 서버 인프라 상태 점검 및 배포
 3. **Oracle DB** (`oracle-db`): 데이터베이스 스키마 및 데이터 조회
 4. **파일 도구** (`view_file` / `grep_search`): CodeGraph 탐색 후 세부 구현 확인 및 수정 시 사용

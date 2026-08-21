@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-22 01:37 (Asia/Seoul)
+> 최종 업데이트: 2026-08-22 02:08 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` 참조)
 
@@ -32,6 +32,11 @@
 - 기존 `cline-global-rules.md`의 SSOT 역할을 `rules/` + `AGENTS.md`로 이관
 - `.clinerules/` 디렉토리 완전 삭제
 
+### 1.4. 규칙 및 아키텍처 문서 정합성 보완 (2026-08-22 02:08)
+- `AGENTS.md`: 5대 가드레일 검증 파이프라인 명령어 및 워크플로우 5단계(커밋 제외, Memory Bank 갱신) 정합화
+- `rules/project/pom-conventions.md`: `<properties>` 예시에 `<pmd.version>3.26.0</pmd.version>` 추가
+- `rules/module/module-template.md`: `ArchitectureRuleTest` 표준 템플릿 코드 및 완료 체크리스트 항목 추가
+
 ## 현재 프로젝트 활성 모듈 및 포트 매핑
 
 | 모듈 | 포트 | 설명 |
@@ -44,19 +49,13 @@
 
 | 파일 | 변경 구분 | 내용 |
 |---|---|---|
-| `AGENTS.md` | 신규 | AI Agent 공통 진입점 및 전체 개발 규칙 |
-| `rules/` | 신규 | `rules/coding/`, `rules/infra/`, `rules/module/`, `rules/myrpg/`, `rules/project/`, `rules/workflow/` — steering 문서 11개 이관 |
-| `memory-bank/memory-bank.md` | 신규 | 메모리뱅크 개념 및 갱신 규칙 |
-| `memory-bank/activeContext.md` | 신규 | 현재 작업 상태 및 다음 단계 |
-| `skills/sdd/SKILL.md` | 신규 | SDD 프로세스 SSOT 원본 |
-| `.cline/skills/sdd/SKILL.md` | 신규 | Cline 참조 포인터 |
-| `.agents/skills/sdd/SKILL.md` | 신규 | Antigravity 참조 포인터 |
-| `.kiro/steering/` | 삭제 | `rules/`로 통합 완료 |
-| `.clinerules/` | 삭제 | `.cline/` 및 루트 SSOT로 통합 완료 |
+| `AGENTS.md` | 수정 | 빌드 검증 파이프라인 명령어 및 워크플로우 5단계 정합화 |
+| `rules/project/pom-conventions.md` | 수정 | properties 예시 내 pmd.version 추가 |
+| `rules/module/module-template.md` | 수정 | ArchitectureRuleTest 표준 템플릿 코드 추가 |
+| `memory-bank/activeContext.md` | 수정 | 정합성 보완 내역 반영 |
 
 ## 다음 단계
 
-- [x] 구조 변경에 따른 기존 문서(`.clinerules/` 등) 정리 및 이관 확인 완료
-- [x] `AGENTS.md` 내 `rules/`, `memory-bank/`, `skills/` 링크 및 참조 정합성 검증 완료
-- [x] Antigravity / Cline 스킬 참조 포인터 및 YAML frontmatter 표준화 완료
-- [x] CodeGraph 재동기화 (`codegraph sync`) 완료
+- [x] 전체 Markdown 문서 정합성 검증 및 교차 검토 완료
+- [x] AGENTS.md, pom-conventions.md, module-template.md 정합성 보완 완료
+- [x] CodeGraph 동기화 (`codegraph sync`) 실행
