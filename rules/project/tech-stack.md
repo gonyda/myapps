@@ -22,13 +22,16 @@ inclusion: always
 ```
 myapps/                        # Git 레포지토리 루트 (Project_Root)
 ├── pom.xml                    # Parent POM (packaging: pom)
+├── AGENTS.md                  # AI Agent 공통 진입점 및 전체 개발 규칙
+├── rules/                     # 프로젝트 공통 개발/품질 규칙 (SSOT)
+├── memory-bank/               # 프로젝트 작업 맥락 및 메모리
+├── skills/                    # 스킬 로직 공통 원본 (SSOT)
+├── .kiro/                     # Kiro 전용 (specs)
+├── .cline/                    # Cline 전용 설정 (참조 포인터)
+├── .agents/                   # Antigravity 전용 설정 (참조 포인터)
 ├── mystudy/                   # Spring Boot 웹 애플리케이션 모듈
-│   ├── pom.xml
-│   └── src/
-│       ├── main/java/
-│       ├── main/resources/
-│       └── test/java/
-└── .kiro/
+├── mycalendar/                # Spring Boot 웹 애플리케이션 모듈
+└── myrpg/                     # Spring Boot 게임 애플리케이션 모듈
 ```
 
 ## 모듈 네이밍 규칙
