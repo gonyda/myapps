@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -80,9 +81,9 @@ class BattleControllerTest {
 
     @MockitoBean private NodeViewAssembler nodeViewAssembler;
 
-    /** POST /battle/start 요청 시 전투 뷰 프래그먼트가 200으로 반환되는지 검증한다. */
+    /** POST /battle/start 요청 시 전투 응답 프래그먼트가 200으로 반환되는지 검증한다. */
     @Test
-    void should_returnBattleViewFragment_when_startWithValidMonsterId() throws Exception {
+    void should_returnBattleResponseFragment_when_startWithValidMonsterId() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         final Monster monster = createTestMonster();
@@ -100,9 +101,11 @@ class BattleControllerTest {
 
         mockMvc.perform(post("/battle/start").param("monsterId", MONSTER_ID))
                 .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_BATTLE_VIEW))
+                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
                 .andExpect(model().attributeExists("battleView"))
                 .andExpect(model().attributeExists("skills"));
+
+        verify(actionLog).add("너구리와(과) 마주쳤다.", "combat");
     }
 
     /** POST /battle/turn 요청 시 전투 응답 프래그먼트(top-bar + battle-view + action-log)가 반환되는지 검증한다. */

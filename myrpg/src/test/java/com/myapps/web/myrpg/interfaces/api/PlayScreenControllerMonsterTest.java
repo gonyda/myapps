@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -171,7 +172,7 @@ class PlayScreenControllerMonsterTest {
         assertThat(actualView.monsterActions()).hasSize(1);
         assertThat(actualView.monsterActions().get(0).label()).isEqualTo("전투");
 
-        verify(actionLog).add("너구리와(과) 마주쳤다.", "combat");
+        verify(actionLog, never()).add(anyString(), anyString());
     }
 
     /**

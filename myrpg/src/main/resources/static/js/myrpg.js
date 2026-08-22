@@ -276,7 +276,7 @@ function encounterMonster(monsterId) {
         });
 }
 
-// ===== 전투 시작: POST /battle/start → .center 교체 =====
+// ===== 전투 시작: POST /battle/start → top-bar + .center + action-log 교체 =====
 function startBattle(monsterId) {
     fetch("/battle/start?monsterId=" + encodeURIComponent(monsterId), { method: "POST" })
         .then(function (response) {
@@ -291,11 +291,28 @@ function startBattle(monsterId) {
             }
             var container = document.createElement("div");
             container.innerHTML = html;
+
+            var newTopBar = container.querySelector(".top-bar");
             var newCenter = container.querySelector(".center");
+            var newActionLog = container.querySelector(".action-log");
+
+            if (newTopBar) {
+                var oldTopBar = document.querySelector(".top-bar");
+                if (oldTopBar) {
+                    oldTopBar.replaceWith(newTopBar);
+                }
+            }
             if (newCenter) {
                 var oldCenter = document.querySelector(".center");
                 if (oldCenter) {
                     oldCenter.replaceWith(newCenter);
+                }
+            }
+            if (newActionLog) {
+                var oldActionLog = document.querySelector(".action-log");
+                if (oldActionLog) {
+                    oldActionLog.replaceWith(newActionLog);
+                    newActionLog.scrollTop = newActionLog.scrollHeight;
                 }
             }
             battleActive = true;
@@ -310,11 +327,28 @@ function fetchBattleView() {
             if (!html) { return; }
             var container = document.createElement("div");
             container.innerHTML = html;
+
+            var newTopBar = container.querySelector(".top-bar");
             var newCenter = container.querySelector(".center");
+            var newActionLog = container.querySelector(".action-log");
+
+            if (newTopBar) {
+                var oldTopBar = document.querySelector(".top-bar");
+                if (oldTopBar) {
+                    oldTopBar.replaceWith(newTopBar);
+                }
+            }
             if (newCenter) {
                 var oldCenter = document.querySelector(".center");
                 if (oldCenter) {
                     oldCenter.replaceWith(newCenter);
+                }
+            }
+            if (newActionLog) {
+                var oldActionLog = document.querySelector(".action-log");
+                if (oldActionLog) {
+                    oldActionLog.replaceWith(newActionLog);
+                    newActionLog.scrollTop = newActionLog.scrollHeight;
                 }
             }
         });

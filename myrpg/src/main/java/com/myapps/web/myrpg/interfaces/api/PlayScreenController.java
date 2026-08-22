@@ -209,6 +209,7 @@ public class PlayScreenController {
             ambusher.ifPresent(
                     monster -> {
                         battleService.start(progress, monster.id(), true);
+                        actionLog.add(monster.name() + "이(가) 기습해왔다!", COMBAT_TYPE);
                         model.addAttribute("ambushMonsterName", monster.name());
                     });
         }
@@ -294,7 +295,6 @@ public class PlayScreenController {
         if (targetMonster.isPresent()) {
             final Monster monster = targetMonster.get();
             final String dialogue = monsterDialogueService.selectLine(monster);
-            actionLog.add(monster.name() + "와(과) 마주쳤다.", COMBAT_TYPE);
             talkTarget = TalkTarget.ofMonster(monster, dialogue);
             model.addAttribute("encounteredMonsterId", monster.id());
         } else {

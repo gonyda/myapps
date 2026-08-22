@@ -162,6 +162,7 @@ class PlayScreenControllerBattleTest {
         assertThat(ambushName).isEqualTo("너구리");
 
         verify(battleService).start(any(CharacterProgress.class), eq("raccoon"), eq(true));
+        verify(actionLog).add("너구리이(가) 기습해왔다!", "combat");
     }
 
     /**

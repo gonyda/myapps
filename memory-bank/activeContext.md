@@ -36,6 +36,14 @@
 - 전역 MCP 설정(`~/.gemini/config/mcp_config.json`)을 프로젝트 루트(`.agents/mcp_config.json`)로 이관
 - 대상 MCP 서버: `codegraph`, `oracle-cloud-ssh`, `oracle-db`
 
+### 1.6. myrpg 전투 진입 마주침/기습 액션 로그 개선 (2026-08-22 14:53)
+- **배경**: 몬스터 조우 대화창에서 [전투] 버튼 클릭 시 하단 액션로그(`ActionLog`) 갱신 누락 및 기습 시 로그 누락 문제
+- **변경 사항**:
+  - `PlayScreenController.java`: 단순 조우 대화창 열기 시 로그 제거, 기습 발동 시 `"{몬스터}이(가) 기습해왔다!"` 로그 추가
+  - `BattleController.java`: 전투 시작 시 `"{몬스터}와(과) 마주쳤다."` 로그 추가 및 반환 뷰를 `battle-response`로 확장
+  - `myrpg.js`: `startBattle()` 및 `fetchBattleView()` 시 `.top-bar`, `.center`, `.action-log` 전체 영역 즉시 교체
+  - 테스트 및 5대 품질 가드레일(`Spotless`, `Error Prone`, `ArchUnit`, `JaCoCo`, `PMD/CPD`) 검증 통과 및 `CodeGraph` 동기화 완료
+
 ## 현재 프로젝트 활성 모듈 및 포트 매핑
 
 | 모듈 | 포트 | 설명 |
@@ -48,11 +56,15 @@
 
 | 파일 | 변경 구분 | 내용 |
 |---|---|---|
-| `.agents/mcp_config.json` | 신규 | 프로젝트 전용 MCP 서버 설정 이관 |
-| `AGENTS.md` | 수정 | .agents 디렉토리 구조 내 mcp_config.json 추가 |
-| `memory-bank/activeContext.md` | 수정 | MCP 설정 이관 작업 내역 반영 |
+| `myrpg/src/main/java/.../PlayScreenController.java` | 수정 | 기습 로그 추가 및 단순 조우 로그 제거 |
+| `myrpg/src/main/java/.../BattleController.java` | 수정 | 전투 시작 시 마주침 로그 추가 및 battle-response 반환 |
+| `myrpg/src/main/resources/static/js/myrpg.js` | 수정 | startBattle, fetchBattleView 프래그먼트 교체 확장 |
+| `myrpg/src/test/java/.../PlayScreenControllerMonsterTest.java` | 수정 | 단순 조우 시 actionLog 미호출 검증 |
+| `myrpg/src/test/java/.../PlayScreenControllerBattleTest.java` | 수정 | 기습 로그 검증 추가 |
+| `myrpg/src/test/java/.../PlayScreenControllerPreemptiveTest.java` | 수정 | 기습 로그 검증 추가 |
+| `myrpg/src/test/java/.../BattleControllerTest.java` | 수정 | 전투 시작 응답 및 마주침 로그 검증 |
 
 ## 다음 단계
 
-- [x] MCP 설정을 전역에서 프로젝트 로컬(`.agents/mcp_config.json`)로 이관 완료
-- [x] AGENTS.md 및 activeContext.md 동기화 완료
+- [x] 전투 진입 시 마주침/기습 로그 출력 및 뷰 교체 연동 완료
+- [x] 5대 품질 가드레일 빌드 및 CodeGraph 동기화 완료

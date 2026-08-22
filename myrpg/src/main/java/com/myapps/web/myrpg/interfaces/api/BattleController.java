@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/battle")
 public class BattleController {
 
+    private static final String COMBAT_TYPE = "combat";
+
     private final BattleService battleService;
     private final CharacterService characterService;
     private final MonsterService monsterService;
@@ -74,14 +76,14 @@ public class BattleController {
     }
 
     /**
-     * 전투를 시작하고 전투 뷰 프래그먼트를 반환한다.
+     * 전투를 시작하고 전투 응답 프래그먼트를 반환한다.
      *
-     * <p>지정된 몬스터 ID로 전투를 시작하며, 몬스터가 미지이거나 전투 시작에 실패하면 전투를 시작하지 않고 일반 센터 프래그먼트를 반환한다. 성공 시 전투 뷰(몬스터
-     * HP 바·스킬 버튼·도망 버튼·미니맵)를 렌더한다.
+     * <p>지정된 몬스터 ID로 전투를 시작하며, 몬스터가 미지이거나 전투 시작에 실패하면 전투를 시작하지 않고 일반 센터 프래그먼트를 반환한다. 성공 시 마주침 로그를
+     * 기록하고 전투 응답 뷰(상단바·몬스터 HP 바·스킬 버튼·도망 버튼·미니맵·활동 로그)를 렌더한다.
      *
      * @param monsterId 전투 대상 몬스터 ID
      * @param model Spring MVC 모델
-     * @return 전투 뷰 프래그먼트 뷰 이름
+     * @return 전투 응답 프래그먼트 뷰 이름
      */
     @PostMapping("/start")
     public String start(@RequestParam final String monsterId, final Model model) {
@@ -98,10 +100,11 @@ public class BattleController {
         }
 
         final Monster monster = monsterOpt.get();
+        actionLog.add(monster.name() + "와(과) 마주쳤다.", COMBAT_TYPE);
         final BattleView battleView = buildBattleView(state, monster, progress);
         final List<String> turnLog = List.of(monster.name() + " Lv." + monster.level() + " 출현!");
         populateBattleModel(model, progress, battleView, turnLog);
-        return "fragments/battle-view :: battle-view";
+        return "fragments/battle-view :: battle-response";
     }
 
     /**

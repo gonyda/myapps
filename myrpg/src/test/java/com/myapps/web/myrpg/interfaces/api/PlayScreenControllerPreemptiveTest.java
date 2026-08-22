@@ -159,6 +159,7 @@ class PlayScreenControllerPreemptiveTest {
                         any(CharacterProgress.class),
                         org.mockito.ArgumentMatchers.eq("raccoon"),
                         org.mockito.ArgumentMatchers.eq(true));
+        verify(actionLog).add("너구리이(가) 기습해왔다!", "combat");
     }
 
     /**
