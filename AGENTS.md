@@ -32,6 +32,7 @@ myapps/                                # Git 레포지토리 루트
 │   └── skills/sdd/SKILL.md            # Cline /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
 │
 ├── .agents/                           # [Antigravity 전용 설정]
+│   ├── mcp_config.json                # Antigravity 전용 MCP 서버 설정
 │   └── skills/sdd/SKILL.md            # Antigravity /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
 │
 └── {애플리케이션 모듈}/                # mystudy, mycalendar, myrpg 등

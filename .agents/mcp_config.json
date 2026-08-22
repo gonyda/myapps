@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ],
+      "env": {
+        "CODEGRAPH_WATCH_DEBOUNCE_MS": "1000"
+      }
+    },
+    "oracle-cloud-ssh": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "ssh-mcp",
+        "--",
+        "--host=134.185.116.35",
+        "--port=22",
+        "--user=ubuntu",
+        "--key=/Users/gony/oracle_cloud/ssh/ssh-key-2025-03-07.key",
+        "--timeout=120000",
+        "--maxChars=none"
+      ],
+      "autoApprove": [
+        "run-command"
+      ]
+    },
+    "oracle-db": {
+      "type": "stdio",
+      "command": "/opt/homebrew/Caskroom/sqlcl/26.2.0.181.2110/sqlcl/bin/sql",
+      "args": [
+        "-mcp"
+      ],
+      "env": {
+        "JAVA_HOME": "/opt/homebrew/opt/openjdk@25",
+        "TNS_ADMIN": "/Users/gony/oracle_cloud/db/Wallet_I38ZV6G9LRF9FI84"
+      }
+    }
+  }
+}
