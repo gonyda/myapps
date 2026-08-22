@@ -252,13 +252,13 @@ public class BattleResolver {
     /**
      * 카운터 어택이 공격(일반 또는 강공격)을 상대로 성공할 때 피해를 산출한다.
      *
-     * <p>플레이어 피격은 0(완전 회피/흘리기), 반격 피해는 상대 몬스터의 공격력 비례({@code monsterAttackPower × counterPercent})로
+     * <p>플레이어 피격은 0(완전 회피/흘리기), 반격 피해는 플레이어 공격력 비례({@code playerAttackPower × counterPercent})로
      * 산출한다.
      */
     private ResolvedTurn resolveCounterAttackWins(final TurnInput input) {
         final int counterDamage =
                 calculateCounterDamage(
-                        input.monsterAttackPower(),
+                        input.playerAttackPower(),
                         input.playerCounterPercent(),
                         input.monsterDefense(),
                         input.playerCritical());

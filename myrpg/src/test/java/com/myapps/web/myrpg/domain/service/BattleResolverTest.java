@@ -219,9 +219,9 @@ class BattleResolverTest {
             assertThat(result.countered()).isFalse();
         }
 
-        /** 카운터 어택 vs 일반 공격: 상대 공격력 비례 반격, 플레이어 0 피격. */
+        /** 카운터 어택 vs 일반 공격: 플레이어 공격력 비례 반격, 플레이어 0 피격. */
         @Test
-        void should_dealCounterDamageBasedOnMonsterAttack_when_counterAttackVsNormal() {
+        void should_dealCounterDamageBasedOnPlayerAttack_when_counterAttackVsNormal() {
             final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
             final TurnInput input =
                     new TurnInput(
@@ -249,9 +249,9 @@ class BattleResolverTest {
             assertThat(result.countered()).isTrue();
         }
 
-        /** 카운터 어택 vs 강공격: 강공격도 흘려내며 상대 공격력 비례 반격, 플레이어 0 피격. */
+        /** 카운터 어택 vs 강공격: 강공격도 흘려내며 플레이어 공격력 비례 반격, 플레이어 0 피격. */
         @Test
-        void should_dealCounterDamageBasedOnMonsterAttack_when_counterAttackVsHeavy() {
+        void should_dealCounterDamageBasedOnPlayerAttack_when_counterAttackVsHeavy() {
             final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
             final TurnInput input =
                     new TurnInput(
