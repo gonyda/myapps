@@ -1,12 +1,12 @@
 package com.myapps.web.myrpg.application.service;
 
-import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.DungeonBossSpec;
 import com.myapps.web.myrpg.application.dto.DungeonGenerationSpec;
 import com.myapps.web.myrpg.application.dto.DungeonMonsterEntry;
 import com.myapps.web.myrpg.application.dto.DungeonRewardSpec;
 import com.myapps.web.myrpg.application.dto.DungeonSpec;
 import com.myapps.web.myrpg.application.exception.DungeonDataException;
+import com.myapps.web.myrpg.domain.model.ItemDrop;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -265,21 +265,73 @@ public class DungeonSpecRepository {
             throw new DungeonDataException("던전 '" + dungeonId + "'의 보상 exp/gold는 0 이상이어야 합니다.");
         }
 
-        final List<DroppedItem> items = new ArrayList<>();
-        final JsonNode itemsNode = node.get("items");
-        if (itemsNode != null && itemsNode.isArray()) {
-            for (final JsonNode itemNode : itemsNode) {
-                final String itemId = extractRequiredField(itemNode, "itemId", dungeonId);
-                final int quantity = extractRequiredInt(itemNode, "quantity", dungeonId);
-                if (quantity < 1) {
-                    throw new DungeonDataException(
-                            "던전 '" + dungeonId + "'의 보상 아이템 '" + itemId + "' 수량은 1 이상이어야 합니다.");
-                }
-                items.add(new DroppedItem(itemId, quantity));
-            }
+        final List<ItemDrop> itemDrops = parseRewardItemDrops(node, dungeonId);
+        return new DungeonRewardSpec(exp, gold, itemDrops);
+    }
+
+    private List<ItemDrop> parseRewardItemDrops(final JsonNode node, final String dungeonId) {
+        final JsonNode dropsNode =
+                node.has("itemDrops") ? node.get("itemDrops") : node.get("items");
+        if (dropsNode == null || !dropsNode.isArray()) {
+            return List.of();
         }
 
-        return new DungeonRewardSpec(exp, gold, List.copyOf(items));
+        final List<ItemDrop> itemDrops = new ArrayList<>();
+        for (final JsonNode itemNode : dropsNode) {
+            itemDrops.add(parseSingleItemDrop(itemNode, dungeonId));
+        }
+        return List.copyOf(itemDrops);
+    }
+
+    private ItemDrop parseSingleItemDrop(final JsonNode itemNode, final String dungeonId) {
+        final String itemId = extractRequiredField(itemNode, "itemId", dungeonId);
+        final int chancePercent = parseChancePercent(itemNode, dungeonId, itemId);
+        final int minQuantity = parseMinQuantity(itemNode, dungeonId);
+        final int maxQuantity = parseMaxQuantity(itemNode, dungeonId, minQuantity);
+
+        if (minQuantity < 1 || maxQuantity < minQuantity) {
+            throw new DungeonDataException(
+                    "던전 '" + dungeonId + "'의 보상 아이템 '" + itemId + "' 수량 범위가 유효하지 않습니다.");
+        }
+        return new ItemDrop(itemId, chancePercent, minQuantity, maxQuantity);
+    }
+
+    private int parseChancePercent(
+            final JsonNode itemNode, final String dungeonId, final String itemId) {
+        final int chance =
+                itemNode.has("chancePercent")
+                        ? extractRequiredInt(itemNode, "chancePercent", dungeonId)
+                        : 100;
+        if (chance < 1 || chance > 100) {
+            throw new DungeonDataException(
+                    "던전 '"
+                            + dungeonId
+                            + "'의 보상 아이템 '"
+                            + itemId
+                            + "' chancePercent는 1~100 사이여야 합니다.");
+        }
+        return chance;
+    }
+
+    private int parseMinQuantity(final JsonNode itemNode, final String dungeonId) {
+        if (itemNode.has("minQuantity")) {
+            return extractRequiredInt(itemNode, "minQuantity", dungeonId);
+        }
+        if (itemNode.has("quantity")) {
+            return extractRequiredInt(itemNode, "quantity", dungeonId);
+        }
+        return 1;
+    }
+
+    private int parseMaxQuantity(
+            final JsonNode itemNode, final String dungeonId, final int minQuantity) {
+        if (itemNode.has("maxQuantity")) {
+            return extractRequiredInt(itemNode, "maxQuantity", dungeonId);
+        }
+        if (itemNode.has("quantity")) {
+            return extractRequiredInt(itemNode, "quantity", dungeonId);
+        }
+        return minQuantity;
     }
 
     private String extractRequiredField(

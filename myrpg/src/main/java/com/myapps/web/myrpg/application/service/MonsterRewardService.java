@@ -62,9 +62,23 @@ public class MonsterRewardService {
      */
     public DropResult rollDrop(final Monster monster) {
         final long gold = goldFor(monster.goldDrop(), random.nextInt(Integer.MAX_VALUE));
+        final List<DroppedItem> items = rollItemDrops(monster.itemDrops());
+        return new DropResult(gold, items);
+    }
+
+    /**
+     * 아이템 드랍 목록을 확률 추첨하여 획득된 아이템 목록을 반환한다.
+     *
+     * @param itemDrops 드랍 대상 아이템 확률/수량 목록 (null 또는 빈 목록 가능)
+     * @return 추첨 결과 획득된 아이템 목록
+     */
+    public List<DroppedItem> rollItemDrops(final List<ItemDrop> itemDrops) {
+        if (itemDrops == null || itemDrops.isEmpty()) {
+            return List.of();
+        }
 
         final List<DroppedItem> items = new ArrayList<>();
-        for (final ItemDrop itemDrop : monster.itemDrops()) {
+        for (final ItemDrop itemDrop : itemDrops) {
             final int chanceRoll = random.nextInt(PERCENT_BOUND);
             if (chanceRoll < itemDrop.chancePercent()) {
                 final int quantity = calculateQuantity(itemDrop);
@@ -72,7 +86,7 @@ public class MonsterRewardService {
             }
         }
 
-        return new DropResult(gold, List.copyOf(items));
+        return List.copyOf(items);
     }
 
     /**

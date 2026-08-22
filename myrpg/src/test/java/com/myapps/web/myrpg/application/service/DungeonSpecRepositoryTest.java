@@ -3,13 +3,13 @@ package com.myapps.web.myrpg.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.DungeonBossSpec;
 import com.myapps.web.myrpg.application.dto.DungeonGenerationSpec;
 import com.myapps.web.myrpg.application.dto.DungeonMonsterEntry;
 import com.myapps.web.myrpg.application.dto.DungeonRewardSpec;
 import com.myapps.web.myrpg.application.dto.DungeonSpec;
 import com.myapps.web.myrpg.application.exception.DungeonDataException;
+import com.myapps.web.myrpg.domain.model.ItemDrop;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -132,7 +132,12 @@ class DungeonSpecRepositoryTest {
 
             assertThat(rewards.exp()).isEqualTo(1000);
             assertThat(rewards.gold()).isEqualTo(2000);
-            assertThat(rewards.items()).containsExactly(new DroppedItem("hp_potion_30", 3));
+            assertThat(rewards.itemDrops())
+                    .containsExactly(
+                            new ItemDrop("short_sword", 20, 1, 1),
+                            new ItemDrop("hp_potion_30", 50, 1, 3),
+                            new ItemDrop("mp_potion_30", 50, 1, 3),
+                            new ItemDrop("stamina_potion_30", 50, 1, 3));
         }
 
         @Test

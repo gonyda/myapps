@@ -72,6 +72,8 @@ class DungeonPersistencePropertyTest {
                         mock(CharacterProgressRepository.class),
                         mock(ProgressionService.class),
                         mock(InventoryService.class),
+                        mock(MonsterRewardService.class),
+                        mock(ItemCatalogService.class),
                         mock(ActionLog.class),
                         objectMapper);
 

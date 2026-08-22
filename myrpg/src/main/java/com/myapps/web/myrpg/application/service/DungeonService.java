@@ -49,6 +49,8 @@ public class DungeonService {
     private final CharacterProgressRepository characterProgressRepository;
     private final ProgressionService progressionService;
     private final InventoryService inventoryService;
+    private final MonsterRewardService monsterRewardService;
+    private final ItemCatalogService itemCatalogService;
     private final ActionLog actionLog;
     private final ObjectMapper objectMapper;
 
@@ -61,6 +63,8 @@ public class DungeonService {
      * @param characterProgressRepository 캐릭터 진행상황 리포지토리
      * @param progressionService 경험치/사망 처리 서비스
      * @param inventoryService 인벤토리 서비스
+     * @param monsterRewardService 몬스터/던전 보상 추첨 서비스
+     * @param itemCatalogService 아이템 카탈로그 서비스
      * @param actionLog 활동 로그
      * @param objectMapper Jackson ObjectMapper
      */
@@ -71,6 +75,8 @@ public class DungeonService {
             final CharacterProgressRepository characterProgressRepository,
             final ProgressionService progressionService,
             final InventoryService inventoryService,
+            final MonsterRewardService monsterRewardService,
+            final ItemCatalogService itemCatalogService,
             final ActionLog actionLog,
             final ObjectMapper objectMapper) {
         this.dungeonSpecRepository = dungeonSpecRepository;
@@ -79,6 +85,8 @@ public class DungeonService {
         this.characterProgressRepository = characterProgressRepository;
         this.progressionService = progressionService;
         this.inventoryService = inventoryService;
+        this.monsterRewardService = monsterRewardService;
+        this.itemCatalogService = itemCatalogService;
         this.actionLog = actionLog;
         this.objectMapper = objectMapper;
     }
@@ -275,10 +283,13 @@ public class DungeonService {
         if (reward.gold() > 0) {
             character.gainGold(reward.gold());
         }
-        if (reward.items() != null) {
-            for (final DroppedItem item : reward.items()) {
-                inventoryService.acquireItem(item.itemId(), item.quantity());
-            }
+        final List<DroppedItem> droppedItems =
+                monsterRewardService != null
+                        ? monsterRewardService.rollItemDrops(reward.itemDrops())
+                        : List.of();
+
+        for (final DroppedItem item : droppedItems) {
+            inventoryService.acquireItem(item.itemId(), item.quantity());
         }
 
         actionLog.add(spec.name() + "을(를) 완전히 정복했습니다!", LOG_TYPE_DUNGEON);
@@ -286,13 +297,24 @@ public class DungeonService {
                 "던전 클리어 보상: EXP +" + reward.exp() + ", Gold +" + reward.gold() + "G",
                 LOG_TYPE_DUNGEON);
 
+        for (final DroppedItem item : droppedItems) {
+            final String itemName =
+                    itemCatalogService != null
+                            ? itemCatalogService
+                                    .byId(item.itemId())
+                                    .map(com.myapps.web.myrpg.domain.model.Item::name)
+                                    .orElse(item.itemId())
+                            : item.itemId();
+            actionLog.add("보상 획득: " + itemName + " x" + item.quantity(), LOG_TYPE_DUNGEON);
+        }
+
         dungeonProgressRepository.delete(entity);
 
         character.updateCurrentNodeId(entity.getEntranceNodeId());
         characterProgressRepository.save(character);
 
         return new DungeonClearResult(
-                spec.id(), spec.name(), reward.exp(), reward.gold(), reward.items());
+                spec.id(), spec.name(), reward.exp(), reward.gold(), droppedItems);
     }
 
     /**

@@ -139,7 +139,7 @@ class DungeonLifecycleIntegrationTest {
         // 5. 보스방 격퇴 (Req 6.1, 6.2, 6.3)
         dungeonService.onBossDefeated(charId);
 
-        // 던전 종료 후 확인: 던전 인스턴스 삭제, 캐릭터 입구 노드로 귀환, 보상 지급 (EXP 1000, 골드 2000, 포션 3개)
+        // 던전 종료 후 확인: 던전 인스턴스 삭제, 캐릭터 입구 노드로 귀환, 보상 지급 (EXP 1000, 골드 2000)
         final Optional<DungeonInstance> activeDungeon = dungeonService.getActiveDungeon(charId);
         assertThat(activeDungeon).isEmpty();
 
@@ -151,7 +151,7 @@ class DungeonLifecycleIntegrationTest {
         final Optional<OwnedItem> potionOpt =
                 ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, "hp_potion_30");
         assertThat(potionOpt).isPresent();
-        assertThat(potionOpt.get().getQuantity()).isGreaterThanOrEqualTo(3);
+        assertThat(potionOpt.get().getQuantity()).isGreaterThanOrEqualTo(5);
     }
 
     @Test

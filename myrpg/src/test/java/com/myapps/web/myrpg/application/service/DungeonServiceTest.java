@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -21,6 +22,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.DungeonInstance;
 import com.myapps.web.myrpg.domain.model.DungeonProgressEntity;
 import com.myapps.web.myrpg.domain.model.DungeonRoomState;
+import com.myapps.web.myrpg.domain.model.ItemDrop;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.NodeType;
@@ -58,6 +60,10 @@ class DungeonServiceTest {
 
     @Mock private InventoryService inventoryService;
 
+    @Mock private MonsterRewardService monsterRewardService;
+
+    @Mock private ItemCatalogService itemCatalogService;
+
     @Mock private ActionLog actionLog;
 
     private ObjectMapper objectMapper;
@@ -78,6 +84,8 @@ class DungeonServiceTest {
                         characterProgressRepository,
                         progressionService,
                         inventoryService,
+                        monsterRewardService,
+                        itemCatalogService,
                         actionLog,
                         objectMapper);
 
@@ -88,7 +96,7 @@ class DungeonServiceTest {
                         new DungeonMonsterEntry("red-spider", 1, 2, 25));
         final DungeonBossSpec bossSpec = new DungeonBossSpec("giant-spider", "거대거미", "샤아악!");
         final DungeonRewardSpec rewardSpec =
-                new DungeonRewardSpec(1000, 2000, List.of(new DroppedItem("hp_potion_30", 3)));
+                new DungeonRewardSpec(1000, 2000, List.of(new ItemDrop("hp_potion_30", 50, 1, 3)));
 
         albySpec =
                 new DungeonSpec(
@@ -312,6 +320,8 @@ class DungeonServiceTest {
         given(dungeonProgressRepository.findByCharacterId(charId)).willReturn(Optional.of(entity));
         given(dungeonSpecRepository.getById("alby")).willReturn(albySpec);
         given(characterProgressRepository.findById(charId)).willReturn(Optional.of(character));
+        given(monsterRewardService.rollItemDrops(anyList()))
+                .willReturn(List.of(new DroppedItem("hp_potion_30", 3)));
 
         // when
         final DungeonClearResult result = dungeonService.onBossDefeated(charId);

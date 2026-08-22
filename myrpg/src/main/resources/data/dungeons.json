@@ -29,8 +29,11 @@
       "rewards": {
         "exp": 1000,
         "gold": 2000,
-        "items": [
-          { "itemId": "hp_potion_30", "quantity": 3 }
+        "itemDrops": [
+          { "itemId": "short_sword", "chancePercent": 20, "minQuantity": 1, "maxQuantity": 1 },
+          { "itemId": "hp_potion_30", "chancePercent": 50, "minQuantity": 1, "maxQuantity": 3 },
+          { "itemId": "mp_potion_30", "chancePercent": 50, "minQuantity": 1, "maxQuantity": 3 },
+          { "itemId": "stamina_potion_30", "chancePercent": 50, "minQuantity": 1, "maxQuantity": 3 }
         ]
       }
     },
@@ -58,7 +61,7 @@
       "rewards": {
         "exp": 2500,
         "gold": 5000,
-        "items": []
+        "itemDrops": []
       }
     },
     {
@@ -85,7 +88,7 @@
       "rewards": {
         "exp": 5000,
         "gold": 10000,
-        "items": []
+        "itemDrops": []
       }
     }
   ]

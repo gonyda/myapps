@@ -1,5 +1,6 @@
 package com.myapps.web.myrpg.application.dto;
 
+import com.myapps.web.myrpg.domain.model.ItemDrop;
 import java.util.List;
 
 /**
@@ -7,6 +8,12 @@ import java.util.List;
  *
  * @param exp 지급 경험치 (0 이상)
  * @param gold 지급 골드 (0 이상)
- * @param items 지급 아이템 목록
+ * @param itemDrops 지급 대상 확률형 아이템 드랍 목록
  */
-public record DungeonRewardSpec(int exp, int gold, List<DroppedItem> items) {}
+public record DungeonRewardSpec(int exp, int gold, List<ItemDrop> itemDrops) {
+
+    /** 방어적 복사를 적용한 생성자. */
+    public DungeonRewardSpec {
+        itemDrops = itemDrops != null ? List.copyOf(itemDrops) : List.of();
+    }
+}

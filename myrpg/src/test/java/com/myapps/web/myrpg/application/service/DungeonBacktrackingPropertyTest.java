@@ -73,6 +73,8 @@ class DungeonBacktrackingPropertyTest {
                         mockCharRepo,
                         mockProgression,
                         mockInventory,
+                        mock(MonsterRewardService.class),
+                        mock(ItemCatalogService.class),
                         mockActionLog,
                         objectMapper);
 
