@@ -31,7 +31,7 @@ import net.jqwik.api.Provide;
  * <p>신규 캐릭터 시드({@code seedDefault()})에 대해:
  *
  * <ul>
- *   <li>INVENTORY에 초보자 장비 10종 + 포션 1스택(수량 5)이 생성되고
+ *   <li>INVENTORY에 초보자 장비 10종 + 포션 3종(HP/MP/스태미나 각 수량 5)이 생성되고
  *   <li>한손검·방패·갑옷·투구·장갑·부츠 6종이 {@code equipped=true}(양손검·활·완드·스태프 false)이며
  *   <li>모든 지급 장비의 {@code currentDurability == maxDurability(20)}이고
  *   <li>{@code equippedBonus}의 STAT 합이 STR+5·DEF+17이다
@@ -43,7 +43,11 @@ import net.jqwik.api.Provide;
  */
 class SeedDefaultItemsPropertyTest {
 
-    private static final String POTION_ID = "hp_potion_30";
+    private static final String HP_POTION_ID = "hp_potion_30";
+    private static final String MP_POTION_ID = "mp_potion_30";
+    private static final String STAMINA_POTION_ID = "stamina_potion_30";
+    private static final List<String> POTION_IDS =
+            List.of(HP_POTION_ID, MP_POTION_ID, STAMINA_POTION_ID);
     private static final String ONE_HAND_SWORD_ID = "beginner_one_hand_sword";
     private static final String TWO_HAND_SWORD_ID = "beginner_two_hand_sword";
     private static final String SHIELD_ID = "beginner_shield";
@@ -57,15 +61,15 @@ class SeedDefaultItemsPropertyTest {
     // Feature: 006-gold-item-inventory, Property 18: 기본 지급 결과
 
     /**
-     * seedDefault()가 정확히 11개 아이템(장비 10 + 포션 1스택)을 저장함을 검증한다.
+     * seedDefault()가 정확히 13개 아이템(장비 10 + 포션 3스택)을 저장함을 검증한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_saveExactlyElevenItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
+    void should_saveExactlyThirteenItems_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        assertThat(savedItems).hasSize(11);
+        assertThat(savedItems).hasSize(13);
     }
 
     /**
@@ -105,22 +109,24 @@ class SeedDefaultItemsPropertyTest {
     }
 
     /**
-     * seedDefault()가 포션을 수량 5로 저장함을 검증한다.
+     * seedDefault()가 포션 3종(HP/MP/스태미나)을 각각 수량 5로 저장함을 검증한다.
      *
      * @param dummy 더미 파라미터 (jqwik 프로퍼티 실행 보장)
      */
     @Property(tries = 100)
-    void should_savePotionWithQuantityFive_when_seedDefault(@ForAll("dummyInt") final int dummy) {
+    void should_savePotionsWithQuantityFive_when_seedDefault(@ForAll("dummyInt") final int dummy) {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
-        final OwnedItem potion =
-                savedItems.stream()
-                        .filter(item -> POTION_ID.equals(item.getItemId()))
-                        .findFirst()
-                        .orElseThrow();
+        for (final String potionId : POTION_IDS) {
+            final OwnedItem potion =
+                    savedItems.stream()
+                            .filter(item -> potionId.equals(item.getItemId()))
+                            .findFirst()
+                            .orElseThrow();
 
-        assertThat(potion.getQuantity()).isEqualTo(POTION_QUANTITY);
-        assertThat(potion.isEquipped()).isFalse();
+            assertThat(potion.getQuantity()).isEqualTo(POTION_QUANTITY);
+            assertThat(potion.isEquipped()).isFalse();
+        }
     }
 
     /**
@@ -133,7 +139,7 @@ class SeedDefaultItemsPropertyTest {
         final List<OwnedItem> savedItems = executeSeedAndCapture();
 
         final List<OwnedItem> equipmentItems =
-                savedItems.stream().filter(item -> !POTION_ID.equals(item.getItemId())).toList();
+                savedItems.stream().filter(item -> !POTION_IDS.contains(item.getItemId())).toList();
 
         assertThat(equipmentItems).hasSize(10);
         for (final OwnedItem equipment : equipmentItems) {

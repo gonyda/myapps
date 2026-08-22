@@ -51,7 +51,9 @@ public class InventoryService {
     private static final int DEFAULT_POTION_QUANTITY = 5;
     private static final int EQUIPMENT_MAX_DURABILITY = 20;
 
-    private static final String SEED_POTION_ID = "hp_potion_30";
+    private static final String SEED_HP_POTION_ID = "hp_potion_30";
+    private static final String SEED_MP_POTION_ID = "mp_potion_30";
+    private static final String SEED_STAMINA_POTION_ID = "stamina_potion_30";
     private static final String SEED_ONE_HAND_SWORD_ID = "beginner_one_hand_sword";
     private static final String SEED_TWO_HAND_SWORD_ID = "beginner_two_hand_sword";
     private static final String SEED_BOW_ID = "beginner_bow";
@@ -331,14 +333,32 @@ public class InventoryService {
     /**
      * 신규 캐릭터에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다.
      *
-     * <p>초보자 무기 5종(한손검·양손검·활·완드·스태프)과 방어구 5종 (방패·갑옷·투구·장갑·부츠) 각 1개(내구도 20), 생명력 30 포션 5개를 인벤토리에
-     * 생성한다. 이 중 한손검·방패·갑옷·투구·장갑·부츠를 기본 장착하고 나머지 무기는 미장착 상태로 지급한다.
+     * <p>초보자 무기 5종(한손검·양손검·활·완드·스태프)과 방어구 5종 (방패·갑옷·투구·장갑·부츠) 각 1개(내구도 20), 생명력 30 포션 5개, 마나 30 포션
+     * 5개, 스태미나 30 포션 5개를 인벤토리에 생성한다. 이 중 한손검·방패·갑옷·투구·장갑·부츠를 기본 장착하고 나머지 무기는 미장착 상태로 지급한다.
      */
     @Transactional
     public void seedDefault() {
         ownedItemRepository.save(
                 new OwnedItem(
-                        SEED_POTION_ID, DEFAULT_POTION_QUANTITY, StorageKind.INVENTORY, false, 0));
+                        SEED_HP_POTION_ID,
+                        DEFAULT_POTION_QUANTITY,
+                        StorageKind.INVENTORY,
+                        false,
+                        0));
+        ownedItemRepository.save(
+                new OwnedItem(
+                        SEED_MP_POTION_ID,
+                        DEFAULT_POTION_QUANTITY,
+                        StorageKind.INVENTORY,
+                        false,
+                        0));
+        ownedItemRepository.save(
+                new OwnedItem(
+                        SEED_STAMINA_POTION_ID,
+                        DEFAULT_POTION_QUANTITY,
+                        StorageKind.INVENTORY,
+                        false,
+                        0));
 
         // 무기 5종: 한손검만 기본 장착, 나머지는 인벤토리 보유
         seedEquipment(SEED_ONE_HAND_SWORD_ID, true);
