@@ -130,7 +130,8 @@ class BattleServiceDeathTest {
                         random,
                         skillCatalogService,
                         characterSkillRepo,
-                        itemCatalogService);
+                        itemCatalogService,
+                        null);
     }
 
     /** HP가 0에 도달하면 die()가 호출되고 outcome이 LOSE인지 검증한다. */

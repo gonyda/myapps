@@ -319,7 +319,8 @@ class BattleServiceResourcePropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private Monster createMonster() {

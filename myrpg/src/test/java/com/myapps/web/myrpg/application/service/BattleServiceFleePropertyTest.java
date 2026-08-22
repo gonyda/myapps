@@ -225,7 +225,8 @@ class BattleServiceFleePropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress(final int hp) {

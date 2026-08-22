@@ -134,7 +134,8 @@ class BattleServiceLogSplitTest {
                         random,
                         skillCatalogService,
                         characterSkillRepo,
-                        itemCatalogService);
+                        itemCatalogService,
+                        null);
     }
 
     /** 승리 턴에서 결산 라인만 actionLog에 추가되고, 전투 액션 라인은 combatLines에만 담긴다. */
@@ -276,7 +277,8 @@ class BattleServiceLogSplitTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress(final int hp) {

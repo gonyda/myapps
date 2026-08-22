@@ -210,7 +210,8 @@ class BattleServiceCritBonusTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress() {

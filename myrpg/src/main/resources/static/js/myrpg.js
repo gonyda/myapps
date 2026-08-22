@@ -166,56 +166,59 @@ function move(dx, dy) {
             return response.text();
         })
         .then(function (html) {
-            if (!html) {
-                return;
-            }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newTopBar = container.querySelector(".top-bar");
-            var newCenter = container.querySelector(".center");
-            var newActionLog = container.querySelector(".action-log");
-
-            if (newTopBar) {
-                var oldTopBar = document.querySelector(".top-bar");
-                if (oldTopBar) {
-                    oldTopBar.replaceWith(newTopBar);
-                }
-            }
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
-            if (newActionLog) {
-                var oldActionLog = document.querySelector(".action-log");
-                if (oldActionLog) {
-                    oldActionLog.replaceWith(newActionLog);
-                    newActionLog.scrollTop = newActionLog.scrollHeight;
-                }
-            }
-
-            var newMap = container.querySelector(".map-overlay");
-            if (newMap) {
-                var oldGrid = document.getElementById("mapGrid");
-                var newGrid = newMap.querySelector("#mapGrid");
-                if (oldGrid && newGrid) {
-                    oldGrid.setAttribute("style", newGrid.getAttribute("style"));
-                    oldGrid.innerHTML = newGrid.innerHTML;
-                }
-            }
-
-            // 기습 판정 신호 확인
-            var ambushEl = container.querySelector("#ambushSignal");
-            if (ambushEl) {
-                var monsterName = ambushEl.getAttribute("data-monster");
-                alert("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!");
-                battleActive = true;
-                // 기습은 서버에서 이미 start 호출됨 → battle-view 갱신
-                fetchBattleView();
+            if (html) {
+                swapMoveResponse(html);
             }
         });
+}
+
+// ===== move-response 프래그먼트 교체 공통 함수 =====
+function swapMoveResponse(html) {
+    var container = document.createElement("div");
+    container.innerHTML = html;
+
+    var newTopBar = container.querySelector(".top-bar");
+    var newCenter = container.querySelector(".center");
+    var newActionLog = container.querySelector(".action-log");
+
+    if (newTopBar) {
+        var oldTopBar = document.querySelector(".top-bar");
+        if (oldTopBar) {
+            oldTopBar.replaceWith(newTopBar);
+        }
+    }
+    if (newCenter) {
+        var oldCenter = document.querySelector(".center");
+        if (oldCenter) {
+            oldCenter.replaceWith(newCenter);
+        }
+    }
+    if (newActionLog) {
+        var oldActionLog = document.querySelector(".action-log");
+        if (oldActionLog) {
+            oldActionLog.replaceWith(newActionLog);
+            newActionLog.scrollTop = newActionLog.scrollHeight;
+        }
+    }
+
+    var newMap = container.querySelector(".map-overlay");
+    if (newMap) {
+        var oldGrid = document.getElementById("mapGrid");
+        var newGrid = newMap.querySelector("#mapGrid");
+        if (oldGrid && newGrid) {
+            oldGrid.setAttribute("style", newGrid.getAttribute("style"));
+            oldGrid.innerHTML = newGrid.innerHTML;
+        }
+    }
+
+    // 기습 판정 신호 확인
+    var ambushEl = container.querySelector("#ambushSignal");
+    if (ambushEl) {
+        var monsterName = ambushEl.getAttribute("data-monster");
+        alert("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!");
+        battleActive = true;
+        fetchBattleView();
+    }
 }
 
 // ===== NPC 대화: POST /npc/talk 호출 + .center swap =====
@@ -248,15 +251,75 @@ function swapCenter(html) {
     }
 }
 
-// ===== 상호작용 버튼 클릭 분기 (NPC/몬스터) =====
+// ===== 상호작용 버튼 클릭 분기 (NPC/몬스터/던전) =====
 function onInteractionClick(el) {
+    var actionType = el.getAttribute("data-action-type");
+    var targetParam = el.getAttribute("data-target-param");
     var npcId = el.getAttribute("data-npc-id");
     var monsterId = el.getAttribute("data-monster-id");
-    if (npcId) {
+
+    if (actionType === "dungeon-enter") {
+        enterDungeon(targetParam || "alby");
+    } else if (actionType === "dungeon-leave") {
+        leaveDungeon();
+    } else if (actionType === "dungeon-move") {
+        moveToDungeonRoom(targetParam);
+    } else if (npcId) {
         talkToNpc(npcId);
     } else if (monsterId) {
         encounterMonster(monsterId);
     }
+}
+
+// ===== 던전 입장: POST /dungeon/enter =====
+function enterDungeon(dungeonId) {
+    fetch("/dungeon/enter?dungeonId=" + encodeURIComponent(dungeonId), { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (html) {
+                swapMoveResponse(html);
+            }
+        });
+}
+
+// ===== 던전 퇴장: POST /dungeon/leave =====
+function leaveDungeon() {
+    if (!confirm("던전을 나가시겠습니까?")) {
+        return;
+    }
+    fetch("/dungeon/leave", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (html) {
+                swapMoveResponse(html);
+            }
+        });
+}
+
+// ===== 던전 방 이동: POST /dungeon/move =====
+function moveToDungeonRoom(targetRoomId) {
+    fetch("/dungeon/move?targetRoomId=" + encodeURIComponent(targetRoomId), { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (html) {
+                swapMoveResponse(html);
+            }
+        });
 }
 
 // ===== 몬스터 조우: POST /monster/encounter 호출 + .center swap =====

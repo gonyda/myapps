@@ -56,4 +56,17 @@ public class DomainServiceConfiguration {
     public BattleResolver battleResolver(final Random random) {
         return new BattleResolver(random);
     }
+
+    /**
+     * {@link DungeonGenerator} 빈을 생성합니다.
+     *
+     * <p>프로시저럴 맵 생성 및 몬스터 스폰에 사용할 {@link Random}을 주입받아 던전 생성 도메인 서비스를 생성한다.
+     *
+     * @param random 난수 생성기 빈
+     * @return 프로시저럴 던전 맵 생성 엔진
+     */
+    @Bean
+    public DungeonGenerator dungeonGenerator(final Random random) {
+        return new DungeonGenerator(random);
+    }
 }

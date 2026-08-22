@@ -294,6 +294,12 @@
             border-color: #4a6a4a;
         }
 
+        .interactions button.dungeon-btn {
+            background: #2a2a3a;
+            color: #ccccff;
+            border-color: #5c6bc0;
+        }
+
         /* 미니맵 */
         .minimap {
             background: #202020;
@@ -387,6 +393,8 @@
         .node.type-town,    .dot.type-town    { background: #6b93bf; }   /* 마을 (연파랑) */
         .node.type-field,   .dot.type-field   { background: #7bb07b; }   /* 자유필드 (연초록) */
         .node.type-dungeon, .dot.type-dungeon { background: #c08585; }   /* 던전 (연빨강) */
+        .node.type-dungeon-cleared,   .dot.type-dungeon-cleared   { background: #4caf50; }   /* 던전 클리어 방 (초록) */
+        .node.type-dungeon-uncleared, .dot.type-dungeon-uncleared { background: #d32f2f; }   /* 던전 미클리어 방 (빨강) */
 
         /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
         .node.current {

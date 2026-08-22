@@ -266,7 +266,8 @@ class BattleServiceMagicCastFailurePropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private BattleService buildDefenseService(final Random random) {
@@ -329,7 +330,8 @@ class BattleServiceMagicCastFailurePropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress(final int mp) {

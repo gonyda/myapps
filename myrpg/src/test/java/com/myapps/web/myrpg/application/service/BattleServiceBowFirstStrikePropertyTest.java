@@ -220,7 +220,8 @@ class BattleServiceBowFirstStrikePropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress() {

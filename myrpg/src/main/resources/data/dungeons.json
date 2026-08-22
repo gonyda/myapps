@@ -1,0 +1,92 @@
+{
+  "dungeons": [
+    {
+      "id": "alby",
+      "name": "알비 던전",
+      "entranceNodeId": "alby-entrance",
+      "theme": "dungeon-alby",
+      "implemented": true,
+      "generation": {
+        "minDistanceToBoss": 10,
+        "maxDistanceToBoss": 10,
+        "minTotalRooms": 20,
+        "maxTotalRooms": 23,
+        "branchProbability": 0.40,
+        "maxBranchDepth": 3
+      },
+      "monsterPool": [
+        { "monsterId": "spider", "minCount": 1, "maxCount": 2, "weight": 40 },
+        { "monsterId": "red-spider", "minCount": 1, "maxCount": 2, "weight": 25 },
+        { "monsterId": "goblin", "minCount": 1, "maxCount": 2, "weight": 25 },
+        { "monsterId": "black-spider", "minCount": 1, "maxCount": 1, "weight": 10 }
+      ],
+      "chainCombatProbability": 0.10,
+      "boss": {
+        "monsterId": "giant-spider",
+        "name": "거대거미",
+        "dialogue": "쿠구구궁…! 던전 깊은 곳에서 거대한 거미가 천천히 내려앉는다."
+      },
+      "rewards": {
+        "exp": 1000,
+        "gold": 2000,
+        "items": [
+          { "itemId": "hp_potion_30", "quantity": 3 }
+        ]
+      }
+    },
+    {
+      "id": "ciar",
+      "name": "키아 던전 (예시/확장용)",
+      "entranceNodeId": "ciar-entrance",
+      "theme": "dungeon-ciar",
+      "implemented": false,
+      "generation": {
+        "minDistanceToBoss": 12,
+        "maxDistanceToBoss": 14,
+        "minTotalRooms": 24,
+        "maxTotalRooms": 28,
+        "branchProbability": 0.45,
+        "maxBranchDepth": 4
+      },
+      "monsterPool": [],
+      "chainCombatProbability": 0.10,
+      "boss": {
+        "monsterId": "golem",
+        "name": "골렘",
+        "dialogue": ""
+      },
+      "rewards": {
+        "exp": 2500,
+        "gold": 5000,
+        "items": []
+      }
+    },
+    {
+      "id": "rabbie",
+      "name": "라비 던전 (예시/확장용)",
+      "entranceNodeId": "rabbie-entrance",
+      "theme": "dungeon-rabbie",
+      "implemented": false,
+      "generation": {
+        "minDistanceToBoss": 14,
+        "maxDistanceToBoss": 17,
+        "minTotalRooms": 28,
+        "maxTotalRooms": 34,
+        "branchProbability": 0.50,
+        "maxBranchDepth": 4
+      },
+      "monsterPool": [],
+      "chainCombatProbability": 0.10,
+      "boss": {
+        "monsterId": "succubus",
+        "name": "서큐버스",
+        "dialogue": ""
+      },
+      "rewards": {
+        "exp": 5000,
+        "gold": 10000,
+        "items": []
+      }
+    }
+  ]
+}

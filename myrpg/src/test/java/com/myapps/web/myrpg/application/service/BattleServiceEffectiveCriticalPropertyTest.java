@@ -338,7 +338,8 @@ class BattleServiceEffectiveCriticalPropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private BattleService buildServiceWithDefenseSkill(
@@ -404,7 +405,8 @@ class BattleServiceEffectiveCriticalPropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     private CharacterProgress createProgress() {

@@ -14,6 +14,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.DefenseSkill;
+import com.myapps.web.myrpg.domain.model.DungeonInstance;
 import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Monster;
@@ -86,6 +87,7 @@ public class BattleService {
     private final SkillCatalogService skillCatalogService;
     private final CharacterSkillRepository characterSkillRepository;
     private final ItemCatalogService itemCatalogService;
+    private final DungeonService dungeonService;
 
     /**
      * BattleService를 생성한다.
@@ -105,6 +107,7 @@ public class BattleService {
      * @param skillCatalogService 스킬 카탈로그 서비스
      * @param characterSkillRepository 캐릭터 보유 스킬 리포지토리
      * @param itemCatalogService 아이템 카탈로그 서비스
+     * @param dungeonService 던전 관리 서비스
      */
     public BattleService(
             final BattleStateRepository battleStateRepository,
@@ -121,7 +124,8 @@ public class BattleService {
             final Random random,
             final SkillCatalogService skillCatalogService,
             final CharacterSkillRepository characterSkillRepository,
-            final ItemCatalogService itemCatalogService) {
+            final ItemCatalogService itemCatalogService,
+            final DungeonService dungeonService) {
         this.battleStateRepository = battleStateRepository;
         this.resolver = resolver;
         this.monsterService = monsterService;
@@ -139,6 +143,7 @@ public class BattleService {
         this.skillCatalogService = skillCatalogService;
         this.characterSkillRepository = characterSkillRepository;
         this.itemCatalogService = itemCatalogService;
+        this.dungeonService = dungeonService;
     }
 
     /**
@@ -182,7 +187,7 @@ public class BattleService {
      * @return 턴 결과
      */
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity"})
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     public BattleTurnResult takeTurn(
             final CharacterProgress progress, final BattleState state, final String skillId) {
         final Optional<Monster> monsterOpt = monsterService.byId(state.getMonsterId());
@@ -277,8 +282,7 @@ public class BattleService {
         if (monsterKilled) {
             reward = processKillReward(progress, monster, settlementLines);
             experienceGained = monster.experience();
-            outcome = Outcome.WIN;
-            state.setActive(false);
+            outcome = handleMonsterKilled(progress, state, monster, combatLines, settlementLines);
         } else if (progress.isDead()) {
             outcome = handleDeath(progress, state, settlementLines);
         }
@@ -712,12 +716,61 @@ public class BattleService {
         return itemCatalogService.byId(itemId).map(Item::name).orElse(itemId);
     }
 
+    private Outcome handleMonsterKilled(
+            final CharacterProgress progress,
+            final BattleState state,
+            final Monster monster,
+            final List<String> combatLines,
+            final List<String> settlementLines) {
+        final Long characterId =
+                progress.getId() != null ? progress.getId() : state.getCharacterId();
+
+        final Optional<DungeonInstance> dungeonOpt =
+                dungeonService != null
+                        ? dungeonService.getActiveDungeon(characterId)
+                        : Optional.empty();
+
+        if (dungeonOpt.isPresent()) {
+            final DungeonInstance dungeon = dungeonOpt.get();
+            final boolean isBoss =
+                    dungeon.bossRoomId().equals(dungeon.currentRoomId())
+                            || "boss".equals(monster.type())
+                            || "giant-spider".equals(monster.id());
+
+            if (isBoss) {
+                dungeonService.onBossDefeated(characterId);
+                state.setActive(false);
+                return Outcome.WIN;
+            }
+
+            dungeonService.onMonsterDefeated(characterId, monster.id());
+            final boolean chainCombat = random.nextInt(PERCENT_DIVISOR) < 10;
+            if (chainCombat) {
+                state.setMonsterCurrentHp(monster.maxHp());
+                state.setTurnCount(1);
+                state.setActive(true);
+                final String chainMsg = monster.name() + " 무리가 추가로 기습해왔다!";
+                combatLines.add(chainMsg);
+                settlementLines.add(chainMsg);
+                return Outcome.NONE;
+            }
+        }
+
+        state.setActive(false);
+        return Outcome.WIN;
+    }
+
     // ─── Private: death ─────────────────────────────────────────────────────
 
     private Outcome handleDeath(
             final CharacterProgress progress,
             final BattleState state,
             final List<String> logLines) {
+        if (dungeonService != null) {
+            final Long characterId =
+                    progress.getId() != null ? progress.getId() : state.getCharacterId();
+            dungeonService.handlePlayerDeath(characterId);
+        }
         final DeathResult deathResult = progressionService.die(progress);
         state.setActive(false);
         logLines.add("쓰러졌다… 티르코네일에서 부활 (경험치 -" + deathResult.experienceLost() + ")");

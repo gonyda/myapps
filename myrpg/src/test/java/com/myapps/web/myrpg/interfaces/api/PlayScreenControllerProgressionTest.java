@@ -86,6 +86,10 @@ class PlayScreenControllerProgressionTest {
 
     @MockitoBean private BattleService battleService;
 
+    @MockitoBean private com.myapps.web.myrpg.application.service.DungeonService dungeonService;
+
+    @MockitoBean private com.myapps.web.myrpg.domain.service.MapViewFactory mapViewFactory;
+
     @org.junit.jupiter.api.BeforeEach
     void setUpBattleServiceDefault() {
         org.mockito.Mockito.when(

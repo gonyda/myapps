@@ -138,7 +138,8 @@ class BattleServiceTurnIntegrationTest {
                         random,
                         skillCatalogService,
                         characterSkillRepo,
-                        itemCatalogService);
+                        itemCatalogService,
+                        null);
     }
 
     /** 일반 턴에서 onSkillUsed가 호출되는지 검증한다. */

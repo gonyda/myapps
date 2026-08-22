@@ -26,5 +26,147 @@
       "(너구리가 몸을 잔뜩 웅크린 채 경계 태세를 갖춘다.)",
       "(너구리가 이빨을 드러내며 앞발을 천천히 들어올린다.)"
     ]
+  },
+  {
+    "id": "spider",
+    "name": "거미",
+    "type": "normal",
+    "level": 2,
+    "maxHp": 65,
+    "attackPower": 48,
+    "defense": 4,
+    "critical": 30,
+    "experience": 30,
+    "goldDrop": {
+      "min": 8,
+      "max": 20
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_30",
+        "chancePercent": 10,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "lines": [
+      "샤아악-!",
+      "(거미가 거미줄을 뿜으며 다가온다.)",
+      "(거미의 날카로운 다리가 바닥을 긁는 소리가 난다.)"
+    ]
+  },
+  {
+    "id": "red-spider",
+    "name": "붉은거미",
+    "type": "normal",
+    "level": 3,
+    "maxHp": 80,
+    "attackPower": 50,
+    "defense": 5,
+    "critical": 30,
+    "experience": 40,
+    "goldDrop": {
+      "min": 12,
+      "max": 25
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_30",
+        "chancePercent": 15,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "lines": [
+      "쉭쉭!",
+      "(붉은빛을 띤 거미가 사납게 턱을 움직인다.)",
+      "(붉은거미가 빠르게 기어와 공격 자세를 취한다.)"
+    ]
+  },
+  {
+    "id": "goblin",
+    "name": "고블린",
+    "type": "normal",
+    "level": 3,
+    "maxHp": 70,
+    "attackPower": 54,
+    "defense": 3,
+    "critical": 30,
+    "experience": 42,
+    "goldDrop": {
+      "min": 15,
+      "max": 30
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_30",
+        "chancePercent": 20,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "lines": [
+      "키에엑! 침입자다, 키엑!",
+      "(고블린이 몽둥이를 휘두르며 위협한다.)",
+      "(고블린이 기분 나쁜 웃음을 흘리며 거리를 좁힌다.)"
+    ]
+  },
+  {
+    "id": "black-spider",
+    "name": "검은거미",
+    "type": "normal",
+    "level": 4,
+    "maxHp": 100,
+    "attackPower": 56,
+    "defense": 6,
+    "critical": 40,
+    "experience": 55,
+    "goldDrop": {
+      "min": 20,
+      "max": 45
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_30",
+        "chancePercent": 25,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "lines": [
+      "샤아아악!",
+      "(거대한 검은 다리로 바닥을 내리찍는다.)",
+      "(검은거미의 붉은 눈 여러 개가 어둠 속에서 번뜩인다.)"
+    ]
+  },
+  {
+    "id": "giant-spider",
+    "name": "거대거미",
+    "type": "boss",
+    "level": 7,
+    "maxHp": 380,
+    "attackPower": 72,
+    "defense": 12,
+    "critical": 70,
+    "defenseBlockRate": 60,
+    "defenseCounterRate": 50,
+    "experience": 350,
+    "goldDrop": {
+      "min": 150,
+      "max": 300
+    },
+    "itemDrops": [
+      {
+        "itemId": "hp_potion_30",
+        "chancePercent": 100,
+        "minQuantity": 2,
+        "maxQuantity": 3
+      }
+    ],
+    "lines": [
+      "키에에에엑!",
+      "쿠구구궁…! (던전 깊은 곳을 울리는 거대한 진동과 함께 거대거미가 내려앉는다.)",
+      "(거대거미의 위압적인 포효가 던전 전체에 메아리친다.)"
+    ]
   }
 ]

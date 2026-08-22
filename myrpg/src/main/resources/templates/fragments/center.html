@@ -42,10 +42,12 @@
     <div class="interactions" id="interactions">
         <th:block th:if="${view.interactions != null}">
             <button th:each="item : ${view.interactions}"
-                    th:classappend="${item.npc} ? 'npc' : ''"
+                    th:classappend="${item.npc} ? 'npc' : (${item.actionType == 'dungeon-enter' or item.actionType == 'dungeon-leave'} ? 'dungeon-btn' : '')"
                     th:text="${item.name}"
                     th:attr="data-npc-id=${item.npc ? item.id : null},
-                             data-monster-id=${item.npc ? null : item.id}"
+                             data-monster-id=${item.actionType == 'monster' ? item.id : null},
+                             data-action-type=${item.actionType},
+                             data-target-param=${item.targetParam}"
                     onclick="onInteractionClick(this)">
             </button>
         </th:block>

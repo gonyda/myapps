@@ -372,7 +372,8 @@ class BattleServiceLogRoutingPropertyTest {
                 random,
                 skillCatalogService,
                 characterSkillRepo,
-                itemCatalogService);
+                itemCatalogService,
+                null);
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────

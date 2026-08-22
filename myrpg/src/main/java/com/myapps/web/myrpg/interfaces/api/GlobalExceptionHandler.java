@@ -140,4 +140,42 @@ public class GlobalExceptionHandler {
         model.addAttribute("message", exception.getMessage());
         return "error";
     }
+
+    /**
+     * {@link com.myapps.web.myrpg.application.exception.BlockedMovementException} 발생 시 이동 차단 안내를
+     * 반환한다.
+     *
+     * @param exception 발생한 예외
+     * @param model Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(com.myapps.web.myrpg.application.exception.BlockedMovementException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleBlockedMovement(
+            final com.myapps.web.myrpg.application.exception.BlockedMovementException exception,
+            final Model model) {
+        LOG.warn("던전 이동 차단: {}", exception.getMessage());
+        model.addAttribute("message", exception.getMessage());
+        return "error";
+    }
+
+    /**
+     * {@link com.myapps.web.myrpg.application.exception.DungeonNotImplementedException} 발생 시 미구현 던전
+     * 안내를 반환한다.
+     *
+     * @param exception 발생한 예외
+     * @param model Spring MVC 모델
+     * @return 뷰 이름 {@code "error"}
+     */
+    @ExceptionHandler(
+            com.myapps.web.myrpg.application.exception.DungeonNotImplementedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleDungeonNotImplemented(
+            final com.myapps.web.myrpg.application.exception.DungeonNotImplementedException
+                    exception,
+            final Model model) {
+        LOG.warn("미구현 던전 진입 차단: {}", exception.getMessage());
+        model.addAttribute("message", exception.getMessage());
+        return "error";
+    }
 }
