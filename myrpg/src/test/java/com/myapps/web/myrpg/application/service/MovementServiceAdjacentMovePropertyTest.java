@@ -66,7 +66,8 @@ class MovementServiceAdjacentMovePropertyTest {
         when(mockMapService.graph()).thenReturn(graph);
 
         final ActionLog actionLog = new ActionLog(FIXED_CLOCK);
-        final MovementService movementService = new MovementService(mockMapService, actionLog);
+        final MovementService movementService =
+                new MovementService(mockMapService, actionLog, null);
 
         final CharacterProgress progress =
                 new CharacterProgress(

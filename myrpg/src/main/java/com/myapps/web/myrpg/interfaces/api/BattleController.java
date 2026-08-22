@@ -205,7 +205,7 @@ public class BattleController {
             final BattleView battleView,
             final List<String> turnLog) {
         final TopBarView topBar = playScreenViewHelper.buildTopBar(progress);
-        final MinimapView minimap = mapService.minimap(progress.getCurrentNodeId());
+        final MinimapView minimap = nodeViewAssembler.fromProgress(progress).minimap();
         final List<ActionLogEntry> logs = actionLog.getEntries();
 
         model.addAttribute("view", buildViewShell(topBar, minimap, logs));

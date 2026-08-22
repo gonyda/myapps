@@ -32,6 +32,7 @@ class MovementServiceTest {
             Clock.fixed(Instant.parse("2025-06-15T10:00:00Z"), ZoneId.of("Asia/Seoul"));
 
     @Mock private MapService mapService;
+    @Mock private DungeonService dungeonService;
 
     private ActionLog actionLog;
     private MovementService movementService;
@@ -39,7 +40,7 @@ class MovementServiceTest {
     @BeforeEach
     void setUp() {
         actionLog = new ActionLog(FIXED_CLOCK);
-        movementService = new MovementService(mapService, actionLog);
+        movementService = new MovementService(mapService, actionLog, dungeonService);
     }
 
     @Test
@@ -287,5 +288,129 @@ class MovementServiceTest {
 
         // then
         assertThat(actionLog.size()).isEqualTo(0);
+    }
+
+    @Test
+    void should_returnMoved_when_inDungeonAndNeighborConnected() {
+        // given
+        final MapNode room0 =
+                new MapNode(
+                        "room-0",
+                        "시작방",
+                        "dungeon",
+                        NodeType.DUNGEON,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("room-1"));
+        new MapNode(
+                "room-0", "시작방", "dungeon", NodeType.DUNGEON, 0, 0, null, null, List.of("room-1"));
+        final MapNode room1 =
+                new MapNode(
+                        "room-1",
+                        "던전방",
+                        "dungeon",
+                        NodeType.DUNGEON,
+                        0,
+                        1,
+                        null,
+                        null,
+                        List.of("room-0"));
+        final MapGraph dungeonGraph = new MapGraph(List.of(room0, room1), List.of(), "room-0");
+
+        final com.myapps.web.myrpg.domain.model.DungeonInstance dungeon =
+                new com.myapps.web.myrpg.domain.model.DungeonInstance(
+                        1L,
+                        "alby",
+                        "alby-entrance",
+                        "room-0",
+                        "room-1",
+                        "room-0",
+                        dungeonGraph,
+                        java.util.Map.of());
+
+        when(dungeonService.getActiveDungeon(1L)).thenReturn(java.util.Optional.of(dungeon));
+
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "room-0", 0, 0L);
+        setId(progress, 1L);
+
+        // when
+        final MovementResult result = movementService.move(progress, 0, 1);
+
+        // then
+        assertThat(result).isInstanceOf(MovementResult.Moved.class);
+        final MovementResult.Moved moved = (MovementResult.Moved) result;
+        assertThat(moved.node().id()).isEqualTo("room-1");
+    }
+
+    @Test
+    void should_returnBlocked_when_inDungeonAndBlockedMovementExceptionThrown() {
+        // given
+        final MapNode room0 =
+                new MapNode(
+                        "room-0",
+                        "시작방",
+                        "dungeon",
+                        NodeType.DUNGEON,
+                        0,
+                        0,
+                        null,
+                        null,
+                        List.of("room-1"));
+        final MapNode room1 =
+                new MapNode(
+                        "room-1",
+                        "던전방",
+                        "dungeon",
+                        NodeType.DUNGEON,
+                        0,
+                        1,
+                        null,
+                        null,
+                        List.of("room-0"));
+        final MapGraph dungeonGraph = new MapGraph(List.of(room0, room1), List.of(), "room-0");
+
+        final com.myapps.web.myrpg.domain.model.DungeonInstance dungeon =
+                new com.myapps.web.myrpg.domain.model.DungeonInstance(
+                        1L,
+                        "alby",
+                        "alby-entrance",
+                        "room-0",
+                        "room-1",
+                        "room-0",
+                        dungeonGraph,
+                        java.util.Map.of());
+
+        when(dungeonService.getActiveDungeon(1L)).thenReturn(java.util.Optional.of(dungeon));
+        when(dungeonService.moveToRoom(1L, "room-1"))
+                .thenThrow(
+                        new com.myapps.web.myrpg.application.exception.BlockedMovementException(
+                                "몬스터를 처치해야 합니다."));
+
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "고니", 1, 1, 0L, TalentType.MELEE, null, 100, 100, 100, "room-0", 0, 0L);
+        setId(progress, 1L);
+
+        // when
+        final MovementResult result = movementService.move(progress, 0, 1);
+
+        // then
+        assertThat(result).isInstanceOf(MovementResult.Blocked.class);
+        final MovementResult.Blocked blocked = (MovementResult.Blocked) result;
+        assertThat(blocked.message()).isEqualTo("몬스터를 처치해야 합니다.");
+    }
+
+    private void setId(final CharacterProgress progress, final Long id) {
+        try {
+            final java.lang.reflect.Field field = CharacterProgress.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(progress, id);
+        } catch (final ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

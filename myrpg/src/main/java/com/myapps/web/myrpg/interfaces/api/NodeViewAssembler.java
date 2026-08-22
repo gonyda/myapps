@@ -6,6 +6,7 @@ import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.DungeonService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -86,6 +87,18 @@ public class NodeViewAssembler {
      * @return 플레이 화면 뷰 모델
      */
     public PlayScreenView fromProgress(final CharacterProgress progress) {
+        return fromProgress(progress, null);
+    }
+
+    /**
+     * 캐릭터 진행상황과 대화 대상(NPC 또는 몬스터)으로부터 플레이 화면 전체 뷰 모델을 조립한다.
+     *
+     * @param progress 캐릭터 진행상황
+     * @param talkTarget 대화 대상 (NPC 또는 몬스터, 없으면 null 또는 {@link TalkTarget#EMPTY})
+     * @return 플레이 화면 뷰 모델
+     */
+    public PlayScreenView fromProgress(
+            final CharacterProgress progress, final TalkTarget talkTarget) {
         final Long characterId = progress.getId();
         final Optional<DungeonInstance> dungeonOpt =
                 dungeonService != null && characterId != null
@@ -93,14 +106,16 @@ public class NodeViewAssembler {
                         : Optional.empty();
 
         if (dungeonOpt.isPresent()) {
-            return buildDungeonView(progress, dungeonOpt.get());
+            return buildDungeonView(progress, dungeonOpt.get(), talkTarget);
         }
 
-        return buildFieldView(progress);
+        return buildFieldView(progress, talkTarget);
     }
 
     private PlayScreenView buildDungeonView(
-            final CharacterProgress progress, final DungeonInstance dungeon) {
+            final CharacterProgress progress,
+            final DungeonInstance dungeon,
+            final TalkTarget talkTarget) {
         final MinimapView minimap = mapViewFactory.createMinimap(dungeon);
         final FullMapView fullMap = mapViewFactory.createFullMap(dungeon);
         final String currentRoomId = dungeon.currentRoomId();
@@ -140,11 +155,12 @@ public class NodeViewAssembler {
         final RebirthStatus status = progressionService.rebirthStatus(progress);
         final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
 
-        return playScreenViewHelper.buildPlayScreen(
-                progress, minimap, fullMap, ambience, interactions, null, null, logs, info);
+        return assemblePlayScreen(
+                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
     }
 
-    private PlayScreenView buildFieldView(final CharacterProgress progress) {
+    private PlayScreenView buildFieldView(
+            final CharacterProgress progress, final TalkTarget talkTarget) {
         final String currentNodeId = progress.getCurrentNodeId();
         final MapNode currentNode = mapService.node(currentNodeId);
         final MinimapView minimap = mapService.minimap(currentNodeId);
@@ -171,6 +187,34 @@ public class NodeViewAssembler {
         final RebirthStatus status = progressionService.rebirthStatus(progress);
         final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
 
+        return assemblePlayScreen(
+                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+    }
+
+    private PlayScreenView assemblePlayScreen(
+            final CharacterProgress progress,
+            final MinimapView minimap,
+            final FullMapView fullMap,
+            final String ambience,
+            final List<InteractionItem> interactions,
+            final TalkTarget talkTarget,
+            final List<ActionLogEntry> logs,
+            final InfoPopupView info) {
+        if (talkTarget != null && talkTarget.npc() != null) {
+            return playScreenViewHelper.buildPlayScreen(
+                    progress,
+                    minimap,
+                    fullMap,
+                    ambience,
+                    interactions,
+                    talkTarget.npc(),
+                    talkTarget.dialogue(),
+                    logs);
+        }
+        if (talkTarget != null) {
+            return playScreenViewHelper.buildPlayScreen(
+                    progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+        }
         return playScreenViewHelper.buildPlayScreen(
                 progress, minimap, fullMap, ambience, interactions, null, null, logs, info);
     }

@@ -74,7 +74,8 @@ class CharacterServiceTurnSavePropertyTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         final ActionLog actionLog = new ActionLog(FIXED_CLOCK);
-        final MovementService movementService = new MovementService(mockMapService, actionLog);
+        final MovementService movementService =
+                new MovementService(mockMapService, actionLog, null);
         final SkillService mockSkillService = mock(SkillService.class);
         final InventoryService mockInventoryService = mock(InventoryService.class);
         final CharacterService characterService =

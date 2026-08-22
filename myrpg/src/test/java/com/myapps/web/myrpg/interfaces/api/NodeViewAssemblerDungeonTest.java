@@ -2,6 +2,7 @@ package com.myapps.web.myrpg.interfaces.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -12,6 +13,7 @@ import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.DungeonService;
@@ -94,10 +96,12 @@ class NodeViewAssemblerDungeonTest {
         given(playScreenViewHelper.buildInfo(any(), any())).willReturn(info);
 
         // Stub buildPlayScreen to return a populated view
-        given(
+        org.mockito.Mockito.lenient()
+                .when(
                         playScreenViewHelper.buildPlayScreen(
-                                any(), any(), any(), any(), any(), any(), any(), any(), any()))
-                .willAnswer(
+                                any(), any(), any(), any(), any(), isNull(), isNull(), any(),
+                                any()))
+                .thenAnswer(
                         invocation -> {
                             final MinimapView mm = invocation.getArgument(1);
                             final FullMapView fm = invocation.getArgument(2);
@@ -114,6 +118,45 @@ class NodeViewAssemblerDungeonTest {
                                     null,
                                     null,
                                     null,
+                                    null,
+                                    null,
+                                    null,
+                                    List.of(),
+                                    info);
+                        });
+
+        org.mockito.Mockito.lenient()
+                .when(
+                        playScreenViewHelper.buildPlayScreen(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(TalkTarget.class),
+                                any(),
+                                any()))
+                .thenAnswer(
+                        invocation -> {
+                            final MinimapView mm = invocation.getArgument(1);
+                            final FullMapView fm = invocation.getArgument(2);
+                            final String amb = invocation.getArgument(3);
+                            final List<InteractionItem> interactions = invocation.getArgument(4);
+                            final TalkTarget tt = invocation.getArgument(5);
+                            final String monsterName =
+                                    tt != null && tt.monster() != null ? tt.monster().name() : null;
+                            final String monsterDialogue = tt != null ? tt.dialogue() : null;
+                            return new PlayScreenView(
+                                    createTestTopBar(),
+                                    mm,
+                                    fm,
+                                    amb,
+                                    null,
+                                    null,
+                                    interactions,
+                                    null,
+                                    monsterName,
+                                    monsterDialogue,
                                     null,
                                     null,
                                     null,
@@ -261,6 +304,47 @@ class NodeViewAssemblerDungeonTest {
         assertThat(view.interactions()).hasSize(1);
         assertThat(view.interactions().get(0).actionType()).isEqualTo("dungeon-enter");
         assertThat(view.interactions().get(0).name()).contains("알비 던전 입장");
+    }
+
+    @Test
+    @DisplayName("던전 방에서 몬스터 조우 시 talkTarget 정보(대사, 몬스터명 등)가 뷰에 정상 반영된다")
+    void should_assembleMonsterRoom_with_talkTarget_when_encounteringDungeonMonster() {
+        // given
+        final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-1-0", "room-2-0");
+        final Monster spider =
+                new Monster(
+                        "spider",
+                        "거미",
+                        MonsterType.NORMAL,
+                        2,
+                        65,
+                        48,
+                        4,
+                        30,
+                        30L,
+                        new GoldDrop(8, 20),
+                        List.of(),
+                        List.of("1", "2", "3"),
+                        40,
+                        30);
+
+        final TalkTarget talkTarget = TalkTarget.ofMonster(spider, "샤아악-!");
+
+        given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
+        given(mapViewFactory.createMinimap(dungeon))
+                .willReturn(new MinimapView("알비 던전", List.of()));
+        given(mapViewFactory.createFullMap(dungeon)).willReturn(new FullMapView(List.of(), 3, 3));
+        given(monsterService.byId("spider")).willReturn(Optional.of(spider));
+
+        // when
+        final PlayScreenView view = nodeViewAssembler.fromProgress(character, talkTarget);
+
+        // then
+        assertThat(view).isNotNull();
+        assertThat(view.monsterName()).isEqualTo("거미");
+        assertThat(view.monsterDialogue()).isEqualTo("샤아악-!");
+        assertThat(view.interactions()).hasSize(1);
+        assertThat(view.interactions().get(0).actionType()).isEqualTo("monster");
     }
 
     private TopBarView createTestTopBar() {

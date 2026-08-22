@@ -81,6 +81,12 @@ class BattleControllerTest {
 
     @MockitoBean private NodeViewAssembler nodeViewAssembler;
 
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        when(nodeViewAssembler.fromProgress(any(CharacterProgress.class)))
+                .thenReturn(createRestoredView());
+    }
+
     /** POST /battle/start 요청 시 전투 응답 프래그먼트가 200으로 반환되는지 검증한다. */
     @Test
     void should_returnBattleResponseFragment_when_startWithValidMonsterId() throws Exception {

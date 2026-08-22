@@ -207,7 +207,8 @@ class PlayScreenControllerNpcTest {
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(npcService.byNode(nodeId)).thenReturn(npcs);
-        when(playScreenViewHelper.buildInteractions(npcs)).thenReturn(interactions);
+        when(monsterService.byNode(nodeId)).thenReturn(List.of());
+        when(playScreenViewHelper.buildInteractions(npcs, List.of())).thenReturn(interactions);
         when(npcService.byId("neris")).thenReturn(Optional.of(neris));
         when(npcDialogueService.selectLine(neris)).thenReturn("좋은 물건이 많아요!");
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));

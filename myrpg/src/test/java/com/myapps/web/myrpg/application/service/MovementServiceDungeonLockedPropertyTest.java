@@ -48,7 +48,8 @@ class MovementServiceDungeonLockedPropertyTest {
 
         final MapService mockMapService = mock(MapService.class);
         final ActionLog actionLog = new ActionLog(FIXED_CLOCK);
-        final MovementService movementService = new MovementService(mockMapService, actionLog);
+        final MovementService movementService =
+                new MovementService(mockMapService, actionLog, null);
 
         final CharacterProgress progress =
                 new CharacterProgress(

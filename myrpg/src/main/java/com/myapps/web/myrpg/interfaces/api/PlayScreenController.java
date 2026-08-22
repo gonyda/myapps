@@ -2,9 +2,6 @@ package com.myapps.web.myrpg.interfaces.api;
 
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.BattleView;
-import com.myapps.web.myrpg.application.dto.FullMapView;
-import com.myapps.web.myrpg.application.dto.InteractionItem;
-import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
@@ -21,10 +18,8 @@ import com.myapps.web.myrpg.application.service.NpcDialogueService;
 import com.myapps.web.myrpg.application.service.NpcService;
 import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
-import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
-import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.TalentType;
@@ -65,6 +60,7 @@ public class PlayScreenController {
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
     private final NodeViewAssembler nodeViewAssembler;
+    private final com.myapps.web.myrpg.application.service.DungeonService dungeonService;
 
     /**
      * PlayScreenController를 생성한다.
@@ -83,6 +79,7 @@ public class PlayScreenController {
      * @param actionLog 세션 보관 행동 로그
      * @param playScreenViewHelper 뷰 모델 조립 헬퍼
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
+     * @param dungeonService 던전 서비스
      */
     public PlayScreenController(
             final CharacterService characterService,
@@ -98,7 +95,8 @@ public class PlayScreenController {
             final BattleService battleService,
             final ActionLog actionLog,
             final PlayScreenViewHelper playScreenViewHelper,
-            final NodeViewAssembler nodeViewAssembler) {
+            final NodeViewAssembler nodeViewAssembler,
+            final com.myapps.web.myrpg.application.service.DungeonService dungeonService) {
         this.characterService = characterService;
         this.mapService = mapService;
         this.ambienceService = ambienceService;
@@ -113,6 +111,7 @@ public class PlayScreenController {
         this.actionLog = actionLog;
         this.playScreenViewHelper = playScreenViewHelper;
         this.nodeViewAssembler = nodeViewAssembler;
+        this.dungeonService = dungeonService;
     }
 
     /**
@@ -201,17 +200,25 @@ public class PlayScreenController {
         final MovementResult result = movementService.move(progress, dx, dy);
 
         if (result instanceof MovementResult.Moved) {
-            characterService.saveTurn(progress);
+            final boolean isInDungeon =
+                    dungeonService != null
+                            && progress.getId() != null
+                            && dungeonService.getActiveDungeon(progress.getId()).isPresent();
 
-            final List<Monster> monstersOnNode = monsterService.byNode(progress.getCurrentNodeId());
-            final Optional<Monster> ambusher =
-                    monsterEncounterService.rollPreemptiveStrike(monstersOnNode);
-            ambusher.ifPresent(
-                    monster -> {
-                        battleService.start(progress, monster.id(), true);
-                        actionLog.add(monster.name() + "이(가) 기습해왔다!", COMBAT_TYPE);
-                        model.addAttribute("ambushMonsterName", monster.name());
-                    });
+            if (!isInDungeon) {
+                characterService.saveTurn(progress);
+
+                final List<Monster> monstersOnNode =
+                        monsterService.byNode(progress.getCurrentNodeId());
+                final Optional<Monster> ambusher =
+                        monsterEncounterService.rollPreemptiveStrike(monstersOnNode);
+                ambusher.ifPresent(
+                        monster -> {
+                            battleService.start(progress, monster.id(), true);
+                            actionLog.add(monster.name() + "이(가) 기습해왔다!", COMBAT_TYPE);
+                            model.addAttribute("ambushMonsterName", monster.name());
+                        });
+            }
         }
 
         final PlayScreenView view = buildViewFromProgress(progress);
@@ -232,33 +239,14 @@ public class PlayScreenController {
     @PostMapping("/npc/talk")
     public String talkToNpc(@RequestParam final String npcId, final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final String currentNodeId = progress.getCurrentNodeId();
-
-        final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
-        final List<InteractionItem> interactions =
-                playScreenViewHelper.buildInteractions(npcsOnNode);
 
         final Optional<Npc> targetNpc = npcService.byId(npcId);
-        final Npc talkingNpc = targetNpc.orElse(null);
         final String dialogue =
-                talkingNpc != null ? npcDialogueService.selectLine(talkingNpc) : null;
+                targetNpc.isPresent() ? npcDialogueService.selectLine(targetNpc.get()) : null;
+        final TalkTarget talkTarget =
+                targetNpc.map(npc -> TalkTarget.ofNpc(npc, dialogue)).orElse(TalkTarget.EMPTY);
 
-        final MapNode currentNode = mapService.node(currentNodeId);
-        final MinimapView minimap = mapService.minimap(currentNodeId);
-        final FullMapView fullMap = mapService.fullMap(currentNodeId);
-        final String ambience = ambienceService.ambience(currentNode);
-        final List<ActionLogEntry> logs = actionLog.getEntries();
-
-        final PlayScreenView view =
-                playScreenViewHelper.buildPlayScreen(
-                        progress,
-                        minimap,
-                        fullMap,
-                        ambience,
-                        interactions,
-                        talkingNpc,
-                        dialogue,
-                        logs);
+        final PlayScreenView view = nodeViewAssembler.fromProgress(progress, talkTarget);
         model.addAttribute("view", view);
         model.addAttribute("talkingNpcId", npcId);
         return "fragments/npc-response";
@@ -282,12 +270,6 @@ public class PlayScreenController {
     @PostMapping("/monster/encounter")
     public String encounterMonster(@RequestParam final String monsterId, final Model model) {
         final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final String currentNodeId = progress.getCurrentNodeId();
-
-        final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
-        final List<Monster> monstersOnNode = monsterService.byNode(currentNodeId);
-        final List<InteractionItem> interactions =
-                playScreenViewHelper.buildInteractions(npcsOnNode, monstersOnNode);
 
         final Optional<Monster> targetMonster = monsterService.byId(monsterId);
 
@@ -301,15 +283,7 @@ public class PlayScreenController {
             talkTarget = TalkTarget.EMPTY;
         }
 
-        final MapNode currentNode = mapService.node(currentNodeId);
-        final MinimapView minimap = mapService.minimap(currentNodeId);
-        final FullMapView fullMap = mapService.fullMap(currentNodeId);
-        final String ambience = ambienceService.ambience(currentNode);
-        final List<ActionLogEntry> logs = actionLog.getEntries();
-
-        final PlayScreenView view =
-                playScreenViewHelper.buildPlayScreen(
-                        progress, minimap, fullMap, ambience, interactions, talkTarget, logs, null);
+        final PlayScreenView view = nodeViewAssembler.fromProgress(progress, talkTarget);
         model.addAttribute("view", view);
         return "fragments/monster-response";
     }
