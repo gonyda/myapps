@@ -39,6 +39,8 @@
 
 ## 3. 최근 변경사항 (Recent Changes)
 
+- **[2026-08-23] MyRPG 원격 서버 배포 완료 (`134.185.116.35:8083`)**
+  - 최신 main 브랜치 git pull, 빌드, 기존 프로세스 교체 및 Health check 통과 (PID: 2656751, HTTP 200)
 - **[2026-08-23] MyRPG README.md 전수 검증 및 설계 가이드 보완 완료**
   - **오류 수정**:
     - 스킬 랭크 체계 정정 (`NOVICE` 삭제 $\rightarrow$ `F` ~ `MASTER` 16개 랭크, 승급 15구간)
