@@ -153,8 +153,20 @@ public class ItemCatalogService {
 
     private PotionItem parsePotionItem(
             final JsonNode itemNode, final String id, final String name, final Integer buyPrice) {
-        final int healHp = extractRequiredInt(itemNode, "healHp", id);
-        return new PotionItem(id, name, healHp, buyPrice);
+        final Integer healHpOpt = extractOptionalInt(itemNode, "healHp");
+        final Integer healMpOpt = extractOptionalInt(itemNode, "healMp");
+        final Integer healStaminaOpt = extractOptionalInt(itemNode, "healStamina");
+
+        final int healHp = healHpOpt != null ? healHpOpt : 0;
+        final int healMp = healMpOpt != null ? healMpOpt : 0;
+        final int healStamina = healStaminaOpt != null ? healStaminaOpt : 0;
+
+        if (healHp <= 0 && healMp <= 0 && healStamina <= 0) {
+            throw new ItemDataException(
+                    "포션 아이템 '" + id + "'은(는) healHp, healMp, healStamina 중 적어도 하나가 양수여야 합니다.");
+        }
+
+        return new PotionItem(id, name, healHp, healMp, healStamina, buyPrice);
     }
 
     private EquipmentItem parseEquipmentItem(

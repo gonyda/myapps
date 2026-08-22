@@ -102,7 +102,7 @@
     "type": "healer",
     "nodeId": "tir-chonaill",
     "personality": "새침하고 쌀쌀맞아 보이지만 속정은 깊은 마을 치료소의 힐러. 자경단원 트레보의 짝사랑을 받고 있다.",
-    "shopItems": ["hp_potion_30"],
+    "shopItems": ["hp_potion_30", "mp_potion_30", "stamina_potion_30"],
     "lines": {
       "default": [
         "다친 데는... 없죠? 아, 필요하면 언제든 치료해 드릴게요.",
@@ -152,7 +152,7 @@
     "type": "healer",
     "nodeId": "dunbarton",
     "personality": "건강과 활력을 최우선으로 생각하는 매우 유쾌하고 자신감 넘치는 성격.",
-    "shopItems": ["hp_potion_30"],
+    "shopItems": ["hp_potion_30", "mp_potion_30", "stamina_potion_30"],
     "lines": {
       "default": [
         "몸 상태는 스스로 챙겨야 하는 법이야. 그래도 힘들면 들르게!",

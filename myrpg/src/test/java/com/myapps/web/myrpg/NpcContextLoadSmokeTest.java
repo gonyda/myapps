@@ -82,7 +82,8 @@ class NpcContextLoadSmokeTest {
         assertThat(neris.shopItems()).containsExactly("long_sword");
 
         final Npc dilys = npcService.byId("dilys").orElseThrow();
-        assertThat(dilys.shopItems()).containsExactly("hp_potion_30");
+        assertThat(dilys.shopItems())
+                .containsExactly("hp_potion_30", "mp_potion_30", "stamina_potion_30");
     }
 
     /** 상점, 수리, 치료 관련 빈이 정상 로드되는지 검증한다 (Req 010 스모크). */

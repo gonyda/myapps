@@ -105,5 +105,43 @@ class ItemCatalogServiceTest {
         final Item item = potionOpt.get();
         assertThat(item.buyPrice()).isEqualTo(50);
         assertThat(item).isInstanceOf(PotionItem.class);
+        final PotionItem potion = (PotionItem) item;
+        assertThat(potion.healHp()).isEqualTo(30);
+        assertThat(potion.healMp()).isEqualTo(0);
+        assertThat(potion.healStamina()).isEqualTo(0);
+    }
+
+    /** 신규 mp_potion_30의 로드 상태 및 회복량을 검증한다. */
+    @Test
+    void should_loadMpPotionCorrectly() {
+        final Optional<Item> potionOpt = itemCatalogService.byId("mp_potion_30");
+
+        assertThat(potionOpt).isPresent();
+        final Item item = potionOpt.get();
+        assertThat(item.id()).isEqualTo("mp_potion_30");
+        assertThat(item.name()).isEqualTo("마나 30 포션");
+        assertThat(item.buyPrice()).isEqualTo(50);
+        assertThat(item).isInstanceOf(PotionItem.class);
+        final PotionItem potion = (PotionItem) item;
+        assertThat(potion.healHp()).isEqualTo(0);
+        assertThat(potion.healMp()).isEqualTo(30);
+        assertThat(potion.healStamina()).isEqualTo(0);
+    }
+
+    /** 신규 stamina_potion_30의 로드 상태 및 회복량을 검증한다. */
+    @Test
+    void should_loadStaminaPotionCorrectly() {
+        final Optional<Item> potionOpt = itemCatalogService.byId("stamina_potion_30");
+
+        assertThat(potionOpt).isPresent();
+        final Item item = potionOpt.get();
+        assertThat(item.id()).isEqualTo("stamina_potion_30");
+        assertThat(item.name()).isEqualTo("스태미나 30 포션");
+        assertThat(item.buyPrice()).isEqualTo(50);
+        assertThat(item).isInstanceOf(PotionItem.class);
+        final PotionItem potion = (PotionItem) item;
+        assertThat(potion.healHp()).isEqualTo(0);
+        assertThat(potion.healMp()).isEqualTo(0);
+        assertThat(potion.healStamina()).isEqualTo(30);
     }
 }

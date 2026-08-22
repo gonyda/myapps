@@ -7,6 +7,20 @@
     "buyPrice": 50
   },
   {
+    "id": "mp_potion_30",
+    "name": "마나 30 포션",
+    "type": "potion",
+    "healMp": 30,
+    "buyPrice": 50
+  },
+  {
+    "id": "stamina_potion_30",
+    "name": "스태미나 30 포션",
+    "type": "potion",
+    "healStamina": 30,
+    "buyPrice": 50
+  },
+  {
     "id": "beginner_one_hand_sword",
     "name": "초보자용 한손검",
     "type": "weapon",

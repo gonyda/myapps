@@ -148,7 +148,8 @@ public class InventoryService {
     /**
      * 포션을 사용하여 HP를 회복한다.
      *
-     * <p>HP를 {@code min(hpCurrent + healHp, hpMax)}로 회복하고 수량을 1 감소시킨다. 수량이 0이 되면 해당 행을 삭제한다.
+     * <p>HP, MP, Stamina를 각각 {@code min(current + heal, max)}로 회복하고 수량을 1 감소시킨다. 수량이 0이 되면 해당 행을
+     * 삭제한다.
      *
      * @param ownedItemId 사용할 포션 보유 아이템 PK
      */
@@ -172,10 +173,15 @@ public class InventoryService {
                 statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
         final VitalMax equipVitalBonus = equippedBonus().vitalBonus();
         final int hpMax = vitalMax.hp() + equipVitalBonus.hp();
+        final int mpMax = vitalMax.mp() + equipVitalBonus.mp();
+        final int staminaMax = vitalMax.stamina() + equipVitalBonus.stamina();
 
-        final int healed = Math.min(character.getHpCurrent() + potionItem.healHp(), hpMax);
-        character.fullRecover(
-                new VitalMax(healed, character.getMpCurrent(), character.getStaminaCurrent()));
+        final int healedHp = Math.min(character.getHpCurrent() + potionItem.healHp(), hpMax);
+        final int healedMp = Math.min(character.getMpCurrent() + potionItem.healMp(), mpMax);
+        final int healedStamina =
+                Math.min(character.getStaminaCurrent() + potionItem.healStamina(), staminaMax);
+
+        character.fullRecover(new VitalMax(healedHp, healedMp, healedStamina));
 
         target.decreaseQuantity(1);
         if (target.getQuantity() == 0) {
@@ -484,7 +490,15 @@ public class InventoryService {
         final List<String> lines = new ArrayList<>();
 
         if (item instanceof PotionItem potionItem) {
-            lines.add("생명력을 " + potionItem.healHp() + " 회복한다.");
+            if (potionItem.healHp() > 0) {
+                lines.add("생명력을 " + potionItem.healHp() + " 회복한다.");
+            }
+            if (potionItem.healMp() > 0) {
+                lines.add("마나를 " + potionItem.healMp() + " 회복한다.");
+            }
+            if (potionItem.healStamina() > 0) {
+                lines.add("스태미나를 " + potionItem.healStamina() + " 회복한다.");
+            }
         } else if (item instanceof EquipmentItem equipItem) {
             lines.add(equipItem.kind().label() + " (" + equipItem.type().label() + ")");
 

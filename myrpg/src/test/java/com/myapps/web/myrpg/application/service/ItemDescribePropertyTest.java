@@ -82,6 +82,41 @@ class ItemDescribePropertyTest {
     }
 
     /**
+     * 마나 포션 아이템에 대해 상세 설명에 "마나를 {healMp} 회복한다." 문구가 포함됨을 검증한다.
+     *
+     * @param healMp 임의 생성된 MP 회복량
+     */
+    @Property(tries = 100)
+    void should_containHealMpDescription_when_potionItem(@ForAll("healHpValues") final int healMp) {
+
+        final PotionItem potion = new PotionItem("test_mp_potion", "테스트 마나 포션", 0, healMp, 0, null);
+        final OwnedItem owned = new OwnedItem("test_mp_potion", 3, StorageKind.INVENTORY, false, 0);
+
+        final List<String> lines = inventoryService.describe(potion, owned);
+
+        assertThat(lines).anyMatch(line -> line.contains("마나를 " + healMp + " 회복한다."));
+    }
+
+    /**
+     * 스태미나 포션 아이템에 대해 상세 설명에 "스태미나를 {healStamina} 회복한다." 문구가 포함됨을 검증한다.
+     *
+     * @param healStamina 임의 생성된 스태미나 회복량
+     */
+    @Property(tries = 100)
+    void should_containHealStaminaDescription_when_potionItem(
+            @ForAll("healHpValues") final int healStamina) {
+
+        final PotionItem potion =
+                new PotionItem("test_stamina_potion", "테스트 스태미나 포션", 0, 0, healStamina, null);
+        final OwnedItem owned =
+                new OwnedItem("test_stamina_potion", 3, StorageKind.INVENTORY, false, 0);
+
+        final List<String> lines = inventoryService.describe(potion, owned);
+
+        assertThat(lines).anyMatch(line -> line.contains("스태미나를 " + healStamina + " 회복한다."));
+    }
+
+    /**
      * 장비 아이템에 대해 상세 설명에 각 보너스 라인이 포함됨을 검증한다.
      *
      * @param equipData 임의 생성된 장비 데이터(kind, bonuses, maxDurability, currentDurability)

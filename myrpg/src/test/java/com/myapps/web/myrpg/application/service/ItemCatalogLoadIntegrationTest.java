@@ -23,10 +23,12 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class ItemCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_ITEM_COUNT = 13;
+    private static final int TOTAL_ITEM_COUNT = 15;
     private static final Set<String> KNOWN_ITEM_IDS =
             Set.of(
                     "hp_potion_30",
+                    "mp_potion_30",
+                    "stamina_potion_30",
                     "beginner_one_hand_sword",
                     "beginner_two_hand_sword",
                     "beginner_shield",

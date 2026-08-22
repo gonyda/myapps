@@ -115,7 +115,15 @@ def report_potions(items):
         return
     print(f"\n=== 포션 ===")
     for p in potions:
-        print(f"{p['name']:<16} healHp={p.get('healHp','-'):<4} {price_str(p)}")
+        effects = []
+        if p.get("healHp"):
+            effects.append(f"healHp={p['healHp']}")
+        if p.get("healMp"):
+            effects.append(f"healMp={p['healMp']}")
+        if p.get("healStamina"):
+            effects.append(f"healStamina={p['healStamina']}")
+        effects_str = ", ".join(effects) if effects else "-"
+        print(f"{p['name']:<16} {effects_str:<24} {price_str(p)}")
 
 
 def validate_candidate(item, items, level):
@@ -163,7 +171,14 @@ def validate_candidate(item, items, level):
         print("  같은 슬롯 CP 순위: " + " < ".join(names))
 
     elif itype == "potion":
-        print(f"  healHp={item.get('healHp')} / {price_str(item)}")
+        effects = []
+        if item.get("healHp"):
+            effects.append(f"healHp={item['healHp']}")
+        if item.get("healMp"):
+            effects.append(f"healMp={item['healMp']}")
+        if item.get("healStamina"):
+            effects.append(f"healStamina={item['healStamina']}")
+        print(f"  {', '.join(effects)} / {price_str(item)}")
     else:
         warnings.append(f"알 수 없는 type: {itype}")
 

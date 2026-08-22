@@ -96,6 +96,106 @@ class UsePotionPropertyTest {
     }
 
     /**
+     * 마나 포션 사용 후 MP가 min(mpCurrent + healMp, mpMax)로 클램프됨을 검증한다.
+     *
+     * @param params 임의 생성된 포션 사용 파라미터
+     */
+    @Property(tries = 100)
+    void should_clampMpToMax_when_mpPotionUsed(
+            @ForAll("potionWithQuantityAboveOne") final PotionUseParams params) {
+
+        final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
+        final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final StatProgression statProgression = new StatProgression();
+
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
+
+        final OwnedItem potionOwned =
+                new OwnedItem(
+                        params.potionId(), params.quantity(), StorageKind.INVENTORY, false, 0);
+
+        final PotionItem potionItem =
+                new PotionItem(params.potionId(), "테스트 마나 포션", 0, params.healHp(), 0, 30);
+
+        final CharacterProgress character = createCharacterWithMp(params.hpCurrent());
+
+        when(ownedItemRepository.findById(OWNED_ITEM_ID)).thenReturn(Optional.of(potionOwned));
+        when(itemCatalogService.byId(params.potionId())).thenReturn(Optional.of(potionItem));
+        when(characterProgressRepository.findFirstByOrderByIdAsc())
+                .thenReturn(Optional.of(character));
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of());
+
+        inventoryService.usePotion(OWNED_ITEM_ID);
+
+        final int mpMax = computeMpMax(character);
+        final int expectedMp = Math.min(params.hpCurrent() + params.healHp(), mpMax);
+        assertThat(character.getMpCurrent()).isEqualTo(expectedMp);
+    }
+
+    /**
+     * 스태미나 포션 사용 후 Stamina가 min(staminaCurrent + healStamina, staminaMax)로 클램프됨을 검증한다.
+     *
+     * @param params 임의 생성된 포션 사용 파라미터
+     */
+    @Property(tries = 100)
+    void should_clampStaminaToMax_when_staminaPotionUsed(
+            @ForAll("potionWithQuantityAboveOne") final PotionUseParams params) {
+
+        final OwnedItemRepository ownedItemRepository = mock(OwnedItemRepository.class);
+        final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
+        final CharacterProgressRepository characterProgressRepository =
+                mock(CharacterProgressRepository.class);
+        final StatProgression statProgression = new StatProgression();
+
+        final InventoryService inventoryService =
+                new InventoryService(
+                        ownedItemRepository,
+                        itemCatalogService,
+                        characterProgressRepository,
+                        statProgression,
+                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                        mock(
+                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
+                                        .class));
+
+        final OwnedItem potionOwned =
+                new OwnedItem(
+                        params.potionId(), params.quantity(), StorageKind.INVENTORY, false, 0);
+
+        final PotionItem potionItem =
+                new PotionItem(params.potionId(), "테스트 스태미나 포션", 0, 0, params.healHp(), 30);
+
+        final CharacterProgress character = createCharacterWithStamina(params.hpCurrent());
+
+        when(ownedItemRepository.findById(OWNED_ITEM_ID)).thenReturn(Optional.of(potionOwned));
+        when(itemCatalogService.byId(params.potionId())).thenReturn(Optional.of(potionItem));
+        when(characterProgressRepository.findFirstByOrderByIdAsc())
+                .thenReturn(Optional.of(character));
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of());
+
+        inventoryService.usePotion(OWNED_ITEM_ID);
+
+        final int staminaMax = computeStaminaMax(character);
+        final int expectedStamina = Math.min(params.hpCurrent() + params.healHp(), staminaMax);
+        assertThat(character.getStaminaCurrent()).isEqualTo(expectedStamina);
+    }
+
+    /**
      * 포션 사용 후 수량이 1 감소함을 검증한다(수량 > 1인 경우).
      *
      * @param params 임의 생성된 포션 사용 파라미터
@@ -307,6 +407,50 @@ class UsePotionPropertyTest {
     }
 
     /**
+     * 지정된 MP 현재값을 가진 캐릭터를 생성한다.
+     *
+     * @param mpCurrent 설정할 MP 현재값
+     * @return CharacterProgress 인스턴스
+     */
+    private CharacterProgress createCharacterWithMp(final int mpCurrent) {
+        return new CharacterProgress(
+                "테스트",
+                1,
+                1,
+                0L,
+                TalentType.MELEE,
+                null,
+                100,
+                mpCurrent,
+                100,
+                "tir-chonaill",
+                0,
+                0L);
+    }
+
+    /**
+     * 지정된 Stamina 현재값을 가진 캐릭터를 생성한다.
+     *
+     * @param staminaCurrent 설정할 Stamina 현재값
+     * @return CharacterProgress 인스턴스
+     */
+    private CharacterProgress createCharacterWithStamina(final int staminaCurrent) {
+        return new CharacterProgress(
+                "테스트",
+                1,
+                1,
+                0L,
+                TalentType.MELEE,
+                null,
+                100,
+                100,
+                staminaCurrent,
+                "tir-chonaill",
+                0,
+                0L);
+    }
+
+    /**
      * 레벨 1, MELEE 재능 기준 hpMax를 계산한다 (장비 보너스 0).
      *
      * @param character 대상 캐릭터
@@ -318,6 +462,32 @@ class UsePotionPropertyTest {
                 statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
         // 장비 보너스 없음(테스트에서 장착 장비 없도록 모킹)
         return vitalMax.hp();
+    }
+
+    /**
+     * 레벨 1, MELEE 재능 기준 mpMax를 계산한다 (장비 보너스 0).
+     *
+     * @param character 대상 캐릭터
+     * @return 계산된 MP 최대치
+     */
+    private int computeMpMax(final CharacterProgress character) {
+        final StatProgression statProgression = new StatProgression();
+        final VitalMax vitalMax =
+                statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
+        return vitalMax.mp();
+    }
+
+    /**
+     * 레벨 1, MELEE 재능 기준 staminaMax를 계산한다 (장비 보너스 0).
+     *
+     * @param character 대상 캐릭터
+     * @return 계산된 Stamina 최대치
+     */
+    private int computeStaminaMax(final CharacterProgress character) {
+        final StatProgression statProgression = new StatProgression();
+        final VitalMax vitalMax =
+                statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
+        return vitalMax.stamina();
     }
 
     // ─── Inner types ────────────────────────────────────────────────────────
