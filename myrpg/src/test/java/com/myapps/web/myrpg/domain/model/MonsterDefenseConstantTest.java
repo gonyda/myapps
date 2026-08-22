@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link Monster}의 방어 상수({@code defenseBlockRate}, {@code defenseCounterRate}) 기본값을 검증하는 단위 테스트.
  *
- * <p>12파라미터 보조 생성자로 생성 시 전역 기본값(경감 40% / 반격 30%)이 적용되고, 14파라미터 정규 생성자로 명시 시 오버라이드 값이 사용됨을 확인한다.
+ * <p>12파라미터 보조 생성자로 생성 시 전역 기본값(100% 완전 방어 / 0 반격)이 적용되고, 14파라미터 정규 생성자로 명시 시 오버라이드 값이 사용됨을 확인한다.
  *
  * <p><b>Validates: Requirements 22.1</b>
  */
@@ -29,7 +29,7 @@ class MonsterDefenseConstantTest {
     private static final List<ItemDrop> TEST_ITEM_DROPS = List.of();
     private static final List<String> TEST_LINES = List.of("끼익!", "너구리가 경계한다.", "너구리가 발톱을 세운다.");
 
-    /** 12파라미터 보조 생성자로 생성 시 defenseBlockRate가 전역 기본값 40을 반환하는지 검증한다. */
+    /** 12파라미터 보조 생성자로 생성 시 defenseBlockRate가 전역 기본값 100(100% 완전 방어)을 반환하는지 검증한다. */
     @Test
     void should_returnDefaultBlockRate_when_createdWith12ParamConstructor() {
         final Monster monster =
@@ -50,7 +50,7 @@ class MonsterDefenseConstantTest {
         assertThat(monster.defenseBlockRate()).isEqualTo(DEFAULT_BLOCK_RATE);
     }
 
-    /** 12파라미터 보조 생성자로 생성 시 defenseCounterRate가 전역 기본값 30을 반환하는지 검증한다. */
+    /** 12파라미터 보조 생성자로 생성 시 defenseCounterRate가 전역 기본값 0(0 반격)을 반환하는지 검증한다. */
     @Test
     void should_returnDefaultCounterRate_when_createdWith12ParamConstructor() {
         final Monster monster =

@@ -81,9 +81,9 @@ fileMatchPattern: '**/data/*.json'
 2. (그 레벨 플레이어 유효 DEF 추정을 보여주며) **`attackPower`** → `§C-4` 비율(유효 DEF의 2~2.5배)로 제안·합의.
 3. **`maxHp`** → 플레이어 1타 추정 × 목표 처치 턴(일반 3~5, 보스 10+)으로 역산 제시.
 4. **`defense`**(플레이어 1타를 다 씹지 않는 선) / **`critical`**(0.1% 단위) / **`experience`·`goldDrop`**(위협도 비례).
-5. **`itemDrops`**(드랍 아이템·확률) / 방어 상수 오버라이드(`defenseBlockRate`/`defenseCounterRate`) 필요 시.
+5. **`itemDrops`**(드랍 아이템·확률) / 방어 상수 오버라이드(`defenseBlockRate`/`defenseCounterRate`) 필요 시(기본 100% 완전 방어 / 0 반격).
 
-검증: `attackPower` > 그 구간 플레이어 유효 DEF(1뎀 방지), 보상이 위협도에 비례, 보스면 방어 상수 상향(`§C-4`).
+검증: `attackPower` > 그 구간 플레이어 유효 DEF(1뎀 방지), 보상이 위협도에 비례.
 → **스크립트 검증**: `cd tools/balance && python3 verify_monster.py --level {레벨} --json '{신규 몬스터 JSON}'` (난이도계수는 `--difficulty`로 조정).
 
 ### B-5. 스킬 추가 (`skill.json`)
@@ -158,12 +158,12 @@ fileMatchPattern: '**/data/*.json'
 - **인챈트(`ENCHANT`)**: 스펙 미확정 → 데이터 임의 추가 금지.
 
 ### C-4. 몬스터 규칙 (수치 예시 없음 — monster.json이 baseline)
-필드: `level, maxHp, attackPower, defense, critical(0.1%), experience, goldDrop{min,max}, itemDrops[], defenseBlockRate(기본40), defenseCounterRate(기본30)`.
+필드: `level, maxHp, attackPower, defense, critical(0.1%), experience, goldDrop{min,max}, itemDrops[], defenseBlockRate(기본100), defenseCounterRate(기본0)`.
 
 - **`attackPower` > 그 구간 플레이어 유효 DEF**(장비 포함 추정) — 1뎀 방지. 강공격 턴은 150%.
 - 스케일링 비율: `attackPower` ≈ 유효 DEF의 **2~2.5배**, `maxHp` ≈ 플레이어 1타의 **4~6배**(목표 처치 턴), `defense`는 플레이어 1타를 다 씹지 않는 선(낮게).
 - `critical`: 일반 낮게(1~5%), 보스만 소폭↑. `experience`·`goldDrop`: 위협도(HP×위협) 비례, 약체에 과보상 금지.
-- 방어 상수(%, 레벨 무관 자동 스케일): 일반 경감40/반격30, **보스 경감60/반격50**. 반격율은 일반공격(100%)보다 낮게.
+- 방어 상수(%, 레벨 무관 자동 스케일): 기본 **100% 완전 방어 (0 피격) / 0 반격** (일반/보스 공통 대칭 룰, 강공격/스매시에 관통).
 - 기준 앵커(Lv1 최약체 등)는 **monster.json에서 읽어** 상대 위치의 기준으로 삼는다.
 
 ### C-5. 스킬 규칙 (밴드는 규칙 · 로스터는 skill.json이 baseline)

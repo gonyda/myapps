@@ -9,7 +9,8 @@ import java.util.List;
  * 포함한다. 영속 대상이 아니며 전투 중 현재 HP는 본 레코드에 포함하지 않는다.
  *
  * <p>{@code defenseBlockRate}와 {@code defenseCounterRate}는 몬스터가 방어(DEFENSE) 행동을 선택했을 때 적용되는 경감률(%)과
- * 반격율(%)이다. 몬스터별 오버라이드가 가능하며, 미지정 시 전역 기본값(경감 40% / 반격 30%)을 사용한다. 두 필드 모두 %이므로 레벨과 무관하게 자동 스케일된다.
+ * 반격율(%)이다. 몬스터별 오버라이드가 가능하며, 미지정 시 전역 기본값(100% 완전 방어 / 0 반격)을 사용한다. 두 필드 모두 %이므로 레벨과 무관하게 자동
+ * 스케일된다.
  *
  * @param id 몬스터 고유 식별자 (예: "raccoon")
  * @param name 몬스터 표시 이름 (예: "너구리")
@@ -23,8 +24,8 @@ import java.util.List;
  * @param goldDrop 골드 드랍 범위 (필수)
  * @param itemDrops 아이템 드랍 테이블 (빈 목록 가능)
  * @param lines 조우 대사 목록 (정확히 3개: 소리 1 + 행동 묘사 2)
- * @param defenseBlockRate 방어 경감률 (%, 기본 40). 몬스터가 방어 시 공격자 피해를 이 비율만큼 경감
- * @param defenseCounterRate 방어 반격율 (%, 기본 30). 몬스터가 방어 시 attackPower × 이 비율로 반격
+ * @param defenseBlockRate 방어 경감률 (%, 기본 100). 몬스터가 방어 시 공격자 피해를 이 비율만큼 경감 (100 = 0 피격)
+ * @param defenseCounterRate 방어 반격율 (%, 기본 0). 몬스터가 방어 시 attackPower × 이 비율로 반격 (0 = 반격 없음)
  */
 public record Monster(
         String id,
@@ -46,7 +47,7 @@ public record Monster(
     private static final int DEFAULT_DEFENSE_COUNTER_RATE = 0;
 
     /**
-     * 방어 상수를 전역 기본값(경감 40% / 반격 30%)으로 생성하는 보조 생성자.
+     * 방어 상수를 전역 기본값(100% 완전 방어 / 0 반격)으로 생성하는 보조 생성자.
      *
      * <p>기존 12필드 호출부와의 하위 호환을 유지하기 위해 제공된다. {@code monster.json}에서 두 필드가 미지정된 경우 이 생성자를 통해 인스턴스를
      * 생성한다.
