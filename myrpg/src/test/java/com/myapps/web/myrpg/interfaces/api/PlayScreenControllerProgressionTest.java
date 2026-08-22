@@ -1,5 +1,6 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -333,6 +334,48 @@ class PlayScreenControllerProgressionTest {
         verify(progressionService).rebirth(progress, TalentType.ARCHERY);
         verify(characterService, never()).saveTurn(any());
         verify(actionLog).add("환생까지 12시간 45분 남았습니다", "system");
+    }
+
+    /** POST /cheat/exp 요청 시 1,000 EXP가 지급되고 saveTurn 및 progress-response 프래그먼트가 반환되는지 검증한다. */
+    @Test
+    void should_gainExpAndSaveTurn_when_cheatExpRequested() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final PlayScreenView view = buildDefaultView();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(progressionService.gainExperience(progress, 1000L))
+                .thenReturn(new com.myapps.web.myrpg.application.dto.LevelUpResult(0, 1));
+        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
+        stubBuildViewFromProgress(view);
+
+        mockMvc.perform(post("/cheat/exp"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/progress-response"))
+                .andExpect(model().attributeExists("view"));
+
+        verify(progressionService).gainExperience(progress, 1000L);
+        verify(characterService).saveTurn(progress);
+        verify(actionLog).add("테스트 치트: 1,000 EXP를 획득했습니다!", "system");
+    }
+
+    /** POST /cheat/gold 요청 시 1,000 Gold가 지급되고 saveTurn 및 progress-response 프래그먼트가 반환되는지 검증한다. */
+    @Test
+    void should_gainGoldAndSaveTurn_when_cheatGoldRequested() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final PlayScreenView view = buildDefaultView();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(characterService.saveTurn(any(CharacterProgress.class))).thenReturn(progress);
+        stubBuildViewFromProgress(view);
+
+        mockMvc.perform(post("/cheat/gold"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/progress-response"))
+                .andExpect(model().attributeExists("view"));
+
+        assertThat(progress.getGold()).isEqualTo(1000);
+        verify(characterService).saveTurn(progress);
+        verify(actionLog).add("테스트 치트: 1,000 Gold를 획득했습니다!", "system");
     }
 
     // ─────────────────────────────────────── 헬퍼 메서드 ───────────────────────────────────────

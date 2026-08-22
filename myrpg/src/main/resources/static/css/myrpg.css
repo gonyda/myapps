@@ -184,6 +184,18 @@
             background: #444;
         }
 
+        .left-sidebar button.btn-cheat {
+            background: #2d261e;
+            color: #ffc107;
+            border: 1px dashed #d39e00;
+            font-size: calc(var(--fs-sm) * 0.85);
+            font-weight: bold;
+        }
+
+        .left-sidebar button.btn-cheat:active {
+            background: #463b27;
+        }
+
         /* 가운데 영역 */
         .center {
             flex: 1;

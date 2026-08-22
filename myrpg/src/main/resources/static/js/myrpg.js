@@ -1041,6 +1041,31 @@ function swapProgressResponse(html) {
     }
 }
 
+// ===== 테스트/디버깅용 치트 (1,000 EXP / 1,000 Gold) =====
+function cheatExp() {
+    fetch("/cheat/exp", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) { return; }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
+function cheatGold() {
+    fetch("/cheat/gold", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) { return; }
+            return response.text();
+        })
+        .then(function (html) {
+            if (!html) { return; }
+            swapProgressResponse(html);
+        });
+}
+
 // ─── 스킬 팝업 ─────────────────────────────
 function openSkillPopup() {
     document.getElementById('skillOverlay').classList.add('open');

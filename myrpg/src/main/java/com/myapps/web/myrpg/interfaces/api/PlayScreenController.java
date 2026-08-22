@@ -322,6 +322,54 @@ public class PlayScreenController {
     }
 
     /**
+     * 테스트 및 디버깅용 1,000 EXP 획득 치트를 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/cheat/exp")
+    public String cheatExp(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final com.myapps.web.myrpg.application.dto.LevelUpResult result =
+                progressionService.gainExperience(progress, 1000L);
+        characterService.saveTurn(progress);
+
+        if (result.levelsGained() > 0) {
+            actionLog.add(
+                    "테스트 치트: 1,000 EXP를 획득했습니다! (Lv."
+                            + result.newLevel()
+                            + " 달성, AP +"
+                            + result.levelsGained()
+                            + ")",
+                    NOTIFICATION_TYPE);
+        } else {
+            actionLog.add("테스트 치트: 1,000 EXP를 획득했습니다!", NOTIFICATION_TYPE);
+        }
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
+     * 테스트 및 디버깅용 1,000 Gold 획득 치트를 처리하고 갱신된 프래그먼트를 반환한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
+     */
+    @PostMapping("/cheat/gold")
+    public String cheatGold(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        progress.gainGold(1000);
+        characterService.saveTurn(progress);
+        actionLog.add("테스트 치트: 1,000 Gold를 획득했습니다!", NOTIFICATION_TYPE);
+
+        final PlayScreenView view = buildViewFromProgress(progress);
+        model.addAttribute("view", view);
+        return "fragments/progress-response";
+    }
+
+    /**
      * 캐릭터 진행상황으로부터 플레이 화면 전체 뷰 모델을 조립한다.
      *
      * <p>현재 노드 기준 상호작용·상황 멘트·정보 팝업 조립은 {@link NodeViewAssembler}에 위임하여 전투 종료 후 화면 복원과 동일한 뷰를 공유한다.
