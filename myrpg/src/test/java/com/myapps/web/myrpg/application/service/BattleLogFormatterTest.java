@@ -353,4 +353,89 @@ class BattleLogFormatterTest {
         assertThat(lines)
                 .containsExactly("스매시(강) 3연타", "30(치명)  28(치명)  32(치명) = 90 피해", "너구리의 강공격이 빗나갔다!");
     }
+
+    @Test
+    @DisplayName("디펜스 100% 완전 방어 시 완전 방어 성공 로그를 남긴다")
+    void should_logCompleteDefense_when_defenseBlocksCompletely() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        DEFENSE_SKILL,
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        0,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("디펜스(방어)로 공격을 완벽히 방어했다!", "너구리의 일반공격이 빗나갔다!");
+    }
+
+    @Test
+    @DisplayName("몬스터 방어 시 플레이어 일반 공격이 막히면 방어 가로막힘 로그를 남긴다")
+    void should_logAttackBlocked_when_playerNormalBlockedByMonsterDefense() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        ATTACK_SKILL,
+                        SkillType.NORMAL,
+                        MONSTER_NAME,
+                        SkillType.DEFENSE,
+                        0,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("상대의 방어에 공격이 가로막혔다!", "너구리이(가) 공격을 완벽히 방어했다!");
+    }
+
+    @Test
+    @DisplayName("카운터 어택 성공 시 회피 및 치명적 반격 로그를 남긴다")
+    void should_logCounterAttackSuccess_when_counterHits() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "카운터 어택",
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        45,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines)
+                .containsExactly("카운터 어택(방어)으로 적의 공격을 흘려내며 치명적인 반격! (45 피해)", "너구리의 일반공격이 빗나갔다!");
+    }
+
+    @Test
+    @DisplayName("카운터 어택 시 몬스터가 방어하면 헛방 로그를 남긴다")
+    void should_logCounterAttackMiss_when_monsterDefends() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "카운터 어택",
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.DEFENSE,
+                        0,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("적이 공격하지 않아 카운터 어택(방어)이 빗나갔다!", "너구리이(가) 방어 태세를 취했다.");
+    }
 }

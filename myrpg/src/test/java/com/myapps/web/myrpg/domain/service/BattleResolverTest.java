@@ -157,6 +157,156 @@ class BattleResolverTest {
             assertThat(result.playerDamageToMonster()).isEqualTo(0);
             assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
         }
+
+        /** 디펜스 100% 완전 방어: 몬스터 일반 공격에 대해 플레이어 피격 0, 반격 0. */
+        @Test
+        void should_takeZeroDamageAndZeroCounter_when_defenseBlocks100Percent() {
+            final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
+            final TurnInput input =
+                    new TurnInput(
+                            SkillType.DEFENSE,
+                            SkillType.NORMAL,
+                            PLAYER_ATTACK,
+                            MONSTER_ATTACK,
+                            PLAYER_DEFENSE,
+                            MONSTER_DEFENSE,
+                            PLAYER_MULTIPLIER,
+                            MONSTER_NORMAL_MULTIPLIER,
+                            100,
+                            100,
+                            0,
+                            0,
+                            ZERO_CRITICAL,
+                            ZERO_CRITICAL,
+                            1,
+                            false);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+            assertThat(result.playerDamageToMonster()).isEqualTo(0);
+            assertThat(result.countered()).isFalse();
+        }
+
+        /** 몬스터 100% 디펜스: 플레이어 일반 공격 0 피해(막힘), 몬스터 반격 0. */
+        @Test
+        void should_dealZeroDamage_when_playerNormalBlockedBy100PercentMonsterDefense() {
+            final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
+            final TurnInput input =
+                    new TurnInput(
+                            SkillType.NORMAL,
+                            SkillType.DEFENSE,
+                            PLAYER_ATTACK,
+                            MONSTER_ATTACK,
+                            PLAYER_DEFENSE,
+                            MONSTER_DEFENSE,
+                            PLAYER_MULTIPLIER,
+                            MONSTER_NORMAL_MULTIPLIER,
+                            100,
+                            100,
+                            0,
+                            0,
+                            ZERO_CRITICAL,
+                            ZERO_CRITICAL,
+                            1,
+                            false);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.playerDamageToMonster()).isEqualTo(0);
+            assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+            assertThat(result.blocked()).isTrue();
+            assertThat(result.countered()).isFalse();
+        }
+
+        /** 카운터 어택 vs 일반 공격: 상대 공격력 비례 반격, 플레이어 0 피격. */
+        @Test
+        void should_dealCounterDamageBasedOnMonsterAttack_when_counterAttackVsNormal() {
+            final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
+            final TurnInput input =
+                    new TurnInput(
+                            SkillType.DEFENSE,
+                            SkillType.NORMAL,
+                            PLAYER_ATTACK,
+                            MONSTER_ATTACK,
+                            PLAYER_DEFENSE,
+                            MONSTER_DEFENSE,
+                            PLAYER_MULTIPLIER,
+                            MONSTER_NORMAL_MULTIPLIER,
+                            100,
+                            100,
+                            100,
+                            0,
+                            ZERO_CRITICAL,
+                            ZERO_CRITICAL,
+                            1,
+                            true);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+            assertThat(result.playerDamageToMonster()).isGreaterThan(0);
+            assertThat(result.countered()).isTrue();
+        }
+
+        /** 카운터 어택 vs 강공격: 강공격도 흘려내며 상대 공격력 비례 반격, 플레이어 0 피격. */
+        @Test
+        void should_dealCounterDamageBasedOnMonsterAttack_when_counterAttackVsHeavy() {
+            final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
+            final TurnInput input =
+                    new TurnInput(
+                            SkillType.DEFENSE,
+                            SkillType.HEAVY,
+                            PLAYER_ATTACK,
+                            MONSTER_ATTACK,
+                            PLAYER_DEFENSE,
+                            MONSTER_DEFENSE,
+                            PLAYER_MULTIPLIER,
+                            MONSTER_HEAVY_MULTIPLIER,
+                            100,
+                            100,
+                            150,
+                            0,
+                            ZERO_CRITICAL,
+                            ZERO_CRITICAL,
+                            1,
+                            true);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+            assertThat(result.playerDamageToMonster()).isGreaterThan(0);
+            assertThat(result.countered()).isTrue();
+        }
+
+        /** 카운터 어택 vs 디펜스: 교착 (양측 0 피해). */
+        @Test
+        void should_dealZeroDamage_when_counterAttackVsDefense() {
+            final BattleResolver resolver = new BattleResolver(new Random(FIXED_SEED));
+            final TurnInput input =
+                    new TurnInput(
+                            SkillType.DEFENSE,
+                            SkillType.DEFENSE,
+                            PLAYER_ATTACK,
+                            MONSTER_ATTACK,
+                            PLAYER_DEFENSE,
+                            MONSTER_DEFENSE,
+                            PLAYER_MULTIPLIER,
+                            MONSTER_NORMAL_MULTIPLIER,
+                            100,
+                            100,
+                            100,
+                            0,
+                            ZERO_CRITICAL,
+                            ZERO_CRITICAL,
+                            1,
+                            true);
+
+            final ResolvedTurn result = resolver.resolve(input);
+
+            assertThat(result.playerDamageToMonster()).isEqualTo(0);
+            assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+        }
     }
 
     @Nested

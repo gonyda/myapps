@@ -53,18 +53,18 @@ class BattleResolverVariancePropertyTest {
     }
 
     /**
-     * finalDamage 결과가 항상 최소 1인지 검증한다.
+     * 상성계수가 0보다 클 때 finalDamage 결과가 항상 최소 1인지 검증한다.
      *
      * @param seed 고정 시드 (0~9999)
      * @param baseDamage 기본피해 (1~500)
-     * @param affinityCoefficient 상성계수 (0~100, ÷100으로 사용)
+     * @param affinityCoeffPercent 상성계수 (1~100, ÷100으로 사용)
      * @param critical 크리티컬 여부
      */
     @Property(tries = 100)
-    void should_returnAtLeastOne_when_anyInput(
+    void should_returnAtLeastOne_when_positiveCoefficient(
             @ForAll("seeds") final long seed,
             @ForAll("baseDamages") final int baseDamage,
-            @ForAll("smallCoeffPercents") final int affinityCoeffPercent,
+            @ForAll("positiveCoeffPercents") final int affinityCoeffPercent,
             @ForAll("booleans") final boolean critical) {
 
         final double affinityCoefficient = affinityCoeffPercent / 100.0;
@@ -72,6 +72,19 @@ class BattleResolverVariancePropertyTest {
         final int actualDamage = resolver.finalDamage(baseDamage, affinityCoefficient, critical);
 
         assertThat(actualDamage).isGreaterThanOrEqualTo(1);
+    }
+
+    /** 상성계수가 0.0일 때 finalDamage 결과가 정확히 0인지 검증한다. */
+    @Property(tries = 100)
+    void should_returnZero_when_zeroCoefficient(
+            @ForAll("seeds") final long seed,
+            @ForAll("baseDamages") final int baseDamage,
+            @ForAll("booleans") final boolean critical) {
+
+        final BattleResolver resolver = new BattleResolver(new Random(seed));
+        final int actualDamage = resolver.finalDamage(baseDamage, 0.0, critical);
+
+        assertThat(actualDamage).isEqualTo(0);
     }
 
     /**
@@ -129,13 +142,13 @@ class BattleResolverVariancePropertyTest {
     }
 
     /**
-     * 소규모 상성계수% 생성기 (0~100, 나누기 100.0으로 0.0~1.0).
+     * 양의 상성계수% 생성기 (1~100, 나누기 100.0으로 0.01~1.0).
      *
      * @return 상성계수% Arbitrary
      */
     @Provide
-    Arbitrary<Integer> smallCoeffPercents() {
-        return Arbitraries.integers().between(0, 100);
+    Arbitrary<Integer> positiveCoeffPercents() {
+        return Arbitraries.integers().between(1, 100);
     }
 
     /**

@@ -148,8 +148,6 @@
     "attackPower": 72,
     "defense": 12,
     "critical": 70,
-    "defenseBlockRate": 60,
-    "defenseCounterRate": 50,
     "experience": 350,
     "goldDrop": {
       "min": 150,

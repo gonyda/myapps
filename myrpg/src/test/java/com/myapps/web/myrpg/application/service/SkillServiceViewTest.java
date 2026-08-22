@@ -37,6 +37,7 @@ class SkillServiceViewTest {
     private static final Long CHARACTER_ID = 1L;
     private static final String WINDMILL_ID = "windmill";
     private static final String DEFENSE_ID = "defense";
+    private static final String COUNTER_ATTACK_ID = "counter_attack";
 
     @Mock private CharacterSkillRepository characterSkillRepository;
 
@@ -162,6 +163,10 @@ class SkillServiceViewTest {
         assertThat(view.nextCounterValue()).isNull();
         assertThat(view.resourceKindLabel()).isEqualTo("스태미나");
         assertThat(view.resourceCost()).isEqualTo(15);
+        assertThat(view.nextResourceCost()).isEqualTo(15);
+        assertThat(view.currentCritBonus()).isNull();
+        assertThat(view.nextCritBonus()).isNull();
+        assertThat(view.rankupBonusText()).isEqualTo("STR +1");
         assertThat(view.usageCurrent()).isEqualTo(3);
         assertThat(view.usageRequired()).isEqualTo(5);
         assertThat(view.killCurrent()).isZero();
@@ -173,9 +178,9 @@ class SkillServiceViewTest {
     }
 
     @Test
-    void should_buildRankUpView_for_defense_skill_with_counter_values() {
+    void should_buildRankUpView_for_defense_skill_without_counter_value_and_with_hp_def_bonus() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5, 1);
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5, 0);
         final CharacterProgress progress = createProgressWithAp(5);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_ID))
@@ -187,9 +192,45 @@ class SkillServiceViewTest {
 
         assertThat(view.id()).isEqualTo(DEFENSE_ID);
         assertThat(view.primaryStatLabel()).isEqualTo("피해 경감");
-        assertThat(view.currentCounterValue()).isNotNull();
-        assertThat(view.nextCounterValue()).isNotNull();
+        assertThat(view.currentValue()).isEqualTo(100);
+        assertThat(view.nextValue()).isEqualTo(100);
+        assertThat(view.currentCounterValue()).isNull();
+        assertThat(view.nextCounterValue()).isNull();
         assertThat(view.resourceKindLabel()).isEqualTo("스태미나");
+        assertThat(view.resourceCost()).isEqualTo(5);
+        assertThat(view.nextResourceCost()).isEqualTo(5);
+        assertThat(view.currentCritBonus()).isNull();
+        assertThat(view.nextCritBonus()).isNull();
+        assertThat(view.rankupBonusText()).isEqualTo("HP +5, DEF +1");
+        assertThat(view.rankable()).isTrue();
+        assertThat(view.maxed()).isFalse();
+    }
+
+    @Test
+    void should_buildRankUpView_for_counter_attack_skill_with_counter_and_crit_values() {
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, COUNTER_ATTACK_ID, SkillRank.F, 5, 0);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, COUNTER_ATTACK_ID))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(COUNTER_ATTACK_ID))
+                .thenReturn(Optional.of(createCounterAttack()));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, COUNTER_ATTACK_ID);
+
+        assertThat(view.id()).isEqualTo(COUNTER_ATTACK_ID);
+        assertThat(view.primaryStatLabel()).isEqualTo("피해 경감");
+        assertThat(view.currentValue()).isEqualTo(100);
+        assertThat(view.nextValue()).isEqualTo(100);
+        assertThat(view.currentCounterValue()).isEqualTo(100);
+        assertThat(view.nextCounterValue()).isEqualTo(105);
+        assertThat(view.currentCritBonus()).isZero();
+        assertThat(view.nextCritBonus()).isEqualTo(10);
+        assertThat(view.resourceCost()).isEqualTo(8);
+        assertThat(view.nextResourceCost()).isEqualTo(8);
+        assertThat(view.rankupBonusText()).isNull();
         assertThat(view.rankable()).isTrue();
         assertThat(view.maxed()).isFalse();
     }
@@ -211,6 +252,8 @@ class SkillServiceViewTest {
         assertThat(view.nextRankLabel()).isNull();
         assertThat(view.maxed()).isTrue();
         assertThat(view.rankable()).isFalse();
+        assertThat(view.nextResourceCost()).isNull();
+        assertThat(view.nextCritBonus()).isNull();
         assertThat(view.usageRequired()).isZero();
         assertThat(view.killRequired()).isZero();
         assertThat(view.apCost()).isZero();
@@ -262,22 +305,48 @@ class SkillServiceViewTest {
     private DefenseSkill createDefense() {
         final Map<SkillRank, Integer> blockRateByRank = new EnumMap<>(SkillRank.class);
         final Map<SkillRank, Integer> counterMultiplierByRank = new EnumMap<>(SkillRank.class);
-        int blockBase = 50;
-        int counterBase = 30;
+        final Map<SkillRank, Integer> resourceCostByRank = new EnumMap<>(SkillRank.class);
         for (final SkillRank rank : SkillRank.values()) {
-            blockRateByRank.put(rank, blockBase);
-            counterMultiplierByRank.put(rank, counterBase);
-            blockBase += 3;
-            counterBase += 5;
+            blockRateByRank.put(rank, 100);
+            counterMultiplierByRank.put(rank, 0);
+            resourceCostByRank.put(rank, 5);
         }
         return new DefenseSkill(
                 DEFENSE_ID,
                 "디펜스",
                 SkillType.DEFENSE,
                 SkillTalent.COMMON,
-                10,
+                5,
                 Map.copyOf(blockRateByRank),
                 Map.copyOf(counterMultiplierByRank),
-                "방어 및 반격");
+                "완전 방어",
+                Map.copyOf(resourceCostByRank),
+                Map.of());
+    }
+
+    private DefenseSkill createCounterAttack() {
+        final Map<SkillRank, Integer> blockRateByRank = new EnumMap<>(SkillRank.class);
+        final Map<SkillRank, Integer> counterMultiplierByRank = new EnumMap<>(SkillRank.class);
+        final Map<SkillRank, Integer> critBonusByRank = new EnumMap<>(SkillRank.class);
+        int counter = 100;
+        int crit = 0;
+        for (final SkillRank rank : SkillRank.values()) {
+            blockRateByRank.put(rank, 100);
+            counterMultiplierByRank.put(rank, counter);
+            critBonusByRank.put(rank, crit);
+            counter += 5;
+            crit += 10;
+        }
+        return new DefenseSkill(
+                COUNTER_ATTACK_ID,
+                "카운터 어택",
+                SkillType.DEFENSE,
+                SkillTalent.COMMON,
+                8,
+                Map.copyOf(blockRateByRank),
+                Map.copyOf(counterMultiplierByRank),
+                "반격 공격",
+                Map.of(),
+                Map.copyOf(critBonusByRank));
     }
 }

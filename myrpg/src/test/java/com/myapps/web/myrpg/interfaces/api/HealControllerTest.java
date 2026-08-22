@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
+import com.myapps.web.myrpg.application.service.SkillService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.StatProgression;
@@ -31,6 +32,8 @@ class HealControllerTest {
     @MockitoBean private StatProgression statProgression;
 
     @MockitoBean private InventoryService inventoryService;
+
+    @MockitoBean private SkillService skillService;
 
     @MockitoBean private ActionLog actionLog;
 

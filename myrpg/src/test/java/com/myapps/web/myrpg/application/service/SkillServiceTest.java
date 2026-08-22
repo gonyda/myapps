@@ -18,6 +18,7 @@ import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.Stats;
+import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import java.lang.reflect.Field;
@@ -281,6 +282,11 @@ class SkillServiceTest {
         assertThat(bonus.intelligence()).isEqualTo(30);
         assertThat(bonus.defense()).isEqualTo(15);
         assertThat(bonus.critical()).isZero();
+
+        final VitalMax vitalBonus = skillService.rankupVitalBonus(CHARACTER_ID);
+        assertThat(vitalBonus.hp()).isEqualTo(75);
+        assertThat(vitalBonus.mp()).isZero();
+        assertThat(vitalBonus.stamina()).isZero();
     }
 
     @Test

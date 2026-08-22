@@ -16,6 +16,7 @@ import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.Stats;
+import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import java.util.ArrayList;
@@ -212,7 +213,15 @@ public class SkillService {
                 (catalog instanceof DefenseSkill) ? PRIMARY_STAT_DEFENSE : PRIMARY_STAT_DAMAGE;
 
         final String resourceKindLabel = catalog.talent().resourceKind().label();
-        final int resourceCost = catalog.resourceCost();
+        final int resourceCost = resourceCost(catalog, currentRank);
+        final Integer nextResourceCost =
+                maxed ? null : resourceCost(catalog, currentRank.next().orElseThrow());
+
+        final Integer currentCritBonus = critBonusValue(catalog, currentRank);
+        final Integer nextCritBonus =
+                maxed ? null : critBonusValue(catalog, currentRank.next().orElseThrow());
+
+        final String rankupBonusText = rankupBonusText(catalog);
 
         final int usageCurrent = characterSkill.getUsageCount();
         final int killCurrent = characterSkill.getKillCount();
@@ -254,6 +263,10 @@ public class SkillService {
                 nextCounterValue,
                 resourceKindLabel,
                 resourceCost,
+                nextResourceCost,
+                currentCritBonus,
+                nextCritBonus,
+                rankupBonusText,
                 usageCurrent,
                 usageRequired,
                 killCurrent,
@@ -276,6 +289,20 @@ public class SkillService {
     public Stats rankupBonus(final Long characterId) {
         final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
         return skillRankupBonus.sum(owned, skillCatalogService::byId);
+    }
+
+    /**
+     * 캐릭터의 스킬 랭크업 영구 바이탈(HP) 보너스를 합산한다.
+     *
+     * <p>{@link SkillRankupBonus#sumVital(List, java.util.function.Function)}을 이용하여 보유 스킬 목록과
+     * 카탈로그에서 디펜스 스킬 랭크업으로 인한 추가 HP 최대치 보너스를 계산한다.
+     *
+     * @param characterId 캐릭터 ID
+     * @return 합산된 스킬 랭크업 바이탈 보너스
+     */
+    public VitalMax rankupVitalBonus(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        return skillRankupBonus.sumVital(owned, skillCatalogService::byId);
     }
 
     /**
@@ -443,10 +470,44 @@ public class SkillService {
         return skillDamagePolicy.blockRate(defenseSkill, rank);
     }
 
+    private int resourceCost(final Skill catalog, final SkillRank rank) {
+        if (catalog instanceof DefenseSkill defenseSkill) {
+            return defenseSkill.resourceCostAt(rank);
+        }
+        return catalog.resourceCost();
+    }
+
     private Integer counterValue(final Skill catalog, final SkillRank rank) {
         if (catalog instanceof DefenseSkill defenseSkill) {
-            return skillDamagePolicy.counterMultiplier(defenseSkill, rank);
+            final int multiplier = skillDamagePolicy.counterMultiplier(defenseSkill, rank);
+            if (multiplier > 0) {
+                return multiplier;
+            }
         }
         return null;
+    }
+
+    private Integer critBonusValue(final Skill catalog, final SkillRank rank) {
+        if (catalog instanceof DefenseSkill defenseSkill
+                && defenseSkill.critBonusByRank() != null
+                && !defenseSkill.critBonusByRank().isEmpty()) {
+            return defenseSkill.critBonusAt(rank);
+        }
+        return null;
+    }
+
+    private String rankupBonusText(final Skill catalog) {
+        if ("defense".equals(catalog.id())) {
+            return "HP +5, DEF +1";
+        }
+        if ("counter_attack".equals(catalog.id())) {
+            return null;
+        }
+        return switch (catalog.talent()) {
+            case MELEE -> "STR +1";
+            case ARCHERY -> "DEX +1";
+            case MAGIC -> "INT +1";
+            case COMMON -> "DEF +1";
+        };
     }
 }

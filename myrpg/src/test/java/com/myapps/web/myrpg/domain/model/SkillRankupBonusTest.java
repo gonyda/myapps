@@ -80,6 +80,41 @@ class SkillRankupBonusTest {
         assertThat(result.intelligence()).isEqualTo(30);
         assertThat(result.defense()).isEqualTo(15);
         assertThat(result.critical()).isZero();
+
+        final VitalMax vitalResult = bonus.sumVital(owned, lookup);
+        assertThat(vitalResult.hp()).isEqualTo(75);
+        assertThat(vitalResult.mp()).isZero();
+        assertThat(vitalResult.stamina()).isZero();
+    }
+
+    @Test
+    @DisplayName("defense 랭크업 시 DEF +1/rank, HP +5/rank 누적")
+    void should_addDefAndHpBonus_when_defenseSkillRankedUp() {
+        final CharacterSkill defense = new CharacterSkill(1L, "defense", SkillRank.R9, 0, 0);
+        final Function<String, Optional<Skill>> lookup =
+                createLookup("defense", SkillTalent.COMMON);
+
+        final Stats statResult = bonus.sum(List.of(defense), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(defense), lookup);
+
+        // R9 order = 6
+        assertThat(statResult.defense()).isEqualTo(6);
+        assertThat(vitalResult.hp()).isEqualTo(30);
+    }
+
+    @Test
+    @DisplayName("counter_attack은 랭크업해도 영구 스탯 및 HP 보너스가 0이다")
+    void should_returnZeroBonus_when_counterAttackSkillRankedUp() {
+        final CharacterSkill counter =
+                new CharacterSkill(1L, "counter_attack", SkillRank.MASTER, 0, 0);
+        final Function<String, Optional<Skill>> lookup =
+                createLookup("counter_attack", SkillTalent.COMMON);
+
+        final Stats statResult = bonus.sum(List.of(counter), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(counter), lookup);
+
+        assertThat(statResult).isEqualTo(Stats.ZERO);
+        assertThat(vitalResult).isEqualTo(new VitalMax(0, 0, 0));
     }
 
     @Test

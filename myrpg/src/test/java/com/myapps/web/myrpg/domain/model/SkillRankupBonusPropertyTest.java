@@ -142,6 +142,61 @@ class SkillRankupBonusPropertyTest {
     }
 
     /**
+     * defense 스킬은 임의의 랭크에서 DEF = order, HP = order * 5를 기여함을 검증한다.
+     *
+     * @param rank 임의의 스킬 랭크
+     */
+    @Property(tries = 50)
+    void should_contributeDefAndHp_when_defenseSkill(@ForAll("anyRank") final SkillRank rank) {
+        final CharacterSkill defense = new CharacterSkill(1L, "defense", rank, 0, 0);
+        final Function<String, Optional<Skill>> lookup =
+                id ->
+                        "defense".equals(id)
+                                ? Optional.of(createDamageSkill("defense", SkillTalent.COMMON))
+                                : Optional.empty();
+
+        final Stats statResult = bonus.sum(List.of(defense), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(defense), lookup);
+
+        assertThat(statResult.defense()).isEqualTo(rank.order());
+        assertThat(statResult.str()).isZero();
+        assertThat(statResult.dex()).isZero();
+        assertThat(statResult.intelligence()).isZero();
+        assertThat(statResult.critical()).isZero();
+
+        assertThat(vitalResult.hp()).isEqualTo(rank.order() * 5);
+        assertThat(vitalResult.mp()).isZero();
+        assertThat(vitalResult.stamina()).isZero();
+    }
+
+    /**
+     * counter_attack 스킬은 임의의 랭크에서 스탯 및 HP 기여가 0임을 검증한다.
+     *
+     * @param rank 임의의 스킬 랭크
+     */
+    @Property(tries = 50)
+    void should_contributeZero_when_counterAttackSkill(@ForAll("anyRank") final SkillRank rank) {
+        final CharacterSkill counter = new CharacterSkill(1L, "counter_attack", rank, 0, 0);
+        final Function<String, Optional<Skill>> lookup =
+                id ->
+                        "counter_attack".equals(id)
+                                ? Optional.of(
+                                        createDamageSkill("counter_attack", SkillTalent.COMMON))
+                                : Optional.empty();
+
+        final Stats statResult = bonus.sum(List.of(counter), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(counter), lookup);
+
+        assertThat(statResult).isEqualTo(Stats.ZERO);
+        assertThat(vitalResult).isEqualTo(new VitalMax(0, 0, 0));
+    }
+
+    @Provide
+    Arbitrary<SkillRank> anyRank() {
+        return Arbitraries.of(SkillRank.values());
+    }
+
+    /**
      * 고유 skillId를 가진 보유 스킬 엔트리 목록을 생성하는 Arbitrary 제공자.
      *
      * <p>각 엔트리에 순차 번호 기반 고유 ID를 부여하여 lookup 충돌을 방지한다.

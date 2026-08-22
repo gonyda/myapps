@@ -106,6 +106,55 @@ class SkillCatalogServiceTest {
         assertThat(defenseSkill.counterMultiplierByRank()).hasSize(16);
         assertThat(defenseSkill.blockRateByRank().get(SkillRank.MASTER)).isEqualTo(85);
         assertThat(defenseSkill.counterMultiplierByRank().get(SkillRank.MASTER)).isEqualTo(100);
+        assertThat(defenseSkill.resourceCostAt(SkillRank.F)).isEqualTo(4);
+        assertThat(defenseSkill.resourceCostAt(SkillRank.MASTER)).isEqualTo(4);
+        assertThat(defenseSkill.critBonusAt(SkillRank.MASTER)).isZero();
+    }
+
+    @Test
+    void should_parseDefenseSkillWithOptionalRankMaps_when_validJson() {
+        final String json =
+                """
+                [{
+                  "id": "defense",
+                  "label": "디펜스",
+                  "type": "DEFENSE",
+                  "talent": "COMMON",
+                  "resourceCost": 5,
+                  "resourceCostByRank": {
+                    "F":5,"E":5,"D":4,"C":4,"B":4,"A":3,
+                    "R9":3,"R8":3,"R7":2,"R6":2,"R5":2,"R4":1,
+                    "R3":1,"R2":1,"R1":1,"MASTER":1
+                  },
+                  "critBonusByRank": {
+                    "F":0,"E":10,"D":20,"C":30,"B":40,"A":50,
+                    "R9":70,"R8":90,"R7":110,"R6":130,"R5":150,"R4":160,
+                    "R3":170,"R2":180,"R1":190,"MASTER":200
+                  },
+                  "blockRateByRank": {
+                    "F":100,"E":100,"D":100,"C":100,"B":100,"A":100,
+                    "R9":100,"R8":100,"R7":100,"R6":100,"R5":100,"R4":100,
+                    "R3":100,"R2":100,"R1":100,"MASTER":100
+                  },
+                  "counterMultiplierByRank": {
+                    "F":0,"E":0,"D":0,"C":0,"B":0,"A":0,
+                    "R9":0,"R8":0,"R7":0,"R6":0,"R5":0,"R4":0,
+                    "R3":0,"R2":0,"R1":0,"MASTER":0
+                  },
+                  "description": "완전 방어"
+                }]
+                """;
+
+        final List<Skill> skills = loadFromString(json);
+
+        assertThat(skills).hasSize(1);
+        final DefenseSkill skill = (DefenseSkill) skills.getFirst();
+        assertThat(skill.resourceCostByRank()).hasSize(16);
+        assertThat(skill.critBonusByRank()).hasSize(16);
+        assertThat(skill.resourceCostAt(SkillRank.F)).isEqualTo(5);
+        assertThat(skill.resourceCostAt(SkillRank.MASTER)).isEqualTo(1);
+        assertThat(skill.critBonusAt(SkillRank.F)).isZero();
+        assertThat(skill.critBonusAt(SkillRank.MASTER)).isEqualTo(200);
     }
 
     @Test

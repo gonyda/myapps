@@ -96,6 +96,16 @@
                     <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
                           th:text="${rankUp.currentCounterValue()} + '%'">100%</span>
                 </div>
+                <div class="rankup-stat-row" th:if="${rankUp.currentCritBonus() != null}">
+                    <span class="rankup-stat-label">크리티컬 보너스</span>
+                    <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
+                        +<span th:text="${rankUp.currentCritBonus() / 10.0}">0.0</span>%p
+                        →
+                        <span class="rankup-stat-next">+<span th:text="${rankUp.nextCritBonus() / 10.0}">1.0</span>%p</span>
+                    </span>
+                    <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
+                          th:text="'+' + (${rankUp.currentCritBonus()} / 10.0) + '%p'">+20.0%p</span>
+                </div>
             </div>
 
             <!-- ② 소모 자원 -->
@@ -103,11 +113,26 @@
                 <h4 class="rankup-section-title">소모 자원</h4>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label" th:text="${rankUp.resourceKindLabel()}">스태미나</span>
-                    <span class="rankup-stat-value" th:text="${rankUp.resourceCost()}">10</span>
+                    <span class="rankup-stat-value" th:if="${!rankUp.maxed() && rankUp.nextResourceCost() != null && rankUp.nextResourceCost() != rankUp.resourceCost()}">
+                        <span th:text="${rankUp.resourceCost()}">5</span>
+                        →
+                        <span class="rankup-stat-next" th:text="${rankUp.nextResourceCost()}">4</span>
+                    </span>
+                    <span class="rankup-stat-value" th:if="${rankUp.maxed() || rankUp.nextResourceCost() == null || rankUp.nextResourceCost() == rankUp.resourceCost()}"
+                          th:text="${rankUp.resourceCost()}">5</span>
                 </div>
             </div>
 
-            <!-- ③ 수련 방법 -->
+            <!-- ③ 승급 영구 보너스 -->
+            <div class="rankup-section" th:if="${rankUp.rankupBonusText() != null}">
+                <h4 class="rankup-section-title">승급 영구 보너스</h4>
+                <div class="rankup-stat-row">
+                    <span class="rankup-stat-label">보너스 스탯</span>
+                    <span class="rankup-stat-value" th:text="${rankUp.rankupBonusText()}">HP +5, DEF +1</span>
+                </div>
+            </div>
+
+            <!-- ④ 수련 방법 -->
             <div class="rankup-section" th:if="${!rankUp.maxed()}">
                 <h4 class="rankup-section-title">수련 방법</h4>
                 <div class="rankup-stat-row">
@@ -124,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- ④ 승급 비용 -->
+            <!-- ⑤ 승급 비용 -->
             <div class="rankup-section" th:if="${!rankUp.maxed()}">
                 <h4 class="rankup-section-title">승급 비용</h4>
                 <div class="rankup-stat-row">

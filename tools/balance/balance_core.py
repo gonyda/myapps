@@ -44,8 +44,8 @@ RANK_KEYS = ["F", "E", "D", "C", "B", "A", "R9", "R8",
              "R7", "R6", "R5", "R4", "R3", "R2", "R1", "MASTER"]
 
 # 몬스터 방어 상수 기본값
-DEFAULT_BLOCK_RATE = 40
-DEFAULT_COUNTER_RATE = 30
+DEFAULT_BLOCK_RATE = 100
+DEFAULT_COUNTER_RATE = 0
 
 # 초보 풀장비 DEF 합(방패5+갑옷5+투구3+장갑2+부츠2) — 플레이어 baseline 유효 DEF 추정용
 STARTER_ARMOR_DEF = 17

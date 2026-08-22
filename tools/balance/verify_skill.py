@@ -22,8 +22,9 @@ NOMINAL_BAND = {
     "NORMAL": {"F": (90, 110), "MASTER": (170, 205)},
     "HEAVY": {"F": (130, 145), "MASTER": (250, 265)},
 }
-CRITBONUS_CAP = 100      # +10%p
-COUNTER_CAP = 50         # 반격율 상한 %
+CRITBONUS_CAP = 100      # +10%p (딜 스킬 기본 상한)
+DEFENSE_CRITBONUS_CAP = 200  # +20%p (카운터 어택 전용 상한)
+COUNTER_CAP = 200        # 반격율 상한 %
 
 
 def nominal_total(skill, rank):
@@ -54,13 +55,15 @@ def report_defenses(skills):
     if not defs:
         return
     print(f"\n=== 방어 스킬 (경감률 / 반격률, 상한 반격 {COUNTER_CAP}%) ===")
-    print(f"{'스킬':<16}{'경감 F→M':>14}{'반격 F→M':>14}")
+    print(f"{'스킬':<16}{'경감 F→M':>14}{'반격 F→M':>14}{'소모 F→M':>12}{'critB F→M':>14}")
     for s in defs:
         b = s["blockRateByRank"]
         c = s["counterMultiplierByRank"]
         block_s = f"{b['F']}→{b['MASTER']}"
         counter_s = f"{c['F']}→{c['MASTER']}"
-        print(f"{s['label']:<16}{block_s:>14}{counter_s:>14}")
+        cost_s = f"{s['resourceCostByRank']['F']}→{s['resourceCostByRank']['MASTER']}" if "resourceCostByRank" in s else f"{s.get('resourceCost','?')}"
+        crit_s = f"{s['critBonusByRank']['F']}→{s['critBonusByRank']['MASTER']}" if "critBonusByRank" in s else f"{s.get('critBonus',0)}"
+        print(f"{s['label']:<16}{block_s:>14}{counter_s:>14}{cost_s:>12}{crit_s:>14}")
 
 
 def validate_skill(s):
@@ -93,6 +96,24 @@ def validate_skill(s):
             warns.append(f"blockRateByRank: {p}")
         for p in bc.check_rank_map(s.get("counterMultiplierByRank", {})):
             warns.append(f"counterMultiplierByRank: {p}")
+        if "resourceCostByRank" in s:
+            missing = [k for k in bc.RANK_KEYS if k not in s["resourceCostByRank"]]
+            if missing:
+                warns.append(f"resourceCostByRank 랭크키 누락: {missing}")
+            prev = None
+            for k in bc.RANK_KEYS:
+                if k not in s["resourceCostByRank"]:
+                    continue
+                v = s["resourceCostByRank"][k]
+                if prev is not None and v > prev:
+                    warns.append(f"resourceCostByRank 단조 비증가 위반: {k}={v} > 직전 {prev}")
+                prev = v
+        if "critBonusByRank" in s:
+            for p in bc.check_rank_map(s.get("critBonusByRank", {})):
+                warns.append(f"critBonusByRank: {p}")
+            cb_max = s.get("critBonusByRank", {}).get("MASTER")
+            if cb_max is not None and cb_max > DEFENSE_CRITBONUS_CAP:
+                warns.append(f"critBonusByRank MASTER {cb_max} > 상한 {DEFENSE_CRITBONUS_CAP} (+20%p)")
         cmax = s.get("counterMultiplierByRank", {}).get("MASTER")
         if cmax is not None and cmax > COUNTER_CAP:
             warns.append(f"반격률 MASTER {cmax} > 상한 {COUNTER_CAP}%")

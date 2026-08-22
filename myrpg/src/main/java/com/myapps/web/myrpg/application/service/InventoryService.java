@@ -23,6 +23,7 @@ import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.domain.model.Skill;
+import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
@@ -74,6 +75,7 @@ public class InventoryService {
     private final ActionLog actionLog;
     private final SkillCatalogService skillCatalogService;
     private final CharacterSkillRepository characterSkillRepository;
+    private final SkillRankupBonus skillRankupBonus;
 
     /**
      * InventoryService를 생성한다.
@@ -101,6 +103,7 @@ public class InventoryService {
         this.actionLog = actionLog;
         this.skillCatalogService = skillCatalogService;
         this.characterSkillRepository = characterSkillRepository;
+        this.skillRankupBonus = new SkillRankupBonus();
     }
 
     /**
@@ -174,9 +177,14 @@ public class InventoryService {
         final VitalMax vitalMax =
                 statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
         final VitalMax equipVitalBonus = equippedBonus().vitalBonus();
-        final int hpMax = vitalMax.hp() + equipVitalBonus.hp();
-        final int mpMax = vitalMax.mp() + equipVitalBonus.mp();
-        final int staminaMax = vitalMax.stamina() + equipVitalBonus.stamina();
+        final List<CharacterSkill> ownedSkills =
+                characterSkillRepository.findByCharacterId(character.getId());
+        final VitalMax skillVitalBonus =
+                skillRankupBonus.sumVital(ownedSkills, skillCatalogService::byId);
+        final int hpMax = vitalMax.hp() + equipVitalBonus.hp() + skillVitalBonus.hp();
+        final int mpMax = vitalMax.mp() + equipVitalBonus.mp() + skillVitalBonus.mp();
+        final int staminaMax =
+                vitalMax.stamina() + equipVitalBonus.stamina() + skillVitalBonus.stamina();
 
         final int healedHp = Math.min(character.getHpCurrent() + potionItem.healHp(), hpMax);
         final int healedMp = Math.min(character.getMpCurrent() + potionItem.healMp(), mpMax);

@@ -15,12 +15,13 @@ package com.myapps.web.myrpg.domain.model;
  * @param playerMultiplierPercent 플레이어 스킬 1히트당 배율(%)
  * @param monsterMultiplierPercent 몬스터 스킬 배율(%) — 일반 100 / 강 150
  * @param playerBlockRatePercent 플레이어 방어 경감률(%)
- * @param monsterBlockRatePercent 몬스터 방어 경감률(%) — 기본 40
+ * @param monsterBlockRatePercent 몬스터 방어 경감률(%) — 기본 100
  * @param playerCounterPercent 플레이어 반격 배율(%) — 반격 시 공격력의 N%를 피해로 적용
- * @param monsterCounterPercent 몬스터 반격률(%) — 기본 30
+ * @param monsterCounterPercent 몬스터 반격률(%) — 기본 0
  * @param playerCritical 플레이어 크리티컬 수치(0.1% 단위, 범위 0~1000)
  * @param monsterCritical 몬스터 크리티컬 수치(0.1% 단위, 범위 0~1000)
  * @param playerHitCount 플레이어 히트 수 (딜 스킬의 hitCount, 기본 1)
+ * @param isCounterAttack 카운터 어택 스킬 여부 (상대 공격력 비례 반격 및 강공격 반격 지원)
  */
 public record TurnInput(
         SkillType playerType,
@@ -37,4 +38,60 @@ public record TurnInput(
         int monsterCounterPercent,
         int playerCritical,
         int monsterCritical,
-        int playerHitCount) {}
+        int playerHitCount,
+        boolean isCounterAttack) {
+
+    /**
+     * 하위 호환 15-인자 보조 생성자 (isCounterAttack = false).
+     *
+     * @param playerType 플레이어 스킬 타입
+     * @param monsterType 몬스터 스킬 타입
+     * @param playerAttackPower 플레이어 공격력
+     * @param monsterAttackPower 몬스터 공격력
+     * @param playerDefense 플레이어 방어력
+     * @param monsterDefense 몬스터 방어력
+     * @param playerMultiplierPercent 플레이어 스킬 1히트당 배율(%)
+     * @param monsterMultiplierPercent 몬스터 스킬 배율(%)
+     * @param playerBlockRatePercent 플레이어 방어 경감률(%)
+     * @param monsterBlockRatePercent 몬스터 방어 경감률(%)
+     * @param playerCounterPercent 플레이어 반격 배율(%)
+     * @param monsterCounterPercent 몬스터 반격률(%)
+     * @param playerCritical 플레이어 크리티컬 수치
+     * @param monsterCritical 몬스터 크리티컬 수치
+     * @param playerHitCount 플레이어 히트 수
+     */
+    public TurnInput(
+            final SkillType playerType,
+            final SkillType monsterType,
+            final int playerAttackPower,
+            final int monsterAttackPower,
+            final int playerDefense,
+            final int monsterDefense,
+            final int playerMultiplierPercent,
+            final int monsterMultiplierPercent,
+            final int playerBlockRatePercent,
+            final int monsterBlockRatePercent,
+            final int playerCounterPercent,
+            final int monsterCounterPercent,
+            final int playerCritical,
+            final int monsterCritical,
+            final int playerHitCount) {
+        this(
+                playerType,
+                monsterType,
+                playerAttackPower,
+                monsterAttackPower,
+                playerDefense,
+                monsterDefense,
+                playerMultiplierPercent,
+                monsterMultiplierPercent,
+                playerBlockRatePercent,
+                monsterBlockRatePercent,
+                playerCounterPercent,
+                monsterCounterPercent,
+                playerCritical,
+                monsterCritical,
+                playerHitCount,
+                false);
+    }
+}

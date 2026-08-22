@@ -80,7 +80,11 @@ public class BattleLogFormatter {
             return;
         }
         if (input.playerDamage() <= 0) {
-            lines.add(prefix + " 공격이 빗나갔다!");
+            if (input.monsterAction() == SkillType.DEFENSE) {
+                lines.add("상대의 방어에 공격이 가로막혔다!");
+            } else {
+                lines.add(prefix + " 공격이 빗나갔다!");
+            }
             return;
         }
         if (isMultiHit(input)) {
@@ -108,23 +112,34 @@ public class BattleLogFormatter {
     /**
      * 플레이어가 방어 스킬을 사용했을 때의 로그 한 줄을 추가한다.
      *
-     * <p>반격 피해가 있으면 방어 승리(반격), 반격이 없고 피해만 있으면 관통, 양쪽 모두 0이면 교착으로 표현한다.
+     * <p>반격 피해가 있으면 방어 승리(반격/카운터), 반격이 없고 피해만 있으면 관통, 양쪽 모두 0이면 완전 방어/교착/헛방으로 표현한다.
      */
     private void addPlayerDefenseLine(
             final List<String> lines, final BattleLogInput input, final String prefix) {
+        final boolean isCounter = input.skillLabel() != null && input.skillLabel().contains("카운터");
         if (input.playerDamage() > 0) {
-            lines.add(prefix + "로 방어하며 반격! (" + input.playerDamage() + " 피해)");
+            if (isCounter) {
+                lines.add(prefix + "으로 적의 공격을 흘려내며 치명적인 반격! (" + input.playerDamage() + " 피해)");
+            } else {
+                lines.add(prefix + "로 방어하며 반격! (" + input.playerDamage() + " 피해)");
+            }
         } else if (input.monsterDamage() > 0) {
             lines.add(prefix + " 방어가 뚫렸다!");
         } else {
-            lines.add(prefix + "로 맞서 교착 상태!");
+            if (isCounter) {
+                lines.add("적이 공격하지 않아 " + prefix + "이 빗나갔다!");
+            } else if (input.monsterAction() == SkillType.DEFENSE) {
+                lines.add(prefix + "로 맞서 교착 상태!");
+            } else {
+                lines.add(prefix + "로 공격을 완벽히 방어했다!");
+            }
         }
     }
 
     /**
      * 몬스터 행동 로그 한 줄을 추가한다.
      *
-     * <p>몬스터가 방어했으면 반격/관통/교착으로 분기하고, 공격했으면 적중 여부에 따라 피해 또는 빗나감을 남긴다.
+     * <p>몬스터가 방어했으면 반격/관통/교착/완전 방어로 분기하고, 공격했으면 적중 여부에 따라 피해 또는 빗나감을 남긴다.
      */
     private void addMonsterLine(final List<String> lines, final BattleLogInput input) {
         if (input.monsterAction() == SkillType.DEFENSE) {
@@ -142,7 +157,7 @@ public class BattleLogFormatter {
     /**
      * 몬스터가 방어했을 때의 로그 한 줄을 추가한다.
      *
-     * <p>반격 피해가 있으면 방어 승리(반격), 반격이 없고 플레이어 피해만 있으면 관통, 양쪽 모두 0이면 방어 태세로 표현한다.
+     * <p>반격 피해가 있으면 방어 승리(반격), 반격이 없고 플레이어 피해만 있으면 관통, 양쪽 모두 0이면 방어 태세 또는 완전 방어로 표현한다.
      */
     private void addMonsterDefenseLine(final List<String> lines, final BattleLogInput input) {
         if (input.monsterDamage() > 0) {
@@ -150,7 +165,11 @@ public class BattleLogFormatter {
         } else if (input.playerDamage() > 0) {
             lines.add(input.monsterName() + "의 방어가 뚫렸다!");
         } else {
-            lines.add(input.monsterName() + "이(가) 방어 태세를 취했다.");
+            if (input.playerType() == SkillType.DEFENSE || input.castFailure()) {
+                lines.add(input.monsterName() + "이(가) 방어 태세를 취했다.");
+            } else {
+                lines.add(input.monsterName() + "이(가) 공격을 완벽히 방어했다!");
+            }
         }
     }
 

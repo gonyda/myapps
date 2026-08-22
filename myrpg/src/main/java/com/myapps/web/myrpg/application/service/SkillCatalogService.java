@@ -215,6 +215,10 @@ public class SkillCatalogService {
                 parseRankMap(skillNode, "blockRateByRank", id);
         final Map<SkillRank, Integer> counterMultiplierByRank =
                 parseRankMap(skillNode, "counterMultiplierByRank", id);
+        final Map<SkillRank, Integer> resourceCostByRank =
+                parseOptionalRankMap(skillNode, "resourceCostByRank", id);
+        final Map<SkillRank, Integer> critBonusByRank =
+                parseOptionalRankMap(skillNode, "critBonusByRank", id);
         return new DefenseSkill(
                 id,
                 label,
@@ -223,7 +227,18 @@ public class SkillCatalogService {
                 resourceCost,
                 blockRateByRank,
                 counterMultiplierByRank,
-                description);
+                description,
+                resourceCostByRank,
+                critBonusByRank);
+    }
+
+    private Map<SkillRank, Integer> parseOptionalRankMap(
+            final JsonNode skillNode, final String fieldName, final String skillId) {
+        final JsonNode mapNode = skillNode.get(fieldName);
+        if (mapNode == null || mapNode.isNull()) {
+            return Map.of();
+        }
+        return parseRankMap(skillNode, fieldName, skillId);
     }
 
     private Map<SkillRank, Integer> parseRankMap(

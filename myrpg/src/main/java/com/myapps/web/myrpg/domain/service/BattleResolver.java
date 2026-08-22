@@ -126,6 +126,9 @@ public class BattleResolver {
      */
     public int finalDamage(
             final int baseDamage, final double affinityCoefficient, final boolean critical) {
+        if (affinityCoefficient <= 0.0 || baseDamage <= 0) {
+            return 0;
+        }
         final double critMultiplier = critical ? CRITICAL_MULTIPLIER : 1.0;
         final double variance = rollVariance();
         final double rawDamage = baseDamage * affinityCoefficient * critMultiplier * variance;
@@ -173,6 +176,13 @@ public class BattleResolver {
      * @return 양측 피해와 플래그를 담은 해결 결과
      */
     public ResolvedTurn resolve(final TurnInput input) {
+        // 특수 상성: 카운터 어택은 몬스터 강공격(스매시)도 흘려내며 반격
+        if (input.playerType() == SkillType.DEFENSE
+                && input.isCounterAttack()
+                && input.monsterType() == SkillType.HEAVY) {
+            return resolveCounterAttackWins(input);
+        }
+
         final AffinityResult playerAffinity =
                 RockPaperScissors.judge(input.playerType(), input.monsterType());
 
@@ -191,11 +201,14 @@ public class BattleResolver {
      * <ul>
      *   <li>일반 &gt; 강: 플레이어 100%, 몬스터 0
      *   <li>강 &gt; 방어: 플레이어 100% 관통, 몬스터 반격 무효(0)
-     *   <li>방어 &gt; 일반: 플레이어 반격, 몬스터 경감 후 피해
+     *   <li>방어 &gt; 일반: 플레이어 반격, 몬스터 경감 후 피해 (카운터 어택은 상대 공격력 비례 반격, 디펜스는 0반격)
      * </ul>
      */
     private ResolvedTurn resolvePlayerWin(final TurnInput input) {
         if (input.playerType() == SkillType.DEFENSE) {
+            if (input.isCounterAttack()) {
+                return resolveCounterAttackWins(input);
+            }
             return resolveDefenseWinsNormal(input);
         }
         return resolveAttackWins(input);
@@ -237,6 +250,26 @@ public class BattleResolver {
     }
 
     /**
+     * 카운터 어택이 공격(일반 또는 강공격)을 상대로 성공할 때 피해를 산출한다.
+     *
+     * <p>플레이어 피격은 0(완전 회피/흘리기), 반격 피해는 상대 몬스터의 공격력 비례({@code monsterAttackPower × counterPercent})로
+     * 산출한다.
+     */
+    private ResolvedTurn resolveCounterAttackWins(final TurnInput input) {
+        final int counterDamage =
+                calculateCounterDamage(
+                        input.monsterAttackPower(),
+                        input.playerCounterPercent(),
+                        input.monsterDefense(),
+                        input.playerCritical());
+        final boolean playerCrit = rollCritical(input.playerCritical());
+        final boolean monsterCrit = rollCritical(input.monsterCritical());
+
+        return new ResolvedTurn(
+                counterDamage, 0, playerCrit, monsterCrit, false, counterDamage > 0, List.of());
+    }
+
+    /**
      * 방어가 일반을 이길 때 피해를 산출한다 (방어자=플레이어, 공격자=몬스터).
      *
      * <p>몬스터 피해를 경감률로 줄이고, 플레이어는 반격 피해를 가한다. 반격·방어 경로는 단일 히트이며 playerHits는 비어 있다.
@@ -264,7 +297,7 @@ public class BattleResolver {
                 rollCritical(input.playerCritical()),
                 monsterCrit,
                 false,
-                true,
+                counterDamage > 0,
                 List.of());
     }
 
@@ -296,7 +329,7 @@ public class BattleResolver {
                 anyCrit,
                 rollCritical(input.monsterCritical()),
                 true,
-                true,
+                counterDamage > 0,
                 hits);
     }
 
@@ -358,13 +391,16 @@ public class BattleResolver {
      * 반격 피해를 산출한다.
      *
      * <p>반격 공식: {@code max(1, round(attackPower × counterPercent / 100 − targetDefense))}. 크리티컬과
-     * 편차를 적용한다. 반격은 항상 단일 히트.
+     * 편차를 적용한다. 반격은 항상 단일 히트이며 counterPercent가 0 이하이면 0을 반환한다.
      */
     private int calculateCounterDamage(
             final int attackPower,
             final int counterPercent,
             final int targetDefense,
             final int critical) {
+        if (counterPercent <= 0 || attackPower <= 0) {
+            return 0;
+        }
         final int counterBase =
                 Math.max(1, Math.floorDiv(attackPower * counterPercent, 100) - targetDefense);
         final boolean counterCrit = rollCritical(critical);

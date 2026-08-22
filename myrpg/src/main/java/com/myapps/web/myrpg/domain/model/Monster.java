@@ -42,8 +42,8 @@ public record Monster(
         int defenseBlockRate,
         int defenseCounterRate) {
 
-    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 40;
-    private static final int DEFAULT_DEFENSE_COUNTER_RATE = 30;
+    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 100;
+    private static final int DEFAULT_DEFENSE_COUNTER_RATE = 0;
 
     /**
      * 방어 상수를 전역 기본값(경감 40% / 반격 30%)으로 생성하는 보조 생성자.

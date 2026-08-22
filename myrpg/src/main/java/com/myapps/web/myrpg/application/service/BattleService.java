@@ -201,7 +201,7 @@ public class BattleService {
         }
         final Skill skill = skillOpt.get();
         final ResourceKind resourceKind = skill.talent().resourceKind();
-        final int resourceCost = skill.resourceCost();
+        final int resourceCost = resolveResourceCost(skill, progress);
 
         if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
             return buildInsufficientResult(skill, resourceKind);
@@ -521,6 +521,7 @@ public class BattleService {
                         ? MONSTER_HEAVY_MULTIPLIER
                         : MONSTER_NORMAL_MULTIPLIER;
 
+        final boolean isCounterAttack = "counter_attack".equals(skill.id());
         final TurnInput input =
                 new TurnInput(
                         skill.type(),
@@ -537,7 +538,8 @@ public class BattleService {
                         monster.defenseCounterRate(),
                         playerCritical,
                         monster.critical(),
-                        playerHitCount);
+                        playerHitCount,
+                        isCounterAttack);
 
         final ResolvedTurn resolved = resolver.resolve(input);
         return new TurnCombatResult(
@@ -574,6 +576,18 @@ public class BattleService {
     }
 
     // ─── Private: stat resolution ───────────────────────────────────────────
+
+    private int resolveResourceCost(final Skill skill, final CharacterProgress progress) {
+        if (skill instanceof DefenseSkill defenseSkill) {
+            final Optional<CharacterSkill> csOpt =
+                    characterSkillRepository.findByCharacterIdAndSkillId(
+                            progress.getId(), skill.id());
+            if (csOpt.isPresent()) {
+                return defenseSkill.resourceCostAt(csOpt.get().getRank());
+            }
+        }
+        return skill.resourceCost();
+    }
 
     private int resolvePlayerMultiplier(final Skill skill, final CharacterProgress progress) {
         final Optional<CharacterSkill> csOpt =
@@ -631,8 +645,8 @@ public class BattleService {
     /**
      * 스킬의 크리 보너스를 반영한 실효 크리티컬 수치를 산출한다.
      *
-     * <p>딜 스킬의 경우 스킬의 {@code critBonus}를 캐릭터 크리티컬에 가산하고, 상한({@code CRITICAL_ROLL_MAX = 1000})을 초과하지
-     * 않도록 보정한다. 방어 스킬이나 기타 스킬의 경우 보너스를 가산하지 않는다.
+     * <p>딜 스킬의 경우 스킬의 {@code critBonus}를, 카운터 어택 등 방어 스킬의 경우 랭크별 {@code critBonusByRank}를 캐릭터 크리티컬에
+     * 가산하고, 상한({@code CRITICAL_ROLL_MAX = 1000})을 초과하지 않도록 보정한다.
      *
      * @param skill 플레이어가 사용하는 스킬
      * @param progress 캐릭터 진행 상태
@@ -641,7 +655,17 @@ public class BattleService {
     private int resolveEffectivePlayerCritical(
             final Skill skill, final CharacterProgress progress) {
         final int baseCritical = resolvePlayerCritical(progress);
-        final int bonus = (skill instanceof DamageSkill ds) ? ds.critBonus() : 0;
+        int bonus = 0;
+        if (skill instanceof DamageSkill ds) {
+            bonus = ds.critBonus();
+        } else if (skill instanceof DefenseSkill defSkill) {
+            final Optional<CharacterSkill> csOpt =
+                    characterSkillRepository.findByCharacterIdAndSkillId(
+                            progress.getId(), skill.id());
+            if (csOpt.isPresent()) {
+                bonus = defSkill.critBonusAt(csOpt.get().getRank());
+            }
+        }
         return Math.min(CRITICAL_ROLL_MAX, baseCritical + bonus);
     }
 

@@ -92,10 +92,10 @@ fileMatchPattern: '**/data/*.json'
 1. **이름 / 재능(`talent`) / `type`**(`NORMAL`·`HEAVY`·`DEFENSE`)?
 2. **정체성**: 딜 스킬이면 **2축(`hitCount` 연타 / `critBonus` 크리특화)** 중 어디에 위치? (기존 스킬과 역할 겹치지 않게 — `§C-5`)
 3. **배율**(`multiplierByRank`, 1히트당) → 해당 `type` 밴드(`§C-5`) 안에서 랭크별 F→MASTER 값 합의. `hitCount`·`critBonus` 확정.
-4. **`resourceCost`**(근접/활=스태미나, 마법=MP; 기준 NORMAL 7/HEAVY 10/DEFENSE 4).
-5. 방어 스킬이면 `blockRateByRank`↔`counterMultiplierByRank` 배분(`§C-5`).
+4. **`resourceCost`**(근접/활=스태미나, 마법=MP; 기준 NORMAL 7/HEAVY 10/DEFENSE 4~8, 랭크별 감소 가능).
+5. 방어 스킬이면 `blockRateByRank` / `counterMultiplierByRank` / `resourceCostByRank` / `critBonusByRank` 배분(`§C-5`).
 
-검증: 랭크 맵 **16키(F→MASTER) 완비 + 단조 비감소**, 밴드 초과 금지, `critBonus` 상한 +100, 마법은 `critBonus` 0, 반격율 상한 50%.
+검증: 랭크 맵 **16키(F→MASTER) 완비 + 단조성**, 밴드 초과 금지, `critBonus` 상한 +100(딜스킬)/+200(카운터), 마법은 `critBonus` 0, 반격율 상한 200%.
 → **스크립트 검증**: `cd tools/balance && python3 verify_skill.py --json '{신규 스킬 JSON}'` (SP 참조 크리는 `--ref-crit`로 조정).
 
 ---
@@ -168,8 +168,8 @@ fileMatchPattern: '**/data/*.json'
 
 ### C-5. 스킬 규칙 (밴드는 규칙 · 로스터는 skill.json이 baseline)
 - `type`: `NORMAL`/`HEAVY`/`DEFENSE`. `talent`: `MELEE`/`ARCHERY`/`MAGIC`/`COMMON`(방어).
-- **랭크 맵 16키(F→MASTER) 완비 + 단조 비감소**(카탈로그 로드 테스트가 강제).
-- `resourceCost`: 근접/활=스태미나, 마법=MP. 기준 NORMAL 7 / HEAVY 10 / DEFENSE 4(다단 +1~2 가능).
+- **랭크 맵 16키(F→MASTER) 완비 + 단조성**(카탈로그 로드 테스트가 강제).
+- `resourceCost`: 근접/활=스태미나, 마법=MP. 기준 NORMAL 7 / HEAVY 10 / DEFENSE 4~8.
 - **딜 스킬 2축**(배율만 다른 복제품 금지):
   - 축 A `hitCount`: 단일(1, 관통·버스트) ↔ 다단(2~4, 안정·저방어 학살). 다단은 총배율을 단일보다 살짝 위, 히트당 배율은 낮게 쪼갬.
   - 축 B `critBonus`(0.1%): 표준(0) ↔ 크리특화(양수, 기본 배율 소폭↓). **상한 +100(+10%p)**.
@@ -178,7 +178,9 @@ fileMatchPattern: '**/data/*.json'
   - HEAVY 단일: F 130 → MASTER 250(활 최상위 매그넘류 F 140 → 260).
   - 다단(히트당): 3타 F 35→65(총 105→195), 4타 F 27→50(총 108→200).
 - **재능 정체성**: 근접(계수1.0, 균형·크리특화는 HEAVY에만) / 활(계수0.85·크리↑·1턴 선제, 크리특화 집중) / 마법(계수1.2·캐스팅실패10%, **critBonus 0**·깡뎀 지향).
-- **방어 스킬**(`COMMON`): `blockRateByRank`(경감%)↔`counterMultiplierByRank`(반격%×공격력) **트레이드오프 배분**. 반격율 **상한 50%**. 만능(둘 다 높게) 금지.
+- **방어 스킬**(`COMMON`):
+  - **디펜스 (`defense`)**: `blockRateByRank` 100% 완전 방어(0 피격), `counterMultiplierByRank` 0 (반격 없음), `resourceCostByRank` 5→1 점진 감소, 영구 스탯(DEF +1, HP +5 / 랭크당).
+  - **카운터 어택 (`counter_attack`)**: `blockRateByRank` 100% 완전 회피, `counterMultiplierByRank` 100%→200% (상대 공격력 비례 반격, 상한 **200%**), `critBonusByRank` 0→200(+20%p), 자원 소모 8 고정, 영구 스탯 없음.
 - 신규 딜 스킬은 먼저 3레버(배율/`hitCount`/`critBonus`)+저비용 수치 축(자원효율·편차폭·관통·크리위력)으로 채우고, 상태이상·흡혈·충전·처형·콤보 같은 **메커니즘 축은 별도 스펙**으로만 도입(축마다 대가, 기존 축과 역할 중복 금지).
 
 ---
@@ -191,7 +193,7 @@ fileMatchPattern: '**/data/*.json'
 |---|---|---|
 | `verify_equipment.py` | `item.json` 장비·포션 | CP/ΔCP(무기 주스탯 기여, 방어구 EHP 기여), 판매가·수리비(`weightOf`·buyPrice×0.5), 같은 kind/slot 내 CP 순위, 주스탯↔재능 일치, 활만 CRITICAL 경고 |
 | `verify_monster.py` | `monster.json` 몬스터 | CP(O×S), 난이도비(몬스터CP/플레이어 baseline CP), 1뎀 방지(attackPower>유효DEF), 처치 턴, 실피해, critical 상한 경고, 목표 스탯 제시(`--level`/`--difficulty`) |
-| `verify_skill.py` | `skill.json` 스킬 | SP(총배율×크리계수×캐스팅성공×재능계수), 명목총배율 밴드(NORMAL/HEAVY), critBonus 상한 +100 · 마법 0, 반격율 상한 50%, 랭크 16키+단조 비감소 |
+| `verify_skill.py` | `skill.json` 스킬 | SP(총배율×크리계수×캐스팅성공×재능계수), 명목총배율 밴드(NORMAL/HEAVY), critBonus 상한 +100 · 마법 0, 반격율 상한 200%, 랭크 16키+단조성 |
 
 **공통 계산식·상수는 `balance_core.py`가 단일 소스** — 재능계수, KIND_TO_TALENT, weightOf, RANK_KEYS, 몬스터 방어 상수, 플레이어 성장 기준선. 가이드(`§C`)와 이 코드가 어긋나면 이 스크립트를 기준으로 불일치를 확인한다.
 
@@ -211,7 +213,8 @@ python3 verify_skill.py    [--ref-crit N] [--json '{신규 스킬 JSON}']
 - [ ] 방어구: DEF가 그 구간 몬스터 attackPower를 완전 무효화하지 않나?
 - [ ] 판매가/수리비: `weightOf`(CRITICAL=1) 적용, buyPrice×0.5 배타, 수리비=판매가 확인?
 - [ ] 몬스터: attackPower가 그 구간 유효 DEF보다 위(1뎀 방지)? maxHp가 목표 처치 턴? critical 0.1%? 보상 비례?
-- [ ] 스킬: 랭크 16키+단조 비감소? NORMAL<HEAVY 밴드? 2축 차별화? critBonus 상한 +100? 마법 critBonus 0? 반격율 ≤50%?
+- [ ] 스킬: 랭크 16키+단조성? NORMAL<HEAVY 밴드? 2축 차별화? critBonus 상한 +100(딜)/+200(카운터)? 마법 critBonus 0? 반격율 ≤200%?
 - [ ] JSON 문법(쉼표·따옴표) 유효?
 - [ ] **밸런스 스크립트 실행**: 변경 카테고리에 맞는 스크립트(`verify_equipment.py`/`verify_monster.py`/`verify_skill.py`)를 `--json`으로 실행해 경고 없음 확인?
 - [ ] **검증 실행**: `mvn test -pl myrpg` → `mvn clean install -pl myrpg -am`.
+

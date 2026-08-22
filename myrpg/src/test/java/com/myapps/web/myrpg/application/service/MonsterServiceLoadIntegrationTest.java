@@ -109,8 +109,8 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(spider.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
         assertThat(spider.itemDrops().getFirst().chancePercent()).isEqualTo(10);
         assertThat(spider.lines()).hasSize(3);
-        assertThat(spider.defenseBlockRate()).isEqualTo(40);
-        assertThat(spider.defenseCounterRate()).isEqualTo(30);
+        assertThat(spider.defenseBlockRate()).isEqualTo(100);
+        assertThat(spider.defenseCounterRate()).isEqualTo(0);
     }
 
     /** 붉은거미(red-spider)의 모든 필드가 기대값과 일치하는지 검증한다. */
@@ -225,8 +225,8 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(giantSpider.itemDrops().getFirst().minQuantity()).isEqualTo(2);
         assertThat(giantSpider.itemDrops().getFirst().maxQuantity()).isEqualTo(3);
         assertThat(giantSpider.lines()).hasSize(3);
-        assertThat(giantSpider.defenseBlockRate()).isEqualTo(60);
-        assertThat(giantSpider.defenseCounterRate()).isEqualTo(50);
+        assertThat(giantSpider.defenseBlockRate()).isEqualTo(100);
+        assertThat(giantSpider.defenseCounterRate()).isEqualTo(0);
         assertThat(giantSpider.buttonLabel()).isEqualTo("거대거미 👑");
     }
 

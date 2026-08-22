@@ -204,6 +204,112 @@ class BattleResolverMatrixPropertyTest {
     }
 
     /**
+     * 디펜스 완전 방어 (blockRate 100%, counter 0%): 플레이어 피해 0, 몬스터 피해 0, 반격 false.
+     *
+     * @param seed 고정 시드
+     */
+    @Property(tries = 100)
+    void should_zeroDamageBothSides_when_pureDefenseBlocksNormal(@ForAll("seeds") final long seed) {
+
+        final BattleResolver resolver = new BattleResolver(new Random(seed));
+        final TurnInput input =
+                new TurnInput(
+                        SkillType.DEFENSE,
+                        SkillType.NORMAL,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_MULTIPLIER,
+                        DEFAULT_MULTIPLIER,
+                        100,
+                        100,
+                        0,
+                        0,
+                        DEFAULT_CRITICAL,
+                        DEFAULT_CRITICAL,
+                        1,
+                        false);
+
+        final ResolvedTurn result = resolver.resolve(input);
+
+        assertThat(result.playerDamageToMonster()).isEqualTo(0);
+        assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+        assertThat(result.countered()).isFalse();
+    }
+
+    /**
+     * 카운터 어택 vs 일반/강공격 (isCounterAttack = true): 플레이어 피해 0, 몬스터 피해 > 0, 반격 true.
+     *
+     * @param seed 고정 시드
+     * @param monsterType 몬스터 공격 타입 (NORMAL or HEAVY)
+     */
+    @Property(tries = 100)
+    void should_counterDamagePositiveAndPlayerZero_when_counterAttackVsAttack(
+            @ForAll("seeds") final long seed, @ForAll("attackTypes") final SkillType monsterType) {
+
+        final BattleResolver resolver = new BattleResolver(new Random(seed));
+        final TurnInput input =
+                new TurnInput(
+                        SkillType.DEFENSE,
+                        monsterType,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_MULTIPLIER,
+                        DEFAULT_MULTIPLIER,
+                        100,
+                        100,
+                        100,
+                        0,
+                        DEFAULT_CRITICAL,
+                        DEFAULT_CRITICAL,
+                        1,
+                        true);
+
+        final ResolvedTurn result = resolver.resolve(input);
+
+        assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+        assertThat(result.playerDamageToMonster()).isGreaterThan(0);
+        assertThat(result.countered()).isTrue();
+    }
+
+    /**
+     * 카운터 어택 vs 몬스터 디펜스 (isCounterAttack = true): 양측 0 피해 (헛방 교착).
+     *
+     * @param seed 고정 시드
+     */
+    @Property(tries = 100)
+    void should_zeroDamageBothSides_when_counterAttackVsDefense(@ForAll("seeds") final long seed) {
+
+        final BattleResolver resolver = new BattleResolver(new Random(seed));
+        final TurnInput input =
+                new TurnInput(
+                        SkillType.DEFENSE,
+                        SkillType.DEFENSE,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_ATTACK_POWER,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_DEFENSE,
+                        DEFAULT_MULTIPLIER,
+                        DEFAULT_MULTIPLIER,
+                        100,
+                        100,
+                        100,
+                        0,
+                        DEFAULT_CRITICAL,
+                        DEFAULT_CRITICAL,
+                        1,
+                        true);
+
+        final ResolvedTurn result = resolver.resolve(input);
+
+        assertThat(result.playerDamageToMonster()).isEqualTo(0);
+        assertThat(result.monsterDamageToPlayer()).isEqualTo(0);
+    }
+
+    /**
      * 시드 생성기 (0~9999).
      *
      * @return 시드 Arbitrary
@@ -211,6 +317,16 @@ class BattleResolverMatrixPropertyTest {
     @Provide
     Arbitrary<Long> seeds() {
         return Arbitraries.longs().between(0, 9999);
+    }
+
+    /**
+     * 공격 스킬 타입 생성기 (NORMAL, HEAVY).
+     *
+     * @return NORMAL 또는 HEAVY
+     */
+    @Provide
+    Arbitrary<SkillType> attackTypes() {
+        return Arbitraries.of(SkillType.NORMAL, SkillType.HEAVY);
     }
 
     /**

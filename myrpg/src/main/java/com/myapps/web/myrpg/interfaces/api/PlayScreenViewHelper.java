@@ -25,6 +25,7 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.VitalMax;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
@@ -387,11 +388,15 @@ public class PlayScreenViewHelper {
         final int level = progress.getCurrentLevel();
         final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
         final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final VitalMax skillVitalBonus =
+                Optional.ofNullable(skillService.rankupVitalBonus(progress.getId()))
+                        .orElse(new VitalMax(0, 0, 0));
         final VitalMax vitalMax =
                 baseVitalMax
-                        .withHpDelta(equipBonus.vitalBonus().hp())
-                        .withMpDelta(equipBonus.vitalBonus().mp())
-                        .withStaminaDelta(equipBonus.vitalBonus().stamina());
+                        .withHpDelta(equipBonus.vitalBonus().hp() + skillVitalBonus.hp())
+                        .withMpDelta(equipBonus.vitalBonus().mp() + skillVitalBonus.mp())
+                        .withStaminaDelta(
+                                equipBonus.vitalBonus().stamina() + skillVitalBonus.stamina());
         final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
         final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
         final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
