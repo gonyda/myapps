@@ -49,9 +49,10 @@ myapps/                                # Git 레포지토리 루트
 
 모든 작업(코드 작성, 리팩토링, 버그 수정, 문서 작업)을 시작하기 전에 반드시 아래 단계를 수행합니다:
 
-### 2.1. Memory Bank 읽기 (맥락 파악)
-1. `memory-bank/activeContext.md`를 읽어 현재 작업 상태, 최근 결정사항, 다음 단계를 확인합니다.
-2. 만약 파일이 비어있거나 세션이 새로 시작된 경우 `git status` 및 최근 커밋 내역을 확인하여 맥락을 동기화합니다.
+### 2.1. Memory Bank 읽기 (맥락 및 관리 원칙 파악)
+1. `memory-bank/memory-bank.md`의 관리 원칙(슬라이딩 윈도우, 무한 누적 금지, 이전 작업 압축 규칙)을 준수합니다.
+2. `memory-bank/activeContext.md`를 읽어 현재 작업 상태, 최근 결정사항, 다음 단계를 확인합니다.
+3. 만약 파일이 비어있거나 세션이 새로 시작된 경우 `git status` 및 최근 커밋 내역을 확인하여 맥락을 동기화합니다.
 
 ### 2.2. Rules 확인 (해당 작업 규칙 로드)
 수행할 작업 유형에 맞춰 아래 `rules/`의 관련 규칙을 확인합니다:
@@ -76,7 +77,7 @@ myapps/                                # Git 레포지토리 루트
 
 ```
 [1. 맥락 파악]
-  memory-bank/activeContext.md 확인
+  memory-bank/memory-bank.md(원칙) & memory-bank/activeContext.md(맥락) 확인
        ↓
 [2. Spec 문서 3종 작성]
   .kiro/specs/{모듈명}/{순번}-{기능명}/
@@ -91,8 +92,9 @@ myapps/                                # Git 레포지토리 루트
   Task 완료마다 Spotless → Error Prone → ArchUnit → JaCoCo → PMD/CPD 검증
   코드 변경 후 `codegraph sync` 동기화
        ↓
-[5. Memory Bank 갱신]
-  activeContext.md에 작업 결과 및 다음 단계 즉시 갱신
+[5. Memory Bank 갱신 (Compaction)]
+  memory-bank.md 원칙에 따라 완료된 작업은 요약(Compacted)하고,
+  activeContext.md에 현재/다음 작업 맥락 중심으로 슬림하게 갱신
 ```
 
 ### 5대 품질 가드레일 (Task 완료 필수 조건)
@@ -150,4 +152,4 @@ myapps/                                # Git 레포지토리 루트
 | **Antigravity** | `.agents/skills/sdd/SKILL.md` | `/sdd` 명령 또는 스킬 감지 시 `skills/sdd/SKILL.md`를 읽고 SDD 워크플로우 실행 |
 
 > **에이전트 공통 행동 지침**:
-> 어떤 AI Agent이든 실행 즉시 이 파일(`AGENTS.md`)을 진입점으로 인식하고, **`memory-bank/activeContext.md`를 읽은 후 작업을 시작**해야 합니다. 모든 규칙과 스킬은 `rules/`와 `skills/`의 SSOT를 참조합니다.
+> 어떤 AI Agent이든 실행 즉시 이 파일(`AGENTS.md`)을 진입점으로 인식하고, **`memory-bank/memory-bank.md`(관리 원칙) 및 `memory-bank/activeContext.md`(현재 맥락)를 읽은 후 작업을 시작**해야 합니다. 모든 규칙과 스킬은 `rules/`와 `skills/`의 SSOT를 참조합니다.

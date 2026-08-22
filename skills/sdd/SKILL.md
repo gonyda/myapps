@@ -15,6 +15,7 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 
 ### 1. 작업 맥락 파악 (Context Check)
 
+- `memory-bank/memory-bank.md`의 관리 원칙(슬라이딩 윈도우, 무한 누적 금지, 압축 규칙)을 준수
 - `memory-bank/activeContext.md`를 읽어 현재 작업 상태, 최근 결정사항, 다음 단계 확인
 - 세션이 새로 시작되었거나 맥락이 불분명한 경우 `git status` 및 최근 커밋 내역 확인
 
@@ -52,9 +53,10 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 - 상세 검증 명령어 및 기준은 `rules/workflow/task-build-validation.md` 준수
 - 코드 변경 후 `codegraph sync` 실행하여 지식 그래프 동기화
 
-### 5. Memory Bank 갱신
+### 5. Memory Bank 갱신 (Compaction)
 
-- `memory-bank/activeContext.md`에 작업 결과(진행 상태, 작업 트리, 확정 설계값, 다음 단계) 즉시 갱신
+- `memory-bank/memory-bank.md`의 압축 원칙에 따라 완료된 과거 작업은 요약(Compacted)
+- `memory-bank/activeContext.md`에 현재/다음 작업 맥락(진행 상태, 작업 트리, 확정 설계값, 다음 단계) 중심으로 슬림하게 갱신
 
 ---
 
