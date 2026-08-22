@@ -198,14 +198,14 @@ class NodeViewAssemblerDungeonTest {
         final Monster spider =
                 new Monster(
                         "spider",
-                        "거미",
+                        "흰 거미",
                         MonsterType.NORMAL,
                         2,
-                        65,
-                        48,
-                        4,
-                        30,
-                        30L,
+                        50,
+                        40,
+                        2,
+                        20,
+                        24L,
                         new GoldDrop(8, 20),
                         List.of(),
                         List.of("1", "2", "3"),
@@ -314,19 +314,19 @@ class NodeViewAssemblerDungeonTest {
         final Monster spider =
                 new Monster(
                         "spider",
-                        "거미",
+                        "흰 거미",
                         MonsterType.NORMAL,
                         2,
-                        65,
-                        48,
-                        4,
-                        30,
-                        30L,
-                        new GoldDrop(8, 20),
+                        50,
+                        40,
+                        2,
+                        20,
+                        24L,
+                        new GoldDrop(6, 15),
                         List.of(),
                         List.of("1", "2", "3"),
-                        40,
-                        30);
+                        100,
+                        0);
 
         final TalkTarget talkTarget = TalkTarget.ofMonster(spider, "샤아악-!");
 
@@ -341,7 +341,7 @@ class NodeViewAssemblerDungeonTest {
 
         // then
         assertThat(view).isNotNull();
-        assertThat(view.monsterName()).isEqualTo("거미");
+        assertThat(view.monsterName()).isEqualTo("흰 거미");
         assertThat(view.monsterDialogue()).isEqualTo("샤아악-!");
         assertThat(view.interactions()).hasSize(1);
         assertThat(view.interactions().get(0).actionType()).isEqualTo("monster");

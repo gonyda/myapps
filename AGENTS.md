@@ -13,7 +13,6 @@ myapps/                                # Git 레포지토리 루트
 │   ├── coding/                        # Java 코딩 컨벤션, final, 불변성, 테스트 규칙
 │   ├── infra/                         # 배포 절차, 인프라 및 포트 매핑 규칙
 │   ├── module/                        # 신규 모듈 생성 가드 및 DDD 템플릿
-│   ├── myrpg/                         # 게임 데이터 및 밸런스 조정 가이드
 │   ├── project/                       # pom.xml 규칙, 기술 스택, Spec 작성 표준
 │   └── workflow/                      # CodeGraph 우선, 빌드 검증 5대 가드레일, Git 전략
 │
@@ -22,18 +21,27 @@ myapps/                                # Git 레포지토리 루트
 │   └── memory-bank.md                 # 메모리뱅크 개념, 작성 원칙 및 갱신 프로토콜
 │
 ├── skills/                            # [스킬 SSOT] 모든 워크플로우의 실제 실행 로직 원본
-│   └── sdd/
-│       └── SKILL.md                   # SDD(Spec-Driven Development) 5단계 실행 프로세스 정의
+│   ├── sdd/
+│   │   └── SKILL.md                   # SDD(Spec-Driven Development) 5단계 실행 프로세스 정의
+│   └── myrpg-data-balance/
+│       └── SKILL.md                   # MyRPG 게임 데이터 밸런싱 및 대화형 Q&A/파이썬 검증 프로토콜
+│
+├── tools/                             # [도구 모음]
+│   └── balance/                       # 파이썬 밸런스 검증 엔진 (verify_equipment/monster/skill.py)
 │
 ├── .kiro/                             # [Kiro 전용 영역]
 │   └── specs/                         # 모듈별 요구사항(requirements) → 설계(design) → 작업(tasks) Spec
 │
 ├── .cline/                            # [Cline 전용 설정]
-│   └── skills/sdd/SKILL.md            # Cline /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
+│   └── skills/
+│       ├── sdd/SKILL.md               # Cline /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
+│       └── myrpg-data-balance/SKILL.md# Cline /myrpg-data-balance 명령용 Thin Wrapper
 │
 ├── .agents/                           # [Antigravity 전용 설정]
 │   ├── mcp_config.json                # Antigravity 전용 MCP 서버 설정
-│   └── skills/sdd/SKILL.md            # Antigravity /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
+│   └── skills/
+│       ├── sdd/SKILL.md               # Antigravity /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
+│       └── myrpg-data-balance/SKILL.md# Antigravity /myrpg-data-balance 명령용 Thin Wrapper
 │
 └── {애플리케이션 모듈}/                # mystudy, mycalendar, myrpg 등
 ```
@@ -54,17 +62,18 @@ myapps/                                # Git 레포지토리 루트
 2. `memory-bank/activeContext.md`를 읽어 현재 작업 상태, 최근 결정사항, 다음 단계를 확인합니다.
 3. 만약 파일이 비어있거나 세션이 새로 시작된 경우 `git status` 및 최근 커밋 내역을 확인하여 맥락을 동기화합니다.
 
-### 2.2. Rules 확인 (해당 작업 규칙 로드)
-수행할 작업 유형에 맞춰 아래 `rules/`의 관련 규칙을 확인합니다:
+### 2.2. Rules 및 Skills 확인 (해당 작업 규칙 로드)
+수행할 작업 유형에 맞춰 아래 `rules/` 및 `skills/`의 관련 정의를 확인합니다:
 
-| 작업 유형 | 확인 대상 규칙 파일 |
+| 작업 유형 | 확인 대상 규칙/스킬 파일 |
 |---|---|
+| **기능 개발 / 리팩토링** | `skills/sdd/SKILL.md` (5단계 SDD 워크플로우) |
+| **게임 데이터/밸런스 추가·수정** | `skills/myrpg-data-balance/SKILL.md` (대화형 Q&A + 파이썬 검증) |
 | **Spec 문서 작성/수정** | `rules/project/spec-conventions.md` |
 | **코드 구조 및 심볼 분석** | `rules/workflow/codegraph-first.md` |
 | **Java 소스 코드 작성/수정** | `rules/coding/code-style.md`, `rules/project/tech-stack.md` |
 | **pom.xml 의존성/플러그인 수정** | `rules/project/pom-conventions.md` |
 | **신규 모듈 생성** | `rules/module/new-module-guard.md`, `rules/module/module-template.md` |
-| **게임 데이터/밸런스 수정** | `rules/myrpg/data-balance-guide.md` |
 | **Task 완료 및 빌드 검증** | `rules/workflow/task-build-validation.md` |
 | **Git 커밋 / PR 생성** | `rules/workflow/git-workflow.md` |
 | **원격 서버 배포** | `rules/infra/deployment.md` |
@@ -125,21 +134,27 @@ myapps/                                # Git 레포지토리 루트
 
 ---
 
-## 5. rules/ 전체 인덱스 (SSOT)
+## 5. rules/ 및 skills/ 전체 인덱스 (SSOT)
 
+### 5.1. Rules (개발·아키텍처 규칙)
 | 분류 | 규칙 파일 | 핵심 내용 |
 |---|---|---|
 | **Coding** | `rules/coding/code-style.md` | Java 21 문법, 불변성(`final`), Lombok 금지, Spring Boot 4.0 테스트 표준 |
 | **Infra** | `rules/infra/deployment.md` | Oracle Cloud VM 배포 절차, 환경변수, 모듈별 포트 매핑 (mystudy:8080, mycalendar:8082, myrpg:8083) |
 | **Module** | `rules/module/module-template.md` | 신규 모듈용 DDD 패키지 구조 및 템플릿 |
 | **Module** | `rules/module/new-module-guard.md` | 신규 모듈 추가 전 사전 점검 체크리스트 |
-| **Game** | `rules/myrpg/data-balance-guide.md` | RPG 게임 데이터 밸런스 조정 및 데이터 파일 작성 규칙 |
 | **Project** | `rules/project/pom-conventions.md` | Parent POM 및 모듈 POM 설정 표준, 5대 가드레일 플러그인 정의 |
 | **Project** | `rules/project/spec-conventions.md` | Spec 3종 문서 구조 및 3자리 순번 폴더 네이밍 규칙 |
 | **Project** | `rules/project/tech-stack.md` | 기술 스택 (Java 21/JDK 25, Spring Boot 4.0, Maven 멀티모듈) |
 | **Workflow** | `rules/workflow/codegraph-first.md` | 탐색 툴 우선순위 및 CodeGraph 동기화 규칙 |
 | **Workflow** | `rules/workflow/git-workflow.md` | Git 브랜치 전략, 커밋 메시지 컨벤션, PR 규칙 |
 | **Workflow** | `rules/workflow/task-build-validation.md` | 5대 가드레일 빌드 검증 명령어 및 성공 기준 |
+
+### 5.2. Skills (실행 워크플로우)
+| 스킬명 | SSOT 위치 | 핵심 내용 |
+|---|---|---|
+| **sdd** | `skills/sdd/SKILL.md` | SDD 5단계 개발 및 5대 품질 가드레일 검증 워크플로우 |
+| **myrpg-data-balance** | `skills/myrpg-data-balance/SKILL.md` | 게임 데이터(아이템/몬스터/스킬/맵) Q&A 작성 및 `tools/balance/` 파이썬 자동 검증 워크플로우 |
 
 ---
 
@@ -148,8 +163,8 @@ myapps/                                # Git 레포지토리 루트
 | 도구 (Agent) | 진입 및 연동 방식 | 역할 및 동작 |
 |---|---|---|
 | **Kiro** | 시스템 프롬프트 / 워크스페이스 로드 | `.kiro/specs/` 내 Spec 문서를 관리하며 작업 수행 |
-| **Cline** | `.cline/skills/sdd/SKILL.md` | `/sdd` 명령 입력 시 `skills/sdd/SKILL.md`를 읽고 SDD 워크플로우 실행 |
-| **Antigravity** | `.agents/skills/sdd/SKILL.md` | `/sdd` 명령 또는 스킬 감지 시 `skills/sdd/SKILL.md`를 읽고 SDD 워크플로우 실행 |
+| **Cline** | `.cline/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance` 명령 시 `skills/` 원본을 읽고 워크플로우 실행 |
+| **Antigravity** | `.agents/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance` 명령 또는 스킬 감지 시 `skills/` 원본을 읽고 워크플로우 실행 |
 
 > **에이전트 공통 행동 지침**:
 > 어떤 AI Agent이든 실행 즉시 이 파일(`AGENTS.md`)을 진입점으로 인식하고, **`memory-bank/memory-bank.md`(관리 원칙) 및 `memory-bank/activeContext.md`(현재 맥락)를 읽은 후 작업을 시작**해야 합니다. 모든 규칙과 스킬은 `rules/`와 `skills/`의 SSOT를 참조합니다.

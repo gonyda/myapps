@@ -94,4 +94,4 @@ SDD 실행 중 아래 규칙 파일을 함께 참조해야 합니다.
 | `rules/coding/code-style.md` | Java 소스 코드 작성/수정 시 |
 | `rules/project/tech-stack.md` | 기술 스택 확인 시 |
 | `rules/infra/deployment.md` | 배포 시 |
-| `rules/myrpg/data-balance-guide.md` | myrpg 데이터 밸런스 조정 시 |
+| `skills/myrpg-data-balance/SKILL.md` | myrpg 데이터 밸런스 조정 시 |

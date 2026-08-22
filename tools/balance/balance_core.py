@@ -2,7 +2,7 @@
 
 장비/몬스터/스킬 검증 스크립트가 공유하는 계산식·상수·데이터 로더를 모은다.
 
-핵심 개념(자세한 배경은 data-balance-guide.md):
+핵심 개념(자세한 배경은 skills/myrpg-data-balance/SKILL.md):
 - CP(전투력) = sqrt(O * S)  — 스탯 기반 전투 잠재력 (무기/방어구/몬스터/캐릭터 공통 스케일)
     O(공격) = 공격력 * 크리계수
     S(생존) = HP * A_REF / max(1, A_REF - DEF)

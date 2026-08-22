@@ -32,7 +32,17 @@
       "type": "field",
       "x": 1,
       "y": 0,
-      "links": ["tir-chonaill", "ciar-entrance"]
+      "links": ["tir-chonaill", "ciar-entrance", "graveyard"],
+      "monsters": ["red-fox"]
+    },
+    {
+      "id": "graveyard",
+      "name": "공동 묘지",
+      "type": "field",
+      "x": 1,
+      "y": -1,
+      "links": ["east-hill"],
+      "monsters": ["spider"]
     },
     {
       "id": "ciar-entrance",

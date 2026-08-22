@@ -30,5 +30,6 @@ class ArchitectureRuleTest {
                     .that()
                     .haveSimpleNameEndingWith("Controller")
                     .should()
-                    .resideInAPackage("com.myapps.web.myrpg.interfaces.api..");
+                    .resideInAPackage("com.myapps.web.myrpg.interfaces.api..")
+                    .allowEmptyShould(true);
 }

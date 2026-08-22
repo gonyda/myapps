@@ -21,21 +21,23 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class MonsterServiceLoadIntegrationTest {
 
-    private static final int TOTAL_MONSTER_COUNT = 6;
+    private static final int TOTAL_MONSTER_COUNT = 7;
     private static final String RACCOON_ID = "raccoon";
     private static final String RACCOON_NAME = "너구리";
     private static final int RACCOON_LEVEL = 1;
-    private static final int RACCOON_MAX_HP = 45;
-    private static final int RACCOON_ATTACK_POWER = 42;
-    private static final int RACCOON_DEFENSE = 3;
-    private static final int RACCOON_CRITICAL = 30;
-    private static final long RACCOON_EXPERIENCE = 22L;
-    private static final int RACCOON_GOLD_DROP_MIN = 6;
-    private static final int RACCOON_GOLD_DROP_MAX = 16;
-    private static final int RACCOON_ITEM_DROPS_COUNT = 1;
+    private static final int RACCOON_MAX_HP = 38;
+    private static final int RACCOON_ATTACK_POWER = 36;
+    private static final int RACCOON_DEFENSE = 2;
+    private static final int RACCOON_CRITICAL = 20;
+    private static final long RACCOON_EXPERIENCE = 16L;
+    private static final int RACCOON_GOLD_DROP_MIN = 4;
+    private static final int RACCOON_GOLD_DROP_MAX = 12;
+    private static final int RACCOON_ITEM_DROPS_COUNT = 3;
     private static final int RACCOON_LINES_COUNT = 3;
     private static final String DUGALD_NORTH_NODE_ID = "dugald-north";
     private static final String TIR_CHONAILL_NODE_ID = "tir-chonaill";
+    private static final String EAST_HILL_NODE_ID = "east-hill";
+    private static final String GRAVEYARD_NODE_ID = "graveyard";
 
     private final MonsterService monsterService;
 
@@ -43,9 +45,9 @@ class MonsterServiceLoadIntegrationTest {
         this.monsterService = monsterService;
     }
 
-    /** 전체 몬스터 수가 6마리(기존 너구리 + 알비 던전 5종)인지 검증한다. */
+    /** 전체 몬스터 수가 7마리(너구리, 붉은 여우, 흰 거미 + 알비 던전 4종)인지 검증한다. */
     @Test
-    @DisplayName("애플리케이션 기동 시 카탈로그에 등록된 6마리의 몬스터가 모두 정상 로드된다")
+    @DisplayName("애플리케이션 기동 시 카탈로그에 등록된 7마리의 몬스터가 모두 정상 로드된다")
     void should_loadAllMonsters_when_applicationStarts() {
         // given - 컨텍스트 기동 완료 상태
 
@@ -79,13 +81,49 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(raccoon.goldDrop().min()).isEqualTo(RACCOON_GOLD_DROP_MIN);
         assertThat(raccoon.goldDrop().max()).isEqualTo(RACCOON_GOLD_DROP_MAX);
         assertThat(raccoon.itemDrops()).hasSize(RACCOON_ITEM_DROPS_COUNT);
-        assertThat(raccoon.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
+        assertThat(raccoon.itemDrops().get(0).itemId()).isEqualTo("hp_potion_30");
+        assertThat(raccoon.itemDrops().get(1).itemId()).isEqualTo("mp_potion_30");
+        assertThat(raccoon.itemDrops().get(2).itemId()).isEqualTo("stamina_potion_30");
         assertThat(raccoon.lines()).hasSize(RACCOON_LINES_COUNT);
     }
 
-    /** 거미(spider)의 모든 필드가 기대값과 일치하는지 검증한다. */
+    /** 붉은 여우(red-fox)의 모든 필드가 기대값과 일치하는지 검증한다. */
     @Test
-    @DisplayName("거미(spider, Lv2)의 스탯, 드랍율, 대사가 정확하게 로드된다")
+    @DisplayName("붉은 여우(red-fox, Lv2)의 스탯, 드랍율, 대사가 정확하게 로드된다")
+    void should_haveCorrectRedFoxFields_when_loaded() {
+        // given
+        final String monsterId = "red-fox";
+
+        // when
+        final Monster redFox = monsterService.byId(monsterId).orElseThrow();
+
+        // then
+        assertThat(redFox.id()).isEqualTo("red-fox");
+        assertThat(redFox.name()).isEqualTo("붉은 여우");
+        assertThat(redFox.type()).isEqualTo(MonsterType.NORMAL);
+        assertThat(redFox.level()).isEqualTo(2);
+        assertThat(redFox.maxHp()).isEqualTo(44);
+        assertThat(redFox.attackPower()).isEqualTo(38);
+        assertThat(redFox.defense()).isEqualTo(2);
+        assertThat(redFox.critical()).isEqualTo(20);
+        assertThat(redFox.experience()).isEqualTo(20L);
+        assertThat(redFox.goldDrop().min()).isEqualTo(5);
+        assertThat(redFox.goldDrop().max()).isEqualTo(13);
+        assertThat(redFox.itemDrops()).hasSize(3);
+        assertThat(redFox.itemDrops().get(0).itemId()).isEqualTo("hp_potion_30");
+        assertThat(redFox.itemDrops().get(0).chancePercent()).isEqualTo(10);
+        assertThat(redFox.itemDrops().get(1).itemId()).isEqualTo("mp_potion_30");
+        assertThat(redFox.itemDrops().get(1).chancePercent()).isEqualTo(10);
+        assertThat(redFox.itemDrops().get(2).itemId()).isEqualTo("stamina_potion_30");
+        assertThat(redFox.itemDrops().get(2).chancePercent()).isEqualTo(10);
+        assertThat(redFox.lines()).hasSize(3);
+        assertThat(redFox.defenseBlockRate()).isEqualTo(100);
+        assertThat(redFox.defenseCounterRate()).isEqualTo(0);
+    }
+
+    /** 흰 거미(spider)의 모든 필드가 기대값과 일치하는지 검증한다. */
+    @Test
+    @DisplayName("흰 거미(spider, Lv2)의 스탯, 드랍율, 대사가 정확하게 로드된다")
     void should_haveCorrectSpiderFields_when_loaded() {
         // given
         final String monsterId = "spider";
@@ -95,19 +133,23 @@ class MonsterServiceLoadIntegrationTest {
 
         // then
         assertThat(spider.id()).isEqualTo("spider");
-        assertThat(spider.name()).isEqualTo("거미");
+        assertThat(spider.name()).isEqualTo("흰 거미");
         assertThat(spider.type()).isEqualTo(MonsterType.NORMAL);
         assertThat(spider.level()).isEqualTo(2);
-        assertThat(spider.maxHp()).isEqualTo(65);
-        assertThat(spider.attackPower()).isEqualTo(48);
-        assertThat(spider.defense()).isEqualTo(4);
-        assertThat(spider.critical()).isEqualTo(30);
-        assertThat(spider.experience()).isEqualTo(30L);
-        assertThat(spider.goldDrop().min()).isEqualTo(8);
-        assertThat(spider.goldDrop().max()).isEqualTo(20);
-        assertThat(spider.itemDrops()).hasSize(1);
-        assertThat(spider.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
-        assertThat(spider.itemDrops().getFirst().chancePercent()).isEqualTo(10);
+        assertThat(spider.maxHp()).isEqualTo(50);
+        assertThat(spider.attackPower()).isEqualTo(40);
+        assertThat(spider.defense()).isEqualTo(2);
+        assertThat(spider.critical()).isEqualTo(20);
+        assertThat(spider.experience()).isEqualTo(24L);
+        assertThat(spider.goldDrop().min()).isEqualTo(6);
+        assertThat(spider.goldDrop().max()).isEqualTo(15);
+        assertThat(spider.itemDrops()).hasSize(3);
+        assertThat(spider.itemDrops().get(0).itemId()).isEqualTo("hp_potion_30");
+        assertThat(spider.itemDrops().get(0).chancePercent()).isEqualTo(10);
+        assertThat(spider.itemDrops().get(1).itemId()).isEqualTo("mp_potion_30");
+        assertThat(spider.itemDrops().get(1).chancePercent()).isEqualTo(10);
+        assertThat(spider.itemDrops().get(2).itemId()).isEqualTo("stamina_potion_30");
+        assertThat(spider.itemDrops().get(2).chancePercent()).isEqualTo(10);
         assertThat(spider.lines()).hasSize(3);
         assertThat(spider.defenseBlockRate()).isEqualTo(100);
         assertThat(spider.defenseCounterRate()).isEqualTo(0);
@@ -135,9 +177,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(redSpider.experience()).isEqualTo(40L);
         assertThat(redSpider.goldDrop().min()).isEqualTo(12);
         assertThat(redSpider.goldDrop().max()).isEqualTo(25);
-        assertThat(redSpider.itemDrops()).hasSize(1);
-        assertThat(redSpider.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
-        assertThat(redSpider.itemDrops().getFirst().chancePercent()).isEqualTo(15);
+        assertThat(redSpider.itemDrops()).isEmpty();
         assertThat(redSpider.lines()).hasSize(3);
     }
 
@@ -163,9 +203,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(goblin.experience()).isEqualTo(42L);
         assertThat(goblin.goldDrop().min()).isEqualTo(15);
         assertThat(goblin.goldDrop().max()).isEqualTo(30);
-        assertThat(goblin.itemDrops()).hasSize(1);
-        assertThat(goblin.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
-        assertThat(goblin.itemDrops().getFirst().chancePercent()).isEqualTo(20);
+        assertThat(goblin.itemDrops()).isEmpty();
         assertThat(goblin.lines()).hasSize(3);
     }
 
@@ -191,9 +229,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(blackSpider.experience()).isEqualTo(55L);
         assertThat(blackSpider.goldDrop().min()).isEqualTo(20);
         assertThat(blackSpider.goldDrop().max()).isEqualTo(45);
-        assertThat(blackSpider.itemDrops()).hasSize(1);
-        assertThat(blackSpider.itemDrops().getFirst().itemId()).isEqualTo("hp_potion_30");
-        assertThat(blackSpider.itemDrops().getFirst().chancePercent()).isEqualTo(25);
+        assertThat(blackSpider.itemDrops()).isEmpty();
         assertThat(blackSpider.lines()).hasSize(3);
     }
 
@@ -257,6 +293,36 @@ class MonsterServiceLoadIntegrationTest {
 
         // then
         assertThat(monsters).isEmpty();
+    }
+
+    /** east-hill 노드에 붉은 여우가 배치되어 있는지 검증한다. */
+    @Test
+    @DisplayName("동쪽 언덕 노드에 붉은 여우가 정상 배치되어 조회된다")
+    void should_haveRedFoxInEastHill_when_byNodeCalled() {
+        // given
+        final String nodeId = EAST_HILL_NODE_ID;
+
+        // when
+        final List<Monster> monsters = monsterService.byNode(nodeId);
+
+        // then
+        assertThat(monsters).hasSize(1);
+        assertThat(monsters.getFirst().id()).isEqualTo("red-fox");
+    }
+
+    /** graveyard 노드에 흰 거미가 배치되어 있는지 검증한다. */
+    @Test
+    @DisplayName("공동 묘지 노드에 흰 거미가 정상 배치되어 조회된다")
+    void should_haveSpiderInGraveyard_when_byNodeCalled() {
+        // given
+        final String nodeId = GRAVEYARD_NODE_ID;
+
+        // when
+        final List<Monster> monsters = monsterService.byNode(nodeId);
+
+        // then
+        assertThat(monsters).hasSize(1);
+        assertThat(monsters.getFirst().id()).isEqualTo("spider");
     }
 
     /** 미존재 노드에 대해 빈 목록을 반환하는지 검증한다. */

@@ -103,19 +103,19 @@ class BattleServiceChainCombatTest {
         spider =
                 new Monster(
                         SPIDER_ID,
-                        "거미",
+                        "흰 거미",
                         MonsterType.NORMAL,
                         2,
-                        65,
-                        48,
-                        4,
-                        30,
-                        30L,
-                        new GoldDrop(8, 20),
+                        50,
+                        40,
+                        2,
+                        20,
+                        24L,
+                        new GoldDrop(6, 15),
                         List.of(),
                         List.of("1", "2", "3"),
-                        40,
-                        30);
+                        100,
+                        0);
 
         giantSpider =
                 new Monster(
@@ -171,10 +171,10 @@ class BattleServiceChainCombatTest {
         // when (실행: 스킬 사용 턴 진행)
         final BattleTurnResult result = service.takeTurn(character, state, SKILL_ID);
 
-        // then (검증: 연쇄 전투 발동으로 outcome=NONE, 몬스터 HP는 maxHp(65)로 갱신, 기습 문구 추가)
+        // then (검증: 연쇄 전투 발동으로 outcome=NONE, 몬스터 HP는 maxHp(50)로 갱신, 기습 문구 추가)
         assertThat(result.battleEnded()).isFalse();
         assertThat(result.outcome()).isEqualTo(BattleTurnResult.Outcome.NONE);
-        assertThat(state.getMonsterCurrentHp()).isEqualTo(65);
+        assertThat(state.getMonsterCurrentHp()).isEqualTo(50);
         assertThat(state.isActive()).isTrue();
 
         then(dungeonService).should().onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
@@ -250,7 +250,7 @@ class BattleServiceChainCombatTest {
         // given (준비: HP 10인 플레이어가 50 피해를 입어 사망)
         final Random random = mock(Random.class);
         final BattleService service = createBattleService(random);
-        final BattleState state = new BattleState(CHARACTER_ID, SPIDER_ID, 65, false);
+        final BattleState state = new BattleState(CHARACTER_ID, SPIDER_ID, 50, false);
 
         character.damageHp(95); // Remaining HP: 5
         given(monsterService.byId(SPIDER_ID)).willReturn(Optional.of(spider));
