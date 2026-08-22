@@ -44,11 +44,11 @@ public class DungeonProgressEntity {
     private String currentRoomId;
 
     @Lob
-    @Column(name = "dungeon_graph_json", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "dungeon_graph_json", nullable = false)
     private String dungeonGraphJson;
 
     @Lob
-    @Column(name = "room_states_json", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "room_states_json", nullable = false)
     private String roomStatesJson;
 
     @Column(name = "created_at", nullable = false)
