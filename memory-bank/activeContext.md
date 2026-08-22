@@ -48,9 +48,13 @@
   - `BattleResolver.java`: `resolveCounterAttackWins`에서 `input.playerAttackPower()` 사용.
   - `skill.json`: `counter_attack` 배율 F 90% ~ MASTER 160%, 크리티컬 F +0.0%p ~ MASTER +10.0%p(+100), 스태미나 8.
   - `verify_skill.py` 파이썬 밸런스 검증 및 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 전수 통과.
-- **[2026-08-23] 013 액티브 전조 반응 전투 시스템 Spec 작성**
+- **[2026-08-23] SDD 표준 Spec 템플릿 3종 구축 및 SKILL.md 연동 완료**
+  - `.kiro/specs/` 하위에 `_requirements.md`, `_design.md`, `_tasks.md` 표준 템플릿 생성.
+  - `skills/sdd/SKILL.md` 및 `rules/project/spec-conventions.md`에 새 스펙 작성 시 템플릿 복사 및 필수 사용 규칙 명시.
+- **[2026-08-23] 013 액티브 전조 반응 전투 시스템 Spec 작성 완료**
   - `.kiro/specs/myrpg/013-active-telegraph-combat/requirements.md`: 2단계 사이클, B안 뱃지, 공통 시간(1.0s/1.5s), 타임아웃, 예외 처리 명세.
   - `.kiro/specs/myrpg/013-active-telegraph-combat/design.md`: `BattleState`(intent, standby), `BattleView`, `BattleService`(startClash, takeTurn timeout), `BattleController`(/battle/clash), `battle-view.html`, `myrpg.js`, `myrpg.css` 설계 완료.
+  - `.kiro/specs/myrpg/013-active-telegraph-combat/tasks.md`: 점진적 5단계 마일스톤 및 체크포인트 작업 명세 완료.
 
 ---
 

@@ -21,19 +21,28 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 
 ### 2. Spec 문서 3종 작성 (Spec Authoring)
 
-작업 대상(모듈/기능)에 대해 `.kiro/specs/{모듈명}/{순번}-{기능명}/` 위치에 아래 3개 문서를 작성합니다.
+작업 대상(모듈/기능)에 대해 `.kiro/specs/{모듈명}/{순번}-{기능명}/` 위치에 아래 3개 문서를 작성합니다.  
+> ⚠️ **필수 규칙**: Spec 문서 작성 시 반드시 `.kiro/specs/` 폴더에 위치한 **표준 템플릿 3종(`_requirements.md`, `_design.md`, `_tasks.md`)을 복사하여 기반으로 작성**해야 합니다.
 
-#### 2.1. `requirements.md`
+```bash
+# 템플릿 복사 예시
+mkdir -p .kiro/specs/{모듈명}/{순번}-{기능명}
+cp .kiro/specs/_requirements.md .kiro/specs/{모듈명}/{순번}-{기능명}/requirements.md
+cp .kiro/specs/_design.md       .kiro/specs/{모듈명}/{순번}-{기능명}/design.md
+cp .kiro/specs/_tasks.md        .kiro/specs/{모듈명}/{순번}-{기능명}/tasks.md
+```
+
+#### 2.1. `requirements.md` (템플릿: `.kiro/specs/_requirements.md`)
 - **목적**: 해결하려는 문제와 요구사항을 명확히 정의
-- **작성 항목**: 배경/목적, 기능 요구사항, 비기능 요구사항, 제약 조건, 유스케이스
+- **작성 항목**: 배경/목적, In/Out-of-Scope, 도메인 용어사전(`Glossary`), User Story 및 EARS 기반 `Acceptance Criteria`(WHEN, THE SHALL, IF THEN, WHERE), 5대 품질 가드레일
 
-#### 2.2. `design.md`
-- **목적**: 요구사항을 만족하는 구체적인 설계 정의
-- **작성 항목**: 시스템 아키텍처/컴포넌트 구성, 데이터 모델(엔티티/테이블), API/화면 설계, 비즈니스 로직 규칙, 협의 확정값
+#### 2.2. `design.md` (템플릿: `.kiro/specs/_design.md`)
+- **목적**: 요구사항을 만족하는 구체적인 아키텍처 및 상세 설계 정의
+- **작성 항목**: 핵심 설계 결정 및 트레이드오프 표, DDD 4계층 패키지 구조, Mermaid 시퀀스 다이어그램, 계층별 세부 인터페이스, 데이터 모델(엔티티/Record/JSON 카탈로그), jqwik PBT용 `Correctness Properties`
 
-#### 2.3. `tasks.md`
+#### 2.3. `tasks.md` (템플릿: `.kiro/specs/_tasks.md`)
 - **목적**: 구현 단위 작업을 순차적 체크포인트로 분할
-- **작성 항목**: Task 목록(체크박스), 파일별 구현 범위, 테스트 코드 작성 계획 (모든 Task 필수, 5대 가드레일 검증 포함)
+- **작성 항목**: Bottom-Up 5단계 마일스톤(도메인/DTO → 서비스 → 컨트롤러 → 프론트엔드 → 5대 가드레일 통합 검증), 단계별 빌드/테스트 **체크포인트**(모든 Task 필수), 요구사항 역추적 링크
 
 ### 3. 사용자 검토 및 승인 (User Review & Approval)
 
@@ -60,17 +69,20 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 
 ---
 
-## Spec 문서 저장 위치
+## Spec 문서 저장 위치 및 표준 템플릿
 
-모든 Spec 문서는 `.kiro/specs/` 디렉토리에 저장됩니다.
+모든 Spec 문서는 `.kiro/specs/` 디렉토리에 저장되며, 최상위의 `_` 접두사 템플릿을 사용하여 작성합니다.
 
 ```
 .kiro/specs/
+├── _requirements.md                   # [표준 템플릿] 요구사항 명세서
+├── _design.md                         # [표준 템플릿] 상세 설계서
+├── _tasks.md                          # [표준 템플릿] 점진적 구현 작업 명세서
 └── {모듈명}/
     └── {순번}-{기능명}/
-        ├── requirements.md
-        ├── design.md
-        └── tasks.md
+        ├── requirements.md            # _requirements.md 기반 작성
+        ├── design.md                  # _design.md 기반 작성
+        └── tasks.md                   # _tasks.md 기반 작성
 ```
 
 - 폴더 구조 및 네이밍 규칙: `rules/project/spec-conventions.md` 참고
@@ -78,20 +90,23 @@ SDD(Spec-Driven Development)는 요구사항 → 설계 → 작업 명세 → �
 
 ---
 
-## 참조 규칙 파일
+## 참조 규칙 및 템플릿 파일
 
-SDD 실행 중 아래 규칙 파일을 함께 참조해야 합니다.
+SDD 실행 중 아래 파일들을 반드시 참조해야 합니다.
 
-| 규칙 파일 | 참조 시점 |
-|---|---|
-| `rules/project/spec-conventions.md` | Spec 문서 작성/수정 시 |
-| `rules/workflow/task-build-validation.md` | 각 Task 완료 후 검증 시 |
-| `rules/workflow/codegraph-first.md` | 코드 구조 분석 시 (MCP 우선) |
-| `rules/workflow/git-workflow.md` | 커밋/PR 시 |
-| `rules/project/pom-conventions.md` | pom.xml 수정 시 |
-| `rules/module/module-template.md` | 새 모듈 생성 시 |
-| `rules/module/new-module-guard.md` | 새 모듈 생성 전 |
-| `rules/coding/code-style.md` | Java 소스 코드 작성/수정 시 |
-| `rules/project/tech-stack.md` | 기술 스택 확인 시 |
-| `rules/infra/deployment.md` | 배포 시 |
-| `skills/myrpg-data-balance/SKILL.md` | myrpg 데이터 밸런스 조정 시 |
+| 파일 경로 | 분류 | 참조 시점 / 목적 |
+|---|---|---|
+| `.kiro/specs/_requirements.md` | **템플릿** | `requirements.md` 작성 시 복사하여 사용 |
+| `.kiro/specs/_design.md` | **템플릿** | `design.md` 작성 시 복사하여 사용 |
+| `.kiro/specs/_tasks.md` | **템플릿** | `tasks.md` 작성 시 복사하여 사용 |
+| `rules/project/spec-conventions.md` | 규칙 | Spec 폴더 네이밍 및 3자리 순번 결정 시 |
+| `rules/workflow/task-build-validation.md` | 규칙 | 각 Task 완료 후 5대 가드레일 검증 시 |
+| `rules/workflow/codegraph-first.md` | 규칙 | 코드 구조 분석 시 (CodeGraph MCP 1순위) |
+| `rules/workflow/git-workflow.md` | 규칙 | 커밋 및 푸시 / PR 작성 시 |
+| `rules/project/pom-conventions.md` | 규칙 | pom.xml 수정 시 |
+| `rules/module/module-template.md` | 규칙 | 새 모듈 생성 시 |
+| `rules/module/new-module-guard.md` | 규칙 | 새 모듈 생성 전 사전 점검 시 |
+| `rules/coding/code-style.md` | 규칙 | Java 소스 코드 작성/수정 시 |
+| `rules/project/tech-stack.md` | 규칙 | 기술 스택 및 라이브러리 버전 확인 시 |
+| `rules/infra/deployment.md` | 규칙 | 원격 VM 배포 시 |
+| `skills/myrpg-data-balance/SKILL.md` | 스킬 | MyRPG 게임 데이터 밸런스 조정 시 |
