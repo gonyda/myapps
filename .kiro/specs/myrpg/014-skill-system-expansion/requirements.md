@@ -201,6 +201,23 @@
 
 ---
 
+### Requirement 8: 신규 스킬 타입 및 상태이상 전투 활동 로그(Log) 포맷팅
+
+**User Story:**  
+플레이어로서, 신규 스킬(궁극기, 힐링, 마나실드, CC/빙결, 독도트, 메디테이션)을 시전하거나 상태이상이 적용될 때 하단 활동 로그에서 상황별 전용 멘트를 확인하고 싶다.  
+그래야 전투의 진행 상황과 상태 변화를 직관적이고 몰입감 있게 파악할 수 있다.
+
+#### Acceptance Criteria
+
+1. **WHEN** 궁극기(`ULTIMATE`)가 시전되면, **THE** `BattleLogFormatter` **SHALL** 궁극기 전용 수식어와 총 피해량(다단히트 브레이크다운 또는 크리티컬) 멘트를 생성한다.
+2. **WHEN** 힐링(`RECOVERY`)이 시전되면, **THE** `BattleLogFormatter` **SHALL** 생명력 즉시 회복 수치(`+N HP`) 멘트를 생성한다.
+3. **WHEN** 마나 실드(`BUFF`)가 시전되거나 피격을 흡수할 때, **THE** `BattleLogFormatter` **SHALL** 마나 실드 전개 멘트 및 MP 감쇄 흡수량/HP 피격량 분리 멘트를 생성한다.
+4. **WHEN** CC(`spider_shot`) 또는 빙결(`ice_spear`)이 성공하면, **THE** `BattleLogFormatter` **SHALL** 적의 다음 턴 행동 불능 예약 멘트 및 실제 턴 스킵 멘트를 생성한다.
+5. **WHEN** 독 도트(`mirage_missile`) 또는 피해 증폭 디버프(`rage_impact`)가 발동하면, **THE** `BattleLogFormatter` **SHALL** 중독 지속/턴당 독 피해 및 피해 +30% 증폭 부여 멘트를 생성한다.
+6. **WHEN** 메디테이션에 의해 턴 종료 시 MP가 회복되면, **THE** `BattleLogFormatter` **SHALL** 마나 자연 회복 수치(`+N MP`) 멘트를 기록한다.
+
+---
+
 ## 4. Non-Functional & Quality Requirements (비기능 및 품질 요구사항)
 
 1. **5대 품질 가드레일 (Task 완료 필수 기준)**:
