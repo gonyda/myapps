@@ -785,7 +785,7 @@ public class BattleService {
         }
         for (final DroppedItem item : drop.items()) {
             final String itemName = resolveItemName(item.itemId());
-            logLines.add(itemName + "을(를) 획득하였습니다.");
+            logLines.add(itemName + " (" + item.quantity() + "개)를 획득하였습니다.");
         }
         logLines.add(monster.experience() + " 경험치를 획득하였습니다.");
         return drop;

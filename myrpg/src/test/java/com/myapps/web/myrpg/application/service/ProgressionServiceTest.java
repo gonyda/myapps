@@ -29,11 +29,11 @@ class ProgressionServiceTest {
             new ProgressionService(experiencePolicy, statProgression, FIXED_CLOCK);
 
     /**
-     * 사망 패널티: 레벨 1, 경험치 23/100 → 13/100. penalty = floor(100 × 0.10) = 10, newExp = max(0, 23 - 10)
-     * = 13, experienceLost = 10.
+     * 사망 패널티: 레벨 1, 경험치 23/65 → 17/65. penalty = floor(65 × 0.10) = 6, newExp = max(0, 23 - 6) =
+     * 17, experienceLost = 6.
      */
     @Test
-    void should_reduceTo13_when_deathPenaltyAt23ExpLevel1() {
+    void should_reduceTo17_when_deathPenaltyAt23ExpLevel1() {
         final CharacterProgress progress =
                 new CharacterProgress(
                         "고니",
@@ -51,13 +51,13 @@ class ProgressionServiceTest {
 
         final DeathResult result = service.applyDeathPenalty(progress);
 
-        assertThat(progress.getExperience()).isEqualTo(13L);
-        assertThat(result.experienceLost()).isEqualTo(10L);
+        assertThat(progress.getExperience()).isEqualTo(17L);
+        assertThat(result.experienceLost()).isEqualTo(6L);
     }
 
     /**
-     * 사망 패널티: 레벨 1, 경험치 5/100 → 0/100. penalty = floor(100 × 0.10) = 10, newExp = max(0, 5 - 10) =
-     * 0, experienceLost = 5 (실제 차감량).
+     * 사망 패널티: 레벨 1, 경험치 5/65 → 0/65. penalty = floor(65 × 0.10) = 6, newExp = max(0, 5 - 6) = 0,
+     * experienceLost = 5 (실제 차감량).
      */
     @Test
     void should_reduceTo0_when_deathPenaltyAt5ExpLevel1() {
@@ -82,12 +82,12 @@ class ProgressionServiceTest {
         assertThat(result.experienceLost()).isEqualTo(5L);
     }
 
-    /** 경험치 곡선 샘플: L1→100, L2→400, L10→10000. */
+    /** 경험치 곡선 샘플: L1→65, L2→160, L10→2000. */
     @Test
     void should_returnCorrectCurveValues_when_queryingExperiencePolicy() {
-        assertThat(experiencePolicy.requiredForNext(1)).isEqualTo(100L);
-        assertThat(experiencePolicy.requiredForNext(2)).isEqualTo(400L);
-        assertThat(experiencePolicy.requiredForNext(10)).isEqualTo(10000L);
+        assertThat(experiencePolicy.requiredForNext(1)).isEqualTo(65L);
+        assertThat(experiencePolicy.requiredForNext(2)).isEqualTo(160L);
+        assertThat(experiencePolicy.requiredForNext(10)).isEqualTo(2000L);
     }
 
     /** 신규 캐릭터 기본값: 재능 MELEE, 바이탈 100, Critical 50 (0.1%단위 = 5.0%). */

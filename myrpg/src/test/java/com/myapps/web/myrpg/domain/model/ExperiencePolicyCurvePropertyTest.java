@@ -11,8 +11,8 @@ import net.jqwik.api.Provide;
 /**
  * 경험치 곡선의 정확성을 검증하는 프로퍼티 테스트.
  *
- * <p>{@code L ∈ [1,100]} 전 구간에서 {@link ExperiencePolicy#requiredForNext(int)}가 {@code 100 × L²} 공식을
- * 정확히 만족하며, 레벨이 증가할수록 필요 경험치가 단조 증가함을 검증한다.
+ * <p>{@code L ∈ [1,100]} 전 구간에서 {@link ExperiencePolicy#requiredForNext(int)}가 {@code 50 × L + 15 ×
+ * L²} 공식을 정확히 만족하며, 레벨이 증가할수록 필요 경험치가 단조 증가함을 검증한다.
  *
  * <p>Feature: 003-character-progression-and-rebirth, Property 1: 경험치 곡선
  *
@@ -23,14 +23,14 @@ class ExperiencePolicyCurvePropertyTest {
     private final ExperiencePolicy policy = new ExperiencePolicy();
 
     /**
-     * 임의의 레벨 L(1~100)에 대해 {@code requiredForNext(L) == 100 × L × L}임을 검증한다.
+     * 임의의 레벨 L(1~100)에 대해 {@code requiredForNext(L) == 50 × L + 15 × L × L}임을 검증한다.
      *
      * @param level 1 이상 100 이하의 임의 레벨
      */
     @Property(tries = 100)
-    void should_returnHundredTimesLevelSquared_when_anyValidLevel(
+    void should_returnFiftyLevelPlusFifteenLevelSquared_when_anyValidLevel(
             @ForAll("levels") final int level) {
-        final long expected = 100L * level * level;
+        final long expected = (50L * level) + (15L * level * level);
         final long actual = policy.requiredForNext(level);
 
         assertThat(actual).isEqualTo(expected);

@@ -75,6 +75,7 @@ class BattleServiceTurnIntegrationTest {
     private SkillCatalogService skillCatalogService;
     private CharacterSkillRepository characterSkillRepo;
     private ItemCatalogService itemCatalogService;
+    private ActionLog actionLog;
     private BattleService battleService;
 
     /** 각 테스트 전에 모든 모의 객체를 생성하고 BattleService를 구성한다. */
@@ -119,7 +120,7 @@ class BattleServiceTurnIntegrationTest {
         final StatProgression statProgression = new StatProgression();
         final Clock clock =
                 Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneId.of("Asia/Seoul"));
-        final ActionLog actionLog = new ActionLog(clock);
+        actionLog = new ActionLog(clock);
         final Random random = new Random(42L);
 
         battleService =
@@ -202,15 +203,35 @@ class BattleServiceTurnIntegrationTest {
         verify(battleStateRepo).save(eq(state));
     }
 
-    /** 몬스터 처치 시 rollDrop → acquire → gainExperience 체인이 호출되는지 검증한다. */
+    /** 몬스터 처치 시 rollDrop → acquire → gainExperience 체인이 호출되고 수량이 포함된 로그가 남는지 검증한다. */
     @Test
-    @DisplayName("몬스터 처치 시 보상 체인(rollDrop → acquire → gainExperience)이 호출된다")
+    @DisplayName("몬스터 처치 시 보상 체인 및 아이템 수량 로그가 정상 생성된다")
     void should_processRewardChain_when_monsterKilled() {
         when(resolver.resolve(any(TurnInput.class)))
                 .thenReturn(new ResolvedTurn(999, 0, false, false, false, false, List.of()));
 
-        final DropResult drop = new DropResult(100L, List.of(new DroppedItem("sword", 1)));
+        final DropResult drop =
+                new DropResult(
+                        100L,
+                        List.of(new DroppedItem("sword", 1), new DroppedItem("hp_potion_30", 3)));
         when(rewardService.rollDrop(any(Monster.class))).thenReturn(drop);
+        when(itemCatalogService.byId("sword"))
+                .thenReturn(
+                        Optional.of(
+                                new com.myapps.web.myrpg.domain.model.EquipmentItem(
+                                        "sword",
+                                        "숏소드",
+                                        com.myapps.web.myrpg.domain.model.ItemType.WEAPON,
+                                        com.myapps.web.myrpg.domain.model.EquipmentKind
+                                                .ONE_HANDED_SWORD,
+                                        List.of(),
+                                        500,
+                                        100)));
+        when(itemCatalogService.byId("hp_potion_30"))
+                .thenReturn(
+                        Optional.of(
+                                new com.myapps.web.myrpg.domain.model.PotionItem(
+                                        "hp_potion_30", "생명력 포션 30", 30, 50)));
 
         final CharacterProgress progress = createProgress(HIGH_HP);
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, 1, false);
@@ -222,6 +243,17 @@ class BattleServiceTurnIntegrationTest {
         verify(inventoryService).acquire(eq(progress), eq(drop));
         verify(progressionService).gainExperience(eq(progress), eq(MONSTER_EXP));
         assertThat(result.outcome()).isEqualTo(Outcome.WIN);
+
+        final List<String> logMessages =
+                actionLog.getEntries().stream()
+                        .map(com.myapps.web.myrpg.domain.model.ActionLogEntry::message)
+                        .toList();
+        assertThat(logMessages)
+                .contains(
+                        "100골드를 획득하였습니다.",
+                        "숏소드 (1개)를 획득하였습니다.",
+                        "생명력 포션 30 (3개)를 획득하였습니다.",
+                        "30 경험치를 획득하였습니다.");
     }
 
     /** 비처치 턴에서는 onSkillKill이 호출되지 않는지 검증한다. */

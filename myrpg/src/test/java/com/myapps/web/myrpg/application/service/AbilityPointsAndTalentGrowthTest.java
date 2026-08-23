@@ -40,18 +40,18 @@ class AbilityPointsAndTalentGrowthTest {
     /**
      * 레벨업 3회 시 AP가 3 증가함을 검증한다.
      *
-     * <p>레벨 1→2 필요 경험치 100, 레벨 2→3 필요 400, 레벨 3→4 필요 900. 각 레벨업을 유발할 만큼 경험치를 획득한 뒤 AP를 확인한다.
+     * <p>레벨 1→2 필요 경험치 65, 레벨 2→3 필요 160, 레벨 3→4 필요 285. 각 레벨업을 유발할 만큼 경험치를 획득한 뒤 AP를 확인한다.
      */
     @Test
     void should_haveThreeAP_when_levelUpThreeTimes() {
         final CharacterProgress progress = CharacterProgress.createDefault();
 
-        // Lv1→2: requiredForNext(1) = 100
-        service.gainExperience(progress, 100L);
-        // Lv2→3: requiredForNext(2) = 400
-        service.gainExperience(progress, 400L);
-        // Lv3→4: requiredForNext(3) = 900
-        service.gainExperience(progress, 900L);
+        // Lv1→2: requiredForNext(1) = 65
+        service.gainExperience(progress, experiencePolicy.requiredForNext(1));
+        // Lv2→3: requiredForNext(2) = 160
+        service.gainExperience(progress, experiencePolicy.requiredForNext(2));
+        // Lv3→4: requiredForNext(3) = 285
+        service.gainExperience(progress, experiencePolicy.requiredForNext(3));
 
         assertThat(progress.getCurrentLevel()).isEqualTo(4);
         assertThat(progress.getAbilityPoints()).isEqualTo(3);
@@ -67,8 +67,8 @@ class AbilityPointsAndTalentGrowthTest {
         final CharacterProgress progress = CharacterProgress.createDefault();
 
         // 레벨업 2회
-        service.gainExperience(progress, 100L);
-        service.gainExperience(progress, 400L);
+        service.gainExperience(progress, experiencePolicy.requiredForNext(1));
+        service.gainExperience(progress, experiencePolicy.requiredForNext(2));
         assertThat(progress.getAbilityPoints()).isEqualTo(2);
 
         final int apBefore = progress.getAbilityPoints();

@@ -107,11 +107,11 @@ class PlayScreenViewHelperTest {
 
         assertThat(topBar.nickname()).isEqualTo("고니");
         assertThat(topBar.level()).isEqualTo(1);
-        // EXP: current=0, max=requiredForNext(1)=100
+        // EXP: current=0, max=requiredForNext(1)=65
         assertThat(topBar.exp().current()).isEqualTo(0);
-        assertThat(topBar.exp().max()).isEqualTo(100);
+        assertThat(topBar.exp().max()).isEqualTo(65);
         assertThat(topBar.exp().percent()).isEqualTo(0);
-        assertThat(topBar.exp().overlay()).isEqualTo("0 / 100");
+        assertThat(topBar.exp().overlay()).isEqualTo("0 / 65");
         // HP: 100/100
         assertThat(topBar.hp().percent()).isEqualTo(100);
         assertThat(topBar.hp().overlay()).isEqualTo("100 / 100");
