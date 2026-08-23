@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.myapps.web.myrpg.domain.model.BattleState;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
@@ -81,6 +82,8 @@ class BattleStateRepositoryTest {
         assertThat(found.getTurnCount()).isEqualTo(1);
         assertThat(found.isAmbush()).isEqualTo(ambush);
         assertThat(found.isActive()).isTrue();
+        assertThat(found.isStandby()).isTrue();
+        assertThat(found.getCurrentMonsterIntent()).isNull();
     }
 
     /**
@@ -140,13 +143,16 @@ class BattleStateRepositoryTest {
     }
 
     /**
-     * 저장 후 monsterCurrentHp와 turnCount를 수정·재저장하면 재조회 시 갱신된 값이 보존되는지 검증한다.
+     * 저장 후 monsterCurrentHp, turnCount, standby, currentMonsterIntent를 수정·재저장하면 재조회 시 갱신된 값이 보존되는지
+     * 검증한다.
      *
      * @param characterId 캐릭터 ID
      * @param monsterId 몬스터 식별자
      * @param monsterCurrentHp 초기 몬스터 HP
      * @param updatedHp 갱신할 몬스터 HP
      * @param updatedTurn 갱신할 턴 수
+     * @param updatedStandby 갱신할 대치 페이즈 여부
+     * @param updatedIntent 갱신할 몬스터 의도
      */
     @Property(tries = 100)
     void should_persistUpdatedValues_when_hpAndTurnCountModified(
@@ -154,7 +160,9 @@ class BattleStateRepositoryTest {
             @ForAll("monsterIds") final String monsterId,
             @ForAll("monsterHps") final int monsterCurrentHp,
             @ForAll("monsterHps") final int updatedHp,
-            @ForAll("updatedTurnCounts") final int updatedTurn) {
+            @ForAll("updatedTurnCounts") final int updatedTurn,
+            @ForAll("standbyFlags") final boolean updatedStandby,
+            @ForAll("monsterIntents") final SkillType updatedIntent) {
 
         final BattleState state = new BattleState(characterId, monsterId, monsterCurrentHp, false);
         entityManager.persistAndFlush(state);
@@ -164,6 +172,8 @@ class BattleStateRepositoryTest {
         final BattleState loaded = entityManager.find(BattleState.class, savedId);
         loaded.setMonsterCurrentHp(updatedHp);
         loaded.setTurnCount(updatedTurn);
+        loaded.setStandby(updatedStandby);
+        loaded.setCurrentMonsterIntent(updatedIntent);
         entityManager.persistAndFlush(loaded);
         entityManager.clear();
 
@@ -175,6 +185,8 @@ class BattleStateRepositoryTest {
         assertThat(reloaded.getCharacterId()).isEqualTo(characterId);
         assertThat(reloaded.getMonsterId()).isEqualTo(monsterId);
         assertThat(reloaded.isActive()).isTrue();
+        assertThat(reloaded.isStandby()).isEqualTo(updatedStandby);
+        assertThat(reloaded.getCurrentMonsterIntent()).isEqualTo(updatedIntent);
     }
 
     // ─── Providers ──────────────────────────────────────────────────────────
@@ -222,6 +234,26 @@ class BattleStateRepositoryTest {
     @Provide
     Arbitrary<Boolean> ambushFlags() {
         return Arbitraries.of(true, false);
+    }
+
+    /**
+     * 대치 상태 Arbitrary를 제공한다 (true/false).
+     *
+     * @return 대치 상태 Arbitrary
+     */
+    @Provide
+    Arbitrary<Boolean> standbyFlags() {
+        return Arbitraries.of(true, false);
+    }
+
+    /**
+     * 몬스터 의도 Arbitrary를 제공한다 (NORMAL, HEAVY, DEFENSE, null).
+     *
+     * @return 몬스터 의도 Arbitrary
+     */
+    @Provide
+    Arbitrary<SkillType> monsterIntents() {
+        return Arbitraries.of(SkillType.class).injectNull(0.2);
     }
 
     /**

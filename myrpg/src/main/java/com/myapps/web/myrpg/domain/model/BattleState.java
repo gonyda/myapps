@@ -2,6 +2,8 @@ package com.myapps.web.myrpg.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,13 +41,20 @@ public class BattleState {
     @Column(nullable = false)
     private boolean active;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_monster_intent")
+    private SkillType currentMonsterIntent;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean standby;
+
     /** JPA 전용 기본 생성자. */
     protected BattleState() {}
 
     /**
      * 전투 시작 시 사용하는 생성자.
      *
-     * <p>{@code turnCount}는 1로, {@code active}는 {@code true}로 초기화된다.
+     * <p>{@code turnCount}는 1로, {@code active}는 {@code true}, {@code standby}는 {@code true}로 초기화된다.
      *
      * @param characterId 전투에 참여하는 캐릭터 ID
      * @param monsterId 전투 대상 몬스터 식별자
@@ -63,6 +72,8 @@ public class BattleState {
         this.turnCount = 1;
         this.ambush = ambush;
         this.active = true;
+        this.standby = true;
+        this.currentMonsterIntent = null;
     }
 
     /**
@@ -155,5 +166,41 @@ public class BattleState {
      */
     public void setActive(final boolean active) {
         this.active = active;
+    }
+
+    /**
+     * 현재 턴에 몬스터가 준비한 의도(스킬 유형)를 반환한다.
+     *
+     * @return 몬스터 의도, 대치 페이즈이거나 미결정 시 {@code null}
+     */
+    public SkillType getCurrentMonsterIntent() {
+        return currentMonsterIntent;
+    }
+
+    /**
+     * 현재 턴의 몬스터 의도를 설정한다.
+     *
+     * @param currentMonsterIntent 설정할 몬스터 의도
+     */
+    public void setCurrentMonsterIntent(final SkillType currentMonsterIntent) {
+        this.currentMonsterIntent = currentMonsterIntent;
+    }
+
+    /**
+     * 대치(시간 정지) 페이즈 여부를 반환한다.
+     *
+     * @return 대치 페이즈이면 {@code true}, 공방 페이즈이면 {@code false}
+     */
+    public boolean isStandby() {
+        return standby;
+    }
+
+    /**
+     * 대치 페이즈 여부를 설정한다.
+     *
+     * @param standby 대치 여부
+     */
+    public void setStandby(final boolean standby) {
+        this.standby = standby;
     }
 }

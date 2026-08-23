@@ -141,7 +141,13 @@ public class PlayScreenController {
                                 state.getMonsterCurrentHp(),
                                 monster.maxHp(),
                                 skills,
-                                true);
+                                true,
+                                state.isStandby(),
+                                state.getCurrentMonsterIntent(),
+                                0,
+                                null,
+                                null,
+                                false);
                 final PlayScreenView view = buildViewFromProgress(progress);
                 model.addAttribute("view", view);
                 model.addAttribute("battleView", battleView);

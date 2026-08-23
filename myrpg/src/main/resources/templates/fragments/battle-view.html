@@ -21,25 +21,51 @@
         </div>
     </div>
 
+    <!-- 몬스터 전조 뱃지 & 실시간 게이지 영역 -->
+    <div class="battle-stance-area" id="battleStanceArea">
+        <!-- 1단계: 대치 페이즈 (시간 정지 ⏸️) -->
+        <th:block th:if="${battleView.standby}">
+            <div class="stance-badge badge-standby">⏸️ 대치 중 (정비 가능)</div>
+            <button class="btn-clash-start" onclick="startClash()">⚔️ 공방 개시</button>
+        </th:block>
+
+        <!-- 2단계: 액티브 공방 페이즈 (1.0~1.5초 실시간 피지컬 ⚡) -->
+        <th:block th:unless="${battleView.standby}">
+            <div class="stance-badge"
+                 th:classappend="${battleView.monsterStanceBadgeClass}"
+                 th:text="${battleView.monsterStanceBadgeLabel}">💥 강공격 차징 중!</div>
+
+            <!-- 실시간 카운트다운 게이지 -->
+            <div class="clash-timer-wrap">
+                <div class="clash-timer-bar"
+                     id="clashTimerBar"
+                     th:attr="data-duration=${battleView.clashDurationMs}"></div>
+            </div>
+        </th:block>
+    </div>
+
     <!-- 이번 턴 전투 로그(중앙). 매 턴 교체, 누적 안 함 -->
     <div class="battle-log" id="battleLog">
         <div th:each="line : ${turnLog}" class="battle-log-line" th:text="${line}">로그</div>
     </div>
 
     <!-- 전투 스킬 버튼 영역 -->
-    <div id="battleSkills" th:fragment="battle-skills">
-        <button th:each="skill : ${skills}"
+    <div id="battleSkills"
+         th:fragment="battle-skills"
+         th:classappend="${battleView != null && battleView.standby ? 'disabled-skills' : ''}">
+        <button th:each="skill : ${skills != null ? skills : battleView.skills}"
                 th:text="${skill.label()}"
                 th:attr="data-skill-id=${skill.id()},
                          data-skill-label=${skill.label()}"
                 class="battle-skill-btn"
-                onclick="battleTurn(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-label'))">
+                th:disabled="${battleView != null && battleView.standby}"
+                onclick="battleTurn(this.getAttribute('data-skill-id'))">
             스킬
         </button>
     </div>
 
-    <!-- 도망 버튼 -->
-    <button th:if="${battleView.fleeAvailable}"
+    <!-- 도망 버튼 (대치 페이즈에서만 노출) -->
+    <button th:if="${battleView.standby && battleView.fleeAvailable}"
             class="flee-btn"
             onclick="flee()">도망</button>
 

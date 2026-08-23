@@ -2,6 +2,7 @@ package com.myapps.web.myrpg.application.service;
 
 import com.myapps.web.myrpg.application.dto.BattleLogInput;
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
+import com.myapps.web.myrpg.application.dto.BattleView;
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.DropResult;
 import com.myapps.web.myrpg.application.dto.DroppedItem;
@@ -69,6 +70,15 @@ public class BattleService {
     private static final int PERCENT_DIVISOR = 100;
     private static final int CRITICAL_ROLL_MAX = 1000;
     private static final String LOG_TYPE_COMBAT = "combat";
+    private static final int NORMAL_CLASH_DURATION_MS = 1000;
+    private static final int DEFAULT_CLASH_DURATION_MS = 1500;
+    private static final String BADGE_LABEL_NORMAL = "⚡ 일반공격 태세";
+    private static final String BADGE_LABEL_HEAVY = "💥 강공격 차징 중!";
+    private static final String BADGE_LABEL_DEFENSE = "🛡️ 방어 태세";
+    private static final String BADGE_LABEL_BOW_FIRST_STRIKE = "🏹 선제 사격 기회!";
+    private static final String BADGE_CLASS_NORMAL = "badge-stance-normal";
+    private static final String BADGE_CLASS_HEAVY = "badge-stance-heavy";
+    private static final String BADGE_CLASS_DEFENSE = "badge-stance-defense";
 
     private final BattleStateRepository battleStateRepository;
     private final BattleResolver resolver;
@@ -173,6 +183,34 @@ public class BattleService {
     }
 
     /**
+     * 액티브 공방 페이즈를 개시한다.
+     *
+     * <p>대치 페이즈({@code standby = true})에서 플레이어가 [공방 개시]를 클릭했을 때 호출된다. 착용 무기 기준 활 1턴 선제 사격 여부를 판정하고,
+     * 몬스터 의도를 추첨하여 전투 상태를 공방 페이즈({@code standby = false})로 전환한다.
+     *
+     * @param progress 캐릭터 진행 상태
+     * @param state 현재 전투 상태
+     * @return 공방 페이즈 뷰 모델
+     */
+    @Transactional
+    public BattleView startClash(final CharacterProgress progress, final BattleState state) {
+        final Monster monster =
+                monsterService
+                        .byId(state.getMonsterId())
+                        .orElseThrow(() -> new IllegalStateException("몬스터 정보를 찾을 수 없습니다."));
+
+        final boolean isBow = inventoryService.isBowEquipped();
+        final boolean bowFirstStrike = state.getTurnCount() == 1 && isBow;
+
+        final SkillType intent = bowFirstStrike ? null : monsterAiService.nextAction();
+        state.setCurrentMonsterIntent(intent);
+        state.setStandby(false);
+        battleStateRepository.save(state);
+
+        return buildClashBattleView(state, monster, progress, intent, bowFirstStrike);
+    }
+
+    /**
      * 전투 턴을 진행한다.
      *
      * <p>자원 검사·소모 → 마법 캐스팅 실패 판정 → 몬스터 행동 결정 → 재능 분기(활 1턴 선제 / 일반 매트릭스) → 선후공 결정·선공 처치 시 후공 스킵 → HP
@@ -195,6 +233,11 @@ public class BattleService {
             return safeTerminateAndReturn(state);
         }
         final Monster monster = monsterOpt.get();
+
+        if ("timeout".equalsIgnoreCase(skillId)) {
+            return handleTimeoutTurn(progress, state, monster);
+        }
+
         final Optional<Skill> skillOpt = skillCatalogService.byId(skillId);
         if (skillOpt.isEmpty()) {
             return buildNoOpResult();
@@ -204,6 +247,7 @@ public class BattleService {
         final int resourceCost = resolveResourceCost(skill, progress);
 
         if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
+            actionLog.add(resourceKind.label() + "이(가) 부족합니다.", LOG_TYPE_COMBAT);
             return buildInsufficientResult(skill, resourceKind);
         }
 
@@ -212,7 +256,10 @@ public class BattleService {
         final List<String> combatLines = new ArrayList<>();
         final boolean castFailure = checkMagicCastFailure(skill, combatLines);
 
-        final SkillType monsterAction = monsterAiService.nextAction();
+        final SkillType monsterAction =
+                state.getCurrentMonsterIntent() != null
+                        ? state.getCurrentMonsterIntent()
+                        : monsterAiService.nextAction();
         final SkillTalent equippedTalent =
                 skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
 
@@ -287,6 +334,8 @@ public class BattleService {
             outcome = handleDeath(progress, state, settlementLines);
         }
 
+        state.setCurrentMonsterIntent(null);
+        state.setStandby(true);
         state.setTurnCount(state.getTurnCount() + 1);
         battleStateRepository.save(state);
         characterService.saveTurn(progress);
@@ -801,6 +850,63 @@ public class BattleService {
         return Outcome.LOSE;
     }
 
+    // ─── Private: timeout ───────────────────────────────────────────────────
+
+    private BattleTurnResult handleTimeoutTurn(
+            final CharacterProgress progress, final BattleState state, final Monster monster) {
+        final SkillType monsterAction =
+                state.getCurrentMonsterIntent() != null
+                        ? state.getCurrentMonsterIntent()
+                        : SkillType.NORMAL;
+
+        final int monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
+        applyDamage(progress, state, 0, monsterDamage);
+
+        final List<String> combatLines = new ArrayList<>();
+        combatLines.add("시간 초과! 몬스터의 공격에 무방비로 피격되었습니다!");
+        if (monsterAction != SkillType.DEFENSE) {
+            final String actionLabel = monsterAction == SkillType.HEAVY ? "강공격" : "일반공격";
+            combatLines.add(
+                    monster.name() + "의 " + actionLabel + "! " + monsterDamage + " 피해를 입었습니다.");
+        } else {
+            combatLines.add(monster.name() + "은(는) 방어 태세를 유지했습니다.");
+        }
+
+        Outcome outcome = Outcome.NONE;
+        final List<String> settlementLines = new ArrayList<>();
+        if (progress.isDead()) {
+            outcome = handleDeath(progress, state, settlementLines);
+        }
+
+        state.setCurrentMonsterIntent(null);
+        state.setStandby(true);
+        state.setTurnCount(state.getTurnCount() + 1);
+        battleStateRepository.save(state);
+        characterService.saveTurn(progress);
+
+        settlementLines.forEach(line -> actionLog.add(line, LOG_TYPE_COMBAT));
+
+        return new BattleTurnResult(
+                null,
+                0,
+                monsterAction,
+                monsterDamage,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                null,
+                outcome != Outcome.NONE,
+                outcome,
+                null,
+                0,
+                List.of(),
+                combatLines);
+    }
+
     // ─── Private: flee ──────────────────────────────────────────────────────
 
     private BattleTurnResult handleFleeSuccess(
@@ -846,6 +952,8 @@ public class BattleService {
 
         combatLines.add("도망 실패! " + monster.name() + "에게 " + monsterDmg + " 피해");
 
+        state.setCurrentMonsterIntent(null);
+        state.setStandby(true);
         state.setTurnCount(state.getTurnCount() + 1);
         battleStateRepository.save(state);
         characterService.saveTurn(progress);
@@ -940,6 +1048,66 @@ public class BattleService {
                 0,
                 List.of(),
                 List.of());
+    }
+
+    // ─── Private: clash view construction ────────────────────────────────────
+
+    private BattleView buildClashBattleView(
+            final BattleState state,
+            final Monster monster,
+            final CharacterProgress progress,
+            final SkillType intent,
+            final boolean bowFirstStrike) {
+        final List<BattleSkillButton> skills = combatSkills(progress);
+        final int durationMs = resolveClashDuration(intent);
+        final String badgeLabel = resolveStanceBadgeLabel(intent, bowFirstStrike);
+        final String badgeClass = resolveStanceBadgeClass(intent);
+
+        return new BattleView(
+                monster.name(),
+                monster.level(),
+                state.getMonsterCurrentHp(),
+                monster.maxHp(),
+                skills,
+                false,
+                false,
+                intent,
+                durationMs,
+                badgeLabel,
+                badgeClass,
+                bowFirstStrike);
+    }
+
+    private int resolveClashDuration(final SkillType intent) {
+        if (intent == SkillType.NORMAL) {
+            return NORMAL_CLASH_DURATION_MS;
+        }
+        return DEFAULT_CLASH_DURATION_MS;
+    }
+
+    private String resolveStanceBadgeLabel(final SkillType intent, final boolean bowFirstStrike) {
+        if (bowFirstStrike) {
+            return BADGE_LABEL_BOW_FIRST_STRIKE;
+        }
+        if (intent == null) {
+            return null;
+        }
+        return switch (intent) {
+            case NORMAL -> BADGE_LABEL_NORMAL;
+            case HEAVY -> BADGE_LABEL_HEAVY;
+            case DEFENSE -> BADGE_LABEL_DEFENSE;
+        };
+    }
+
+    private String resolveStanceBadgeClass(final SkillType intent) {
+        if (intent == null) {
+            return null;
+        }
+        return switch (intent) {
+            case NORMAL -> BADGE_CLASS_NORMAL;
+            case HEAVY -> BADGE_CLASS_HEAVY;
+            case DEFENSE -> BADGE_CLASS_DEFENSE;
+        };
     }
 
     // ─── Private: internal record ───────────────────────────────────────────

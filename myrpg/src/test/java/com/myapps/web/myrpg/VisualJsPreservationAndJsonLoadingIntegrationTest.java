@@ -93,6 +93,9 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
             List.of(
                     "battleActive",
                     "startBattle",
+                    "startClash",
+                    "initClashTimer",
+                    "swapBattleResponse",
                     "battleTurn",
                     "flee",
                     "fetchBattleView",
@@ -194,6 +197,10 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
 
         assertThat(battleViewHtml).contains("battle-view");
         assertThat(battleViewHtml).contains("battle-center");
+        assertThat(battleViewHtml).contains("battle-stance-area");
+        assertThat(battleViewHtml).contains("stance-badge");
+        assertThat(battleViewHtml).contains("btn-clash-start");
+        assertThat(battleViewHtml).contains("clash-timer-bar");
         assertThat(battleViewHtml).contains("battle-log");
         assertThat(battleViewHtml).contains("battleLog");
         assertThat(battleViewHtml).contains("battle-log-line");

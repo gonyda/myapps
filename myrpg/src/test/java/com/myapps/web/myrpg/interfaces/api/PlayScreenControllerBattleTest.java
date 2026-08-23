@@ -283,6 +283,12 @@ class PlayScreenControllerBattleTest {
         assertThat(actualBattleView.monsterMaxHp()).isEqualTo(25);
         assertThat(actualBattleView.skills()).hasSize(1);
         assertThat(actualBattleView.fleeAvailable()).isTrue();
+        assertThat(actualBattleView.standby()).isTrue();
+        assertThat(actualBattleView.monsterIntent()).isNull();
+        assertThat(actualBattleView.clashDurationMs()).isEqualTo(0);
+        assertThat(actualBattleView.monsterStanceBadgeLabel()).isNull();
+        assertThat(actualBattleView.monsterStanceBadgeClass()).isNull();
+        assertThat(actualBattleView.bowFirstStrike()).isFalse();
     }
 
     /**

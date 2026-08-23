@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
+import com.myapps.web.myrpg.application.dto.BattleView;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
@@ -90,6 +91,7 @@ class BattleControllerTest {
     /** POST /battle/start 요청 시 전투 응답 프래그먼트가 200으로 반환되는지 검증한다. */
     @Test
     void should_returnBattleResponseFragment_when_startWithValidMonsterId() throws Exception {
+        // given
         final CharacterProgress progress = CharacterProgress.createDefault();
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         final Monster monster = createTestMonster();
@@ -105,11 +107,19 @@ class BattleControllerTest {
         when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
         when(actionLog.getEntries()).thenReturn(List.of());
 
-        mockMvc.perform(post("/battle/start").param("monsterId", MONSTER_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
-                .andExpect(model().attributeExists("battleView"))
-                .andExpect(model().attributeExists("skills"));
+        // when & then
+        final org.springframework.test.web.servlet.MvcResult result =
+                mockMvc.perform(post("/battle/start").param("monsterId", MONSTER_ID))
+                        .andExpect(status().isOk())
+                        .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
+                        .andExpect(model().attributeExists("battleView"))
+                        .andExpect(model().attributeExists("skills"))
+                        .andReturn();
+
+        final BattleView battleView =
+                (BattleView) result.getModelAndView().getModel().get("battleView");
+        org.assertj.core.api.Assertions.assertThat(battleView.standby()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(battleView.fleeAvailable()).isTrue();
 
         verify(actionLog).add("너구리와(과) 마주쳤다.", "combat");
     }
@@ -117,6 +127,7 @@ class BattleControllerTest {
     /** POST /battle/turn 요청 시 전투 응답 프래그먼트(top-bar + battle-view + action-log)가 반환되는지 검증한다. */
     @Test
     void should_returnBattleResponseFragment_when_turnWithValidSkillId() throws Exception {
+        // given
         final CharacterProgress progress = CharacterProgress.createDefault();
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         final Monster monster = createTestMonster();
@@ -136,12 +147,19 @@ class BattleControllerTest {
         when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
         when(actionLog.getEntries()).thenReturn(List.of());
 
-        mockMvc.perform(post("/battle/turn").param("skillId", SKILL_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
-                .andExpect(model().attributeExists("view"))
-                .andExpect(model().attributeExists("battleView"))
-                .andExpect(model().attributeExists("turnResult"));
+        // when & then
+        final org.springframework.test.web.servlet.MvcResult result =
+                mockMvc.perform(post("/battle/turn").param("skillId", SKILL_ID))
+                        .andExpect(status().isOk())
+                        .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
+                        .andExpect(model().attributeExists("view"))
+                        .andExpect(model().attributeExists("battleView"))
+                        .andExpect(model().attributeExists("turnResult"))
+                        .andReturn();
+
+        final BattleView battleView =
+                (BattleView) result.getModelAndView().getModel().get("battleView");
+        org.assertj.core.api.Assertions.assertThat(battleView.standby()).isTrue();
     }
 
     /** POST /battle/turn에서 전투 종료(승리) 시 battle-response 프래그먼트와 battleEnded 속성이 반환되는지 검증한다. */
@@ -196,6 +214,7 @@ class BattleControllerTest {
     /** POST /battle/flee 도망 실패 시 전투 계속 응답이 반환되는지 검증한다. */
     @Test
     void should_returnOngoingBattleResponse_when_fleeFails() throws Exception {
+        // given
         final CharacterProgress progress = CharacterProgress.createDefault();
         final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
         final Monster monster = createTestMonster();
@@ -214,11 +233,18 @@ class BattleControllerTest {
         when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
         when(actionLog.getEntries()).thenReturn(List.of());
 
-        mockMvc.perform(post("/battle/flee"))
-                .andExpect(status().isOk())
-                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
-                .andExpect(model().attributeExists("battleView"))
-                .andExpect(model().attributeExists("turnResult"));
+        // when & then
+        final org.springframework.test.web.servlet.MvcResult result =
+                mockMvc.perform(post("/battle/flee"))
+                        .andExpect(status().isOk())
+                        .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
+                        .andExpect(model().attributeExists("battleView"))
+                        .andExpect(model().attributeExists("turnResult"))
+                        .andReturn();
+
+        final BattleView battleView =
+                (BattleView) result.getModelAndView().getModel().get("battleView");
+        org.assertj.core.api.Assertions.assertThat(battleView.standby()).isTrue();
     }
 
     /** GET /battle/skills 요청 시 battle-skills 서브프래그먼트가 반환되는지 검증한다. */

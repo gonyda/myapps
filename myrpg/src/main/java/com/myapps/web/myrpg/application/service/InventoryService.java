@@ -794,6 +794,26 @@ public class InventoryService {
 
     // ─── combatSkills helpers ───────────────────────────────────────────────
 
+    /**
+     * 현재 장착 중인 무기의 재능 분류를 반환한다.
+     *
+     * <p>무기를 장착하지 않았거나 알 수 없는 경우 {@code null}을 반환한다.
+     *
+     * @return 장착 중인 무기의 재능 분류 (MELEE, ARCHERY, MAGIC, 또는 null)
+     */
+    public SkillTalent equippedWeaponTalent() {
+        return resolveEquippedWeaponTalent();
+    }
+
+    /**
+     * 현재 활(BOW) 계열 무기를 장착하고 있는지 여부를 반환한다.
+     *
+     * @return 활을 장착 중이면 {@code true}, 아니면 {@code false}
+     */
+    public boolean isBowEquipped() {
+        return resolveEquippedWeaponTalent() == SkillTalent.ARCHERY;
+    }
+
     private SkillTalent resolveEquippedWeaponTalent() {
         final List<OwnedItem> equippedItems =
                 ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);

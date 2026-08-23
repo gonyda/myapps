@@ -108,6 +108,31 @@ public class BattleController {
     }
 
     /**
+     * 액티브 공방 페이즈를 개시하고 갱신된 프래그먼트를 반환한다.
+     *
+     * <p>대치 페이즈에서 플레이어가 [⚔️ 공방 개시] 버튼을 클릭했을 때 호출된다. 활성 전투가 없으면 일반 센터 프래그먼트를 반환한다. 활성 전투가 있으면 {@link
+     * BattleService#startClash(CharacterProgress, BattleState)}를 호출하여 몬스터 전조 뱃지와 실시간 타이머 게이지가 포함된
+     * 전투 응답 프래그먼트를 렌더한다.
+     *
+     * @param model Spring MVC 모델
+     * @return 전투 응답 프래그먼트 뷰 이름
+     */
+    @PostMapping("/clash")
+    public String clash(final Model model) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final Optional<BattleState> stateOpt = battleService.resumeIfActive(progress);
+
+        if (stateOpt.isEmpty()) {
+            return returnCenterFragment(progress, model);
+        }
+
+        final BattleState state = stateOpt.get();
+        final BattleView battleView = battleService.startClash(progress, state);
+        populateBattleModel(model, progress, battleView, List.of());
+        return "fragments/battle-view :: battle-response";
+    }
+
+    /**
      * 전투 턴을 진행하고 갱신된 프래그먼트들을 반환한다.
      *
      * <p>플레이어가 선택한 스킬로 한 턴을 진행한다. 활성 전투가 없으면 일반 플레이 화면을 반환한다. 턴 결과에 따라 전투
@@ -196,7 +221,13 @@ public class BattleController {
                 state.getMonsterCurrentHp(),
                 monster.maxHp(),
                 skills,
-                true);
+                true,
+                state.isStandby(),
+                state.getCurrentMonsterIntent(),
+                0,
+                null,
+                null,
+                false);
     }
 
     private void populateBattleModel(

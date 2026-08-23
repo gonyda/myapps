@@ -339,6 +339,43 @@ function encounterMonster(monsterId) {
         });
 }
 
+var clashTimerTimeoutId = null;
+
+// ===== 공방 응답 DOM 교체 공통 함수 =====
+function swapBattleResponse(html) {
+    if (!html) {
+        return;
+    }
+    var container = document.createElement("div");
+    container.innerHTML = html;
+
+    var newTopBar = container.querySelector(".top-bar");
+    var newCenter = container.querySelector(".center");
+    var newActionLog = container.querySelector(".action-log");
+
+    if (newTopBar) {
+        var oldTopBar = document.querySelector(".top-bar");
+        if (oldTopBar) {
+            oldTopBar.replaceWith(newTopBar);
+        }
+    }
+    if (newCenter) {
+        var oldCenter = document.querySelector(".center");
+        if (oldCenter) {
+            oldCenter.replaceWith(newCenter);
+        }
+    }
+    if (newActionLog) {
+        var oldActionLog = document.querySelector(".action-log");
+        if (oldActionLog) {
+            oldActionLog.replaceWith(newActionLog);
+            newActionLog.scrollTop = newActionLog.scrollHeight;
+        }
+    }
+
+    handleTurnResultSignal(container);
+}
+
 // ===== 전투 시작: POST /battle/start → top-bar + .center + action-log 교체 =====
 function startBattle(monsterId) {
     fetch("/battle/start?monsterId=" + encodeURIComponent(monsterId), { method: "POST" })
@@ -349,35 +386,7 @@ function startBattle(monsterId) {
             return response.text();
         })
         .then(function (html) {
-            if (!html) {
-                return;
-            }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newTopBar = container.querySelector(".top-bar");
-            var newCenter = container.querySelector(".center");
-            var newActionLog = container.querySelector(".action-log");
-
-            if (newTopBar) {
-                var oldTopBar = document.querySelector(".top-bar");
-                if (oldTopBar) {
-                    oldTopBar.replaceWith(newTopBar);
-                }
-            }
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
-            if (newActionLog) {
-                var oldActionLog = document.querySelector(".action-log");
-                if (oldActionLog) {
-                    oldActionLog.replaceWith(newActionLog);
-                    newActionLog.scrollTop = newActionLog.scrollHeight;
-                }
-            }
+            swapBattleResponse(html);
             battleActive = true;
         });
 }
@@ -387,39 +396,56 @@ function fetchBattleView() {
     fetch("/")
         .then(function (r) { return r.text(); })
         .then(function (html) {
-            if (!html) { return; }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newTopBar = container.querySelector(".top-bar");
-            var newCenter = container.querySelector(".center");
-            var newActionLog = container.querySelector(".action-log");
-
-            if (newTopBar) {
-                var oldTopBar = document.querySelector(".top-bar");
-                if (oldTopBar) {
-                    oldTopBar.replaceWith(newTopBar);
-                }
-            }
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
-            if (newActionLog) {
-                var oldActionLog = document.querySelector(".action-log");
-                if (oldActionLog) {
-                    oldActionLog.replaceWith(newActionLog);
-                    newActionLog.scrollTop = newActionLog.scrollHeight;
-                }
-            }
+            swapBattleResponse(html);
         });
 }
 
+// ===== 공방 개시: POST /battle/clash → 전조 뱃지 & 실시간 타이머 가동 =====
+function startClash() {
+    fetch("/battle/clash", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            swapBattleResponse(html);
+            initClashTimer();
+        });
+}
+
+// ===== 타이머 게이지 시작 및 타임아웃 예약 =====
+function initClashTimer() {
+    var timerBar = document.getElementById("clashTimerBar");
+    if (!timerBar) {
+        return;
+    }
+
+    var durationMs = parseInt(timerBar.getAttribute("data-duration"), 10) || 1500;
+
+    // CSS 애니메이션으로 게이지 100% -> 0% 선형 감소
+    timerBar.style.transition = "width " + durationMs + "ms linear";
+    requestAnimationFrame(function () {
+        timerBar.style.width = "0%";
+    });
+
+    if (clashTimerTimeoutId) {
+        clearTimeout(clashTimerTimeoutId);
+    }
+
+    // 시간 초과 시 자동으로 timeout 전송
+    clashTimerTimeoutId = setTimeout(function () {
+        battleTurn("timeout");
+    }, durationMs);
+}
+
 // ===== 전투 턴: POST /battle/turn → top-bar + .center + action-log 교체 =====
-function battleTurn(skillId, skillLabel) {
-    alert(skillLabel + " 스킬을 사용하였습니다.");
+function battleTurn(skillId) {
+    if (clashTimerTimeoutId) {
+        clearTimeout(clashTimerTimeoutId);
+        clashTimerTimeoutId = null;
+    }
     fetch("/battle/turn?skillId=" + encodeURIComponent(skillId), { method: "POST" })
         .then(function (response) {
             if (!response.ok) {
@@ -428,42 +454,16 @@ function battleTurn(skillId, skillLabel) {
             return response.text();
         })
         .then(function (html) {
-            if (!html) {
-                return;
-            }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newTopBar = container.querySelector(".top-bar");
-            var newCenter = container.querySelector(".center");
-            var newActionLog = container.querySelector(".action-log");
-
-            if (newTopBar) {
-                var oldTopBar = document.querySelector(".top-bar");
-                if (oldTopBar) {
-                    oldTopBar.replaceWith(newTopBar);
-                }
-            }
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
-            if (newActionLog) {
-                var oldActionLog = document.querySelector(".action-log");
-                if (oldActionLog) {
-                    oldActionLog.replaceWith(newActionLog);
-                    newActionLog.scrollTop = newActionLog.scrollHeight;
-                }
-            }
-
-            handleTurnResultSignal(container);
+            swapBattleResponse(html);
         });
 }
 
 // ===== 도망: POST /battle/flee → top-bar + .center + action-log 교체 =====
 function flee() {
+    if (clashTimerTimeoutId) {
+        clearTimeout(clashTimerTimeoutId);
+        clashTimerTimeoutId = null;
+    }
     fetch("/battle/flee", { method: "POST" })
         .then(function (response) {
             if (!response.ok) {
@@ -472,61 +472,25 @@ function flee() {
             return response.text();
         })
         .then(function (html) {
-            if (!html) {
-                return;
-            }
-            var container = document.createElement("div");
-            container.innerHTML = html;
-
-            var newTopBar = container.querySelector(".top-bar");
-            var newCenter = container.querySelector(".center");
-            var newActionLog = container.querySelector(".action-log");
-
-            if (newTopBar) {
-                var oldTopBar = document.querySelector(".top-bar");
-                if (oldTopBar) {
-                    oldTopBar.replaceWith(newTopBar);
-                }
-            }
-            if (newCenter) {
-                var oldCenter = document.querySelector(".center");
-                if (oldCenter) {
-                    oldCenter.replaceWith(newCenter);
-                }
-            }
-            if (newActionLog) {
-                var oldActionLog = document.querySelector(".action-log");
-                if (oldActionLog) {
-                    oldActionLog.replaceWith(newActionLog);
-                    newActionLog.scrollTop = newActionLog.scrollHeight;
-                }
-            }
-
-            handleTurnResultSignal(container);
+            swapBattleResponse(html);
         });
 }
 
-// ===== 턴 결과 시그널 처리 (승리/패배/도망 성공/자원 부족 alert) =====
+// ===== 턴 결과 시그널 처리 (승리/패배/도망 성공 alert) =====
 function handleTurnResultSignal(container) {
     var signal = container.querySelector("#turnResultSignal");
     if (!signal) {
         return;
     }
 
-    var resourceInsufficient = signal.getAttribute("data-resource-insufficient") === "true";
-    if (resourceInsufficient) {
-        var insufficientKind = signal.getAttribute("data-insufficient-kind");
-        if (insufficientKind === "MP") {
-            alert("MP가 부족합니다!");
-        } else {
-            alert("스태미나가 부족합니다!");
-        }
-        return;
-    }
-
     var battleEnded = signal.getAttribute("data-battle-ended") === "true";
     if (!battleEnded) {
         return;
+    }
+
+    if (clashTimerTimeoutId) {
+        clearTimeout(clashTimerTimeoutId);
+        clashTimerTimeoutId = null;
     }
 
     var outcome = signal.getAttribute("data-outcome");
