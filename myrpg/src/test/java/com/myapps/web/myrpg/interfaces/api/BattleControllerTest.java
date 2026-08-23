@@ -18,6 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.BattleView;
+import com.myapps.web.myrpg.application.dto.DroppedItem;
+import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import com.myapps.web.myrpg.application.dto.GaugeView;
 import com.myapps.web.myrpg.application.dto.InteractionItem;
 import com.myapps.web.myrpg.application.dto.MinimapView;
@@ -25,6 +27,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
+import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -35,6 +38,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.GoldDrop;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.MonsterType;
+import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.SkillType;
 import java.util.List;
@@ -81,6 +85,8 @@ class BattleControllerTest {
     @MockitoBean private ActionLog actionLog;
 
     @MockitoBean private NodeViewAssembler nodeViewAssembler;
+
+    @MockitoBean private ItemCatalogService itemCatalogService;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
@@ -186,6 +192,58 @@ class BattleControllerTest {
                 .andExpect(model().attribute("battleEnded", true))
                 .andExpect(model().attribute("outcome", Outcome.WIN))
                 .andExpect(content().string(containsString("data-monster-id=\"raccoon\"")));
+    }
+
+    /** POST /battle/turn에서 던전 보스 처치 시 dungeonClear 모델 속성이 반환되는지 검증한다. */
+    @Test
+    void should_includeDungeonClearModel_when_bossDefeatedWithDungeonClearResult()
+            throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final BattleState state = new BattleState(CHARACTER_ID, "giant-spider", 100, false);
+        final DungeonClearResult clearResult =
+                new DungeonClearResult(
+                        "alby", "알비 던전", 300, 500, List.of(new DroppedItem("mana-potion-50", 2)));
+        final BattleTurnResult victoryResult =
+                new BattleTurnResult(
+                        SkillType.NORMAL,
+                        50,
+                        SkillType.NORMAL,
+                        0,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        null,
+                        true,
+                        Outcome.WIN,
+                        null,
+                        100,
+                        List.of(),
+                        List.of("거대거미을(를) 처치했습니다!"),
+                        clearResult);
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class)))
+                .thenReturn(Optional.of(state));
+        when(battleService.takeTurn(
+                        any(CharacterProgress.class), any(BattleState.class), eq(SKILL_ID)))
+                .thenReturn(victoryResult);
+        when(itemCatalogService.byId("mana-potion-50"))
+                .thenReturn(
+                        Optional.of(new PotionItem("mana-potion-50", "마나 포션 50", 0, 50, 0, 10)));
+        when(nodeViewAssembler.fromProgress(any(CharacterProgress.class)))
+                .thenReturn(createRestoredView());
+
+        mockMvc.perform(post("/battle/turn").param("skillId", SKILL_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
+                .andExpect(model().attributeExists("dungeonClear"))
+                .andExpect(model().attribute("battleEnded", true))
+                .andExpect(model().attribute("outcome", Outcome.WIN))
+                .andExpect(content().string(containsString("dungeonClearModal")));
     }
 
     /** POST /battle/flee 도망 성공 시 전투 종료 응답이 반환되는지 검증한다. */

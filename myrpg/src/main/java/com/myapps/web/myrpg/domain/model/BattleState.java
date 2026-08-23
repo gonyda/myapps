@@ -48,6 +48,12 @@ public class BattleState {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean standby;
 
+    @Column(
+            name = "dungeon_monster_deducted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean dungeonMonsterDeducted;
+
     /** JPA 전용 기본 생성자. */
     protected BattleState() {}
 
@@ -202,5 +208,23 @@ public class BattleState {
      */
     public void setStandby(final boolean standby) {
         this.standby = standby;
+    }
+
+    /**
+     * 던전 방 몬스터 차감 처리가 이미 수행되었는지 여부를 반환한다.
+     *
+     * @return 이미 차감되었으면 {@code true}
+     */
+    public boolean isDungeonMonsterDeducted() {
+        return dungeonMonsterDeducted;
+    }
+
+    /**
+     * 던전 방 몬스터 차감 처리 여부를 설정한다.
+     *
+     * @param dungeonMonsterDeducted 차감 여부
+     */
+    public void setDungeonMonsterDeducted(final boolean dungeonMonsterDeducted) {
+        this.dungeonMonsterDeducted = dungeonMonsterDeducted;
     }
 }

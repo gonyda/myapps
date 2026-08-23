@@ -372,6 +372,14 @@ function swapBattleResponse(html) {
             newActionLog.scrollTop = newActionLog.scrollHeight;
         }
     }
+    var newClearModal = container.querySelector("#dungeonClearModal");
+    if (newClearModal) {
+        var oldClearModal = document.getElementById("dungeonClearModal");
+        if (oldClearModal) {
+            oldClearModal.remove();
+        }
+        document.body.appendChild(newClearModal);
+    }
 
     handleTurnResultSignal(container);
 }
@@ -494,16 +502,32 @@ function handleTurnResultSignal(container) {
     }
 
     var outcome = signal.getAttribute("data-outcome");
+    var dungeonCleared = signal.getAttribute("data-dungeon-cleared") === "true";
+
     if (outcome === "WIN") {
-        var monsterName = signal.getAttribute("data-monster-name") || "몬스터";
-        alert(monsterName + "이(가) 쓰러졌습니다!");
         battleActive = false;
+        if (!dungeonCleared) {
+            var monsterName = signal.getAttribute("data-monster-name") || "몬스터";
+            alert(monsterName + "이(가) 쓰러졌습니다!");
+        }
     } else if (outcome === "LOSE") {
         alert("정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
         battleActive = false;
     } else if (outcome === "FLED") {
         alert("도망 성공!");
         battleActive = false;
+    }
+}
+
+// ===== 던전 클리어 보상 모달 닫기 =====
+function closeDungeonClearModal() {
+    var modal = document.getElementById("dungeonClearModal");
+    if (modal) {
+        modal.style.transition = "opacity 0.25s ease-out";
+        modal.style.opacity = "0";
+        setTimeout(function () {
+            modal.remove();
+        }, 250);
     }
 }
 

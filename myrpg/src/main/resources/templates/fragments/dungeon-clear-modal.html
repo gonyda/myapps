@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+
+<!-- 던전 클리어 보상 모달 프래그먼트 -->
+<div th:fragment="dungeon-clear-modal" id="dungeonClearModal" class="dungeon-clear-modal-overlay" th:if="${dungeonClear != null}">
+    <div class="dungeon-clear-modal-content">
+        <div class="dungeon-clear-modal-header">
+            <span class="dungeon-clear-badge">DUNGEON CLEAR</span>
+            <h2 class="dungeon-clear-title">🏆 던전 정복 완료!</h2>
+            <p class="dungeon-clear-subtitle" th:text="${dungeonClear.dungeonName}">알비 던전</p>
+        </div>
+
+        <div class="dungeon-clear-rewards">
+            <h3 class="rewards-section-title">✨ 클리어 확정 보상</h3>
+            <div class="reward-vitals-grid">
+                <div class="reward-vital-card reward-exp">
+                    <span class="reward-icon">⭐</span>
+                    <div class="reward-info">
+                        <span class="reward-label">획득 경험치</span>
+                        <span class="reward-value" th:text="'+' + ${#numbers.formatInteger(dungeonClear.expGained, 0, 'COMMA')} + ' EXP'">+300 EXP</span>
+                    </div>
+                </div>
+                <div class="reward-vital-card reward-gold">
+                    <span class="reward-icon">💰</span>
+                    <div class="reward-info">
+                        <span class="reward-label">획득 골드</span>
+                        <span class="reward-value" th:text="'+' + ${#numbers.formatInteger(dungeonClear.goldGained, 0, 'COMMA')} + ' G'">+500 G</span>
+                    </div>
+                </div>
+            </div>
+
+            <th:block th:if="${!dungeonClear.items.isEmpty()}">
+                <h4 class="rewards-items-title">🎁 획득 아이템</h4>
+                <div class="reward-items-grid">
+                    <div class="reward-item-card" th:each="item : ${dungeonClear.items}">
+                        <span class="reward-item-icon">📦</span>
+                        <span class="reward-item-name" th:text="${item.itemName}">마나 포션 50</span>
+                        <span class="reward-item-qty" th:text="'x' + ${item.quantity}">x1</span>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <div class="dungeon-clear-modal-footer">
+            <button type="button" class="btn btn-primary btn-dungeon-clear-confirm" onclick="closeDungeonClearModal()">
+                확인 (던전 나가기)
+            </button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

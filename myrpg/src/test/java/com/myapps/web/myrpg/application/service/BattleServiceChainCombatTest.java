@@ -7,9 +7,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.DropResult;
+import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
@@ -215,6 +217,81 @@ class BattleServiceChainCombatTest {
     }
 
     @Test
+    @DisplayName("연쇄 전투가 발생하고 다음 턴에서 최종 처치(WIN)될 때 onMonsterDefeated는 총 1회만 호출된다")
+    void should_triggerChainCombat_and_thenWin_withOnlyOneMonsterDeduction() {
+        // given (준비: 1차 턴에서 연쇄 당첨(난수 5), 2차 턴에서 연쇄 낙첨(난수 50))
+        final Random random = mock(Random.class);
+        given(random.nextInt(100)).willReturn(5, 50);
+
+        final BattleService service = createBattleService(random);
+        final BattleState state = new BattleState(CHARACTER_ID, SPIDER_ID, 10, false);
+        final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-1-0", "room-2-0");
+
+        given(rewardService.rollDrop(any())).willReturn(new DropResult(20, List.of()));
+        given(monsterService.byId(SPIDER_ID)).willReturn(Optional.of(spider));
+        given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
+
+        given(resolver.resolve(any()))
+                .willReturn(
+                        new com.myapps.web.myrpg.domain.model.ResolvedTurn(
+                                50, 0, false, false, false, false, List.of()));
+
+        // when 1: 1차 턴 실행 (1차 처치 -> 연쇄 발동)
+        final BattleTurnResult result1 = service.takeTurn(character, state, SKILL_ID);
+        assertThat(result1.battleEnded()).isFalse();
+        assertThat(state.isDungeonMonsterDeducted()).isTrue();
+        then(dungeonService).should(times(1)).onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
+
+        // when 2: 2차 턴 실행 (연쇄 몬스터 처치 -> 연쇄 미발동, WIN)
+        final BattleTurnResult result2 = service.takeTurn(character, state, SKILL_ID);
+        assertThat(result2.battleEnded()).isTrue();
+        assertThat(result2.outcome()).isEqualTo(BattleTurnResult.Outcome.WIN);
+        assertThat(state.isActive()).isFalse();
+
+        // then: onMonsterDefeated는 총 1회만 호출됨
+        then(dungeonService).should(times(1)).onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
+    }
+
+    @Test
+    @DisplayName("2회 연속 연쇄 전투 발동 후 3번째 처치(WIN) 시에도 onMonsterDefeated는 총 1회만 호출된다")
+    void should_triggerMultipleChainCombats_withOnlyOneMonsterDeduction() {
+        // given (준비: 1차 난수 5, 2차 난수 5, 3차 난수 50)
+        final Random random = mock(Random.class);
+        given(random.nextInt(100)).willReturn(5, 5, 50);
+
+        final BattleService service = createBattleService(random);
+        final BattleState state = new BattleState(CHARACTER_ID, SPIDER_ID, 10, false);
+        final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-1-0", "room-2-0");
+
+        given(rewardService.rollDrop(any())).willReturn(new DropResult(20, List.of()));
+        given(monsterService.byId(SPIDER_ID)).willReturn(Optional.of(spider));
+        given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
+
+        given(resolver.resolve(any()))
+                .willReturn(
+                        new com.myapps.web.myrpg.domain.model.ResolvedTurn(
+                                50, 0, false, false, false, false, List.of()));
+
+        // when 1: 1차 처치 -> 연쇄 1회차 발동
+        final BattleTurnResult result1 = service.takeTurn(character, state, SKILL_ID);
+        assertThat(result1.battleEnded()).isFalse();
+        then(dungeonService).should(times(1)).onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
+
+        // when 2: 2차 처치 -> 연쇄 2회차 발동
+        final BattleTurnResult result2 = service.takeTurn(character, state, SKILL_ID);
+        assertThat(result2.battleEnded()).isFalse();
+        then(dungeonService).should(times(1)).onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
+
+        // when 3: 3차 처치 -> 연쇄 종료 (WIN)
+        final BattleTurnResult result3 = service.takeTurn(character, state, SKILL_ID);
+        assertThat(result3.battleEnded()).isTrue();
+        assertThat(result3.outcome()).isEqualTo(BattleTurnResult.Outcome.WIN);
+
+        // then: 여전히 총 1회만 호출됨
+        then(dungeonService).should(times(1)).onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
+    }
+
+    @Test
     @DisplayName("보스방(giant-spider) 처치 시 연쇄 전투 판정을 배제하고 즉시 onBossDefeated를 호출하며 WIN 종료된다")
     void should_callOnBossDefeated_and_bypassChainCombat_when_bossKilled() {
         // given (준비: 보스 거대거미 전투, 던전 보스방 위치)
@@ -226,6 +303,8 @@ class BattleServiceChainCombatTest {
         given(rewardService.rollDrop(any())).willReturn(new DropResult(20, List.of()));
         given(monsterService.byId(GIANT_SPIDER_ID)).willReturn(Optional.of(giantSpider));
         given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
+        given(dungeonService.onBossDefeated(CHARACTER_ID))
+                .willReturn(new DungeonClearResult("alby", "알비 던전", 300, 500, List.of()));
 
         given(resolver.resolve(any()))
                 .willReturn(
@@ -235,9 +314,11 @@ class BattleServiceChainCombatTest {
         // when (실행: 스킬 사용 턴 진행)
         final BattleTurnResult result = service.takeTurn(character, state, SKILL_ID);
 
-        // then (검증: 연쇄 전투 롤 없이 즉시 onBossDefeated 호출, outcome=WIN)
+        // then (검증: 연쇄 전투 롤 없이 즉시 onBossDefeated 호출, outcome=WIN, dungeonClearResult 전달)
         assertThat(result.battleEnded()).isTrue();
         assertThat(result.outcome()).isEqualTo(BattleTurnResult.Outcome.WIN);
+        assertThat(result.dungeonClearResult()).isNotNull();
+        assertThat(result.dungeonClearResult().dungeonName()).isEqualTo("알비 던전");
         assertThat(state.isActive()).isFalse();
 
         then(dungeonService).should().onBossDefeated(CHARACTER_ID);

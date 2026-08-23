@@ -96,6 +96,9 @@
 
     <footer class="action-log" id="actionLog" th:replace="~{fragments/action-log :: action-log}"></footer>
 
+    <!-- 던전 클리어 보상 모달 -->
+    <div th:replace="~{fragments/dungeon-clear-modal :: dungeon-clear-modal}"></div>
+
     <!-- 턴 결과 시그널 (JS에서 alert/battleActive 제어용) -->
     <div id="turnResultSignal" style="display:none"
          th:if="${turnResult != null}"
@@ -103,7 +106,8 @@
                   data-outcome=${turnResult.outcome()},
                   data-resource-insufficient=${turnResult.resourceInsufficient()},
                   data-insufficient-kind=${turnResult.insufficientKind()},
-                  data-monster-name=${battleMonsterName}">
+                  data-monster-name=${battleMonsterName},
+                  data-dungeon-cleared=${dungeonClear != null}">
     </div>
 </div>
 

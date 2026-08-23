@@ -18,6 +18,7 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
+import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -71,6 +72,8 @@ class BattleControllerClashTest {
     @MockitoBean private ActionLog actionLog;
 
     @MockitoBean private NodeViewAssembler nodeViewAssembler;
+
+    @MockitoBean private ItemCatalogService itemCatalogService;
 
     @BeforeEach
     void setUp() {

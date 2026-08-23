@@ -2204,3 +2204,207 @@
         .item-action-btn.repair-btn:active {
             background: #6a5a3a;
         }
+
+        /* ===== 던전 클리어 결과 모달 ===== */
+        .dungeon-clear-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad);
+            z-index: 2000;
+            animation: modalFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .dungeon-clear-modal-content {
+            background: linear-gradient(145deg, #1e222d, #12141a);
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.35), 0 12px 40px rgba(0, 0, 0, 0.85);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 440px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .dungeon-clear-modal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dungeon-clear-badge {
+            background: #d4af37;
+            color: #12141a;
+            font-size: var(--fs-xs);
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .dungeon-clear-title {
+            margin: 0;
+            font-size: var(--fs-xl);
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .dungeon-clear-subtitle {
+            margin: 0;
+            color: #94a3b8;
+            font-size: var(--fs-md);
+            font-weight: 600;
+        }
+
+        .dungeon-clear-rewards {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .rewards-section-title {
+            margin: 0;
+            font-size: var(--fs-sm);
+            color: #e2e8f0;
+            font-weight: bold;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+
+        .reward-vitals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .reward-vital-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .reward-vital-card .reward-icon {
+            font-size: 1.4rem;
+        }
+
+        .reward-vital-card .reward-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .reward-vital-card .reward-label {
+            font-size: var(--fs-xs);
+            color: #94a3b8;
+        }
+
+        .reward-vital-card.reward-exp .reward-value {
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #60a5fa;
+        }
+
+        .reward-vital-card.reward-gold .reward-value {
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .rewards-items-title {
+            margin: 4px 0 0 0;
+            font-size: var(--fs-xs);
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .reward-items-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .reward-item-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: var(--fs-sm);
+        }
+
+        .reward-item-card .reward-item-icon {
+            margin-right: 6px;
+        }
+
+        .reward-item-card .reward-item-name {
+            flex: 1;
+            color: #f1f5f9;
+        }
+
+        .reward-item-card .reward-item-qty {
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .dungeon-clear-modal-footer {
+            margin-top: 4px;
+        }
+
+        .btn-dungeon-clear-confirm {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: var(--fs-md);
+            font-weight: bold;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #12141a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn-dungeon-clear-confirm:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-dungeon-clear-confirm:active {
+            transform: translateY(1px);
+        }
+

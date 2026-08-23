@@ -6,6 +6,7 @@ import com.myapps.web.myrpg.application.dto.BattleView;
 import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.DropResult;
 import com.myapps.web.myrpg.application.dto.DroppedItem;
+import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
@@ -324,12 +325,16 @@ public class BattleService {
         DropResult reward = null;
         long experienceGained = 0;
         Outcome outcome = Outcome.NONE;
+        DungeonClearResult dungeonClearResult = null;
         final List<String> settlementLines = new ArrayList<>();
 
         if (monsterKilled) {
             reward = processKillReward(progress, monster, settlementLines);
             experienceGained = monster.experience();
-            outcome = handleMonsterKilled(progress, state, monster, combatLines, settlementLines);
+            final KillResolution killResolution =
+                    handleMonsterKilled(progress, state, monster, combatLines, settlementLines);
+            outcome = killResolution.outcome();
+            dungeonClearResult = killResolution.dungeonClearResult();
         } else if (progress.isDead()) {
             outcome = handleDeath(progress, state, settlementLines);
         }
@@ -360,7 +365,8 @@ public class BattleService {
                 reward,
                 experienceGained,
                 playerHits,
-                combatLines);
+                combatLines,
+                dungeonClearResult);
     }
 
     /**
@@ -789,7 +795,9 @@ public class BattleService {
         return itemCatalogService.byId(itemId).map(Item::name).orElse(itemId);
     }
 
-    private Outcome handleMonsterKilled(
+    private record KillResolution(Outcome outcome, DungeonClearResult dungeonClearResult) {}
+
+    private KillResolution handleMonsterKilled(
             final CharacterProgress progress,
             final BattleState state,
             final Monster monster,
@@ -811,12 +819,16 @@ public class BattleService {
                             || "giant-spider".equals(monster.id());
 
             if (isBoss) {
-                dungeonService.onBossDefeated(characterId);
+                final DungeonClearResult clearResult = dungeonService.onBossDefeated(characterId);
                 state.setActive(false);
-                return Outcome.WIN;
+                return new KillResolution(Outcome.WIN, clearResult);
             }
 
-            dungeonService.onMonsterDefeated(characterId, monster.id());
+            if (!state.isDungeonMonsterDeducted()) {
+                dungeonService.onMonsterDefeated(characterId, monster.id());
+                state.setDungeonMonsterDeducted(true);
+            }
+
             final boolean chainCombat = random.nextInt(PERCENT_DIVISOR) < 10;
             if (chainCombat) {
                 state.setMonsterCurrentHp(monster.maxHp());
@@ -825,12 +837,12 @@ public class BattleService {
                 final String chainMsg = monster.name() + " 무리가 추가로 기습해왔다!";
                 combatLines.add(chainMsg);
                 settlementLines.add(chainMsg);
-                return Outcome.NONE;
+                return new KillResolution(Outcome.NONE, null);
             }
         }
 
         state.setActive(false);
-        return Outcome.WIN;
+        return new KillResolution(Outcome.WIN, null);
     }
 
     // ─── Private: death ─────────────────────────────────────────────────────

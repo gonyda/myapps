@@ -1,6 +1,7 @@
 package com.myapps.web.myrpg.domain.model;
 
 import com.myapps.web.myrpg.application.dto.DropResult;
+import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import java.util.List;
 
 /**
@@ -27,6 +28,7 @@ import java.util.List;
  * @param experienceGained 획득 경험치 (승리 시에만 유효, 그 외 0)
  * @param playerHits 플레이어 딜 스킬 히트별 상세 결과 (공격 경로 시 hitCount개, 그 외 빈 리스트)
  * @param combatLines 이번 턴의 전투 액션 로그 라인 목록 (중앙 표시용)
+ * @param dungeonClearResult 던전 클리어 결과 (보스 처치 클리어 시에만 유효, 그 외 {@code null})
  */
 public record BattleTurnResult(
         SkillType playerAction,
@@ -46,7 +48,50 @@ public record BattleTurnResult(
         DropResult reward,
         long experienceGained,
         List<HitResult> playerHits,
-        List<String> combatLines) {
+        List<String> combatLines,
+        DungeonClearResult dungeonClearResult) {
+
+    /** 18개 매개변수를 취하는 이전 버전 호환 생성자. */
+    public BattleTurnResult(
+            final SkillType playerAction,
+            final int playerDamage,
+            final SkillType monsterAction,
+            final int monsterDamage,
+            final boolean playerCritical,
+            final boolean monsterCritical,
+            final boolean blocked,
+            final boolean countered,
+            final boolean castFailure,
+            final boolean firstStrike,
+            final boolean resourceInsufficient,
+            final ResourceKind insufficientKind,
+            final boolean battleEnded,
+            final Outcome outcome,
+            final DropResult reward,
+            final long experienceGained,
+            final List<HitResult> playerHits,
+            final List<String> combatLines) {
+        this(
+                playerAction,
+                playerDamage,
+                monsterAction,
+                monsterDamage,
+                playerCritical,
+                monsterCritical,
+                blocked,
+                countered,
+                castFailure,
+                firstStrike,
+                resourceInsufficient,
+                insufficientKind,
+                battleEnded,
+                outcome,
+                reward,
+                experienceGained,
+                playerHits,
+                combatLines,
+                null);
+    }
 
     /** 전투 결과 유형을 정의하는 열거형. */
     public enum Outcome {

@@ -2,11 +2,15 @@ package com.myapps.web.myrpg.interfaces.api;
 
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.BattleView;
+import com.myapps.web.myrpg.application.dto.DungeonClearItemView;
+import com.myapps.web.myrpg.application.dto.DungeonClearResult;
+import com.myapps.web.myrpg.application.dto.DungeonClearView;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
+import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -14,6 +18,7 @@ import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Monster;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +51,7 @@ public class BattleController {
     private final PlayScreenViewHelper playScreenViewHelper;
     private final ActionLog actionLog;
     private final NodeViewAssembler nodeViewAssembler;
+    private final ItemCatalogService itemCatalogService;
 
     /**
      * BattleController를 생성한다.
@@ -57,6 +63,7 @@ public class BattleController {
      * @param playScreenViewHelper 뷰 모델 조립 헬퍼
      * @param actionLog 세션 보관 행동 로그
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
+     * @param itemCatalogService 아이템 카탈로그 서비스
      */
     public BattleController(
             final BattleService battleService,
@@ -65,7 +72,8 @@ public class BattleController {
             final MapService mapService,
             final PlayScreenViewHelper playScreenViewHelper,
             final ActionLog actionLog,
-            final NodeViewAssembler nodeViewAssembler) {
+            final NodeViewAssembler nodeViewAssembler,
+            final ItemCatalogService itemCatalogService) {
         this.battleService = battleService;
         this.characterService = characterService;
         this.monsterService = monsterService;
@@ -73,6 +81,7 @@ public class BattleController {
         this.playScreenViewHelper = playScreenViewHelper;
         this.actionLog = actionLog;
         this.nodeViewAssembler = nodeViewAssembler;
+        this.itemCatalogService = itemCatalogService;
     }
 
     /**
@@ -275,6 +284,34 @@ public class BattleController {
         model.addAttribute("outcome", result.outcome());
         model.addAttribute("battleMonsterName", resolveMonsterName(monsterId));
         model.addAttribute("turnLog", result.combatLines());
+
+        if (result.dungeonClearResult() != null) {
+            final DungeonClearResult clearResult = result.dungeonClearResult();
+            final List<DungeonClearItemView> itemViews =
+                    clearResult.items().stream()
+                            .map(
+                                    item -> {
+                                        final String itemName =
+                                                itemCatalogService != null
+                                                        ? itemCatalogService
+                                                                .byId(item.itemId())
+                                                                .map(Item::name)
+                                                                .orElse(item.itemId())
+                                                        : item.itemId();
+                                        return new DungeonClearItemView(
+                                                item.itemId(), itemName, item.quantity());
+                                    })
+                            .toList();
+            final DungeonClearView dungeonClearView =
+                    new DungeonClearView(
+                            clearResult.dungeonId(),
+                            clearResult.dungeonName(),
+                            clearResult.expGained(),
+                            clearResult.goldGained(),
+                            itemViews);
+            model.addAttribute("dungeonClear", dungeonClearView);
+        }
+
         return "fragments/battle-view :: battle-response";
     }
 
