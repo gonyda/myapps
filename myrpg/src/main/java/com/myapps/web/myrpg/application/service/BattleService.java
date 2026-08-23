@@ -20,6 +20,7 @@ import com.myapps.web.myrpg.domain.model.DungeonInstance;
 import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.PreemptiveParty;
 import com.myapps.web.myrpg.domain.model.ResolvedTurn;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.Skill;
@@ -58,6 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
  * </ul>
  */
 @Service
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public class BattleService {
 
     private static final double MELEE_COEF = 1.0;
@@ -77,9 +79,13 @@ public class BattleService {
     private static final String BADGE_LABEL_HEAVY = "💥 강공격 차징 중!";
     private static final String BADGE_LABEL_DEFENSE = "🛡️ 방어 태세";
     private static final String BADGE_LABEL_BOW_FIRST_STRIKE = "🏹 선제 사격 기회!";
+    private static final String BADGE_LABEL_PREEMPTIVE_PLAYER = "⚡ 선제 공격 찬스!";
+    private static final String BADGE_LABEL_PREEMPTIVE_MONSTER = "⚠️ 몬스터의 확정 선제 일반공격!";
     private static final String BADGE_CLASS_NORMAL = "badge-stance-normal";
     private static final String BADGE_CLASS_HEAVY = "badge-stance-heavy";
     private static final String BADGE_CLASS_DEFENSE = "badge-stance-defense";
+    private static final String BADGE_CLASS_PREEMPTIVE_PLAYER = "badge-stance-preemptive-player";
+    private static final String BADGE_CLASS_PREEMPTIVE_MONSTER = "badge-stance-preemptive-monster";
 
     private final BattleStateRepository battleStateRepository;
     private final BattleResolver resolver;
@@ -202,13 +208,23 @@ public class BattleService {
 
         final boolean isBow = inventoryService.isBowEquipped();
         final boolean bowFirstStrike = state.getTurnCount() == 1 && isBow;
+        final PreemptiveParty preemptiveParty = state.getPreemptiveParty();
 
-        final SkillType intent = bowFirstStrike ? null : monsterAiService.nextAction();
+        final SkillType intent;
+        if (bowFirstStrike || preemptiveParty == PreemptiveParty.PLAYER) {
+            intent = null;
+        } else if (preemptiveParty == PreemptiveParty.MONSTER) {
+            intent = SkillType.NORMAL;
+        } else {
+            intent = monsterAiService.nextAction();
+        }
+
         state.setCurrentMonsterIntent(intent);
         state.setStandby(false);
         battleStateRepository.save(state);
 
-        return buildClashBattleView(state, monster, progress, intent, bowFirstStrike);
+        return buildClashBattleView(
+                state, monster, progress, intent, bowFirstStrike, preemptiveParty);
     }
 
     /**
@@ -244,25 +260,8 @@ public class BattleService {
             return buildNoOpResult();
         }
         final Skill skill = skillOpt.get();
-        final ResourceKind resourceKind = skill.talent().resourceKind();
-        final int resourceCost = resolveResourceCost(skill, progress);
-
-        if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
-            actionLog.add(resourceKind.label() + "이(가) 부족합니다.", LOG_TYPE_COMBAT);
-            return buildInsufficientResult(skill, resourceKind);
-        }
-
-        deductResource(progress, resourceKind, resourceCost);
-
+        final PreemptiveParty currentPreemptive = state.getPreemptiveParty();
         final List<String> combatLines = new ArrayList<>();
-        final boolean castFailure = checkMagicCastFailure(skill, combatLines);
-
-        final SkillType monsterAction =
-                state.getCurrentMonsterIntent() != null
-                        ? state.getCurrentMonsterIntent()
-                        : monsterAiService.nextAction();
-        final SkillTalent equippedTalent =
-                skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
 
         int playerDamage = 0;
         int monsterDamage = 0;
@@ -271,30 +270,98 @@ public class BattleService {
         boolean blocked = false;
         boolean countered = false;
         boolean firstStrike = false;
+        boolean castFailure = false;
         List<HitResult> playerHits = List.of();
+        SkillType monsterAction;
+        PreemptiveParty nextPreemptive = PreemptiveParty.NONE;
 
-        if (!castFailure) {
-            final TurnCombatResult combat =
-                    resolveCombat(progress, state, monster, skill, equippedTalent, monsterAction);
-            playerDamage = combat.playerDamage;
-            monsterDamage = combat.monsterDamage;
-            playerCritical = combat.playerCritical;
-            monsterCritical = combat.monsterCritical;
-            blocked = combat.blocked;
-            countered = combat.countered;
-            firstStrike = combat.firstStrike;
-            playerHits = combat.playerHits;
+        if (currentPreemptive == PreemptiveParty.MONSTER) {
+            monsterAction = SkillType.NORMAL;
+            monsterDamage = resolveMonsterPreemptiveDamage(progress, monster);
+            playerDamage = 0;
+            firstStrike = true;
+            nextPreemptive = PreemptiveParty.NONE;
+        } else if (currentPreemptive == PreemptiveParty.PLAYER
+                || isBowFirstStrike(
+                        state,
+                        skill.talent() == SkillTalent.COMMON
+                                ? SkillTalent.MELEE
+                                : skill.talent())) {
+            final ResourceKind resourceKind = skill.talent().resourceKind();
+            final int resourceCost = resolveResourceCost(skill, progress);
 
-            if (!firstStrike && playerDamage > 0 && monsterDamage > 0) {
-                final boolean playerFirst = determineTurnOrder(skill.type(), monsterAction);
-                if (playerFirst && playerDamage >= state.getMonsterCurrentHp()) {
-                    monsterDamage = 0;
-                } else if (!playerFirst && monsterDamage >= progress.getHpCurrent()) {
-                    playerDamage = 0;
-                }
+            if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
+                actionLog.add(resourceKind.label() + "이(가) 부족합니다.", LOG_TYPE_COMBAT);
+                return buildInsufficientResult(skill, resourceKind);
             }
+
+            deductResource(progress, resourceKind, resourceCost);
+            castFailure = checkMagicCastFailure(skill, combatLines);
+            monsterAction = SkillType.NORMAL;
+
+            if (!castFailure) {
+                final SkillTalent equippedTalent =
+                        skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
+                final TurnCombatResult combat =
+                        resolvePlayerPreemptive(progress, monster, skill, equippedTalent);
+                playerDamage = combat.playerDamage;
+                monsterDamage = 0;
+                playerCritical = combat.playerCritical;
+                firstStrike = true;
+                playerHits = combat.playerHits;
+            }
+            nextPreemptive = PreemptiveParty.NONE;
         } else {
-            monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
+            final ResourceKind resourceKind = skill.talent().resourceKind();
+            final int resourceCost = resolveResourceCost(skill, progress);
+
+            if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
+                actionLog.add(resourceKind.label() + "이(가) 부족합니다.", LOG_TYPE_COMBAT);
+                return buildInsufficientResult(skill, resourceKind);
+            }
+
+            deductResource(progress, resourceKind, resourceCost);
+            castFailure = checkMagicCastFailure(skill, combatLines);
+            monsterAction =
+                    state.getCurrentMonsterIntent() != null
+                            ? state.getCurrentMonsterIntent()
+                            : monsterAiService.nextAction();
+            final SkillTalent equippedTalent =
+                    skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
+
+            if (!castFailure) {
+                final TurnCombatResult combat =
+                        resolveNormalCombat(
+                                progress, monster, skill, equippedTalent, monsterAction);
+                playerDamage = combat.playerDamage;
+                monsterDamage = combat.monsterDamage;
+                playerCritical = combat.playerCritical;
+                monsterCritical = combat.monsterCritical;
+                blocked = combat.blocked;
+                countered = combat.countered;
+                firstStrike = combat.firstStrike;
+                playerHits = combat.playerHits;
+
+                if (!firstStrike && playerDamage > 0 && monsterDamage > 0) {
+                    final boolean playerFirst = determineTurnOrder(skill.type(), monsterAction);
+                    if (playerFirst && playerDamage >= state.getMonsterCurrentHp()) {
+                        monsterDamage = 0;
+                    } else if (!playerFirst && monsterDamage >= progress.getHpCurrent()) {
+                        playerDamage = 0;
+                    }
+                }
+
+                if (skill.type() == SkillType.DEFENSE && monsterAction == SkillType.NORMAL) {
+                    nextPreemptive = PreemptiveParty.PLAYER;
+                } else if (skill.type() == SkillType.NORMAL && monsterAction == SkillType.DEFENSE) {
+                    nextPreemptive = PreemptiveParty.MONSTER;
+                } else {
+                    nextPreemptive = PreemptiveParty.NONE;
+                }
+            } else {
+                monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
+                nextPreemptive = PreemptiveParty.NONE;
+            }
         }
 
         applyDamage(progress, state, playerDamage, monsterDamage);
@@ -313,13 +380,15 @@ public class BattleService {
         combatLines.addAll(logFormatter.combatLines(logInput));
 
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
-        skillService.onSkillUsed(progress.getId(), skillId);
-        if (monsterKilled && skill.type() != SkillType.DEFENSE) {
-            skillService.onSkillKill(progress.getId(), skillId);
-        }
+        if (currentPreemptive != PreemptiveParty.MONSTER) {
+            skillService.onSkillUsed(progress.getId(), skillId);
+            if (monsterKilled && skill.type() != SkillType.DEFENSE) {
+                skillService.onSkillKill(progress.getId(), skillId);
+            }
 
-        if (skill.type() != SkillType.DEFENSE && !castFailure) {
-            inventoryService.reduceDurabilityAndAutoUnequip(progress, DURABILITY_PER_ATTACK);
+            if (skill.type() != SkillType.DEFENSE && !castFailure) {
+                inventoryService.reduceDurabilityAndAutoUnequip(progress, DURABILITY_PER_ATTACK);
+            }
         }
 
         DropResult reward = null;
@@ -339,6 +408,7 @@ public class BattleService {
             outcome = handleDeath(progress, state, settlementLines);
         }
 
+        state.setPreemptiveParty(nextPreemptive);
         state.setCurrentMonsterIntent(null);
         state.setStandby(true);
         state.setTurnCount(state.getTurnCount() + 1);
@@ -525,7 +595,7 @@ public class BattleService {
             final SkillTalent equippedTalent,
             final SkillType monsterAction) {
         if (isBowFirstStrike(state, equippedTalent)) {
-            return resolveBowFirstStrike(progress, monster, skill, equippedTalent);
+            return resolvePlayerPreemptive(progress, monster, skill, equippedTalent);
         }
         return resolveNormalCombat(progress, monster, skill, equippedTalent, monsterAction);
     }
@@ -534,7 +604,7 @@ public class BattleService {
         return state.getTurnCount() == 1 && equippedTalent == SkillTalent.ARCHERY;
     }
 
-    private TurnCombatResult resolveBowFirstStrike(
+    private TurnCombatResult resolvePlayerPreemptive(
             final CharacterProgress progress,
             final Monster monster,
             final Skill skill,
@@ -556,6 +626,16 @@ public class BattleService {
         final boolean anyCrit = hits.stream().anyMatch(HitResult::critical);
 
         return new TurnCombatResult(totalDamage, 0, anyCrit, false, false, false, true, hits);
+    }
+
+    private int resolveMonsterPreemptiveDamage(
+            final CharacterProgress progress, final Monster monster) {
+        final int playerDefense = resolvePlayerDefense(progress);
+        final int monsterBase =
+                resolver.baseDamage(
+                        monster.attackPower(), MONSTER_NORMAL_MULTIPLIER, playerDefense);
+        final boolean monsterCrit = resolver.rollCritical(monster.critical());
+        return resolver.finalDamage(monsterBase, 1.0, monsterCrit);
     }
 
     private TurnCombatResult resolveNormalCombat(
@@ -890,6 +970,7 @@ public class BattleService {
             outcome = handleDeath(progress, state, settlementLines);
         }
 
+        state.setPreemptiveParty(PreemptiveParty.NONE);
         state.setCurrentMonsterIntent(null);
         state.setStandby(true);
         state.setTurnCount(state.getTurnCount() + 1);
@@ -964,6 +1045,7 @@ public class BattleService {
 
         combatLines.add("도망 실패! " + monster.name() + "에게 " + monsterDmg + " 피해");
 
+        state.setPreemptiveParty(PreemptiveParty.NONE);
         state.setCurrentMonsterIntent(null);
         state.setStandby(true);
         state.setTurnCount(state.getTurnCount() + 1);
@@ -1069,11 +1151,12 @@ public class BattleService {
             final Monster monster,
             final CharacterProgress progress,
             final SkillType intent,
-            final boolean bowFirstStrike) {
+            final boolean bowFirstStrike,
+            final PreemptiveParty preemptiveParty) {
         final List<BattleSkillButton> skills = combatSkills(progress);
         final int durationMs = resolveClashDuration(intent);
-        final String badgeLabel = resolveStanceBadgeLabel(intent, bowFirstStrike);
-        final String badgeClass = resolveStanceBadgeClass(intent);
+        final String badgeLabel = resolveStanceBadgeLabel(intent, bowFirstStrike, preemptiveParty);
+        final String badgeClass = resolveStanceBadgeClass(intent, preemptiveParty);
 
         return new BattleView(
                 monster.name(),
@@ -1097,9 +1180,18 @@ public class BattleService {
         return DEFAULT_CLASH_DURATION_MS;
     }
 
-    private String resolveStanceBadgeLabel(final SkillType intent, final boolean bowFirstStrike) {
+    private String resolveStanceBadgeLabel(
+            final SkillType intent,
+            final boolean bowFirstStrike,
+            final PreemptiveParty preemptiveParty) {
         if (bowFirstStrike) {
             return BADGE_LABEL_BOW_FIRST_STRIKE;
+        }
+        if (preemptiveParty == PreemptiveParty.PLAYER) {
+            return BADGE_LABEL_PREEMPTIVE_PLAYER;
+        }
+        if (preemptiveParty == PreemptiveParty.MONSTER) {
+            return BADGE_LABEL_PREEMPTIVE_MONSTER;
         }
         if (intent == null) {
             return null;
@@ -1111,7 +1203,14 @@ public class BattleService {
         };
     }
 
-    private String resolveStanceBadgeClass(final SkillType intent) {
+    private String resolveStanceBadgeClass(
+            final SkillType intent, final PreemptiveParty preemptiveParty) {
+        if (preemptiveParty == PreemptiveParty.PLAYER) {
+            return BADGE_CLASS_PREEMPTIVE_PLAYER;
+        }
+        if (preemptiveParty == PreemptiveParty.MONSTER) {
+            return BADGE_CLASS_PREEMPTIVE_MONSTER;
+        }
         if (intent == null) {
             return null;
         }

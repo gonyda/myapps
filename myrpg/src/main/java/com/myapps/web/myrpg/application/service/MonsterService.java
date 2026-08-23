@@ -35,7 +35,7 @@ public class MonsterService {
     private static final int REQUIRED_LINES_COUNT = 3;
     private static final int MIN_CHANCE_PERCENT = 1;
     private static final int MAX_CHANCE_PERCENT = 100;
-    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 100;
+    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 70;
     private static final int DEFAULT_DEFENSE_COUNTER_RATE = 0;
 
     private final ObjectMapper objectMapper;

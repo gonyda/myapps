@@ -128,7 +128,8 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("윈드밀(일반)로 너구리에게 3 피해", "너구리이(가) 방어하며 반격! (7 피해)");
+        assertThat(lines)
+                .containsExactly("윈드밀(일반)로 너구리에게 3 피해 (방어에 가로막힘)", "너구리이(가) 방어하며 반격! (7 피해)");
     }
 
     @Test
@@ -149,7 +150,8 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("디펜스(방어)로 방어하며 반격! (9 피해)", "너구리의 일반공격, 6 피해를 입음");
+        assertThat(lines)
+                .containsExactly("디펜스(방어)로 방어하며 반격! (9 피해)", "너구리의 일반공격, 방어 경감되어 6 피해를 입음");
     }
 
     @Test
@@ -233,7 +235,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 사격! 윈드밀(일반)로 너구리에게 12 피해");
+        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반)로 너구리에게 12 피해");
     }
 
     @Test
@@ -327,7 +329,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 사격! 윈드밀(일반) 4연타", "10  12(치명)  9  11 = 42 피해");
+        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반) 4연타", "10  12(치명)  9  11 = 42 피해");
     }
 
     @Test
@@ -372,7 +374,9 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("디펜스(방어)로 공격을 완벽히 방어했다!", "너구리의 일반공격이 빗나갔다!");
+        assertThat(lines)
+                .containsExactly(
+                        "디펜스(방어)로 적의 공격을 막아내며 빈틈을 포착! (다음 턴 선제 기회)", "너구리의 일반공격, 방어 경감되어 0 피해를 입음");
     }
 
     @Test
@@ -393,7 +397,9 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("상대의 방어에 공격이 가로막혔다!", "너구리이(가) 공격을 완벽히 방어했다!");
+        assertThat(lines)
+                .containsExactly(
+                        "상대의 방어에 공격이 가로막혔다!", "너구리이(가) 공격을 막아내며 반격 태세를 갖췄습니다! (다음 턴 선제 일반공격)");
     }
 
     @Test

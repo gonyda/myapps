@@ -117,7 +117,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(redFox.itemDrops().get(2).itemId()).isEqualTo("stamina_potion_30");
         assertThat(redFox.itemDrops().get(2).chancePercent()).isEqualTo(10);
         assertThat(redFox.lines()).hasSize(3);
-        assertThat(redFox.defenseBlockRate()).isEqualTo(100);
+        assertThat(redFox.defenseBlockRate()).isEqualTo(70);
         assertThat(redFox.defenseCounterRate()).isEqualTo(0);
     }
 
@@ -151,7 +151,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(spider.itemDrops().get(2).itemId()).isEqualTo("stamina_potion_30");
         assertThat(spider.itemDrops().get(2).chancePercent()).isEqualTo(10);
         assertThat(spider.lines()).hasSize(3);
-        assertThat(spider.defenseBlockRate()).isEqualTo(100);
+        assertThat(spider.defenseBlockRate()).isEqualTo(70);
         assertThat(spider.defenseCounterRate()).isEqualTo(0);
     }
 
@@ -261,7 +261,7 @@ class MonsterServiceLoadIntegrationTest {
         assertThat(giantSpider.itemDrops().getFirst().minQuantity()).isEqualTo(2);
         assertThat(giantSpider.itemDrops().getFirst().maxQuantity()).isEqualTo(3);
         assertThat(giantSpider.lines()).hasSize(3);
-        assertThat(giantSpider.defenseBlockRate()).isEqualTo(100);
+        assertThat(giantSpider.defenseBlockRate()).isEqualTo(70);
         assertThat(giantSpider.defenseCounterRate()).isEqualTo(0);
         assertThat(giantSpider.buttonLabel()).isEqualTo("거대거미 👑");
     }

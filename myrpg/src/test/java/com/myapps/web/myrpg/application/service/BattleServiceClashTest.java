@@ -19,9 +19,11 @@ import com.myapps.web.myrpg.domain.model.BattleTurnResult.Outcome;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
+import com.myapps.web.myrpg.domain.model.DefenseSkill;
 import com.myapps.web.myrpg.domain.model.GoldDrop;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.MonsterType;
+import com.myapps.web.myrpg.domain.model.PreemptiveParty;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
@@ -536,6 +538,130 @@ class BattleServiceClashTest {
         assertThat(actionLog.getEntries()).anyMatch(entry -> entry.message().contains("도망쳤다!"));
     }
 
+    // ─── 선제 공격권 (PreemptiveParty) 테스트 ────────────────────────────────
+
+    @Test
+    @DisplayName("유저 디펜스 성공(vs 몬스터 일반공격) 시 다음 턴 선제권이 PLAYER로 저장된다")
+    void takeTurn_PlayerDefenseVsMonsterNormal_GrantsPlayerPreemptiveNextTurn() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setCurrentMonsterIntent(SkillType.NORMAL);
+        state.setStandby(false);
+        state.setTurnCount(1);
+
+        final DefenseSkill defense = createDefenseSkill("defense", "디펜스", 0);
+        when(skillCatalogService.byId("defense")).thenReturn(Optional.of(defense));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "defense"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "defense")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "defense");
+
+        assertThat(result.monsterAction()).isEqualTo(SkillType.NORMAL);
+        // 디펜스 성공으로 몬스터 데미지가 경감되어 들어옴
+        assertThat(progress.getHpCurrent()).isLessThan(100);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.PLAYER);
+        assertThat(state.isStandby()).isTrue();
+    }
+
+    @Test
+    @DisplayName("플레이어 선제권 상태에서 공방 개시 시 선제공격 찬스 뱃지가 부여되고 intent는 null이 된다")
+    void startClash_WithPlayerPreemptive_SetsPreemptiveBadgeAndNullIntent() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.PLAYER);
+
+        final BattleView view = battleService.startClash(progress, state);
+
+        verify(aiService, never()).nextAction();
+        assertThat(state.getCurrentMonsterIntent()).isNull();
+        assertThat(view.monsterStanceBadgeLabel()).isEqualTo("⚡ 선제 공격 찬스!");
+        assertThat(view.monsterStanceBadgeClass()).isEqualTo("badge-stance-preemptive-player");
+    }
+
+    @Test
+    @DisplayName("플레이어 선제권 턴 진행 시 일방적인 선제 공격이 적중하고 선제권이 NONE으로 소비된다")
+    void takeTurn_WithPlayerPreemptive_ExecutesOneSidedPreemptiveStrike_AndResetsPreemptiveParty() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.PLAYER);
+        state.setStandby(false);
+        state.setTurnCount(2);
+
+        final DamageSkill slash = createDamageSkill("slash", "베기", SkillType.NORMAL, 0);
+        when(skillCatalogService.byId("slash")).thenReturn(Optional.of(slash));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "slash"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "slash")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "slash");
+
+        assertThat(result.firstStrike()).isTrue();
+        assertThat(result.playerDamage()).isPositive();
+        assertThat(result.monsterDamage()).isZero();
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
+    }
+
+    @Test
+    @DisplayName("몬스터 방어 태세에 유저가 일반공격을 쓰면 다음 턴 선제권이 MONSTER로 저장된다")
+    void takeTurn_PlayerNormalVsMonsterDefense_GrantsMonsterPreemptiveNextTurn() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setCurrentMonsterIntent(SkillType.DEFENSE);
+        state.setStandby(false);
+        state.setTurnCount(1);
+
+        final DamageSkill slash = createDamageSkill("slash", "베기", SkillType.NORMAL, 0);
+        when(skillCatalogService.byId("slash")).thenReturn(Optional.of(slash));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "slash"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "slash")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "slash");
+
+        assertThat(result.monsterAction()).isEqualTo(SkillType.DEFENSE);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.MONSTER);
+        assertThat(state.isStandby()).isTrue();
+    }
+
+    @Test
+    @DisplayName("몬스터 선제권 상태에서 공방 개시 시 확정 선제 일반공격 뱃지가 부여되고 intent는 NORMAL이 된다")
+    void startClash_WithMonsterPreemptive_SetsMonsterPreemptiveBadgeAndNormalIntent() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.MONSTER);
+
+        final BattleView view = battleService.startClash(progress, state);
+
+        verify(aiService, never()).nextAction();
+        assertThat(state.getCurrentMonsterIntent()).isEqualTo(SkillType.NORMAL);
+        assertThat(view.monsterStanceBadgeLabel()).isEqualTo("⚠️ 몬스터의 확정 선제 일반공격!");
+        assertThat(view.monsterStanceBadgeClass()).isEqualTo("badge-stance-preemptive-monster");
+    }
+
+    @Test
+    @DisplayName("몬스터 선제권 턴 진행 시 몬스터의 일반공격이 일방적으로 적중하고 선제권이 NONE으로 소비된다")
+    void
+            takeTurn_WithMonsterPreemptive_ExecutesOneSidedMonsterNormalStrike_AndResetsPreemptiveParty() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.MONSTER);
+        state.setStandby(false);
+        state.setTurnCount(2);
+
+        final DamageSkill slash = createDamageSkill("slash", "베기", SkillType.NORMAL, 0);
+        when(skillCatalogService.byId("slash")).thenReturn(Optional.of(slash));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "slash"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "slash")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "slash");
+
+        assertThat(result.firstStrike()).isTrue();
+        assertThat(result.playerDamage()).isZero();
+        assertThat(result.monsterDamage()).isPositive();
+        assertThat(result.monsterAction()).isEqualTo(SkillType.NORMAL);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
+    }
+
     private Monster createMonster() {
         return new Monster(
                 MONSTER_ID,
@@ -561,6 +687,18 @@ class BattleServiceClashTest {
             final String id, final String label, final SkillType type, final int cost) {
         return new DamageSkill(
                 id, label, type, SkillTalent.MELEE, cost, createFullRankMap(100), "테스트 스킬");
+    }
+
+    private DefenseSkill createDefenseSkill(final String id, final String label, final int cost) {
+        return new DefenseSkill(
+                id,
+                label,
+                SkillType.DEFENSE,
+                SkillTalent.COMMON,
+                cost,
+                createFullRankMap(70),
+                createFullRankMap(0),
+                "테스트 방어 스킬");
     }
 
     private Map<SkillRank, Integer> createFullRankMap(final int baseValue) {

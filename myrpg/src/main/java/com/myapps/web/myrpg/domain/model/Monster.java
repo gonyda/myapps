@@ -43,11 +43,11 @@ public record Monster(
         int defenseBlockRate,
         int defenseCounterRate) {
 
-    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 100;
+    private static final int DEFAULT_DEFENSE_BLOCK_RATE = 70;
     private static final int DEFAULT_DEFENSE_COUNTER_RATE = 0;
 
     /**
-     * 방어 상수를 전역 기본값(100% 완전 방어 / 0 반격)으로 생성하는 보조 생성자.
+     * 방어 상수를 전역 기본값(70% 방어 경감 / 0 반격)으로 생성하는 보조 생성자.
      *
      * <p>기존 12필드 호출부와의 하위 호환을 유지하기 위해 제공된다. {@code monster.json}에서 두 필드가 미지정된 경우 이 생성자를 통해 인스턴스를
      * 생성한다.

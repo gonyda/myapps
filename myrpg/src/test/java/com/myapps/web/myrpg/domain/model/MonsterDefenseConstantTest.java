@@ -22,7 +22,7 @@ class MonsterDefenseConstantTest {
     private static final int TEST_DEFENSE = 10;
     private static final int TEST_CRITICAL = 50;
     private static final long TEST_EXPERIENCE = 30L;
-    private static final int DEFAULT_BLOCK_RATE = 100;
+    private static final int DEFAULT_BLOCK_RATE = 70;
     private static final int DEFAULT_COUNTER_RATE = 0;
 
     private static final GoldDrop TEST_GOLD_DROP = new GoldDrop(5, 15);

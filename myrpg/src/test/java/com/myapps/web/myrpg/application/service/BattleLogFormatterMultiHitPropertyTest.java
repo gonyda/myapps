@@ -109,9 +109,9 @@ class BattleLogFormatterMultiHitPropertyTest {
         // 선제 사격 멀티히트: 헤더 + 브레이크다운 = 2줄
         assertThat(lines).hasSize(2);
 
-        // 헤더 검증: "선제 사격! {스킬}({타입}) {N}연타"
+        // 헤더 검증: "선제 공격! {스킬}({타입}) {N}연타"
         final String expectedHeader =
-                "선제 사격! " + SKILL_LABEL + "(" + skillType.label() + ") " + hits.size() + "연타";
+                "선제 공격! " + SKILL_LABEL + "(" + skillType.label() + ") " + hits.size() + "연타";
         assertThat(lines.get(0)).isEqualTo(expectedHeader);
 
         // 브레이크다운 검증

@@ -54,13 +54,18 @@ public class BattleState {
             columnDefinition = "boolean default false")
     private boolean dungeonMonsterDeducted;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "preemptive_party")
+    private PreemptiveParty preemptiveParty;
+
     /** JPA 전용 기본 생성자. */
     protected BattleState() {}
 
     /**
      * 전투 시작 시 사용하는 생성자.
      *
-     * <p>{@code turnCount}는 1로, {@code active}는 {@code true}, {@code standby}는 {@code true}로 초기화된다.
+     * <p>{@code turnCount}는 1로, {@code active}는 {@code true}, {@code standby}는 {@code true}, {@code
+     * preemptiveParty}는 {@link PreemptiveParty#NONE}으로 초기화된다.
      *
      * @param characterId 전투에 참여하는 캐릭터 ID
      * @param monsterId 전투 대상 몬스터 식별자
@@ -80,6 +85,7 @@ public class BattleState {
         this.active = true;
         this.standby = true;
         this.currentMonsterIntent = null;
+        this.preemptiveParty = PreemptiveParty.NONE;
     }
 
     /**
@@ -226,5 +232,23 @@ public class BattleState {
      */
     public void setDungeonMonsterDeducted(final boolean dungeonMonsterDeducted) {
         this.dungeonMonsterDeducted = dungeonMonsterDeducted;
+    }
+
+    /**
+     * 다음 턴 확정 선제공격 권한을 가진 주체를 반환한다.
+     *
+     * @return 선제공격 권한 주체, 없으면 {@link PreemptiveParty#NONE}
+     */
+    public PreemptiveParty getPreemptiveParty() {
+        return preemptiveParty != null ? preemptiveParty : PreemptiveParty.NONE;
+    }
+
+    /**
+     * 다음 턴 확정 선제공격 권한 주체를 설정한다.
+     *
+     * @param preemptiveParty 설정할 선제공격 권한 주체
+     */
+    public void setPreemptiveParty(final PreemptiveParty preemptiveParty) {
+        this.preemptiveParty = preemptiveParty != null ? preemptiveParty : PreemptiveParty.NONE;
     }
 }

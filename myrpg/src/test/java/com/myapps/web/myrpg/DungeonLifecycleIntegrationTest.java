@@ -45,6 +45,8 @@ class DungeonLifecycleIntegrationTest {
 
     @Autowired private OwnedItemRepository ownedItemRepository;
 
+    @Autowired private com.myapps.web.myrpg.application.service.InventoryService inventoryService;
+
     private CharacterProgress character;
 
     @BeforeEach
@@ -53,6 +55,11 @@ class DungeonLifecycleIntegrationTest {
         character.updateCurrentNodeId("alby-entrance");
         characterService.saveTurn(character);
         dungeonProgressRepository.deleteByCharacterId(character.getId());
+        if (ownedItemRepository
+                .findByStorageAndItemId(StorageKind.INVENTORY, "hp_potion_30")
+                .isEmpty()) {
+            inventoryService.seedDefault();
+        }
     }
 
     @Test
