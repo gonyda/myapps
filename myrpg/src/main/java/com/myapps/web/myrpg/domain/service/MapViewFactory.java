@@ -29,6 +29,12 @@ public class MapViewFactory {
     /** 클리어된 던전 방 CSS 타입 문자열. */
     public static final String TYPE_DUNGEON_CLEARED = "dungeon-cleared";
 
+    /** 던전 시작방 CSS 타입 문자열. */
+    public static final String TYPE_DUNGEON_START = "dungeon-start";
+
+    /** 던전 보스방 CSS 타입 문자열. */
+    public static final String TYPE_DUNGEON_BOSS = "dungeon-boss";
+
     /** 미진입 미클리어 방 마스킹 표시명. */
     private static final String DEFAULT_DUNGEON_ROOM_NAME = "던전 방";
 
@@ -73,9 +79,8 @@ public class MapViewFactory {
     /**
      * 던전 인스턴스 전용 미니맵 뷰를 생성한다.
      *
-     * <p>전장의 안개(Fog of War)를 적용하여 {@code discovered == false}인 방은 미니맵에서 제외(투명 처리)하고, 발견된 방은 클리어 여부에
-     * 따라 {@link #TYPE_DUNGEON_CLEARED} 또는 {@link #TYPE_DUNGEON_UNCLEARED} 타입을 부여한다. 연결 간선은 두 방이 모두
-     * 발견 상태일 때만 렌더링한다.
+     * <p>전장의 안개(Fog of War)를 적용하여 {@code discovered == false}인 방은 미니맵에서 제외(투명 처리)하고, 발견된 방은
+     * 시작방/보스방/클리어 여부에 따라 타입을 부여한다. 연결 간선은 두 방이 모두 발견 상태일 때만 렌더링한다.
      *
      * @param dungeonInstance 활성화된 던전 인스턴스
      * @return 미니맵 뷰 모델
@@ -88,7 +93,9 @@ public class MapViewFactory {
         return createMinimap(
                 dungeonInstance.dungeonGraph(),
                 dungeonInstance.currentRoomId(),
-                dungeonInstance.roomStates());
+                dungeonInstance.roomStates(),
+                dungeonInstance.startRoomId(),
+                dungeonInstance.bossRoomId());
     }
 
     /**
@@ -104,11 +111,32 @@ public class MapViewFactory {
             final MapGraph graph,
             final String currentNodeId,
             final Map<String, DungeonRoomState> roomStates) {
+        return createMinimap(graph, currentNodeId, roomStates, null, null);
+    }
+
+    /**
+     * 방 상태 맵 및 시작/보스방 정보가 주어진 던전 맵 그래프 기준 미니맵 뷰를 생성한다.
+     *
+     * @param graph 맵 그래프
+     * @param currentNodeId 현재 노드 ID
+     * @param roomStates 방별 상태 맵
+     * @param startRoomId 시작방 ID
+     * @param bossRoomId 보스방 ID
+     * @return 미니맵 뷰 모델
+     * @throws MapViewGenerationException 현재 노드가 그래프에 존재하지 않을 때
+     */
+    public MinimapView createMinimap(
+            final MapGraph graph,
+            final String currentNodeId,
+            final Map<String, DungeonRoomState> roomStates,
+            final String startRoomId,
+            final String bossRoomId) {
         if (graph == null) {
             throw new MapViewGenerationException("graph must not be null");
         }
         final MapNode currentNode = resolveCurrentNode(graph, currentNodeId);
-        final List<MinimapCell> cells = buildDungeonMinimapCells(graph, currentNode, roomStates);
+        final List<MinimapCell> cells =
+                buildDungeonMinimapCells(graph, currentNode, roomStates, startRoomId, bossRoomId);
         return new MinimapView(currentNode.name(), cells);
     }
 
@@ -137,9 +165,8 @@ public class MapViewFactory {
     /**
      * 던전 인스턴스 전용 전체지도 뷰를 생성한다.
      *
-     * <p>전장의 안개(Fog of War)를 적용하여 {@code discovered == false}인 방은 격자에서 제외(투명 처리)하고, 발견된 방은 클리어 여부에
-     * 따라 {@link #TYPE_DUNGEON_CLEARED} 또는 {@link #TYPE_DUNGEON_UNCLEARED} 타입을 부여한다. 보스방에 직접 진입하지 않고
-     * 인접 노출만 된 경우 방 이름을 마스킹한다.
+     * <p>전장의 안개(Fog of War)를 적용하여 {@code discovered == false}인 방은 격자에서 제외(투명 처리)하고, 발견된 방은
+     * 시작방/보스방/클리어 여부에 따라 타입을 부여한다. 보스방에 직접 진입하지 않고 인접 노출만 된 경우 방 이름을 마스킹한다.
      *
      * @param dungeonInstance 활성화된 던전 인스턴스
      * @return 전체지도 뷰 모델
@@ -153,7 +180,8 @@ public class MapViewFactory {
                 dungeonInstance.dungeonGraph(),
                 dungeonInstance.currentRoomId(),
                 dungeonInstance.roomStates(),
-                dungeonInstance.bossRoomId());
+                dungeonInstance.bossRoomId(),
+                dungeonInstance.startRoomId());
     }
 
     /**
@@ -171,13 +199,34 @@ public class MapViewFactory {
             final String currentNodeId,
             final Map<String, DungeonRoomState> roomStates,
             final String bossRoomId) {
+        return createFullMap(graph, currentNodeId, roomStates, bossRoomId, null);
+    }
+
+    /**
+     * 방 상태 맵과 보스방/시작방 정보가 주어진 던전 맵 그래프 기준 전체지도 뷰를 생성한다.
+     *
+     * @param graph 맵 그래프
+     * @param currentNodeId 현재 노드 ID
+     * @param roomStates 방별 상태 맵
+     * @param bossRoomId 보스방 ID
+     * @param startRoomId 시작방 ID
+     * @return 전체지도 뷰 모델
+     * @throws MapViewGenerationException 현재 노드가 그래프에 존재하지 않을 때
+     */
+    public FullMapView createFullMap(
+            final MapGraph graph,
+            final String currentNodeId,
+            final Map<String, DungeonRoomState> roomStates,
+            final String bossRoomId,
+            final String startRoomId) {
         if (graph == null) {
             throw new MapViewGenerationException("graph must not be null");
         }
         final MapNode currentNode = resolveCurrentNode(graph, currentNodeId);
         final MapBounds bounds = computeBoundingBox(graph.nodes());
         final List<FullMapCell> cells =
-                buildDungeonFullMapCells(graph, currentNode, bounds, roomStates, bossRoomId);
+                buildDungeonFullMapCells(
+                        graph, currentNode, bounds, roomStates, bossRoomId, startRoomId);
 
         return new FullMapView(cells, bounds.columns(), bounds.rows());
     }
@@ -222,7 +271,9 @@ public class MapViewFactory {
     private List<MinimapCell> buildDungeonMinimapCells(
             final MapGraph graph,
             final MapNode currentNode,
-            final Map<String, DungeonRoomState> roomStates) {
+            final Map<String, DungeonRoomState> roomStates,
+            final String startRoomId,
+            final String bossRoomId) {
         final List<MinimapCell> cells = new ArrayList<>();
 
         for (int dx = MINIMAP_DX_MIN; dx <= MINIMAP_DX_MAX; dx++) {
@@ -241,7 +292,8 @@ public class MapViewFactory {
                     final int gridRow = MINIMAP_CENTER_ROW + dy;
                     final boolean isCurrent = node.id().equals(currentNode.id());
                     final boolean isCleared = state.cleared();
-                    final String type = isCleared ? TYPE_DUNGEON_CLEARED : TYPE_DUNGEON_UNCLEARED;
+                    final String type =
+                            resolveDungeonCellType(node.id(), isCleared, startRoomId, bossRoomId);
                     final boolean linkRight =
                             hasDungeonMinimapLink(graph, currentNode, node, 1, 0, roomStates);
                     final boolean linkDown =
@@ -366,7 +418,8 @@ public class MapViewFactory {
             final MapNode currentNode,
             final MapBounds bounds,
             final Map<String, DungeonRoomState> roomStates,
-            final String bossRoomId) {
+            final String bossRoomId,
+            final String startRoomId) {
         final List<FullMapCell> cells = new ArrayList<>();
 
         for (final MapNode node : graph.nodes()) {
@@ -380,7 +433,8 @@ public class MapViewFactory {
             final int gridRow = node.y() - bounds.minY() + 1;
             final boolean isCurrent = node.id().equals(currentNode.id());
             final boolean isCleared = state.cleared();
-            final String type = isCleared ? TYPE_DUNGEON_CLEARED : TYPE_DUNGEON_UNCLEARED;
+            final String type =
+                    resolveDungeonCellType(node.id(), isCleared, startRoomId, bossRoomId);
             final boolean linkRight = hasDungeonFullMapLink(graph, node, 1, 0, roomStates);
             final boolean linkDown = hasDungeonFullMapLink(graph, node, 0, 1, roomStates);
 
@@ -401,6 +455,20 @@ public class MapViewFactory {
                             visibleLinks));
         }
         return List.copyOf(cells);
+    }
+
+    private String resolveDungeonCellType(
+            final String roomId,
+            final boolean isCleared,
+            final String startRoomId,
+            final String bossRoomId) {
+        if (startRoomId != null && roomId.equals(startRoomId)) {
+            return TYPE_DUNGEON_START;
+        }
+        if (bossRoomId != null && roomId.equals(bossRoomId)) {
+            return TYPE_DUNGEON_BOSS;
+        }
+        return isCleared ? TYPE_DUNGEON_CLEARED : TYPE_DUNGEON_UNCLEARED;
     }
 
     private String resolveDungeonNodeDisplayName(

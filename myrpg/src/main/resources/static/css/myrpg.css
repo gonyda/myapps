@@ -402,9 +402,11 @@
          * 맵 유형별 색상 (확장 가능).
          * 새 유형 추가 시 .type-{name} 규칙만 늘리면 됨.
          */
-        .node.type-town,    .dot.type-town    { background: #6b93bf; }   /* 마을 (연파랑) */
+        .node.type-town,    .dot.type-town,
+        .node.type-dungeon-start, .dot.type-dungeon-start { background: #6b93bf; }   /* 마을 / 던전 시작방 (연파랑) */
         .node.type-field,   .dot.type-field   { background: #7bb07b; }   /* 자유필드 (연초록) */
-        .node.type-dungeon, .dot.type-dungeon { background: #c08585; }   /* 던전 (연빨강) */
+        .node.type-dungeon, .dot.type-dungeon,
+        .node.type-dungeon-boss, .dot.type-dungeon-boss { background: #c08585; }   /* 던전 / 던전 보스방 (연빨강) */
         .node.type-dungeon-cleared,   .dot.type-dungeon-cleared   { background: #e2e8f0; }   /* 던전 클리어 방 (밝은 실버/아이보리) */
         .node.type-dungeon-uncleared, .dot.type-dungeon-uncleared { background: #475569; }   /* 던전 미클리어 방 (슬레이트 회색) */
 

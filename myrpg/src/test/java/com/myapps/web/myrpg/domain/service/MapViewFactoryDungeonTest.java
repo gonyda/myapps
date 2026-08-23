@@ -67,18 +67,25 @@ class MapViewFactoryDungeonTest {
     }
 
     @Test
-    @DisplayName("클리어된 방은 dungeon-cleared, 미클리어 방은 dungeon-uncleared 타입이 부여된다")
-    void should_applyClearedAndUnclearedTypes_when_minimapCreatedForDungeon() {
+    @DisplayName(
+            "시작방은 dungeon-start, 보스방은 dungeon-boss, 일반 클리어 방은 dungeon-cleared, 일반 미클리어 방은 dungeon-uncleared 타입이 부여된다")
+    void should_applyCorrectTypes_when_minimapCreatedForDungeon() {
         // given
         final MapNode r0 = createNode("room-0-0", "시작방", 0, 0, List.of("room-1-0"));
-        final MapNode r1 = createNode("room-1-0", "던전 방", 1, 0, List.of("room-0-0"));
-        final MapGraph graph = new MapGraph(List.of(r0, r1), List.of(), "room-0-0");
+        final MapNode r1 = createNode("room-1-0", "던전 방", 1, 0, List.of("room-0-0", "room-2-0"));
+        final MapNode r2 = createNode("room-2-0", "던전 방", 2, 0, List.of("room-1-0", "room-3-0"));
+        final MapNode r3 = createNode("room-3-0", "보스방", 3, 0, List.of("room-2-0"));
+        final MapGraph graph = new MapGraph(List.of(r0, r1, r2, r3), List.of(), "room-0-0");
 
         final Map<String, DungeonRoomState> roomStates =
                 Map.of(
                         "room-0-0", new DungeonRoomState("room-0-0", true, true, List.of()),
-                        "room-1-0",
-                                new DungeonRoomState("room-1-0", false, true, List.of("spider")));
+                        "room-1-0", new DungeonRoomState("room-1-0", true, true, List.of()),
+                        "room-2-0",
+                                new DungeonRoomState("room-2-0", false, true, List.of("spider")),
+                        "room-3-0",
+                                new DungeonRoomState(
+                                        "room-3-0", false, true, List.of("giant-spider")));
 
         final DungeonInstance dungeon =
                 new DungeonInstance(
@@ -86,7 +93,7 @@ class MapViewFactoryDungeonTest {
                         "alby",
                         "alby-entrance",
                         "room-0-0",
-                        "room-1-0",
+                        "room-3-0",
                         "room-0-0",
                         graph,
                         roomStates);
@@ -105,12 +112,28 @@ class MapViewFactoryDungeonTest {
                         .filter(c -> c.nodeId().equals("room-1-0"))
                         .findFirst()
                         .orElseThrow();
+        final MinimapCell cell2 =
+                minimap.cells().stream()
+                        .filter(c -> c.nodeId().equals("room-2-0"))
+                        .findFirst()
+                        .orElseThrow();
+        final MinimapCell cell3 =
+                minimap.cells().stream()
+                        .filter(c -> c.nodeId().equals("room-3-0"))
+                        .findFirst()
+                        .orElseThrow();
 
-        assertThat(cell0.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_CLEARED);
+        assertThat(cell0.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_START);
         assertThat(cell0.current()).isTrue();
 
-        assertThat(cell1.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_UNCLEARED);
+        assertThat(cell1.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_CLEARED);
         assertThat(cell1.current()).isFalse();
+
+        assertThat(cell2.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_UNCLEARED);
+        assertThat(cell2.current()).isFalse();
+
+        assertThat(cell3.type()).isEqualTo(MapViewFactory.TYPE_DUNGEON_BOSS);
+        assertThat(cell3.current()).isFalse();
     }
 
     @Test

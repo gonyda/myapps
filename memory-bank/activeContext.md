@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-23 12:40 (Asia/Seoul)
+> 최종 업데이트: 2026-08-23 17:22 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -18,40 +18,46 @@
 - **AI Agent 아키텍처 & 5대 품질 가드레일**: `AGENTS.md`, `rules/`, `memory-bank/`, `skills/sdd/SKILL.md`, Spotless + Error Prone + ArchUnit + JaCoCo + PMD/CPD 가드레일 구축.
 - **011 알비 던전 시스템 (`.kiro/specs/myrpg/011-dungeon-system/`)**: 프로시저럴 던전 생성 엔진(`DungeonGenerator`), 안개 탐색, 연쇄 전투(10%), 턴제 방 이동 및 백트래킹 완료.
 - **012 디펜스 및 카운터 어택 스킬 재설계 (`.kiro/specs/myrpg/012-defense-counter-skill-redesign/`)**: 디펜스 100% 완전 방어(0 피격), 랭크별 스태미나 감소, 랭크업 영구 스탯 보너스 완료.
-- **카운터 어택 밸런스 정상화 (`skills/myrpg-data-balance/`)**: 내 공격력 기준 전환, F 90% ~ MASTER 160%, 크리티컬 보너스 +10%p(+100) 반영 완료.
-- **013 액티브 전조 반응 전투 시스템 (`.kiro/specs/myrpg/013-active-telegraph-combat/`)**:
-  - 2단계 턴 사이클 (대치 ⏸️ ↔ 공방 ⚡) 및 B안 직관형 전조 뱃지(일반공격 1.0s, 강공격 1.5s, 방어태세 1.5s) 시스템 완성.
-  - 도메인/DTO 확장(`BattleState`, `BattleView`), 서비스 계층(`startClash`, `takeTurn("timeout")` 무방비 피격), 컨트롤러(`POST /battle/clash`), 프론트엔드 UI(`battle-view.html`, `myrpg.css`, `myrpg.js` 실시간 타이머 및 alert 제거) 구현 및 검증 완료.
+- **013 액티브 전조 반응 전투 시스템 (`.kiro/specs/myrpg/013-active-telegraph-combat/`)**: 2단계 턴 사이클, B안 직관형 전조 뱃지, 타임아웃 무방비 피격, 스킬 alert 제거, 전체 가드레일 검증 완료.
+- **던전 미니맵 노드 색상 구분 개선 (`MapViewFactory`, `myrpg.css`)**: 시작방(파란색: `#6b93bf`), 보스방(빨간색: `#c08585`), 일반 클리어방(실버: `#e2e8f0`), 일반 미클리어방(슬레이트 회색: `#475569`) 적용 완료.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
-- **013 액티브 전조 반응 전투 시스템 전체 마일스톤(A~E) 완료**:
-  - 도메인/영속성 계층: `standby`, `currentMonsterIntent` 필드 및 기본값 영속성 처리 완료.
-  - 비즈니스 로직 계층: 공방 개시, 타임아웃 무방비 피격, 상성 해결 후 대치 복귀, 자원 부족 비차감 유지, 활 1턴 선제 사격 보장 완료.
-  - 웹 컨트롤러 계층: `POST /battle/clash` 엔드포인트 및 모델 속성 동기화 완료.
-  - 프론트엔드 계층: `.battle-stance-area` 전조 뱃지 및 카운트다운 타이머 바, 대치 중 스킬 비활성화, alert 팝업 제거 및 `VisualJsPreservation` 회귀 테스트 전수 통과.
-  - 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) 및 전체 1,081개 테스트 전수 통과 완료.
+- **던전 미니맵 노드 색상 구분 수정 및 5대 가드레일 검증 완료**:
+  - `MapViewFactory`에 `TYPE_DUNGEON_START`, `TYPE_DUNGEON_BOSS` 상수 및 미니맵/전체지도 셀 타입 매핑 적용.
+  - `myrpg.css`에 `.type-dungeon-start` (파란색, 마을과 동일), `.type-dungeon-boss` (빨간색, 던전 입구와 동일) 스타일 반영.
+  - `docs/todo.md` 해당 항목 완료 처리.
 
 ---
 
 ## 3. 최근 변경사항 및 확정 설계값 (Recent Changes & Decisions)
 
-- **[2026-08-23] 013 프론트엔드 UI/UX 연동 (마일스톤 D: Task 15~19)**
-  - `battle-view.html`: `.battle-stance-area`(대치 뱃지 + `[⚔️ 공방 개시]` 버튼, 공방 뱃지 + 실시간 게이지 바), `#battleSkills` 대치 중 비활성화 및 null-safe 반복문, `[도망]` 대치 조건부 노출 반영.
-  - `myrpg.css`: B안 전조 뱃지(`.stance-badge`, `.badge-standby`, `.badge-stance-normal`, `.badge-stance-heavy`, `.badge-stance-defense`), 실시간 타이머 바(`.clash-timer-wrap`, `.clash-timer-bar`), 공방 개시 버튼(`.btn-clash-start`), 비활성화 스킬 버튼(`.disabled-skills .battle-skill-btn`) 스타일 추가.
-  - `myrpg.js`: `swapBattleResponse(html)` 공통화, `startClash()`, `initClashTimer()`(CSS width 트랜지션 애니메이션 & duration 경과 시 timeout 전송), `battleTurn()` 및 `handleTurnResultSignal()`에서 alert 제거.
-  - `VisualJsPreservationAndJsonLoadingIntegrationTest.java`: 신규 전투 함수(`startClash`, `initClashTimer`, `swapBattleResponse`) 및 템플릿 마커 검증 확장 통과.
-- **[2026-08-23] 013 전체 통합 검증 및 품질 가드레일 (마일스톤 E: Task 20~22)**
-  - `mvn -B -q spotless:apply -pl myrpg && mvn -B clean install -pl myrpg -am` 성공.
-  - `codegraph sync` 인덱스 최신화 완료.
+- **[2026-08-23] 던전 미니맵 노드 색상 적용**:
+  - 시작방: `dungeon-start` (파란색 `#6b93bf`)
+  - 보스방: `dungeon-boss` (빨간색 `#c08585`)
+  - 일반 클리어 방: `dungeon-cleared` (밝은 실버 `#e2e8f0`)
+  - 일반 미클리어 방: `dungeon-uncleared` (회색 `#475569`)
+- **[2026-08-23] `docs/todo.md` 잔여 핵심 시스템 기획 확정**:
+  - **던전 연쇄 전투(Cascade Battle) 메카닉**:
+    - 방 대기 몬스터 소모가 아닌, 처치한 몬스터와 동일 개체의 추가 난입(체인 스폰) 연속 전투.
+    - 연쇄 전투가 몇 차례 발생하든 승리 후 방 복귀 시 **원래 교전했던 1마리만 방 목록에서 차감**되어 잔여 대기 몬스터(`[흰 거미, 붉은 거미]`) 정상 보존. N차 연속 발동 지원.
+  - **디펜스 스킬 메카닉 재설계**:
+    - 100% 완전 방어(0 피해) 폐지 $\rightarrow$ 캐릭터 방어력(DEF) + 랭크별 피해 경감률(%) 기반 공식으로 개편.
+    - 디펜스 방어 성공 시 다음 턴 확정 선제 공격권 부여 (유저/몬스터 공통 적용).
+  - **경험치 곡선 완화 & 로그 수량 표기**:
+    - 초중반 레벨업 필요 경험치 곡선 완화.
+    - 다중 개수 드랍(예: 포션 3개) 시 활동 로그에 `(3개)` 수량 명시.
+  - **던전 클리어 결과 팝업 UI**:
+    - 클리어 시 전용 모달 팝업으로 보상 목록 시각화 후 확인/닫기 시 입구 이동 및 로그 기록.
 
 ---
 
 ## 4. 다음 단계 (Next Steps)
 
-1. **사용자 확인 및 실전 플레이 테스트**:
-   - 브라우저에서 티르코네일 여우/거미 전투 진입 후 대치 페이즈(`[⚔️ 공방 개시]`) ➡️ 공방 페이즈(1.0~1.5초 타이머 및 전조 뱃지) ➡️ 스킬 상성 반응 및 타임아웃 피격 동작 확인.
-2. **신규 요구사항 또는 다음 스펙 작업 준비**:
-   - `docs/todo.md` 또는 차기 스펙(014) 기획 및 개발 진행.
+1. **`docs/todo.md` 1번 섹션 잔여 태스크 진행**:
+   - **던전 연쇄 전투 및 잔여 몬스터 처리 로직 개선** (최초 1마리만 차감, N차 연쇄 발동 지원)
+   - **던전 클리어 보상 결과 팝업 UI**
+2. **2번 섹션**: 디펜스 스킬 메카닉 재설계 (DEF 비례 피해 경감 & 확정 선제권)
+3. **3번 섹션**: 성장 & 보상 밸런스 및 로그 편의성 개선 (경험치 곡선 완화, 드랍 수량 명시)
