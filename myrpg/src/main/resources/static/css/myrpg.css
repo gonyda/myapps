@@ -2001,10 +2001,42 @@
             min-height: var(--touch);
             flex: 0 0 calc(50% - var(--gap) * 0.25);
             text-align: center;
+            transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
         }
 
         .battle-skill-btn:active {
             background: #4a3a3a;
+        }
+
+        /* 선택된 스킬 버튼 스타일 (황금빛 네온 하이라이트) */
+        .battle-skill-btn.selected {
+            background: #523824;
+            color: #ffffff;
+            border: 1px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.3);
+            font-weight: bold;
+            transform: scale(1.03);
+        }
+
+        /* 자원 부족 시 흔들림 애니메이션 */
+        .battle-skill-btn.insufficient-shake {
+            animation: skill-insufficient-shake 0.35s ease-in-out;
+            border-color: #ff4444 !important;
+            color: #ff8888;
+        }
+
+        @keyframes skill-insufficient-shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        /* 공방 턴 전송 중 스킬 영역 잠금 */
+        .clash-submitting .battle-skill-btn {
+            pointer-events: none;
+            opacity: 0.85;
         }
 
         .flee-btn {

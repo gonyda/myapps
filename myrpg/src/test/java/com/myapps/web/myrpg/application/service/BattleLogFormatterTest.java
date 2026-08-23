@@ -239,6 +239,27 @@ class BattleLogFormatterTest {
     }
 
     @Test
+    @DisplayName("선제 공격 기회에서 방어 스킬 사용 시 0 피해와 방어 태세 로그를 남긴다")
+    void should_logDefenseStance_when_firstStrikeWithDefenseSkill() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        DEFENSE_SKILL,
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        0,
+                        0,
+                        false,
+                        true,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("선제 공격 기회였으나 디펜스(방어) 태세를 취했다!");
+    }
+
+    @Test
     @DisplayName("마법 캐스팅 실패 시 몬스터 공격 로그만 남긴다")
     void should_logOnlyMonsterAttack_when_castFailureAndMonsterAttacks() {
         final BattleLogInput input =

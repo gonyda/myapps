@@ -609,6 +609,10 @@ public class BattleService {
             final Monster monster,
             final Skill skill,
             final SkillTalent equippedTalent) {
+        if (skill.type() == SkillType.DEFENSE) {
+            return new TurnCombatResult(0, 0, false, false, false, false, true, List.of());
+        }
+
         final int playerAttack = attackPower(progress, equippedTalent);
         final int multiplier = resolvePlayerMultiplier(skill, progress);
         final int effectiveCritical = resolveEffectivePlayerCritical(skill, progress);

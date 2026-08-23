@@ -56,10 +56,12 @@
         <button th:each="skill : ${skills != null ? skills : battleView.skills}"
                 th:text="${skill.label()}"
                 th:attr="data-skill-id=${skill.id()},
-                         data-skill-label=${skill.label()}"
+                         data-skill-label=${skill.label()},
+                         data-resource-kind=${skill.resourceKind()},
+                         data-resource-cost=${skill.resourceCost()}"
                 class="battle-skill-btn"
                 th:disabled="${battleView != null && battleView.standby}"
-                onclick="battleTurn(this.getAttribute('data-skill-id'))">
+                onclick="selectBattleSkill(this)">
             스킬
         </button>
     </div>

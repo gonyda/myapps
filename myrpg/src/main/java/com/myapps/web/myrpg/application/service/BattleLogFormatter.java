@@ -63,6 +63,11 @@ public class BattleLogFormatter {
         }
 
         final String prefix = input.skillLabel() + "(" + input.playerType().label() + ")";
+        if (input.playerDamage() <= 0) {
+            lines.add("선제 공격 기회였으나 " + prefix + " 태세를 취했다!");
+            return;
+        }
+
         if (isMultiHit(input)) {
             lines.add("선제 공격! " + prefix + " " + input.playerHits().size() + "연타");
             lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));

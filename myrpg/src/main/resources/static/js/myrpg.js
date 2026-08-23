@@ -340,9 +340,99 @@ function encounterMonster(monsterId) {
 }
 
 var clashTimerTimeoutId = null;
+var selectedSkillId = null;
+var clashSubmitting = false;
+
+// ===== 플레이어 현재 자원 조회 헬퍼 =====
+function getPlayerCurrentResource(resourceKind) {
+    var upperKind = (resourceKind || "").toUpperCase();
+    var selector = "";
+    if (upperKind === "STAMINA") {
+        selector = ".stat .bar.stamina .bar-text";
+    } else if (upperKind === "MP" || upperKind === "MANA") {
+        selector = ".stat .bar.mp .bar-text";
+    } else if (upperKind === "HP") {
+        selector = ".stat .bar.hp .bar-text";
+    }
+
+    if (!selector) {
+        return 9999;
+    }
+
+    var el = document.querySelector(selector);
+    if (!el || !el.textContent) {
+        return 9999;
+    }
+
+    var parts = el.textContent.split("/");
+    if (parts.length > 0) {
+        var val = parseInt(parts[0].trim(), 10);
+        return isNaN(val) ? 9999 : val;
+    }
+    return 9999;
+}
+
+// ===== 클라이언트 측 활동 로그 추가 헬퍼 =====
+function addClientActionLog(message) {
+    var actionLog = document.querySelector(".action-log");
+    if (!actionLog) {
+        return;
+    }
+    var entry = document.createElement("div");
+    entry.className = "log-entry combat";
+    entry.textContent = message;
+    actionLog.appendChild(entry);
+    actionLog.scrollTop = actionLog.scrollHeight;
+}
+
+// ===== 스킬 선택 및 자원 검사 (A안: 재클릭 시 토글 해제) =====
+function selectBattleSkill(btn) {
+    if (clashSubmitting) {
+        return;
+    }
+    var skillsContainer = document.getElementById("battleSkills");
+    if (skillsContainer && skillsContainer.classList.contains("disabled-skills")) {
+        return;
+    }
+
+    var skillId = btn.getAttribute("data-skill-id");
+    var resourceKind = btn.getAttribute("data-resource-kind") || "STAMINA";
+    var resourceCost = parseInt(btn.getAttribute("data-resource-cost"), 10) || 0;
+    var currentRes = getPlayerCurrentResource(resourceKind);
+
+    // 자원 부족 시: 선택 불가 + 흔들림 피드백 + 로그 출력
+    if (currentRes < resourceCost) {
+        btn.classList.remove("insufficient-shake");
+        void btn.offsetWidth; // reflow trigger
+        btn.classList.add("insufficient-shake");
+
+        var kindLabel = (resourceKind.toUpperCase() === "MP" || resourceKind.toUpperCase() === "MANA")
+            ? "마나" : (resourceKind.toUpperCase() === "HP" ? "생명력" : "스태미나");
+        addClientActionLog(kindLabel + "이(가) 부족합니다.");
+        return;
+    }
+
+    // 이미 선택된 스킬 클릭 시: 토글 해제 (A안)
+    if (btn.classList.contains("selected") || selectedSkillId === skillId) {
+        btn.classList.remove("selected");
+        selectedSkillId = null;
+        return;
+    }
+
+    // 새로운 스킬 선택: 기존 선택 해제 후 현재 스킬 하이라이트
+    var allSkillButtons = document.querySelectorAll(".battle-skill-btn");
+    for (var i = 0; i < allSkillButtons.length; i++) {
+        allSkillButtons[i].classList.remove("selected");
+    }
+    btn.classList.add("selected");
+    selectedSkillId = skillId;
+}
 
 // ===== 공방 응답 DOM 교체 공통 함수 =====
 function swapBattleResponse(html) {
+    selectedSkillId = null;
+    clashSubmitting = false;
+
     if (!html) {
         return;
     }
@@ -386,6 +476,8 @@ function swapBattleResponse(html) {
 
 // ===== 전투 시작: POST /battle/start → top-bar + .center + action-log 교체 =====
 function startBattle(monsterId) {
+    selectedSkillId = null;
+    clashSubmitting = false;
     fetch("/battle/start?monsterId=" + encodeURIComponent(monsterId), { method: "POST" })
         .then(function (response) {
             if (!response.ok) {
@@ -401,6 +493,8 @@ function startBattle(monsterId) {
 
 // ===== 전투 뷰 갱신 (기습 후 battle-view 로드) =====
 function fetchBattleView() {
+    selectedSkillId = null;
+    clashSubmitting = false;
     fetch("/")
         .then(function (r) { return r.text(); })
         .then(function (html) {
@@ -410,6 +504,8 @@ function fetchBattleView() {
 
 // ===== 공방 개시: POST /battle/clash → 전조 뱃지 & 실시간 타이머 가동 =====
 function startClash() {
+    selectedSkillId = null;
+    clashSubmitting = false;
     fetch("/battle/clash", { method: "POST" })
         .then(function (response) {
             if (!response.ok) {
@@ -423,12 +519,15 @@ function startClash() {
         });
 }
 
-// ===== 타이머 게이지 시작 및 타임아웃 예약 =====
+// ===== 타이머 게이지 시작 및 태세 준비 완료 시 최종 스킬 전송 예약 =====
 function initClashTimer() {
     var timerBar = document.getElementById("clashTimerBar");
     if (!timerBar) {
         return;
     }
+
+    selectedSkillId = null;
+    clashSubmitting = false;
 
     var durationMs = parseInt(timerBar.getAttribute("data-duration"), 10) || 1500;
 
@@ -442,9 +541,18 @@ function initClashTimer() {
         clearTimeout(clashTimerTimeoutId);
     }
 
-    // 시간 초과 시 자동으로 timeout 전송
+    // 몬스터의 태세 준비 시간 종료 시 최종 선택된 스킬(또는 timeout) 전송
     clashTimerTimeoutId = setTimeout(function () {
-        battleTurn("timeout");
+        clashSubmitting = true;
+        var skillsArea = document.getElementById("battleSkills");
+        if (skillsArea) {
+            skillsArea.classList.add("clash-submitting");
+        }
+        if (selectedSkillId) {
+            battleTurn(selectedSkillId);
+        } else {
+            battleTurn("timeout");
+        }
     }, durationMs);
 }
 
@@ -472,6 +580,8 @@ function flee() {
         clearTimeout(clashTimerTimeoutId);
         clashTimerTimeoutId = null;
     }
+    selectedSkillId = null;
+    clashSubmitting = false;
     fetch("/battle/flee", { method: "POST" })
         .then(function (response) {
             if (!response.ok) {

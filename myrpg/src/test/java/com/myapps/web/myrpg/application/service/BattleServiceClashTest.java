@@ -602,6 +602,40 @@ class BattleServiceClashTest {
     }
 
     @Test
+    @DisplayName("플레이어 선제권 턴에서 디펜스 스킬 사용 시 0 피해로 처리되고 선제권이 NONE으로 소비된다")
+    void
+            takeTurn_WithPlayerPreemptive_WhenDefenseSkillUsed_DealsZeroDamage_AndResetsPreemptiveParty() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.PLAYER);
+        state.setStandby(false);
+        state.setTurnCount(2);
+
+        final DefenseSkill defense =
+                new DefenseSkill(
+                        "defense",
+                        "디펜스",
+                        SkillType.DEFENSE,
+                        SkillTalent.COMMON,
+                        3,
+                        Map.of(),
+                        Map.of(),
+                        "방어 태세를 취해 적의 일반 공격을 방어합니다.");
+        when(skillCatalogService.byId("defense")).thenReturn(Optional.of(defense));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "defense"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "defense")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "defense");
+
+        assertThat(result.firstStrike()).isTrue();
+        assertThat(result.playerDamage()).isZero();
+        assertThat(result.monsterDamage()).isZero();
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
+        assertThat(result.combatLines()).containsExactly("선제 공격 기회였으나 디펜스(방어) 태세를 취했다!");
+    }
+
+    @Test
     @DisplayName("몬스터 방어 태세에 유저가 일반공격을 쓰면 다음 턴 선제권이 MONSTER로 저장된다")
     void takeTurn_PlayerNormalVsMonsterDefense_GrantsMonsterPreemptiveNextTurn() {
         final CharacterProgress progress = createProgress(100);
