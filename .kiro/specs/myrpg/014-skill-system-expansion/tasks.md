@@ -88,6 +88,7 @@
   - [ ] 9.7 `takeTurn()` 디버프(`rage_impact`) 분기: 다음 일반/강공격 피해 +30% 증폭 (궁극기 증폭 제외)
   - [ ] 9.8 턴 종료 메디테이션 발동: 공방 완료 후 다음 턴 개시 전 시점에 `MP +1~+5` 자연 회복 (필드 미회복)
   - [ ] 9.9 전투 승리 처리: 몬스터 처치 시 보유한 모든 궁극기 `ultimateCooldown` 1회씩 차감
+  - [ ] 9.10 `BattleLogFormatter.java` 확장: 신규 스킬 타입(궁극기, 힐링, 마나실드 흡수, CC 속박/빙결, 독 도트, 방어 관통, 피해 증폭, 메디테이션 재생) 전용 전투 로그 멘트 포맷팅 구현
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.2, 3.4, 4.1, 4.3, 4.4, 4.5, 5.1, 5.2, 5.3, 5.4, 5.5, 6.4, 6.5_ / _Design: 3.2_
 
 - [ ] 10. 서비스 계층 단위 및 PBT 테스트 작성
@@ -95,6 +96,7 @@
   - [ ] 10.2 `BattleServiceUltimateTest.java`[신규] — **Property 4** 궁극기 절대우위 및 쿨타임 차감 검증
   - [ ] 10.3 `BattleServiceManaShieldTest.java`[신규] — **Property 5** 마나 실드 감쇄 및 전가 검증
   - [ ] 10.4 `BattleServiceMeditationPropertyTest.java`[신규, jqwik] — **Property 7** 턴 종료 메디테이션 회복 검증
+  - [ ] 10.5 `BattleLogFormatterTest.java` 확장 — 신규 7종 스킬 타입 및 특수 상태이상 로그 멘트 생성 전수 검증
   - _Validates: Requirements 3.2, 4.1, 4.4, 6.4, 7.2_ / _Design: 5.0_
 
 - [ ] 11. **체크포인트 B** — 서비스 계층 빌드 & 단위/PBT 테스트 검증
