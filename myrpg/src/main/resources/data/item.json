@@ -26,7 +26,10 @@
     "type": "weapon",
     "kind": "one_handed_sword",
     "bonuses": [
-      { "target": "STR", "amount": 5 }
+      {
+        "target": "STR",
+        "amount": 5
+      }
     ],
     "maxDurability": 20
   },
@@ -36,7 +39,10 @@
     "type": "weapon",
     "kind": "two_handed_sword",
     "bonuses": [
-      { "target": "STR", "amount": 10 }
+      {
+        "target": "STR",
+        "amount": 10
+      }
     ],
     "maxDurability": 20
   },
@@ -46,7 +52,10 @@
     "type": "armor",
     "kind": "shield",
     "bonuses": [
-      { "target": "DEF", "amount": 5 }
+      {
+        "target": "DEF",
+        "amount": 5
+      }
     ],
     "maxDurability": 20
   },
@@ -56,7 +65,10 @@
     "type": "armor",
     "kind": "armor_body",
     "bonuses": [
-      { "target": "DEF", "amount": 5 }
+      {
+        "target": "DEF",
+        "amount": 5
+      }
     ],
     "maxDurability": 20
   },
@@ -66,8 +78,14 @@
     "type": "weapon",
     "kind": "bow",
     "bonuses": [
-      { "target": "DEX", "amount": 10 },
-      { "target": "CRITICAL", "amount": 10 }
+      {
+        "target": "DEX",
+        "amount": 10
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 10
+      }
     ],
     "maxDurability": 20
   },
@@ -77,7 +95,10 @@
     "type": "weapon",
     "kind": "wand",
     "bonuses": [
-      { "target": "INT", "amount": 5 }
+      {
+        "target": "INT",
+        "amount": 5
+      }
     ],
     "maxDurability": 20
   },
@@ -87,7 +108,10 @@
     "type": "weapon",
     "kind": "staff",
     "bonuses": [
-      { "target": "INT", "amount": 10 }
+      {
+        "target": "INT",
+        "amount": 10
+      }
     ],
     "maxDurability": 20
   },
@@ -97,7 +121,10 @@
     "type": "armor",
     "kind": "helmet",
     "bonuses": [
-      { "target": "DEF", "amount": 3 }
+      {
+        "target": "DEF",
+        "amount": 3
+      }
     ],
     "maxDurability": 20
   },
@@ -107,7 +134,10 @@
     "type": "armor",
     "kind": "gloves",
     "bonuses": [
-      { "target": "DEF", "amount": 2 }
+      {
+        "target": "DEF",
+        "amount": 2
+      }
     ],
     "maxDurability": 20
   },
@@ -117,7 +147,10 @@
     "type": "armor",
     "kind": "boots",
     "bonuses": [
-      { "target": "DEF", "amount": 2 }
+      {
+        "target": "DEF",
+        "amount": 2
+      }
     ],
     "maxDurability": 20
   },
@@ -127,7 +160,10 @@
     "type": "weapon",
     "kind": "one_handed_sword",
     "bonuses": [
-      { "target": "STR", "amount": 8 }
+      {
+        "target": "STR",
+        "amount": 8
+      }
     ],
     "maxDurability": 15,
     "buyPrice": 300
@@ -138,9 +174,716 @@
     "type": "weapon",
     "kind": "one_handed_sword",
     "bonuses": [
-      { "target": "STR", "amount": 12 }
+      {
+        "target": "STR",
+        "amount": 12
+      }
     ],
     "maxDurability": 15,
     "buyPrice": 700
+  },
+  {
+    "id": "wooden_blade",
+    "name": "목검",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      {
+        "target": "STR",
+        "amount": 3
+      }
+    ],
+    "maxDurability": 10,
+    "buyPrice": 80
+  },
+  {
+    "id": "dagger",
+    "name": "단검",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      {
+        "target": "STR",
+        "amount": 4
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 60
+      }
+    ],
+    "maxDurability": 25,
+    "buyPrice": 150
+  },
+  {
+    "id": "short_bow",
+    "name": "숏보우",
+    "type": "weapon",
+    "kind": "bow",
+    "bonuses": [
+      {
+        "target": "DEX",
+        "amount": 8
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 350
+  },
+  {
+    "id": "fire_wand",
+    "name": "파이어 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 8
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 400
+  },
+  {
+    "id": "ice_wand",
+    "name": "아이스 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 6
+      },
+      {
+        "target": "MP",
+        "amount": 15
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 400
+  },
+  {
+    "id": "lightning_wand",
+    "name": "라이트닝 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 6
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 40
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 400
+  },
+  {
+    "id": "round_shield",
+    "name": "라운드 실드",
+    "type": "armor",
+    "kind": "shield",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 6
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 300
+  },
+  {
+    "id": "cuirassier_helm",
+    "name": "퀴러시어 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 4
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 250
+  },
+  {
+    "id": "light_leather_mail",
+    "name": "라이트 레더 메일",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 7
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 450
+  },
+  {
+    "id": "studded_cuirassier",
+    "name": "스터디드 퀴러시어",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 9
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 600
+  },
+  {
+    "id": "leather_gloves",
+    "name": "가죽 장갑",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 3
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 150
+  },
+  {
+    "id": "cores_thief_gloves",
+    "name": "코레스 시프 글러브",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 2
+      },
+      {
+        "target": "DEX",
+        "amount": 3
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 220
+  },
+  {
+    "id": "lorica_gloves",
+    "name": "로리카 장갑",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 2
+      },
+      {
+        "target": "STAMINA",
+        "amount": 10
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 200
+  },
+  {
+    "id": "leather_shoes",
+    "name": "가죽 신발",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 3
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 150
+  },
+  {
+    "id": "hunter_boots",
+    "name": "헌터 부츠",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 2
+      },
+      {
+        "target": "DEX",
+        "amount": 3
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 220
+  },
+  {
+    "id": "combat_shoes",
+    "name": "컴뱃 슈즈",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 3
+      },
+      {
+        "target": "HP",
+        "amount": 10
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 250
+  },
+  {
+    "id": "thief_shoes",
+    "name": "시프 슈즈",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 2
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 250
+  },
+  {
+    "id": "broadsword",
+    "name": "브로드소드",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      {
+        "target": "STR",
+        "amount": 14
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 50
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1000
+  },
+  {
+    "id": "bastard_sword",
+    "name": "바스타드 소드",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      {
+        "target": "STR",
+        "amount": 18
+      }
+    ],
+    "maxDurability": 14,
+    "buyPrice": 1100
+  },
+  {
+    "id": "battle_sword",
+    "name": "배틀 소드",
+    "type": "weapon",
+    "kind": "one_handed_sword",
+    "bonuses": [
+      {
+        "target": "STR",
+        "amount": 20
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 1500
+  },
+  {
+    "id": "long_bow",
+    "name": "롱보우",
+    "type": "weapon",
+    "kind": "bow",
+    "bonuses": [
+      {
+        "target": "DEX",
+        "amount": 16
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 50
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1200
+  },
+  {
+    "id": "composite_bow",
+    "name": "콤포짓 보우",
+    "type": "weapon",
+    "kind": "bow",
+    "bonuses": [
+      {
+        "target": "DEX",
+        "amount": 14
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 80
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 1100
+  },
+  {
+    "id": "crossbow",
+    "name": "크로스보우",
+    "type": "weapon",
+    "kind": "bow",
+    "bonuses": [
+      {
+        "target": "DEX",
+        "amount": 15
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 100
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1300
+  },
+  {
+    "id": "phoenix_fire_wand",
+    "name": "피닉스 파이어 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 16
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1200
+  },
+  {
+    "id": "crown_ice_wand",
+    "name": "크라운 아이스 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 13
+      },
+      {
+        "target": "MP",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1200
+  },
+  {
+    "id": "crystal_lightning_wand",
+    "name": "크리스탈 라이트닝 완드",
+    "type": "weapon",
+    "kind": "wand",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 13
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 70
+      }
+    ],
+    "maxDurability": 15,
+    "buyPrice": 1200
+  },
+  {
+    "id": "trinity_staff",
+    "name": "트리니티 스태프",
+    "type": "weapon",
+    "kind": "staff",
+    "bonuses": [
+      {
+        "target": "INT",
+        "amount": 22
+      },
+      {
+        "target": "MP",
+        "amount": 40
+      }
+    ],
+    "maxDurability": 20,
+    "buyPrice": 2000
+  },
+  {
+    "id": "kite_shield",
+    "name": "카이트 실드",
+    "type": "armor",
+    "kind": "shield",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 10
+      },
+      {
+        "target": "HP",
+        "amount": 20
+      }
+    ],
+    "maxDurability": 18,
+    "buyPrice": 900
+  },
+  {
+    "id": "ring_mail_helm",
+    "name": "링메일 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 6
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 600
+  },
+  {
+    "id": "cross_full_helm",
+    "name": "크로스 풀 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 9
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 950
+  },
+  {
+    "id": "wing_half_helm",
+    "name": "윙 하프 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 7
+      },
+      {
+        "target": "CRITICAL",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 850
+  },
+  {
+    "id": "bone_helm",
+    "name": "본 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 7
+      },
+      {
+        "target": "STR",
+        "amount": 4
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 850
+  },
+  {
+    "id": "spiked_helm",
+    "name": "스파이크 헬름",
+    "type": "armor",
+    "kind": "helmet",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 7
+      },
+      {
+        "target": "STAMINA",
+        "amount": 15
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 800
+  },
+  {
+    "id": "drandos_leather_mail",
+    "name": "드란도스 레더 메일",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 12
+      },
+      {
+        "target": "DEX",
+        "amount": 6
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 1300
+  },
+  {
+    "id": "three_belt_leather_mail",
+    "name": "쓰리 벨트 레더 메일",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 12
+      },
+      {
+        "target": "STAMINA",
+        "amount": 25
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 1200
+  },
+  {
+    "id": "melka_chain_mail",
+    "name": "멜카 체인 메일",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 14
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 1400
+  },
+  {
+    "id": "surcoat_chain_mail",
+    "name": "서코트 체인 메일",
+    "type": "armor",
+    "kind": "armor_body",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 16
+      },
+      {
+        "target": "HP",
+        "amount": 30
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 1700
+  },
+  {
+    "id": "counter_gauntlet",
+    "name": "카운터 건틀렛",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 5
+      },
+      {
+        "target": "STR",
+        "amount": 4
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 650
+  },
+  {
+    "id": "tork_hunter_gloves",
+    "name": "토크 헌터 글러브",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 4
+      },
+      {
+        "target": "DEX",
+        "amount": 5
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 650
+  },
+  {
+    "id": "ulna_protector_gloves",
+    "name": "울나 프로텍터 글러브",
+    "type": "armor",
+    "kind": "gloves",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 4
+      },
+      {
+        "target": "STAMINA",
+        "amount": 15
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 600
+  },
+  {
+    "id": "long_greaves",
+    "name": "롱 그레이브",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 6
+      },
+      {
+        "target": "HP",
+        "amount": 15
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 750
+  },
+  {
+    "id": "leather_protector",
+    "name": "레더 프로텍터",
+    "type": "armor",
+    "kind": "boots",
+    "bonuses": [
+      {
+        "target": "DEF",
+        "amount": 5
+      },
+      {
+        "target": "DEX",
+        "amount": 4
+      }
+    ],
+    "maxDurability": 16,
+    "buyPrice": 650
   }
 ]
