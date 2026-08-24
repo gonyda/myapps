@@ -289,7 +289,11 @@ public class DungeonService {
                         : List.of();
 
         for (final DroppedItem item : droppedItems) {
-            inventoryService.acquireItem(item.itemId(), item.quantity());
+            if (character == null || character.getId() == null || character.getId().equals(1L)) {
+                inventoryService.acquireItem(item.itemId(), item.quantity());
+            } else {
+                inventoryService.acquireItem(character.getId(), item.itemId(), item.quantity());
+            }
         }
 
         actionLog.add(spec.name() + "을(를) 완전히 정복했습니다!", LOG_TYPE_DUNGEON);

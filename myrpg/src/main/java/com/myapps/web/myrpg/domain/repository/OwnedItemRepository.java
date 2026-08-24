@@ -23,6 +23,15 @@ public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
     List<OwnedItem> findByStorageOrderById(StorageKind storage);
 
     /**
+     * 특정 캐릭터의 지정된 저장 위치의 모든 보유 아이템을 ID 오름차순(획득순)으로 조회한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param storage 저장 위치 (INVENTORY 또는 BANK)
+     * @return 해당 저장소의 아이템 목록 (없으면 빈 리스트)
+     */
+    List<OwnedItem> findByCharacterIdAndStorageOrderById(Long characterId, StorageKind storage);
+
+    /**
      * 지정된 저장 위치에서 특정 아이템 ID를 가진 보유 아이템을 조회한다.
      *
      * <p>소비형(포션) 스택 누적 시 기존 행을 찾기 위해 사용된다.
@@ -32,6 +41,17 @@ public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
      * @return 해당 아이템, 없으면 빈 Optional
      */
     Optional<OwnedItem> findByStorageAndItemId(StorageKind storage, String itemId);
+
+    /**
+     * 특정 캐릭터의 지정된 저장 위치에서 특정 아이템 ID를 가진 보유 아이템을 조회한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param storage 저장 위치
+     * @param itemId 아이템 카탈로그 ID
+     * @return 해당 아이템, 없으면 빈 Optional
+     */
+    Optional<OwnedItem> findByCharacterIdAndStorageAndItemId(
+            Long characterId, StorageKind storage, String itemId);
 
     /**
      * 지정된 저장 위치의 총 항목 수(스택 종류 수)를 반환한다.
@@ -44,6 +64,15 @@ public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
     long countByStorage(StorageKind storage);
 
     /**
+     * 특정 캐릭터의 지정된 저장 위치 총 항목 수를 반환한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param storage 저장 위치
+     * @return 항목 수
+     */
+    long countByCharacterIdAndStorage(Long characterId, StorageKind storage);
+
+    /**
      * 지정된 저장 위치에서 장착 중인 장비 목록을 조회한다.
      *
      * <p>착용 규칙 충돌 검사 및 장비 보너스 합산에 사용된다.
@@ -52,4 +81,31 @@ public interface OwnedItemRepository extends JpaRepository<OwnedItem, Long> {
      * @return 장착 중인 아이템 목록 (없으면 빈 리스트)
      */
     List<OwnedItem> findByStorageAndEquippedTrue(StorageKind storage);
+
+    /**
+     * 특정 캐릭터의 지정된 저장 위치에서 장착 중인 장비 목록을 조회한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param storage 저장 위치
+     * @return 장착 중인 아이템 목록 (없으면 빈 리스트)
+     */
+    List<OwnedItem> findByCharacterIdAndStorageAndEquippedTrue(
+            Long characterId, StorageKind storage);
+
+    /**
+     * 특정 캐릭터의 보유 아이템 단건을 식별자로 조회한다.
+     *
+     * @param id 보유 아이템 PK
+     * @param characterId 캐릭터 식별자
+     * @return 해당 아이템, 없으면 빈 Optional
+     */
+    Optional<OwnedItem> findByIdAndCharacterId(Long id, Long characterId);
+
+    /**
+     * 특정 캐릭터의 모든 보유 아이템 목록을 조회한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @return 전체 보유 아이템 목록
+     */
+    List<OwnedItem> findByCharacterId(Long characterId);
 }

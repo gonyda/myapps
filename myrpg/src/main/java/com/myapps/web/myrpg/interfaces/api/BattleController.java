@@ -8,10 +8,10 @@ import com.myapps.web.myrpg.application.dto.DungeonClearView;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.TopBarView;
+import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
-import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.ActionLogEntry;
@@ -20,6 +20,8 @@ import com.myapps.web.myrpg.domain.model.BattleTurnResult;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Controller;
@@ -47,7 +49,6 @@ public class BattleController {
     private final BattleService battleService;
     private final CharacterService characterService;
     private final MonsterService monsterService;
-    private final MapService mapService;
     private final PlayScreenViewHelper playScreenViewHelper;
     private final ActionLog actionLog;
     private final NodeViewAssembler nodeViewAssembler;
@@ -59,7 +60,6 @@ public class BattleController {
      * @param battleService 전투 오케스트레이션 서비스
      * @param characterService 캐릭터 저장/로드 서비스
      * @param monsterService 몬스터 카탈로그 조회 서비스
-     * @param mapService 맵 데이터 서비스 (미니맵 렌더용)
      * @param playScreenViewHelper 뷰 모델 조립 헬퍼
      * @param actionLog 세션 보관 행동 로그
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
@@ -69,7 +69,6 @@ public class BattleController {
             final BattleService battleService,
             final CharacterService characterService,
             final MonsterService monsterService,
-            final MapService mapService,
             final PlayScreenViewHelper playScreenViewHelper,
             final ActionLog actionLog,
             final NodeViewAssembler nodeViewAssembler,
@@ -77,7 +76,6 @@ public class BattleController {
         this.battleService = battleService;
         this.characterService = characterService;
         this.monsterService = monsterService;
-        this.mapService = mapService;
         this.playScreenViewHelper = playScreenViewHelper;
         this.actionLog = actionLog;
         this.nodeViewAssembler = nodeViewAssembler;
@@ -91,12 +89,14 @@ public class BattleController {
      * 기록하고 전투 응답 뷰(상단바·몬스터 HP 바·스킬 버튼·도망 버튼·미니맵·활동 로그)를 렌더한다.
      *
      * @param monsterId 전투 대상 몬스터 ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 전투 응답 프래그먼트 뷰 이름
      */
     @PostMapping("/start")
-    public String start(@RequestParam final String monsterId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String start(
+            @RequestParam final String monsterId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final BattleState state = battleService.start(progress, monsterId, false);
 
         if (state == null) {
@@ -116,6 +116,10 @@ public class BattleController {
         return "fragments/battle-view :: battle-response";
     }
 
+    public String start(final String monsterId, final Model model) {
+        return start(monsterId, null, model);
+    }
+
     /**
      * 액티브 공방 페이즈를 개시하고 갱신된 프래그먼트를 반환한다.
      *
@@ -123,12 +127,13 @@ public class BattleController {
      * BattleService#startClash(CharacterProgress, BattleState)}를 호출하여 몬스터 전조 뱃지와 실시간 타이머 게이지가 포함된
      * 전투 응답 프래그먼트를 렌더한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 전투 응답 프래그먼트 뷰 이름
      */
     @PostMapping("/clash")
-    public String clash(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String clash(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final Optional<BattleState> stateOpt = battleService.resumeIfActive(progress);
 
         if (stateOpt.isEmpty()) {
@@ -141,6 +146,10 @@ public class BattleController {
         return "fragments/battle-view :: battle-response";
     }
 
+    public String clash(final Model model) {
+        return clash(null, model);
+    }
+
     /**
      * 전투 턴을 진행하고 갱신된 프래그먼트들을 반환한다.
      *
@@ -148,12 +157,14 @@ public class BattleController {
      * 응답(top-bar+battle-view+action-log 교체) 또는 전투 종료 응답(top-bar+center+action-log 복원)을 렌더한다.
      *
      * @param skillId 플레이어가 선택한 스킬 ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 전투 응답 프래그먼트 뷰 이름
      */
     @PostMapping("/turn")
-    public String turn(@RequestParam final String skillId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String turn(
+            @RequestParam final String skillId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final Optional<BattleState> stateOpt = battleService.resumeIfActive(progress);
 
         if (stateOpt.isEmpty()) {
@@ -175,17 +186,22 @@ public class BattleController {
         return buildOngoingBattleResponse(progress, state, model, result);
     }
 
+    public String turn(final String skillId, final Model model) {
+        return turn(skillId, null, model);
+    }
+
     /**
      * 도망을 시도하고 결과에 따른 프래그먼트를 반환한다.
      *
      * <p>50% 확률로 성공하며, 성공 시 일반 플레이 화면으로 복원하고 실패 시 전투를 계속한다. 도망 실패로 사망하면 사망 처리 후 복원한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 전투 응답 프래그먼트 뷰 이름
      */
     @PostMapping("/flee")
-    public String flee(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String flee(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final Optional<BattleState> stateOpt = battleService.resumeIfActive(progress);
 
         if (stateOpt.isEmpty()) {
@@ -203,20 +219,29 @@ public class BattleController {
         return buildOngoingBattleResponse(progress, state, model, result);
     }
 
+    public String flee(final Model model) {
+        return flee(null, model);
+    }
+
     /**
      * 현재 착용 무기 기준의 전투 스킬 목록 프래그먼트를 반환한다.
      *
      * <p>무기 교체 후 {@code #battleSkills} 영역만 실시간으로 갱신할 때 사용한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 전투 스킬 서브프래그먼트 뷰 이름
      */
     @GetMapping("/skills")
-    public String skills(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String skills(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final List<BattleSkillButton> skills = battleService.combatSkills(progress);
         model.addAttribute("skills", skills);
         return "fragments/battle-view :: battle-skills";
+    }
+
+    public String skills(final Model model) {
+        return skills(null, model);
     }
 
     // ─── Private: battle view building ──────────────────────────────────────
@@ -331,5 +356,16 @@ public class BattleController {
         return new PlayScreenView(
                 topBar, minimap, null, null, null, null, null, null, null, null, null, null, null,
                 logs, null);
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);
+            if (sessionUser instanceof UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 }

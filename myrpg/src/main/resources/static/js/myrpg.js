@@ -1257,3 +1257,21 @@ function getCurrentSkillTab() {
         default: return 'all';
     }
 }
+
+// ===== 퀵 로그인: 원클릭 ID/PW 입력 및 폼 자동 제출 (015) =====
+function quickLogin(username, password) {
+    var usernameInput = document.getElementById("username");
+    var passwordInput = document.getElementById("password");
+    var loginForm = document.getElementById("loginForm");
+
+    if (usernameInput) {
+        usernameInput.value = username;
+    }
+    if (passwordInput) {
+        passwordInput.value = password;
+    }
+    if (loginForm) {
+        loginForm.submit();
+    }
+}
+

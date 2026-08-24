@@ -48,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 검사로 착용 규칙을 구현하며, 소비형(POTION)은 스택 누적, 장비(WEAPON/ARMOR)는 개별 인스턴스로 관리한다.
  */
 @Service
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public class InventoryService {
 
     private static final int MAX_CAPACITY = 30;
@@ -124,8 +125,18 @@ public class InventoryService {
         final EquipmentKind targetKind = equipmentItem.kind();
         final Set<EquipSlot> requiredSlots = targetKind.requiredSlots();
 
-        final List<OwnedItem> equippedItems =
-                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        List<OwnedItem> equippedItems = null;
+        if (target.getCharacterId() == null || target.getCharacterId().equals(1L)) {
+            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        }
+        if ((equippedItems == null || equippedItems.isEmpty()) && target.getCharacterId() != null) {
+            equippedItems =
+                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                            target.getCharacterId(), StorageKind.INVENTORY);
+        }
+        if (equippedItems == null) {
+            equippedItems = List.of();
+        }
 
         for (final EquipSlot slot : requiredSlots) {
             final Optional<OwnedItem> occupier = findSlotOccupier(equippedItems, slot, target);
@@ -175,10 +186,10 @@ public class InventoryService {
             throw new IllegalStateException("포션이 아닌 아이템은 사용할 수 없습니다: " + target.getItemId());
         }
 
-        final CharacterProgress character = loadCharacter();
+        final CharacterProgress character = loadCharacter(target.getCharacterId());
         final VitalMax vitalMax =
                 statProgression.vitalMaxFor(character.getCurrentLevel(), character.getTalent());
-        final VitalMax equipVitalBonus = equippedBonus().vitalBonus();
+        final VitalMax equipVitalBonus = equippedBonus(character.getId()).vitalBonus();
         final List<CharacterSkill> ownedSkills =
                 characterSkillRepository.findByCharacterId(character.getId());
         final VitalMax skillVitalBonus =
@@ -230,7 +241,7 @@ public class InventoryService {
         if (catalogItem.type() == ItemType.POTION) {
             movePotionToStorage(target, StorageKind.BANK);
         } else {
-            checkCapacity(StorageKind.BANK);
+            checkCapacity(target.getCharacterId(), StorageKind.BANK);
             target.moveTo(StorageKind.BANK);
         }
     }
@@ -258,7 +269,7 @@ public class InventoryService {
         if (catalogItem.type() == ItemType.POTION) {
             movePotionToStorage(target, StorageKind.INVENTORY);
         } else {
-            checkCapacity(StorageKind.INVENTORY);
+            checkCapacity(target.getCharacterId(), StorageKind.INVENTORY);
             target.moveTo(StorageKind.INVENTORY);
         }
     }
@@ -271,9 +282,38 @@ public class InventoryService {
      *
      * @return 장비 STAT 보너스와 VITAL 보너스를 담은 결과
      */
+    /**
+     * 기본 캐릭터의 장착 장비 보너스 합산을 계산한다.
+     *
+     * @return 장비 STAT 보너스와 VITAL 보너스를 담은 결과
+     */
     public EquippedBonusResult equippedBonus() {
-        final List<OwnedItem> equippedItems =
-                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        return equippedBonus(null);
+    }
+
+    /**
+     * 특정 캐릭터의 장착 장비 보너스 합산을 계산한다.
+     *
+     * <p>인벤토리({@code storage=INVENTORY})에서 장착 중인({@code equipped=true}) 장비의 {@link EquipBonus} 목록을
+     * 순회하여 {@link BonusTarget#kind()}로 분기하여 STAT 계열은 {@link Stats}로, VITAL 계열은 {@link VitalMax}로
+     * 합산한다.
+     *
+     * @param characterId 캐릭터 식별자 (null일 경우 전체/기본)
+     * @return 장비 STAT 보너스와 VITAL 보너스를 담은 결과
+     */
+    public EquippedBonusResult equippedBonus(final Long characterId) {
+        List<OwnedItem> equippedItems = null;
+        if (characterId == null || characterId.equals(1L)) {
+            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        }
+        if ((equippedItems == null || equippedItems.isEmpty()) && characterId != null) {
+            equippedItems =
+                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                            characterId, StorageKind.INVENTORY);
+        }
+        if (equippedItems == null) {
+            equippedItems = List.of();
+        }
 
         Stats statBonus = Stats.ZERO;
         VitalMax vitalBonus = new VitalMax(0, 0, 0);
@@ -300,37 +340,69 @@ public class InventoryService {
     }
 
     /**
-     * 인벤토리 팝업 뷰를 조립한다.
-     *
-     * <p>인벤토리({@code storage=INVENTORY}) 아이템을 획득순(id 오름차순)으로 조회하고 각 행을 {@link OwnedItemView}로 변환하여
-     * 보유 골드와 함께 반환한다. 상세 설명({@code detailLines})은 렌더 시점에 임베드되어 별도 서버 요청 없이 표시된다.
+     * 기본 캐릭터 인벤토리 팝업 뷰를 조립한다.
      *
      * @param gold 캐릭터 보유 골드
      * @return 인벤토리 뷰 (보유 골드 + 아이템 목록)
      */
     public InventoryView buildInventoryView(final long gold) {
+        return buildInventoryView(null, gold);
+    }
+
+    /**
+     * 특정 캐릭터의 인벤토리 팝업 뷰를 조립한다.
+     *
+     * <p>인벤토리({@code storage=INVENTORY}) 아이템을 획득순(id 오름차순)으로 조회하고 각 행을 {@link OwnedItemView}로 변환하여
+     * 보유 골드와 함께 반환한다.
+     *
+     * @param characterId 캐릭터 식별자 (null일 경우 전체/기본)
+     * @param gold 캐릭터 보유 골드
+     * @return 인벤토리 뷰 (보유 골드 + 아이템 목록)
+     */
+    public InventoryView buildInventoryView(final Long characterId, final long gold) {
         final List<OwnedItem> inventoryItems =
-                ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.INVENTORY)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
         final List<OwnedItemView> views =
                 inventoryItems.stream().map(this::toOwnedItemView).toList();
         return new InventoryView(gold, views);
     }
 
     /**
-     * 은행 팝업 뷰를 조립한다.
-     *
-     * <p>은행({@code storage=BANK})과 소지품({@code storage=INVENTORY}) 아이템을 각각 획득순(id 오름차순)으로 조회하고 행 뷰로
-     * 변환하여 은행/보유 골드와 함께 반환한다.
+     * 기본 캐릭터 은행 팝업 뷰를 조립한다.
      *
      * @param gold 캐릭터 보유 골드
      * @param bankGold 은행 보관 골드
      * @return 은행 뷰 (은행·보유 골드 + 은행/소지품 목록)
      */
     public BankView buildBankView(final long gold, final long bankGold) {
+        return buildBankView(null, gold, bankGold);
+    }
+
+    /**
+     * 특정 캐릭터의 은행 팝업 뷰를 조립한다.
+     *
+     * <p>은행({@code storage=BANK})과 소지품({@code storage=INVENTORY}) 아이템을 각각 획득순(id 오름차순)으로 조회하고 행 뷰로
+     * 변환하여 은행/보유 골드와 함께 반환한다.
+     *
+     * @param characterId 캐릭터 식별자 (null일 경우 전체/기본)
+     * @param gold 캐릭터 보유 골드
+     * @param bankGold 은행 보관 골드
+     * @return 은행 뷰 (은행·보유 골드 + 은행/소지품 목록)
+     */
+    public BankView buildBankView(final Long characterId, final long gold, final long bankGold) {
         final List<OwnedItem> bankItems =
-                ownedItemRepository.findByStorageOrderById(StorageKind.BANK);
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.BANK)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.BANK);
         final List<OwnedItem> inventoryItems =
-                ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.INVENTORY)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
 
         final List<OwnedItemView> bankViews =
                 bankItems.stream().map(this::toOwnedItemView).toList();
@@ -340,16 +412,26 @@ public class InventoryService {
         return new BankView(bankGold, gold, bankViews, inventoryViews);
     }
 
+    /** 기본 캐릭터(1L)에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다. */
+    @Transactional
+    public void seedDefault() {
+        seedDefault(1L);
+    }
+
     /**
-     * 신규 캐릭터에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다.
+     * 특정 캐릭터에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다.
      *
      * <p>초보자 무기 5종(한손검·양손검·활·완드·스태프)과 방어구 5종 (방패·갑옷·투구·장갑·부츠) 각 1개(내구도 20), 생명력 30 포션 5개, 마나 30 포션
      * 5개, 스태미나 30 포션 5개를 인벤토리에 생성한다. 이 중 한손검·방패·갑옷·투구·장갑·부츠를 기본 장착하고 나머지 무기는 미장착 상태로 지급한다.
+     *
+     * @param characterId 아이템을 지급할 대상 캐릭터 ID
      */
     @Transactional
-    public void seedDefault() {
+    public void seedDefault(final Long characterId) {
+        final Long targetCharId = characterId != null ? characterId : 1L;
         ownedItemRepository.save(
                 new OwnedItem(
+                        targetCharId,
                         SEED_HP_POTION_ID,
                         DEFAULT_POTION_QUANTITY,
                         StorageKind.INVENTORY,
@@ -357,6 +439,7 @@ public class InventoryService {
                         0));
         ownedItemRepository.save(
                 new OwnedItem(
+                        targetCharId,
                         SEED_MP_POTION_ID,
                         DEFAULT_POTION_QUANTITY,
                         StorageKind.INVENTORY,
@@ -364,6 +447,7 @@ public class InventoryService {
                         0));
         ownedItemRepository.save(
                 new OwnedItem(
+                        targetCharId,
                         SEED_STAMINA_POTION_ID,
                         DEFAULT_POTION_QUANTITY,
                         StorageKind.INVENTORY,
@@ -371,30 +455,37 @@ public class InventoryService {
                         0));
 
         // 무기 5종: 한손검만 기본 장착, 나머지는 인벤토리 보유
-        seedEquipment(SEED_ONE_HAND_SWORD_ID, true);
-        seedEquipment(SEED_TWO_HAND_SWORD_ID, false);
-        seedEquipment(SEED_BOW_ID, false);
-        seedEquipment(SEED_WAND_ID, false);
-        seedEquipment(SEED_STAFF_ID, false);
+        seedEquipment(targetCharId, SEED_ONE_HAND_SWORD_ID, true);
+        seedEquipment(targetCharId, SEED_TWO_HAND_SWORD_ID, false);
+        seedEquipment(targetCharId, SEED_BOW_ID, false);
+        seedEquipment(targetCharId, SEED_WAND_ID, false);
+        seedEquipment(targetCharId, SEED_STAFF_ID, false);
 
         // 방어구 5종: 방패·갑옷·투구·장갑·부츠 모두 기본 장착
-        seedEquipment(SEED_SHIELD_ID, true);
-        seedEquipment(SEED_ARMOR_ID, true);
-        seedEquipment(SEED_HELMET_ID, true);
-        seedEquipment(SEED_GLOVES_ID, true);
-        seedEquipment(SEED_BOOTS_ID, true);
+        seedEquipment(targetCharId, SEED_SHIELD_ID, true);
+        seedEquipment(targetCharId, SEED_ARMOR_ID, true);
+        seedEquipment(targetCharId, SEED_HELMET_ID, true);
+        seedEquipment(targetCharId, SEED_GLOVES_ID, true);
+        seedEquipment(targetCharId, SEED_BOOTS_ID, true);
     }
 
     /**
      * 초보자용 장비 1개를 최대 내구도로 인벤토리에 지급한다.
      *
+     * @param characterId 대상 캐릭터 ID
      * @param itemId 지급할 장비 아이템 id
      * @param equipped 기본 장착 여부
      */
-    private void seedEquipment(final String itemId, final boolean equipped) {
+    private void seedEquipment(
+            final Long characterId, final String itemId, final boolean equipped) {
         ownedItemRepository.save(
                 new OwnedItem(
-                        itemId, 1, StorageKind.INVENTORY, equipped, EQUIPMENT_MAX_DURABILITY));
+                        characterId,
+                        itemId,
+                        1,
+                        StorageKind.INVENTORY,
+                        equipped,
+                        EQUIPMENT_MAX_DURABILITY));
     }
 
     /**
@@ -429,32 +520,53 @@ public class InventoryService {
      */
     @Transactional
     public void acquireItem(final String itemId, final int quantity) {
+        acquireItem(null, itemId, quantity);
+    }
+
+    /**
+     * 특정 캐릭터의 인벤토리에 아이템을 획득 처리한다.
+     *
+     * @param characterId 대상 캐릭터 식별자
+     * @param itemId 획득할 아이템 카탈로그 ID
+     * @param quantity 획득 수량
+     */
+    @Transactional
+    public void acquireItem(final Long characterId, final String itemId, final int quantity) {
         final Optional<Item> catalogOpt = itemCatalogService.byId(itemId);
         if (catalogOpt.isEmpty()) {
             return;
         }
         final Item catalogItem = catalogOpt.get();
+        final Long targetCharId = characterId != null ? characterId : 1L;
 
         if (catalogItem.type() == ItemType.POTION) {
-            acquirePotionItem(itemId, quantity);
+            acquirePotionItem(targetCharId, itemId, quantity);
         } else {
-            checkCapacity(StorageKind.INVENTORY);
+            checkCapacity(targetCharId, StorageKind.INVENTORY);
             final int maxDurability = resolveMaxDurability(itemId);
             ownedItemRepository.save(
-                    new OwnedItem(itemId, 1, StorageKind.INVENTORY, false, maxDurability));
+                    new OwnedItem(
+                            targetCharId, itemId, 1, StorageKind.INVENTORY, false, maxDurability));
         }
     }
 
     private void acquirePotionItem(final String itemId, final int quantity) {
+        acquirePotionItem(1L, itemId, quantity);
+    }
+
+    private void acquirePotionItem(
+            final Long characterId, final String itemId, final int quantity) {
+        final Long targetCharId = characterId != null ? characterId : 1L;
         final Optional<OwnedItem> existingStack =
-                ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, itemId);
+                ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                        targetCharId, StorageKind.INVENTORY, itemId);
 
         if (existingStack.isPresent()) {
             existingStack.get().increaseQuantity(quantity);
         } else {
-            checkCapacity(StorageKind.INVENTORY);
+            checkCapacity(targetCharId, StorageKind.INVENTORY);
             ownedItemRepository.save(
-                    new OwnedItem(itemId, quantity, StorageKind.INVENTORY, false, 0));
+                    new OwnedItem(targetCharId, itemId, quantity, StorageKind.INVENTORY, false, 0));
         }
     }
 
@@ -468,9 +580,18 @@ public class InventoryService {
      * @return 전투에서 사용 가능한 스킬 버튼 목록
      */
     public List<BattleSkillButton> combatSkills(final CharacterProgress progress) {
-        final SkillTalent weaponTalent = resolveEquippedWeaponTalent();
-        final List<CharacterSkill> ownedSkills =
-                characterSkillRepository.findByCharacterId(progress.getId());
+        final Long charId = progress != null ? progress.getId() : null;
+        final SkillTalent weaponTalent = resolveEquippedWeaponTalent(charId);
+        List<CharacterSkill> ownedSkills = List.of();
+        if (charId != null) {
+            ownedSkills = characterSkillRepository.findByCharacterId(charId);
+        }
+        if (ownedSkills == null || ownedSkills.isEmpty()) {
+            ownedSkills = characterSkillRepository.findByCharacterId(null);
+        }
+        if (ownedSkills == null) {
+            ownedSkills = List.of();
+        }
 
         final List<BattleSkillButton> buttons = new ArrayList<>();
         for (final CharacterSkill characterSkill : ownedSkills) {
@@ -492,8 +613,18 @@ public class InventoryService {
     @Transactional
     public void reduceDurabilityAndAutoUnequip(
             final CharacterProgress progress, final double amount) {
-        final List<OwnedItem> equippedItems =
-                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        List<OwnedItem> equippedItems = List.of();
+        if (progress != null && progress.getId() != null) {
+            equippedItems =
+                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                            progress.getId(), StorageKind.INVENTORY);
+        }
+        if (equippedItems == null || equippedItems.isEmpty()) {
+            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        }
+        if (equippedItems == null) {
+            equippedItems = List.of();
+        }
 
         for (final OwnedItem equipped : equippedItems) {
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
@@ -645,15 +776,17 @@ public class InventoryService {
     }
 
     private void movePotionToStorage(final OwnedItem source, final StorageKind destination) {
+        final Long targetCharId = source.getCharacterId() != null ? source.getCharacterId() : 1L;
         final Optional<OwnedItem> existingStack =
-                ownedItemRepository.findByStorageAndItemId(destination, source.getItemId());
+                findStorageItem(targetCharId, destination, source.getItemId());
 
         if (existingStack.isPresent()) {
             existingStack.get().increaseQuantity(1);
             ownedItemRepository.save(existingStack.get());
         } else {
-            checkCapacity(destination);
-            final OwnedItem newItem = new OwnedItem(source.getItemId(), 1, destination, false, 0);
+            checkCapacity(targetCharId, destination);
+            final OwnedItem newItem =
+                    new OwnedItem(targetCharId, source.getItemId(), 1, destination, false, 0);
             ownedItemRepository.save(newItem);
         }
 
@@ -665,12 +798,56 @@ public class InventoryService {
         }
     }
 
-    private void checkCapacity(final StorageKind storage) {
-        final long currentCount = ownedItemRepository.countByStorage(storage);
-        if (currentCount >= MAX_CAPACITY) {
-            final String storageName = storage == StorageKind.INVENTORY ? "인벤토리" : "은행";
-            throw new InventoryFullException(storageName + "가 가득 찼습니다.");
+    private Optional<OwnedItem> findStorageItem(
+            final Long characterId, final StorageKind storage, final String itemId) {
+        if (characterId != null) {
+            final Optional<OwnedItem> item =
+                    ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                            characterId, storage, itemId);
+            if (item != null && item.isPresent()) {
+                return item;
+            }
         }
+        final Optional<OwnedItem> fallback =
+                ownedItemRepository.findByStorageAndItemId(storage, itemId);
+        return fallback != null ? fallback : Optional.empty();
+    }
+
+    private long countStorage(final Long characterId, final StorageKind storage) {
+        if (characterId != null) {
+            final long count =
+                    ownedItemRepository.countByCharacterIdAndStorage(characterId, storage);
+            if (count > 0) {
+                return count;
+            }
+        }
+        return ownedItemRepository.countByStorage(storage);
+    }
+
+    private void checkCapacity(final StorageKind storage) {
+        checkCapacity(1L, storage);
+    }
+
+    private void checkCapacity(final Long characterId, final StorageKind storage) {
+        final long currentCount = countStorage(characterId, storage);
+        if (currentCount >= MAX_CAPACITY) {
+            throw new InventoryFullException(storage.name() + " 용량(30)을 초과했습니다.");
+        }
+    }
+
+    private boolean hasCapacity(final StorageKind storage) {
+        return hasCapacity(1L, storage);
+    }
+
+    private boolean hasCapacity(final Long characterId, final StorageKind storage) {
+        return countStorage(characterId, storage) < MAX_CAPACITY;
+    }
+
+    private CharacterProgress loadCharacter(final Long characterId) {
+        if (characterId != null) {
+            return characterProgressRepository.findById(characterId).orElseGet(this::loadCharacter);
+        }
+        return loadCharacter();
     }
 
     private CharacterProgress loadCharacter() {
@@ -737,28 +914,30 @@ public class InventoryService {
         }
         final Item catalogItem = catalogOpt.get();
         final String itemName = catalogItem.name();
+        final Long charId = progress != null && progress.getId() != null ? progress.getId() : 1L;
 
         if (catalogItem.type() == ItemType.POTION) {
-            acquirePotion(droppedItem);
+            acquirePotion(charId, droppedItem);
         } else {
-            acquireEquipment(droppedItem, itemName);
+            acquireEquipment(charId, droppedItem, itemName);
         }
     }
 
-    private void acquirePotion(final DroppedItem droppedItem) {
+    private void acquirePotion(final Long characterId, final DroppedItem droppedItem) {
+        final Long targetCharId = characterId != null ? characterId : 1L;
         final Optional<OwnedItem> existingStack =
-                ownedItemRepository.findByStorageAndItemId(
-                        StorageKind.INVENTORY, droppedItem.itemId());
+                findStorageItem(targetCharId, StorageKind.INVENTORY, droppedItem.itemId());
 
         if (existingStack.isPresent()) {
             existingStack.get().increaseQuantity(droppedItem.quantity());
         } else {
-            if (isInventoryFull()) {
+            if (isInventoryFull(targetCharId)) {
                 logItemAcquireFailure(droppedItem.itemId());
                 return;
             }
             ownedItemRepository.save(
                     new OwnedItem(
+                            targetCharId,
                             droppedItem.itemId(),
                             droppedItem.quantity(),
                             StorageKind.INVENTORY,
@@ -767,19 +946,30 @@ public class InventoryService {
         }
     }
 
-    private void acquireEquipment(final DroppedItem droppedItem, final String itemName) {
-        if (isInventoryFull()) {
+    private void acquireEquipment(
+            final Long characterId, final DroppedItem droppedItem, final String itemName) {
+        final Long targetCharId = characterId != null ? characterId : 1L;
+        if (isInventoryFull(targetCharId)) {
             actionLog.add(itemName + " 획득 실패!", LOG_TYPE_ITEM);
             return;
         }
         final int maxDurability = resolveMaxDurability(droppedItem.itemId());
         ownedItemRepository.save(
                 new OwnedItem(
-                        droppedItem.itemId(), 1, StorageKind.INVENTORY, false, maxDurability));
+                        targetCharId,
+                        droppedItem.itemId(),
+                        1,
+                        StorageKind.INVENTORY,
+                        false,
+                        maxDurability));
+    }
+
+    private boolean isInventoryFull(final Long characterId) {
+        return countStorage(characterId, StorageKind.INVENTORY) >= MAX_CAPACITY;
     }
 
     private boolean isInventoryFull() {
-        return ownedItemRepository.countByStorage(StorageKind.INVENTORY) >= MAX_CAPACITY;
+        return isInventoryFull(1L);
     }
 
     private void logItemAcquireFailure(final String itemId) {
@@ -804,22 +994,59 @@ public class InventoryService {
      *
      * @return 장착 중인 무기의 재능 분류 (MELEE, ARCHERY, MAGIC, 또는 null)
      */
+    /**
+     * 기본 캐릭터의 현재 장착 중인 무기의 재능 분류를 반환한다.
+     *
+     * <p>무기를 장착하지 않았거나 알 수 없는 경우 {@code null}을 반환한다.
+     *
+     * @return 장착 중인 무기의 재능 분류 (MELEE, ARCHERY, MAGIC, 또는 null)
+     */
     public SkillTalent equippedWeaponTalent() {
-        return resolveEquippedWeaponTalent();
+        return resolveEquippedWeaponTalent(null);
     }
 
     /**
-     * 현재 활(BOW) 계열 무기를 장착하고 있는지 여부를 반환한다.
+     * 특정 캐릭터의 현재 장착 중인 무기의 재능 분류를 반환한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @return 장착 중인 무기의 재능 분류 (MELEE, ARCHERY, MAGIC, 또는 null)
+     */
+    public SkillTalent equippedWeaponTalent(final Long characterId) {
+        return resolveEquippedWeaponTalent(characterId);
+    }
+
+    /**
+     * 기본 캐릭터의 현재 활(BOW) 계열 무기 장착 여부를 반환한다.
      *
      * @return 활을 장착 중이면 {@code true}, 아니면 {@code false}
      */
     public boolean isBowEquipped() {
-        return resolveEquippedWeaponTalent() == SkillTalent.ARCHERY;
+        return isBowEquipped(null);
     }
 
-    private SkillTalent resolveEquippedWeaponTalent() {
-        final List<OwnedItem> equippedItems =
-                ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+    /**
+     * 특정 캐릭터의 현재 활(BOW) 계열 무기 장착 여부를 반환한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @return 활을 장착 중이면 {@code true}, 아니면 {@code false}
+     */
+    public boolean isBowEquipped(final Long characterId) {
+        return resolveEquippedWeaponTalent(characterId) == SkillTalent.ARCHERY;
+    }
+
+    private SkillTalent resolveEquippedWeaponTalent(final Long characterId) {
+        List<OwnedItem> equippedItems = List.of();
+        if (characterId != null) {
+            equippedItems =
+                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                            characterId, StorageKind.INVENTORY);
+        }
+        if (equippedItems == null || equippedItems.isEmpty()) {
+            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        }
+        if (equippedItems == null) {
+            equippedItems = List.of();
+        }
 
         for (final OwnedItem equipped : equippedItems) {
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());

@@ -25,6 +25,9 @@ public class OwnedItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "character_id", nullable = false)
+    private Long characterId = 1L;
+
     @Column(name = "item_id", nullable = false)
     private String itemId;
 
@@ -45,7 +48,7 @@ public class OwnedItem {
     protected OwnedItem() {}
 
     /**
-     * 전체 필드를 지정하는 생성자.
+     * 기본 캐릭터(1L) 기준 전체 필드를 지정하는 생성자.
      *
      * @param itemId 아이템 카탈로그 ID (item.json 참조)
      * @param quantity 보유 수량 (소비형 스택, 장비는 1)
@@ -59,11 +62,41 @@ public class OwnedItem {
             final StorageKind storage,
             final boolean equipped,
             final double currentDurability) {
+        this(1L, itemId, quantity, storage, equipped, currentDurability);
+    }
+
+    /**
+     * 캐릭터 식별자를 포함하여 전체 필드를 지정하는 생성자.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param itemId 아이템 카탈로그 ID (item.json 참조)
+     * @param quantity 보유 수량 (소비형 스택, 장비는 1)
+     * @param storage 저장 위치 (INVENTORY 또는 BANK)
+     * @param equipped 장착 여부 (INVENTORY 장비만 true 가능)
+     * @param currentDurability 현재 내구도 (장비만 의미, 포션은 0)
+     */
+    public OwnedItem(
+            final Long characterId,
+            final String itemId,
+            final int quantity,
+            final StorageKind storage,
+            final boolean equipped,
+            final double currentDurability) {
+        this.characterId = characterId;
         this.itemId = itemId;
         this.quantity = quantity;
         this.storage = storage;
         this.equipped = equipped;
         this.currentDurability = currentDurability;
+    }
+
+    /**
+     * 소유 캐릭터 식별자를 반환한다.
+     *
+     * @return 캐릭터 ID
+     */
+    public Long getCharacterId() {
+        return characterId;
     }
 
     /**

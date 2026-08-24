@@ -2,6 +2,7 @@ package com.myapps.web.myrpg.interfaces.api;
 
 import com.myapps.web.myrpg.application.dto.RepairItemView;
 import com.myapps.web.myrpg.application.dto.RepairView;
+import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
@@ -13,6 +14,8 @@ import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
+import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,25 +28,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 대장간 수리 팝업·1포인트 수리를 처리하는 컨트롤러.
+ * 대장간 내구도 1포인트 수리를 처리하는 컨트롤러.
  *
- * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며, 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
- *
- * <p>엔드포인트 개요:
- *
- * <ul>
- *   <li>{@code GET /repair} — 수리 팝업 fragment (닳은 장비만 목록)
- *   <li>{@code POST /repair} — 1포인트 수리 (95% 성공, 실패 시 골드 환불 없음)
- * </ul>
+ * <p>GET /repair로 수리 팝업(내구도가 닳은 장비 목록 + 수리비 + 성공률 95%)을 렌더하고, POST /repair로 1포인트 수리를 실행한 뒤 갱신된 팝업
+ * fragment를 반환한다.
  */
 @Controller
 @RequestMapping("/repair")
 public class RepairController {
 
     private static final String FRAGMENT_REPAIR_POPUP = "fragments/repair-popup :: repair-content";
-    private static final int REPAIR_SUCCESS_RATE_PERCENT = 95;
-    private static final double REPAIR_AMOUNT = 1.0;
     private static final String LOG_TYPE_ITEM = "item";
+    private static final int REPAIR_SUCCESS_RATE_PERCENT = 95;
+    private static final int REPAIR_AMOUNT = 1;
 
     private final CharacterService characterService;
     private final ShopService shopService;
@@ -57,12 +54,12 @@ public class RepairController {
      * RepairController를 생성한다.
      *
      * @param characterService 캐릭터 진행상황 서비스
-     * @param shopService 판매가 계산 서비스 (수리비 = 판매가)
-     * @param inventoryService 인벤토리 서비스 (아이템 상세 설명)
+     * @param shopService 상점 서비스 (판매가 산출 = 수리비)
+     * @param inventoryService 인벤토리 서비스 (설명문 생성)
      * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param ownedItemRepository 보유 아이템 리포지토리
-     * @param actionLog 활동 로그 (세션 스코프)
-     * @param random 수리 성공 판정용 Random (테스트 시 시드 고정 가능)
+     * @param ownedItemRepository 보유 아이템 저장소
+     * @param actionLog 세션 보관 행동 로그
+     * @param random 난수 발생기 (성공률 판정용)
      */
     public RepairController(
             final CharacterService characterService,
@@ -87,15 +84,26 @@ public class RepairController {
      * <p>인벤토리에서 내구도가 닳은 장비({@code ceil(currentDurability) < maxDurability})만 필터링하여 수리 목록을 조립한다. 장착
      * 중인 장비도 수리 대상에 포함된다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 수리 팝업 fragment 뷰 이름
      */
     @GetMapping
-    public String repairPopup(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final RepairView view = buildRepairView(progress.getGold());
+    public String repairPopup(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        final RepairView view = buildRepairView(progress.getId(), progress.getGold());
         model.addAttribute("repair", view);
         return FRAGMENT_REPAIR_POPUP;
+    }
+
+    /**
+     * 세션 없는 직접 호출을 위한 오버로드.
+     *
+     * @param model Spring MVC 모델
+     * @return 수리 팝업 fragment 뷰 이름
+     */
+    public String repairPopup(final Model model) {
+        return repairPopup(null, model);
     }
 
     /**
@@ -105,12 +113,14 @@ public class RepairController {
      * 확률로 성공하여 내구도가 +1 되고, 실패 시 내구도 변화 없이 골드만 소모된다.
      *
      * @param ownedItemId 수리할 보유 아이템 PK
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 수리 팝업 fragment 뷰 이름
      */
     @PostMapping
-    public String repair(@RequestParam final long ownedItemId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String repair(
+            @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final OwnedItem target =
                 ownedItemRepository
                         .findById(ownedItemId)
@@ -141,9 +151,20 @@ public class RepairController {
             characterService.saveTurn(progress);
         }
 
-        final RepairView view = buildRepairView(progress.getGold());
+        final RepairView view = buildRepairView(progress.getId(), progress.getGold());
         model.addAttribute("repair", view);
         return FRAGMENT_REPAIR_POPUP;
+    }
+
+    /**
+     * 세션 없는 직접 호출을 위한 오버로드.
+     *
+     * @param ownedItemId 수리할 보유 아이템 PK
+     * @param model Spring MVC 모델
+     * @return 수리 팝업 fragment 뷰 이름
+     */
+    public String repair(final long ownedItemId, final Model model) {
+        return repair(ownedItemId, null, model);
     }
 
     /**
@@ -151,12 +172,16 @@ public class RepairController {
      *
      * <p>인벤토리 장비 중 내구도가 닳은 장비만 {@link RepairItemView}로 변환한다.
      *
+     * @param characterId 캐릭터 식별자
      * @param currentGold 현재 보유 골드
      * @return 수리 팝업 뷰 모델
      */
-    private RepairView buildRepairView(final long currentGold) {
+    private RepairView buildRepairView(final Long characterId, final long currentGold) {
         final List<OwnedItem> inventoryItems =
-                ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.INVENTORY)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
 
         final List<RepairItemView> repairItems = new ArrayList<>();
         for (final OwnedItem owned : inventoryItems) {
@@ -179,5 +204,16 @@ public class RepairController {
                             inventoryService.describe(equipItem, owned)));
         }
         return new RepairView(List.copyOf(repairItems), currentGold);
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);
+            if (sessionUser instanceof UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 }

@@ -136,10 +136,15 @@ public class ShopService {
      * @param currentGold 현재 보유 골드
      * @return 상점 팝업 뷰
      */
-    public ShopView buildShopView(final String npcId, final long currentGold) {
+    public ShopView buildShopView(
+            final Long characterId, final String npcId, final long currentGold) {
         final List<ShopBuyItemView> buyItems = shopBuyList(npcId);
-        final List<ShopSellItemView> sellItems = buildSellList();
+        final List<ShopSellItemView> sellItems = buildSellList(characterId);
         return new ShopView(buyItems, sellItems, currentGold, npcId);
+    }
+
+    public ShopView buildShopView(final String npcId, final long currentGold) {
+        return buildShopView(null, npcId, currentGold);
     }
 
     /**
@@ -185,8 +190,21 @@ public class ShopService {
      * @return 판매 목록
      */
     public List<ShopSellItemView> buildSellList() {
+        return buildSellList(null);
+    }
+
+    /**
+     * 특정 캐릭터의 인벤토리 아이템 판매 목록을 조립한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @return 판매 목록
+     */
+    public List<ShopSellItemView> buildSellList(final Long characterId) {
         final List<OwnedItem> inventoryItems =
-                ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.INVENTORY)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
 
         final List<ShopSellItemView> result = new ArrayList<>();
         for (final OwnedItem owned : inventoryItems) {
@@ -243,8 +261,15 @@ public class ShopService {
             throw new IllegalArgumentException("상점에서 판매하지 않는 아이템입니다: " + itemId);
         }
 
-        progress.spendGold(item.buyPrice());
-        inventoryService.acquireItem(itemId, 1);
+        if (progress != null) {
+            progress.spendGold(item.buyPrice());
+        }
+
+        if (progress == null || progress.getId() == null || progress.getId().equals(1L)) {
+            inventoryService.acquireItem(itemId, 1);
+        } else {
+            inventoryService.acquireItem(progress.getId(), itemId, 1);
+        }
         actionLog.add("아이템을 구매했습니다: " + item.name(), LOG_TYPE_ITEM);
     }
 

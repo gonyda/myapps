@@ -212,7 +212,10 @@ public class BattleService {
                         .byId(state.getMonsterId())
                         .orElseThrow(() -> new IllegalStateException("몬스터 정보를 찾을 수 없습니다."));
 
-        final boolean isBow = inventoryService.isBowEquipped();
+        final boolean isBow =
+                (progress == null || progress.getId() == null || progress.getId().equals(1L))
+                        ? inventoryService.isBowEquipped()
+                        : inventoryService.isBowEquipped(progress.getId());
         final boolean bowFirstStrike = state.getTurnCount() == 1 && isBow;
         final PreemptiveParty preemptiveParty = state.getPreemptiveParty();
 
@@ -573,7 +576,7 @@ public class BattleService {
     private int attackPower(final CharacterProgress progress, final SkillTalent equippedTalent) {
         final Stats levelStats =
                 statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final EquippedBonusResult equipBonus = resolveEquippedBonus(progress);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
 
         final int totalStr = levelStats.str() + equipBonus.statBonus().str() + skillBonus.str();
@@ -828,7 +831,7 @@ public class BattleService {
     private int resolvePlayerDefense(final CharacterProgress progress) {
         final Stats levelStats =
                 statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final EquippedBonusResult equipBonus = resolveEquippedBonus(progress);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
         return levelStats.defense() + equipBonus.statBonus().defense() + skillBonus.defense();
     }
@@ -836,9 +839,21 @@ public class BattleService {
     private int resolvePlayerCritical(final CharacterProgress progress) {
         final Stats levelStats =
                 statProgression.levelStatsFor(progress.getCurrentLevel(), progress.getTalent());
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        final EquippedBonusResult equipBonus = resolveEquippedBonus(progress);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
         return levelStats.critical() + equipBonus.statBonus().critical() + skillBonus.critical();
+    }
+
+    private EquippedBonusResult resolveEquippedBonus(final CharacterProgress progress) {
+        if (progress == null || progress.getId() == null || progress.getId().equals(1L)) {
+            final EquippedBonusResult bonus = inventoryService.equippedBonus();
+            if (bonus != null) {
+                return bonus;
+            }
+        }
+        final EquippedBonusResult bonus =
+                inventoryService.equippedBonus(progress != null ? progress.getId() : null);
+        return bonus != null ? bonus : new EquippedBonusResult(Stats.ZERO, new VitalMax(0, 0, 0));
     }
 
     /**

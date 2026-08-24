@@ -23,6 +23,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.TalentType;
+import jakarta.servlet.http.HttpSession;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -123,9 +124,19 @@ public class PlayScreenController {
      * @param model Spring MVC 모델
      * @return 뷰 이름 {@code "play"}
      */
+    /**
+     * 플레이 화면을 렌더링한다.
+     *
+     * <p>캐릭터 진행상황을 로드(또는 기본 생성)하고, 활성 전투가 있으면 전투 뷰를 복원하여 {@code battleActive=true}로 진입시킨다. 없으면 현재
+     * 노드 기준의 미니맵/전체지도/상황 멘트/행동 로그를 조합하여 모델에 추가한 뒤 {@code play} 뷰를 반환한다.
+     *
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 뷰 이름 {@code "play"}
+     */
     @GetMapping("/")
-    public String playScreen(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String playScreen(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final Optional<BattleState> activeBattle = battleService.resumeIfActive(progress);
 
         if (activeBattle.isPresent()) {
@@ -169,12 +180,13 @@ public class PlayScreenController {
      *
      * <p>스킬 승급 등으로 스탯 보너스가 변경된 후 정보 팝업을 열 때 최신 데이터를 반영하기 위해 사용한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return info-content fragment 뷰 이름
      */
     @GetMapping("/info")
-    public String infoContent(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String infoContent(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final PlayScreenView view = buildViewFromProgress(progress);
         model.addAttribute("view", view);
         return "fragments/info-popup :: info-content";
@@ -188,12 +200,17 @@ public class PlayScreenController {
      *
      * @param dx X 좌표 오프셋
      * @param dy Y 좌표 오프셋
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/move-response"}
      */
     @PostMapping("/move")
-    public String move(@RequestParam final int dx, @RequestParam final int dy, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String move(
+            @RequestParam final int dx,
+            @RequestParam final int dy,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
 
         final Optional<BattleState> activeBattle = battleService.resumeIfActive(progress);
         if (activeBattle.isPresent()) {
@@ -239,12 +256,14 @@ public class PlayScreenController {
      * 재구성된다.
      *
      * @param npcId 대화 대상 NPC ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/npc-response"}
      */
     @PostMapping("/npc/talk")
-    public String talkToNpc(@RequestParam final String npcId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String talkToNpc(
+            @RequestParam final String npcId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
 
         final Optional<Npc> targetNpc = npcService.byId(npcId);
         final String dialogue =
@@ -270,12 +289,14 @@ public class PlayScreenController {
      * /battle/start}로 교체되어 실제 전투 턴 진입·데미지 계산·드랍 지급 흐름을 시작하게 된다.
      *
      * @param monsterId 조우 대상 몬스터 ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/monster-response"}
      */
     @PostMapping("/monster/encounter")
-    public String encounterMonster(@RequestParam final String monsterId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String encounterMonster(
+            @RequestParam final String monsterId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
 
         final Optional<Monster> targetMonster = monsterService.byId(monsterId);
 
@@ -301,14 +322,16 @@ public class PlayScreenController {
      * 활성 시 저장하지 않고 남은 시간을 안내하는 로그를 추가한다.
      *
      * @param talentParam 재능 상수명 (누락/이상값 시 MELEE 폴백)
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
      */
     @PostMapping("/rebirth")
     public String rebirth(
             @RequestParam(name = "talent", required = false) final String talentParam,
+            final HttpSession session,
             final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final TalentType talent = TalentType.fromNameOrFallback(talentParam, TalentType.MELEE);
         final RebirthResult result = progressionService.rebirth(progress, talent);
 
@@ -330,12 +353,13 @@ public class PlayScreenController {
     /**
      * 테스트 및 디버깅용 1,000 EXP 획득 치트를 처리하고 갱신된 프래그먼트를 반환한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
      */
     @PostMapping("/cheat/exp")
-    public String cheatExp(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String cheatExp(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         final com.myapps.web.myrpg.application.dto.LevelUpResult result =
                 progressionService.gainExperience(progress, 1000L);
         characterService.saveTurn(progress);
@@ -360,12 +384,13 @@ public class PlayScreenController {
     /**
      * 테스트 및 디버깅용 1,000 Gold 획득 치트를 처리하고 갱신된 프래그먼트를 반환한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름 {@code "fragments/progress-response"}
      */
     @PostMapping("/cheat/gold")
-    public String cheatGold(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String cheatGold(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         progress.gainGold(1000);
         characterService.saveTurn(progress);
         actionLog.add("테스트 치트: 1,000 Gold를 획득했습니다!", NOTIFICATION_TYPE);
@@ -373,6 +398,20 @@ public class PlayScreenController {
         final PlayScreenView view = buildViewFromProgress(progress);
         model.addAttribute("view", view);
         return "fragments/progress-response";
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser =
+                    session.getAttribute(
+                            com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor
+                                    .SESSION_USER_KEY);
+            if (sessionUser instanceof com.myapps.web.myrpg.application.dto.UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 
     /**

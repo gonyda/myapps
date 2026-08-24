@@ -1,9 +1,12 @@
 package com.myapps.web.myrpg.interfaces.api;
 
 import com.myapps.web.myrpg.application.dto.ShopView;
+import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.ShopService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,16 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 상점 팝업·구매·판매를 처리하는 컨트롤러.
+ * 상점 팝업·아이템 구매/판매를 처리하는 컨트롤러.
  *
  * <p>모든 응답은 Thymeleaf fragment 스왑 형태로 반환되며, 클라이언트(myrpg.js)가 DOM 교체로 소비한다.
  *
  * <p>엔드포인트 개요:
  *
  * <ul>
- *   <li>{@code GET /shop} — 상점 팝업 fragment (상점물건 위 / 소지품 아래 / 골드 하단)
- *   <li>{@code POST /shop/buy} — 아이템 1개 구매 후 갱신된 상점 fragment
- *   <li>{@code POST /shop/sell} — 아이템 1개 판매 후 갱신된 상점 fragment
+ *   <li>{@code GET /shop} — 상점 팝업 fragment (상단 상점 / 하단 소지품 + 골드)
+ *   <li>{@code POST /shop/buy} — 아이템 구매 후 갱신된 상점 fragment
+ *   <li>{@code POST /shop/sell} — 아이템 판매 후 갱신된 상점 fragment
  * </ul>
  */
 @Controller
@@ -36,7 +39,7 @@ public class ShopController {
     /**
      * ShopController를 생성한다.
      *
-     * @param shopService 상점 구매/판매/뷰 조립 서비스
+     * @param shopService 상점 거래 서비스
      * @param characterService 캐릭터 진행상황 서비스
      */
     public ShopController(final ShopService shopService, final CharacterService characterService) {
@@ -50,15 +53,23 @@ public class ShopController {
      * <p>대화 중인 NPC의 판매 목록과 인벤토리 판매 대상 목록을 조립하여 상점물건 위 / 소지품 아래 / 골드 하단 구성의 팝업을 렌더한다.
      *
      * @param npcId 대화 중인 NPC ID (없으면 빈 구매 목록)
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 상점 팝업 fragment 뷰 이름
      */
     @GetMapping
-    public String shop(@RequestParam(required = false) final String npcId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
-        final ShopView view = shopService.buildShopView(npcId, progress.getGold());
+    public String shop(
+            @RequestParam(required = false) final String npcId,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        final ShopView view = resolveShopView(progress, npcId);
         model.addAttribute("shop", view);
         return FRAGMENT_SHOP_POPUP;
+    }
+
+    public String shop(final String npcId, final Model model) {
+        return shop(npcId, null, model);
     }
 
     /**
@@ -70,6 +81,7 @@ public class ShopController {
      *
      * @param npcId 대화 중인 NPC ID
      * @param itemId 구매할 아이템 카탈로그 ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 상점 팝업 fragment 뷰 이름
      */
@@ -77,14 +89,19 @@ public class ShopController {
     public String buy(
             @RequestParam final String npcId,
             @RequestParam final String itemId,
+            final HttpSession session,
             final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         shopService.buy(progress, npcId, itemId);
         characterService.saveTurn(progress);
 
-        final ShopView view = shopService.buildShopView(npcId, progress.getGold());
+        final ShopView view = resolveShopView(progress, npcId);
         model.addAttribute("shop", view);
         return FRAGMENT_SHOP_POPUP;
+    }
+
+    public String buy(final String npcId, final String itemId, final Model model) {
+        return buy(npcId, itemId, null, model);
     }
 
     /**
@@ -94,6 +111,7 @@ public class ShopController {
      *
      * @param npcId 대화 중인 NPC ID (없으면 빈 구매 목록)
      * @param ownedItemId 판매할 보유 아이템 PK
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 상점 팝업 fragment 뷰 이름
      */
@@ -101,13 +119,40 @@ public class ShopController {
     public String sell(
             @RequestParam(required = false) final String npcId,
             @RequestParam final long ownedItemId,
+            final HttpSession session,
             final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         shopService.sell(progress, ownedItemId);
         characterService.saveTurn(progress);
 
-        final ShopView view = shopService.buildShopView(npcId, progress.getGold());
+        final ShopView view = resolveShopView(progress, npcId);
         model.addAttribute("shop", view);
         return FRAGMENT_SHOP_POPUP;
+    }
+
+    public String sell(final String npcId, final long ownedItemId, final Model model) {
+        return sell(npcId, ownedItemId, null, model);
+    }
+
+    private ShopView resolveShopView(final CharacterProgress progress, final String npcId) {
+        if (progress != null && progress.getId() != null) {
+            final ShopView view =
+                    shopService.buildShopView(progress.getId(), npcId, progress.getGold());
+            if (view != null) {
+                return view;
+            }
+        }
+        return shopService.buildShopView(npcId, progress != null ? progress.getGold() : 0);
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);
+            if (sessionUser instanceof UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 }

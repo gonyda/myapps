@@ -56,9 +56,10 @@ class DungeonLifecycleIntegrationTest {
         characterService.saveTurn(character);
         dungeonProgressRepository.deleteByCharacterId(character.getId());
         if (ownedItemRepository
-                .findByStorageAndItemId(StorageKind.INVENTORY, "hp_potion_30")
+                .findByCharacterIdAndStorageAndItemId(
+                        character.getId(), StorageKind.INVENTORY, "hp_potion_30")
                 .isEmpty()) {
-            inventoryService.seedDefault();
+            inventoryService.seedDefault(character.getId());
         }
     }
 
@@ -156,7 +157,8 @@ class DungeonLifecycleIntegrationTest {
         assertThat(completedChar.getGold()).isEqualTo(initialGold + 2000);
 
         final Optional<OwnedItem> potionOpt =
-                ownedItemRepository.findByStorageAndItemId(StorageKind.INVENTORY, "hp_potion_30");
+                ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                        charId, StorageKind.INVENTORY, "hp_potion_30");
         assertThat(potionOpt).isPresent();
         assertThat(potionOpt.get().getQuantity()).isGreaterThanOrEqualTo(5);
     }

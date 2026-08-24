@@ -125,8 +125,18 @@ public class CharacterProgress {
      * @return 기본값이 설정된 CharacterProgress 인스턴스
      */
     public static CharacterProgress createDefault() {
+        return createNamed(DEFAULT_NICKNAME);
+    }
+
+    /**
+     * 지정된 닉네임의 신규 캐릭터용 기본 진행상황을 생성한다.
+     *
+     * @param nickname 캐릭터 닉네임
+     * @return 지정된 닉네임과 기본값이 설정된 CharacterProgress 인스턴스
+     */
+    public static CharacterProgress createNamed(final String nickname) {
         return new CharacterProgress(
-                DEFAULT_NICKNAME,
+                nickname,
                 DEFAULT_LEVEL,
                 DEFAULT_LEVEL,
                 DEFAULT_EXPERIENCE,
