@@ -22,6 +22,7 @@ package com.myapps.web.myrpg.domain.model;
  * @param monsterCritical 몬스터 크리티컬 수치(0.1% 단위, 범위 0~1000)
  * @param playerHitCount 플레이어 히트 수 (딜 스킬의 hitCount, 기본 1)
  * @param isCounterAttack 카운터 어택 스킬 여부 (상대 공격력 비례 반격 및 강공격 반격 지원)
+ * @param playerDefensePierce 플레이어 방어 관통 여부 (적 DEF 0 처리)
  */
 public record TurnInput(
         SkillType playerType,
@@ -39,10 +40,68 @@ public record TurnInput(
         int playerCritical,
         int monsterCritical,
         int playerHitCount,
-        boolean isCounterAttack) {
+        boolean isCounterAttack,
+        boolean playerDefensePierce) {
 
     /**
-     * 하위 호환 15-인자 보조 생성자 (isCounterAttack = false).
+     * 하위 호환 16-인자 보조 생성자 (playerDefensePierce = false).
+     *
+     * @param playerType 플레이어 스킬 타입
+     * @param monsterType 몬스터 스킬 타입
+     * @param playerAttackPower 플레이어 공격력
+     * @param monsterAttackPower 몬스터 공격력
+     * @param playerDefense 플레이어 방어력
+     * @param monsterDefense 몬스터 방어력
+     * @param playerMultiplierPercent 플레이어 스킬 1히트당 배율(%)
+     * @param monsterMultiplierPercent 몬스터 스킬 배율(%)
+     * @param playerBlockRatePercent 플레이어 방어 경감률(%)
+     * @param monsterBlockRatePercent 몬스터 방어 경감률(%)
+     * @param playerCounterPercent 플레이어 반격 배율(%)
+     * @param monsterCounterPercent 몬스터 반격률(%)
+     * @param playerCritical 플레이어 크리티컬 수치
+     * @param monsterCritical 몬스터 크리티컬 수치
+     * @param playerHitCount 플레이어 히트 수
+     * @param isCounterAttack 카운터 어택 여부
+     */
+    public TurnInput(
+            final SkillType playerType,
+            final SkillType monsterType,
+            final int playerAttackPower,
+            final int monsterAttackPower,
+            final int playerDefense,
+            final int monsterDefense,
+            final int playerMultiplierPercent,
+            final int monsterMultiplierPercent,
+            final int playerBlockRatePercent,
+            final int monsterBlockRatePercent,
+            final int playerCounterPercent,
+            final int monsterCounterPercent,
+            final int playerCritical,
+            final int monsterCritical,
+            final int playerHitCount,
+            final boolean isCounterAttack) {
+        this(
+                playerType,
+                monsterType,
+                playerAttackPower,
+                monsterAttackPower,
+                playerDefense,
+                monsterDefense,
+                playerMultiplierPercent,
+                monsterMultiplierPercent,
+                playerBlockRatePercent,
+                monsterBlockRatePercent,
+                playerCounterPercent,
+                monsterCounterPercent,
+                playerCritical,
+                monsterCritical,
+                playerHitCount,
+                isCounterAttack,
+                false);
+    }
+
+    /**
+     * 하위 호환 15-인자 보조 생성자 (isCounterAttack = false, playerDefensePierce = false).
      *
      * @param playerType 플레이어 스킬 타입
      * @param monsterType 몬스터 스킬 타입
@@ -92,6 +151,7 @@ public record TurnInput(
                 playerCritical,
                 monsterCritical,
                 playerHitCount,
+                false,
                 false);
     }
 }

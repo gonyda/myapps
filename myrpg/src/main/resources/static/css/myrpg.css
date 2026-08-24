@@ -1070,6 +1070,56 @@
             pointer-events: none;
         }
 
+        /* ===== 궁극기 쿨다운 뱃지 (스킬 팝업) ===== */
+        .badge-cooldown {
+            font-size: var(--fs-xs);
+            padding: 0.15em 0.5em;
+            border-radius: var(--radius);
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .badge-cooldown.waiting {
+            background: #4a2a2a;
+            color: #ff9999;
+            border: 1px solid #7a3a3a;
+        }
+
+        .badge-cooldown.ready {
+            background: #2a4a3a;
+            color: #aaffaa;
+            border: 1px solid #3a7a4a;
+            box-shadow: 0 0 6px rgba(100, 255, 150, 0.3);
+        }
+
+        /* ===== 필드 스킬 사용 버튼 (힐링 등) ===== */
+        .skill-use-btn {
+            background: #2a4a3a;
+            color: #ccffdd;
+            border: 1px solid #3a7a5a;
+            border-radius: var(--radius);
+            padding: calc(var(--gap) * 0.5) calc(var(--pad) * 0.8);
+            font-size: var(--fs-xs);
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: calc(var(--touch) * 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .skill-use-btn:hover {
+            background: #3a6a4a;
+            box-shadow: 0 0 6px rgba(100, 255, 150, 0.4);
+        }
+
+        .skill-use-btn:active {
+            background: #204030;
+        }
+
         /* ===== 승급 버튼 ===== */
         .skill-rankup-btn {
             background: #333;
@@ -2037,6 +2087,44 @@
         .clash-submitting .battle-skill-btn {
             pointer-events: none;
             opacity: 0.85;
+        }
+
+        /* 궁극기 쿨다운 / 준비완료 상태 */
+        .battle-skill-btn.ultimate-cooldown {
+            opacity: 0.55;
+            cursor: not-allowed;
+            filter: grayscale(0.4);
+        }
+
+        .battle-skill-btn.ultimate-ready {
+            background: linear-gradient(135deg, #4a2060, #7a3090);
+            color: #ffffff;
+            border: 1px solid #ffd700;
+            animation: ultimate-ready-pulse 1.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes ultimate-ready-pulse {
+            0% {
+                box-shadow: 0 0 6px rgba(255, 215, 0, 0.4), inset 0 0 4px rgba(255, 215, 0, 0.2);
+                transform: scale(1);
+            }
+            100% {
+                box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 0 8px rgba(255, 215, 0, 0.5);
+                transform: scale(1.03);
+            }
+        }
+
+        .btn-cooldown-text {
+            font-size: calc(var(--fs-xs) * 0.85);
+            color: #ff9999;
+            margin-left: 0.2em;
+        }
+
+        .btn-ready-badge {
+            font-size: calc(var(--fs-xs) * 0.85);
+            color: #ffd700;
+            font-weight: bold;
+            margin-left: 0.2em;
         }
 
         .flee-btn {

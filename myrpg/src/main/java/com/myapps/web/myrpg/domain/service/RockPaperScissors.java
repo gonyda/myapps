@@ -37,9 +37,14 @@ public final class RockPaperScissors {
             return AffinityResult.DRAW;
         }
         return switch (mine) {
-            case NORMAL -> other == SkillType.HEAVY ? AffinityResult.WIN : AffinityResult.LOSE;
-            case HEAVY -> other == SkillType.DEFENSE ? AffinityResult.WIN : AffinityResult.LOSE;
-            case DEFENSE -> other == SkillType.NORMAL ? AffinityResult.WIN : AffinityResult.LOSE;
+            case NORMAL, DEBUFF ->
+                    (other == SkillType.HEAVY) ? AffinityResult.WIN : AffinityResult.LOSE;
+            case HEAVY -> (other == SkillType.DEFENSE) ? AffinityResult.WIN : AffinityResult.LOSE;
+            case DEFENSE ->
+                    (other == SkillType.NORMAL || other == SkillType.DEBUFF)
+                            ? AffinityResult.WIN
+                            : AffinityResult.LOSE;
+            default -> AffinityResult.DRAW;
         };
     }
 }

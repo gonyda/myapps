@@ -1,21 +1,30 @@
 package com.myapps.web.myrpg.application.service;
 
+import com.myapps.web.myrpg.application.dto.FieldSkillResult;
 import com.myapps.web.myrpg.application.dto.SkillListView;
 import com.myapps.web.myrpg.application.dto.SkillRankUpView;
 import com.myapps.web.myrpg.application.dto.SkillRowView;
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
+import com.myapps.web.myrpg.domain.model.BonusTarget;
+import com.myapps.web.myrpg.domain.model.BuffSkill;
+import com.myapps.web.myrpg.domain.model.CcSkill;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.DefenseSkill;
+import com.myapps.web.myrpg.domain.model.DotSkill;
+import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.RankUpRequirement;
+import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillDamagePolicy;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
+import com.myapps.web.myrpg.domain.model.UltimateSkill;
 import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
@@ -60,6 +69,7 @@ public class SkillService {
     private final SkillRankPolicy skillRankPolicy;
     private final SkillRankupBonus skillRankupBonus;
     private final SkillDamagePolicy skillDamagePolicy;
+    private final StatProgression statProgression;
 
     /**
      * SkillService를 생성한다.
@@ -81,6 +91,7 @@ public class SkillService {
         this.skillRankPolicy = new SkillRankPolicy();
         this.skillRankupBonus = new SkillRankupBonus();
         this.skillDamagePolicy = new SkillDamagePolicy();
+        this.statProgression = new StatProgression();
     }
 
     /**
@@ -90,12 +101,11 @@ public class SkillService {
      *
      * <ol>
      *   <li>MASTER이면 승급 불가 → {@code false} 반환
-     *   <li>사용 횟수 미충족 → {@code false} 반환
-     *   <li>DEFENSE 타입이 아닌 경우 막타 처치 조건 미충족 → {@code false} 반환
+     *   <li>패시브 스킬: AP만 검증하고 즉시 승급
+     *   <li>지원/특수/궁극기 스킬: 막타 처치 조건 면제, 사용 횟수만 검증
+     *   <li>직접 공격 스킬: 사용 횟수 및 막타 처치 조건 모두 검증
      *   <li>AP 부족 → {@link InsufficientAbilityPointsException} 발생
      * </ol>
-     *
-     * <p>DEFENSE 타입 스킬(디펜스, 카운터 어택)은 반격 피해가 낮아 막타를 달성하기 어려우므로 kills 조건을 면제한다.
      *
      * <p>승급 성공 시 (a) AP 소모, (b) 랭크 +1, (c) 카운트 리셋, (d) 저장을 수행한다.
      *
@@ -112,23 +122,26 @@ public class SkillService {
             return false;
         }
 
-        final RankUpRequirement requirement =
-                skillRankPolicy.requirement(skill.getRank()).orElseThrow();
-        final int apCost = skillRankPolicy.apCost(skill.getRank()).orElseThrow();
         final Skill catalog = skillCatalogService.byId(skillId).orElseThrow();
-        final boolean killExempt = catalog instanceof DefenseSkill;
-
-        if (skill.getUsageCount() < requirement.requiredUsage()) {
-            return false;
-        }
-
-        if (!killExempt && skill.getKillCount() < requirement.requiredKills()) {
-            return false;
-        }
+        final int apCost = skillRankPolicy.apCost(skill.getRank()).orElseThrow();
 
         if (progress.getAbilityPoints() < apCost) {
             throw new InsufficientAbilityPointsException(
                     "AP 부족: 필요 " + apCost + ", 보유 " + progress.getAbilityPoints());
+        }
+
+        if (!(catalog instanceof PassiveSkill)) {
+            final RankUpRequirement requirement =
+                    skillRankPolicy.requirementFor(skill.getRank(), catalog.type()).orElseThrow();
+            final boolean killExempt = isKillExempt(catalog);
+
+            if (skill.getUsageCount() < requirement.requiredUsage()) {
+                return false;
+            }
+
+            if (!killExempt && skill.getKillCount() < requirement.requiredKills()) {
+                return false;
+            }
         }
 
         progress.spendAbilityPoints(apCost);
@@ -138,6 +151,91 @@ public class SkillService {
 
         characterSkillRepository.save(skill);
         return true;
+    }
+
+    /**
+     * 필드에서 힐링 등 회복 스킬을 사용한다.
+     *
+     * @param characterId 캐릭터 ID
+     * @param skillId 스킬 ID
+     * @param maxHp 최대 HP 상한
+     * @param maxMp 최대 MP 상한
+     * @return 필드 스킬 사용 결과
+     */
+    @Transactional
+    public FieldSkillResult useFieldSkill(
+            final Long characterId, final String skillId, final int maxHp, final int maxMp) {
+        final CharacterProgress progress =
+                characterProgressRepository
+                        .findById(characterId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "캐릭터 " + characterId + "을(를) 찾을 수 없습니다."));
+        final CharacterSkill skill = findSkill(characterId, skillId);
+        final Skill catalog = skillCatalogService.byId(skillId).orElseThrow();
+
+        if (!(catalog instanceof RecoverySkill recoverySkill)) {
+            return FieldSkillResult.failure(
+                    "필드에서 사용할 수 없는 스킬입니다.",
+                    progress.getHpCurrent(),
+                    maxHp,
+                    progress.getMpCurrent(),
+                    maxMp);
+        }
+
+        if (progress.getHpCurrent() >= maxHp) {
+            return FieldSkillResult.failure(
+                    "이미 최대 체력입니다.", progress.getHpCurrent(), maxHp, progress.getMpCurrent(), maxMp);
+        }
+
+        final int cost = recoverySkill.resourceCostAt(skill.getRank());
+        if (progress.getMpCurrent() < cost) {
+            return FieldSkillResult.failure(
+                    "MP가 부족합니다.", progress.getHpCurrent(), maxHp, progress.getMpCurrent(), maxMp);
+        }
+
+        final int healAmount = recoverySkill.healAmountAt(skill.getRank());
+        final int beforeHp = progress.getHpCurrent();
+        progress.spendMp(cost);
+        progress.healHp(healAmount, maxHp);
+        final int actualHealed = progress.getHpCurrent() - beforeHp;
+
+        skill.increaseUsage();
+        characterSkillRepository.save(skill);
+        characterProgressRepository.save(progress);
+
+        return FieldSkillResult.success(
+                "생명력을 " + actualHealed + " 회복했습니다. (MP -" + cost + ")",
+                progress.getHpCurrent(),
+                maxHp,
+                progress.getMpCurrent(),
+                maxMp,
+                actualHealed);
+    }
+
+    /**
+     * 필드에서 힐링 등 회복 스킬을 사용한다 (기본 바이탈 계산 기준).
+     *
+     * @param characterId 캐릭터 ID
+     * @param skillId 스킬 ID
+     * @return 필드 스킬 사용 결과
+     */
+    @Transactional
+    public FieldSkillResult useFieldSkill(final Long characterId, final String skillId) {
+        final CharacterProgress progress =
+                characterProgressRepository
+                        .findById(characterId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "캐릭터 " + characterId + "을(를) 찾을 수 없습니다."));
+        final VitalMax baseVital =
+                statProgression.vitalMaxFor(progress.getCurrentLevel(), progress.getTalent());
+        final VitalMax skillVital = rankupVitalBonus(characterId);
+        final int maxHp = baseVital.hp() + skillVital.hp();
+        final int maxMp = baseVital.mp() + skillVital.mp();
+        return useFieldSkill(characterId, skillId, maxHp, maxMp);
     }
 
     /**
@@ -166,7 +264,7 @@ public class SkillService {
             }
             final Skill catalog = catalogOpt.get();
 
-            if (!matchesTab(catalog.talent(), activeTab)) {
+            if (!matchesTab(catalog, activeTab)) {
                 continue;
             }
 
@@ -209,8 +307,7 @@ public class SkillService {
                         ? currentCounterValue
                         : counterValue(catalog, currentRank.next().orElseThrow());
 
-        final String primaryStatLabel =
-                (catalog instanceof DefenseSkill) ? PRIMARY_STAT_DEFENSE : PRIMARY_STAT_DAMAGE;
+        final String primaryStatLabel = primaryStatLabel(catalog);
 
         final String resourceKindLabel = catalog.talent().resourceKind().label();
         final int resourceCost = resourceCost(catalog, currentRank);
@@ -226,18 +323,19 @@ public class SkillService {
         final int usageCurrent = characterSkill.getUsageCount();
         final int killCurrent = characterSkill.getKillCount();
 
-        final boolean killExempt = catalog instanceof DefenseSkill;
+        final boolean killExempt = isKillExempt(catalog);
+        final boolean isPassive = catalog instanceof PassiveSkill;
 
         final int usageRequired;
         final int killRequired;
         final int apCost;
-        if (maxed) {
+        if (maxed || isPassive) {
             usageRequired = 0;
             killRequired = 0;
-            apCost = 0;
+            apCost = maxed ? 0 : skillRankPolicy.apCost(currentRank).orElseThrow();
         } else {
             final RankUpRequirement requirement =
-                    skillRankPolicy.requirement(currentRank).orElseThrow();
+                    skillRankPolicy.requirementFor(currentRank, catalog.type()).orElseThrow();
             usageRequired = requirement.requiredUsage();
             killRequired = killExempt ? 0 : requirement.requiredKills();
             apCost = skillRankPolicy.apCost(currentRank).orElseThrow();
@@ -246,9 +344,10 @@ public class SkillService {
         final int apOwned = progress.getAbilityPoints();
         final boolean rankable =
                 !maxed
-                        && usageCurrent >= usageRequired
-                        && (killExempt || killCurrent >= killRequired)
-                        && apOwned >= apCost;
+                        && apOwned >= apCost
+                        && (isPassive
+                                || (usageCurrent >= usageRequired
+                                        && (killExempt || killCurrent >= killRequired)));
 
         return new SkillRankUpView(
                 catalog.id(),
@@ -372,6 +471,46 @@ public class SkillService {
         characterSkillRepository.save(skill);
     }
 
+    /**
+     * 전투 승리 시 보유한 모든 궁극기 스킬의 남은 쿨다운(필요 승리 횟수)을 1 감소시킨다.
+     *
+     * @param characterId 캐릭터 ID
+     */
+    @Transactional
+    public void onBattleWon(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        for (final CharacterSkill skill : owned) {
+            if (skill.getUltimateCooldown() > 0) {
+                skill.decrementUltimateCooldown();
+                characterSkillRepository.save(skill);
+            }
+        }
+    }
+
+    /**
+     * 메디테이션 패시브 스킬로 인한 턴당 마나 회복량을 조회한다.
+     *
+     * @param characterId 캐릭터 ID
+     * @return 턴당 마나 회복량 (없으면 0)
+     */
+    public int meditationTurnRegen(final Long characterId) {
+        final Optional<CharacterSkill> meditationOpt =
+                characterSkillRepository.findByCharacterIdAndSkillId(characterId, "meditation");
+        if (meditationOpt.isEmpty()) {
+            return 0;
+        }
+        final Optional<Skill> catalogOpt = skillCatalogService.byId("meditation");
+        if (catalogOpt.isEmpty() || !(catalogOpt.get() instanceof PassiveSkill passive)) {
+            return 0;
+        }
+        final int totalRegen =
+                passive.totalStatBonus() != null
+                        ? passive.totalStatBonus().getOrDefault(BonusTarget.MP_REGEN, 5)
+                        : 5;
+        final SkillRank rank = meditationOpt.get().getRank();
+        return 1 + (totalRegen - 1) * rank.order() / 15;
+    }
+
     private CharacterSkill findSkill(final Long characterId, final String skillId) {
         return characterSkillRepository
                 .findByCharacterIdAndSkillId(characterId, skillId)
@@ -385,13 +524,16 @@ public class SkillService {
                                                 + "'을(를) 찾을 수 없습니다."));
     }
 
-    private boolean matchesTab(final SkillTalent talent, final String tab) {
+    private boolean matchesTab(final Skill catalog, final String tab) {
+        if (catalog instanceof PassiveSkill) {
+            return TAB_ALL.equals(tab) || TAB_COMMON.equals(tab);
+        }
         return switch (tab) {
             case TAB_ALL -> true;
-            case TAB_MELEE -> talent == SkillTalent.MELEE;
-            case TAB_ARCHERY -> talent == SkillTalent.ARCHERY;
-            case TAB_MAGIC -> talent == SkillTalent.MAGIC;
-            case TAB_COMMON -> talent == SkillTalent.COMMON;
+            case TAB_MELEE -> catalog.talent() == SkillTalent.MELEE;
+            case TAB_ARCHERY -> catalog.talent() == SkillTalent.ARCHERY;
+            case TAB_MAGIC -> catalog.talent() == SkillTalent.MAGIC;
+            case TAB_COMMON -> catalog.talent() == SkillTalent.COMMON;
             default -> true;
         };
     }
@@ -400,12 +542,14 @@ public class SkillService {
             final CharacterSkill characterSkill, final Skill catalog, final int abilityPoints) {
         final SkillRank rank = characterSkill.getRank();
         final boolean maxed = rank.isMax();
-        final boolean killExempt = catalog instanceof DefenseSkill;
+        final boolean killExempt = isKillExempt(catalog);
         final int progressPercent =
-                calculateProgressPercent(characterSkill, rank, maxed, killExempt);
+                calculateProgressPercent(characterSkill, catalog, rank, maxed, killExempt);
         final boolean rankable =
-                calculateRankable(characterSkill, rank, maxed, abilityPoints, killExempt);
+                calculateRankable(characterSkill, catalog, rank, maxed, abilityPoints, killExempt);
         final String talentLabel = talentLabel(catalog.talent());
+        final boolean fieldUsable = catalog instanceof RecoverySkill;
+        final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
 
         return new SkillRowView(
                 catalog.id(),
@@ -414,18 +558,34 @@ public class SkillService {
                 rank.label(),
                 progressPercent,
                 rankable,
-                maxed);
+                maxed,
+                fieldUsable,
+                cooldownBadgeText);
+    }
+
+    private String resolveCooldownBadgeText(
+            final CharacterSkill characterSkill, final Skill catalog) {
+        if (catalog instanceof UltimateSkill) {
+            final int cooldown = characterSkill.getUltimateCooldown();
+            if (cooldown > 0) {
+                return "대기 " + cooldown + "승";
+            }
+            return "준비 완료";
+        }
+        return null;
     }
 
     private int calculateProgressPercent(
             final CharacterSkill characterSkill,
+            final Skill catalog,
             final SkillRank rank,
             final boolean maxed,
             final boolean killExempt) {
-        if (maxed) {
+        if (maxed || catalog instanceof PassiveSkill) {
             return FULL_PROGRESS_PERCENT;
         }
-        final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
+        final RankUpRequirement requirement =
+                skillRankPolicy.requirementFor(rank, catalog.type()).orElseThrow();
         final double usageRatio =
                 Math.min(
                         (double) characterSkill.getUsageCount() / requirement.requiredUsage(), 1.0);
@@ -439,6 +599,7 @@ public class SkillService {
 
     private boolean calculateRankable(
             final CharacterSkill characterSkill,
+            final Skill catalog,
             final SkillRank rank,
             final boolean maxed,
             final int abilityPoints,
@@ -446,11 +607,21 @@ public class SkillService {
         if (maxed) {
             return false;
         }
-        final RankUpRequirement requirement = skillRankPolicy.requirement(rank).orElseThrow();
         final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
+        if (abilityPoints < apCost) {
+            return false;
+        }
+        if (catalog instanceof PassiveSkill) {
+            return true;
+        }
+        final RankUpRequirement requirement =
+                skillRankPolicy.requirementFor(rank, catalog.type()).orElseThrow();
         return characterSkill.getUsageCount() >= requirement.requiredUsage()
-                && (killExempt || characterSkill.getKillCount() >= requirement.requiredKills())
-                && abilityPoints >= apCost;
+                && (killExempt || characterSkill.getKillCount() >= requirement.requiredKills());
+    }
+
+    private boolean isKillExempt(final Skill catalog) {
+        return catalog instanceof PassiveSkill || catalog.type().isKillExempt();
     }
 
     private String talentLabel(final SkillTalent talent) {
@@ -462,17 +633,59 @@ public class SkillService {
         };
     }
 
+    private String primaryStatLabel(final Skill catalog) {
+        if (catalog instanceof DefenseSkill) {
+            return PRIMARY_STAT_DEFENSE;
+        }
+        if (catalog instanceof RecoverySkill) {
+            return "회복량";
+        }
+        if (catalog instanceof BuffSkill) {
+            return "흡수율";
+        }
+        if (catalog instanceof CcSkill) {
+            return "성공률";
+        }
+        if (catalog instanceof DotSkill) {
+            return "초기 배율";
+        }
+        if (catalog instanceof PassiveSkill) {
+            return "패시브 효과";
+        }
+        return PRIMARY_STAT_DAMAGE;
+    }
+
     private int primaryValue(final Skill catalog, final SkillRank rank) {
         if (catalog instanceof DamageSkill damageSkill) {
             return skillDamagePolicy.multiplier(damageSkill, rank);
         }
-        final DefenseSkill defenseSkill = (DefenseSkill) catalog;
-        return skillDamagePolicy.blockRate(defenseSkill, rank);
+        if (catalog instanceof DefenseSkill defenseSkill) {
+            return skillDamagePolicy.blockRate(defenseSkill, rank);
+        }
+        if (catalog instanceof RecoverySkill recoverySkill) {
+            return recoverySkill.healAmountAt(rank);
+        }
+        if (catalog instanceof UltimateSkill ultimateSkill) {
+            return ultimateSkill.multiplierAt(rank);
+        }
+        if (catalog instanceof BuffSkill buffSkill) {
+            return buffSkill.absorbRateAt(rank);
+        }
+        if (catalog instanceof CcSkill ccSkill) {
+            return ccSkill.successRateAt(rank);
+        }
+        if (catalog instanceof DotSkill dotSkill) {
+            return dotSkill.initialMultiplierAt(rank);
+        }
+        return 0;
     }
 
     private int resourceCost(final Skill catalog, final SkillRank rank) {
         if (catalog instanceof DefenseSkill defenseSkill) {
             return defenseSkill.resourceCostAt(rank);
+        }
+        if (catalog instanceof RecoverySkill recoverySkill) {
+            return recoverySkill.resourceCostAt(rank);
         }
         return catalog.resourceCost();
     }

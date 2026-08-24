@@ -41,11 +41,39 @@ public class CharacterSkill {
     @Column(name = "kill_count", nullable = false)
     private int killCount;
 
+    @Column(name = "ultimate_cooldown", nullable = false)
+    private int ultimateCooldown;
+
     /** JPA 전용 기본 생성자. */
     protected CharacterSkill() {}
 
     /**
      * 전체 필드를 지정하는 생성자.
+     *
+     * @param characterId 소유 캐릭터 ID
+     * @param skillId 스킬 카탈로그 ID (skill.json 참조)
+     * @param rank 현재 스킬 랭크
+     * @param usageCount 현재 랭크 사용 횟수
+     * @param killCount 현재 랭크 막타 처치 수
+     * @param ultimateCooldown 궁극기 쿨타임(남은 승리 횟수)
+     */
+    public CharacterSkill(
+            final Long characterId,
+            final String skillId,
+            final SkillRank rank,
+            final int usageCount,
+            final int killCount,
+            final int ultimateCooldown) {
+        this.characterId = characterId;
+        this.skillId = skillId;
+        this.rank = rank;
+        this.usageCount = usageCount;
+        this.killCount = killCount;
+        this.ultimateCooldown = ultimateCooldown;
+    }
+
+    /**
+     * 하위호환 생성자 (ultimateCooldown = 0).
      *
      * @param characterId 소유 캐릭터 ID
      * @param skillId 스킬 카탈로그 ID (skill.json 참조)
@@ -59,11 +87,7 @@ public class CharacterSkill {
             final SkillRank rank,
             final int usageCount,
             final int killCount) {
-        this.characterId = characterId;
-        this.skillId = skillId;
-        this.rank = rank;
-        this.usageCount = usageCount;
-        this.killCount = killCount;
+        this(characterId, skillId, rank, usageCount, killCount, 0);
     }
 
     /**
@@ -176,5 +200,30 @@ public class CharacterSkill {
         this.rank = next;
         this.usageCount = 0;
         this.killCount = 0;
+    }
+
+    /**
+     * 궁극기 남은 쿨타임(승리 횟수)을 반환한다.
+     *
+     * @return 궁극기 쿨타임 (0이면 사용 가능)
+     */
+    public int getUltimateCooldown() {
+        return ultimateCooldown;
+    }
+
+    /**
+     * 궁극기 쿨타임(승리 횟수)을 설정한다.
+     *
+     * @param ultimateCooldown 설정할 쿨타임 (0 이상)
+     */
+    public void setUltimateCooldown(final int ultimateCooldown) {
+        this.ultimateCooldown = Math.max(0, ultimateCooldown);
+    }
+
+    /** 전투 승리 시 궁극기 쿨타임을 1회 차감한다 (하한 0). */
+    public void decrementUltimateCooldown() {
+        if (this.ultimateCooldown > 0) {
+            this.ultimateCooldown--;
+        }
     }
 }

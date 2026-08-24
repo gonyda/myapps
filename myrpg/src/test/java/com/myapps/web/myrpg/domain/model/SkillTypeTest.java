@@ -13,6 +13,13 @@ class SkillTypeTest {
         assertThat(SkillType.NORMAL.label()).isEqualTo("일반");
         assertThat(SkillType.HEAVY.label()).isEqualTo("강");
         assertThat(SkillType.DEFENSE.label()).isEqualTo("방어");
+        assertThat(SkillType.RECOVERY.label()).isEqualTo("회복");
+        assertThat(SkillType.ULTIMATE.label()).isEqualTo("궁극기");
+        assertThat(SkillType.PASSIVE.label()).isEqualTo("패시브");
+        assertThat(SkillType.BUFF.label()).isEqualTo("버프");
+        assertThat(SkillType.DEBUFF.label()).isEqualTo("디버프");
+        assertThat(SkillType.CC.label()).isEqualTo("제어");
+        assertThat(SkillType.DOT.label()).isEqualTo("지속피해");
     }
 
     @Test
@@ -20,6 +27,13 @@ class SkillTypeTest {
         assertThat(SkillType.fromString("NORMAL")).isEqualTo(Optional.of(SkillType.NORMAL));
         assertThat(SkillType.fromString("HEAVY")).isEqualTo(Optional.of(SkillType.HEAVY));
         assertThat(SkillType.fromString("DEFENSE")).isEqualTo(Optional.of(SkillType.DEFENSE));
+        assertThat(SkillType.fromString("RECOVERY")).isEqualTo(Optional.of(SkillType.RECOVERY));
+        assertThat(SkillType.fromString("ULTIMATE")).isEqualTo(Optional.of(SkillType.ULTIMATE));
+        assertThat(SkillType.fromString("PASSIVE")).isEqualTo(Optional.of(SkillType.PASSIVE));
+        assertThat(SkillType.fromString("BUFF")).isEqualTo(Optional.of(SkillType.BUFF));
+        assertThat(SkillType.fromString("DEBUFF")).isEqualTo(Optional.of(SkillType.DEBUFF));
+        assertThat(SkillType.fromString("CC")).isEqualTo(Optional.of(SkillType.CC));
+        assertThat(SkillType.fromString("DOT")).isEqualTo(Optional.of(SkillType.DOT));
     }
 
     @Test
@@ -32,7 +46,7 @@ class SkillTypeTest {
     }
 
     @Test
-    void should_have_exactly_three_constants() {
-        assertThat(SkillType.values()).hasSize(3);
+    void should_have_exactly_ten_constants() {
+        assertThat(SkillType.values()).hasSize(10);
     }
 }

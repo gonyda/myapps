@@ -24,7 +24,8 @@ class BonusTargetKindPropertyTest {
                     BonusTarget.DEX,
                     BonusTarget.INT,
                     BonusTarget.CRITICAL,
-                    BonusTarget.DEF);
+                    BonusTarget.DEF,
+                    BonusTarget.MP_REGEN);
 
     private static final Set<BonusTarget> VITAL_TARGETS =
             Set.of(BonusTarget.HP, BonusTarget.MP, BonusTarget.STAMINA);

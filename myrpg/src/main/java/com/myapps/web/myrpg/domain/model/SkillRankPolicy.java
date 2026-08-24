@@ -33,6 +33,24 @@ public class SkillRankPolicy {
         new RankUpRequirement(5000, 1500) // 1 → Master
     };
 
+    private static final RankUpRequirement[] ULTIMATE_REQUIREMENTS = {
+        new RankUpRequirement(1, 0), // F → E
+        new RankUpRequirement(2, 0), // E → D
+        new RankUpRequirement(3, 0), // D → C
+        new RankUpRequirement(4, 0), // C → B
+        new RankUpRequirement(5, 0), // B → A
+        new RankUpRequirement(6, 0), // A → 9
+        new RankUpRequirement(7, 0), // 9 → 8
+        new RankUpRequirement(8, 0), // 8 → 7
+        new RankUpRequirement(9, 0), // 7 → 6
+        new RankUpRequirement(10, 0), // 6 → 5
+        new RankUpRequirement(12, 0), // 5 → 4
+        new RankUpRequirement(14, 0), // 4 → 3
+        new RankUpRequirement(16, 0), // 3 → 2
+        new RankUpRequirement(18, 0), // 2 → 1
+        new RankUpRequirement(20, 0) // 1 → Master
+    };
+
     private static final int[] AP_COSTS = {
         1, // F → E
         2, // E → D
@@ -52,7 +70,7 @@ public class SkillRankPolicy {
     };
 
     /**
-     * 지정된 랭크에서 다음 랭크로 승급하기 위한 요구 조건을 반환한다.
+     * 지정된 랭크에서 다음 랭크로 승급하기 위한 표준 요구 조건을 반환한다.
      *
      * <p>{@code MASTER}는 최고 랭크이므로 빈 값을 반환한다.
      *
@@ -64,6 +82,40 @@ public class SkillRankPolicy {
             return Optional.empty();
         }
         return Optional.of(REQUIREMENTS[current.order()]);
+    }
+
+    /**
+     * 지정된 랭크에서 궁극기(ULTIMATE) 승급을 위한 전용 요구 조건(1~20회 사용, 막타 0)을 반환한다.
+     *
+     * @param current 현재 스킬 랭크
+     * @return 궁극기 승급 조건의 {@link Optional}, {@code MASTER}이면 {@link Optional#empty()}
+     */
+    public Optional<RankUpRequirement> ultimateRequirement(final SkillRank current) {
+        if (current.isMax()) {
+            return Optional.empty();
+        }
+        return Optional.of(ULTIMATE_REQUIREMENTS[current.order()]);
+    }
+
+    /**
+     * 스킬 타입별 승급 요구 조건을 반환한다.
+     *
+     * @param current 현재 스킬 랭크
+     * @param type 스킬 타입
+     * @return 해당 타입 승급 조건의 {@link Optional}
+     */
+    public Optional<RankUpRequirement> requirementFor(
+            final SkillRank current, final SkillType type) {
+        if (current.isMax()) {
+            return Optional.empty();
+        }
+        if (type == SkillType.ULTIMATE) {
+            return ultimateRequirement(current);
+        }
+        if (type == SkillType.PASSIVE) {
+            return Optional.of(new RankUpRequirement(0, 0));
+        }
+        return requirement(current);
     }
 
     /**

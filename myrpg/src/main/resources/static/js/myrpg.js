@@ -1207,6 +1207,44 @@ function confirmRankUp(skillId) {
         });
 }
 
+function useFieldSkill(skillId) {
+    fetch('/skills/' + encodeURIComponent(skillId) + '/use', { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (!res.success) {
+                alert(res.message);
+                return;
+            }
+            // 상단바 게이지 갱신 (HP/MP)
+            updateTopBarVitals(res.hpCurrent, res.maxHp, res.mpCurrent, res.maxMp);
+            // 스킬 목록 갱신 (수련 횟수 등)
+            loadSkillTab(getCurrentSkillTab());
+        })
+        .catch(function (err) {
+            console.error('필드 스킬 사용 실패:', err);
+        });
+}
+
+function updateTopBarVitals(hpCurrent, maxHp, mpCurrent, maxMp) {
+    var hpFill = document.querySelector('.bar.hp .fill');
+    var hpText = document.querySelector('.bar.hp .bar-text');
+    if (hpFill && maxHp > 0) {
+        hpFill.style.width = Math.min(100, Math.round((hpCurrent / maxHp) * 100)) + '%';
+    }
+    if (hpText) {
+        hpText.textContent = hpCurrent + ' / ' + maxHp;
+    }
+
+    var mpFill = document.querySelector('.bar.mp .fill');
+    var mpText = document.querySelector('.bar.mp .bar-text');
+    if (mpFill && maxMp > 0) {
+        mpFill.style.width = Math.min(100, Math.round((mpCurrent / maxMp) * 100)) + '%';
+    }
+    if (mpText) {
+        mpText.textContent = mpCurrent + ' / ' + maxMp;
+    }
+}
+
 function getCurrentSkillTab() {
     var activeTab = document.querySelector('.skill-tab.active');
     if (!activeTab) return 'all';

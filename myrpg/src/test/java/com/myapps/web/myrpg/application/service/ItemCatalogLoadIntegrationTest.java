@@ -23,7 +23,7 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class ItemCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_ITEM_COUNT = 15;
+    private static final int TOTAL_ITEM_COUNT = 57;
     private static final Set<String> KNOWN_ITEM_IDS =
             Set.of(
                     "hp_potion_30",
@@ -40,7 +40,49 @@ class ItemCatalogLoadIntegrationTest {
                     "beginner_gloves",
                     "beginner_boots",
                     "short_sword",
-                    "long_sword");
+                    "long_sword",
+                    "wooden_blade",
+                    "dagger",
+                    "short_bow",
+                    "fire_wand",
+                    "ice_wand",
+                    "lightning_wand",
+                    "round_shield",
+                    "cuirassier_helm",
+                    "light_leather_mail",
+                    "studded_cuirassier",
+                    "leather_gloves",
+                    "cores_thief_gloves",
+                    "lorica_gloves",
+                    "leather_shoes",
+                    "hunter_boots",
+                    "combat_shoes",
+                    "thief_shoes",
+                    "broadsword",
+                    "bastard_sword",
+                    "battle_sword",
+                    "long_bow",
+                    "composite_bow",
+                    "crossbow",
+                    "phoenix_fire_wand",
+                    "crown_ice_wand",
+                    "crystal_lightning_wand",
+                    "trinity_staff",
+                    "kite_shield",
+                    "ring_mail_helm",
+                    "cross_full_helm",
+                    "wing_half_helm",
+                    "bone_helm",
+                    "spiked_helm",
+                    "drandos_leather_mail",
+                    "three_belt_leather_mail",
+                    "melka_chain_mail",
+                    "surcoat_chain_mail",
+                    "counter_gauntlet",
+                    "tork_hunter_gloves",
+                    "ulna_protector_gloves",
+                    "long_greaves",
+                    "leather_protector");
 
     private final ItemCatalogService itemCatalogService;
 

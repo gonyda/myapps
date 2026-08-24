@@ -30,7 +30,10 @@ public enum BonusTarget {
     STAMINA(BonusKind.VITAL),
 
     /** 방어력 (스탯 계열). */
-    DEF(BonusKind.STAT);
+    DEF(BonusKind.STAT),
+
+    /** 턴당 마나 자연 재생 (스탯 계열). */
+    MP_REGEN(BonusKind.STAT);
 
     private final BonusKind kind;
 

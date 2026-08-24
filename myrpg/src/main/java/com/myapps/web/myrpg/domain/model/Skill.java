@@ -6,12 +6,28 @@ package com.myapps.web.myrpg.domain.model;
  * <p>모든 스킬은 고유 식별자({@link #id()}), 표시 라벨({@link #label()}), 공격/방어 유형({@link #type()}), 재능 분류({@link
  * #talent()}), 자원 소모량({@link #resourceCost()}), 스킬 설명({@link #description()})을 가진다.
  *
- * <p>구현체는 딜스킬({@link DamageSkill})과 방어스킬({@link DefenseSkill})로 제한된다.
+ * <p>구현체는 8종 도메인 record({@link DamageSkill}, {@link DefenseSkill}, {@link RecoverySkill}, {@link
+ * UltimateSkill}, {@link PassiveSkill}, {@link BuffSkill}, {@link CcSkill}, {@link DotSkill})로
+ * 제한된다.
  *
  * @see DamageSkill
  * @see DefenseSkill
+ * @see RecoverySkill
+ * @see UltimateSkill
+ * @see PassiveSkill
+ * @see BuffSkill
+ * @see CcSkill
+ * @see DotSkill
  */
-public sealed interface Skill permits DamageSkill, DefenseSkill {
+public sealed interface Skill
+        permits DamageSkill,
+                DefenseSkill,
+                RecoverySkill,
+                UltimateSkill,
+                PassiveSkill,
+                BuffSkill,
+                CcSkill,
+                DotSkill {
 
     /**
      * 스킬의 고유 식별자를 반환한다.

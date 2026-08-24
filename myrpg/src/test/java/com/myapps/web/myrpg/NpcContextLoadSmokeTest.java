@@ -76,10 +76,60 @@ class NpcContextLoadSmokeTest {
     @Test
     void should_loadShopItems_when_npcConfiguredWithShopItems() {
         final Npc ferghus = npcService.byId("ferghus").orElseThrow();
-        assertThat(ferghus.shopItems()).containsExactly("short_sword");
+        assertThat(ferghus.shopItems())
+                .containsExactly(
+                        "wooden_blade",
+                        "dagger",
+                        "short_sword",
+                        "short_bow",
+                        "round_shield",
+                        "cuirassier_helm",
+                        "light_leather_mail",
+                        "studded_cuirassier",
+                        "leather_gloves",
+                        "cores_thief_gloves",
+                        "lorica_gloves",
+                        "leather_shoes",
+                        "hunter_boots",
+                        "combat_shoes",
+                        "thief_shoes");
+
+        final Npc lassar = npcService.byId("lassar").orElseThrow();
+        assertThat(lassar.shopItems()).containsExactly("fire_wand", "ice_wand", "lightning_wand");
 
         final Npc neris = npcService.byId("neris").orElseThrow();
-        assertThat(neris.shopItems()).containsExactly("long_sword");
+        assertThat(neris.shopItems())
+                .containsExactly(
+                        "long_sword",
+                        "broadsword",
+                        "bastard_sword",
+                        "battle_sword",
+                        "long_bow",
+                        "composite_bow",
+                        "crossbow",
+                        "kite_shield",
+                        "ring_mail_helm",
+                        "cross_full_helm",
+                        "wing_half_helm",
+                        "bone_helm",
+                        "spiked_helm",
+                        "drandos_leather_mail",
+                        "three_belt_leather_mail",
+                        "melka_chain_mail",
+                        "surcoat_chain_mail",
+                        "counter_gauntlet",
+                        "tork_hunter_gloves",
+                        "ulna_protector_gloves",
+                        "long_greaves",
+                        "leather_protector");
+
+        final Npc stewart = npcService.byId("stewart").orElseThrow();
+        assertThat(stewart.shopItems())
+                .containsExactly(
+                        "phoenix_fire_wand",
+                        "crown_ice_wand",
+                        "crystal_lightning_wand",
+                        "trinity_staff");
 
         final Npc dilys = npcService.byId("dilys").orElseThrow();
         assertThat(dilys.shopItems())

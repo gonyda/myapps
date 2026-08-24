@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-23 19:10 (Asia/Seoul)
+> 최종 업데이트: 2026-08-24 00:18 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -18,46 +18,29 @@
 - **AI Agent 아키텍처 & 5대 품질 가드레일**: `AGENTS.md`, `rules/`, `memory-bank/`, `skills/sdd/SKILL.md`, Spotless + Error Prone + ArchUnit + JaCoCo + PMD/CPD 가드레일 구축.
 - **011 알비 던전 시스템 (`.kiro/specs/myrpg/011-dungeon-system/`)**: 프로시저럴 던전 생성 엔진(`DungeonGenerator`), 안개 탐색, 연쇄 전투(10%), 턴제 방 이동 및 백트래킹 완료.
 - **013 액티브 전조 반응 전투 시스템 (`.kiro/specs/myrpg/013-active-telegraph-combat/`)**: 2단계 턴 사이클, B안 직관형 전조 뱃지, 타임아웃 무방비 피격, 스킬 alert 제거, 전체 가드레일 검증 완료.
-- **성장 & 보상 밸런스 및 로그 편의성 개선 완료**: 경험치 곡선 완화(`50L * L + 15L * L²`), 아이템 드랍 로그 수량 표기 통일.
+- **신규 장비 42종 카탈로그 & NPC 상점 판매 매핑 (`item.json`, `npc.json`)**: 총 57종 장비 확충, 밸런스 검증 0건 오차 완료.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
-- **전투 공방 페이즈 스킬 선택 UI/UX & 지연 전송(Deferred Submission) 메카닉 완료 (5대 가드레일 통과)**:
-  - **스킬 선택 시각화 (`.battle-skill-btn.selected`, `myrpg.css`)**:
-    - 황금빛 테두리(`border: 1px solid #ffd700`) + 네온 글로우(`box-shadow: 0 0 10px rgba(255, 215, 0, 0.6)`) + 미세 확대(`scale(1.03)`)로 선택된 스킬 하이라이트.
-  - **지연 전송 & 타임아웃 연계 (`myrpg.js`)**:
-    - 스킬 클릭 즉시 서버로 넘어가지 않고 클라이언트 상태(`selectedSkillId`)만 저장.
-    - 몬스터의 태세 준비 시간(타이머: 1.0s~1.5s)이 다 끝났을 때 최종 선택된 스킬로 `/battle/turn?skillId=...` 전송.
-    - 시간 내 스킬 자유 교체 및 재클릭 시 토글 해제(A안) 지원.
-  - **자원 부족 실시간 검증 & 피드백 (`myrpg.js`, `battle-view.html`)**:
-    - 스킬의 `data-resource-kind`, `data-resource-cost`와 현재 자원(스태미나/마나) 비교.
-    - 자원 부족 시 흔들림 애니메이션(`insufficient-shake`) + 하단 로그("스태미나/마나가 부족합니다.") 출력 후 선택 거절.
-    - 자원 부족 등으로 아무것도 선택 안 된 채 시간 만료 시 `timeout` 무방비 피격 처리.
-  - **선제공격 턴 방어 스킬(DEFENSE) 예외 처리 버그 픽스 (`BattleService`, `BattleLogFormatter`)**:
-    - 선제공격 찬스에서 디펜스/카운터 사용 시 100% 공격 배율로 몬스터에게 데미지가 들어가던 결함을 수정하여 0 데미지 및 `"선제 공격 기회였으나 방어 태세를 취했다!"` 로그 출력 후 턴 소비 정상화.
-  - **5대 가드레일 검증 100% 통과**: 1,092개 전체 단위/프로퍼티 테스트 통과 및 CodeGraph 동기화 완료.
+- **014 스킬 시스템 확장 (`.kiro/specs/myrpg/014-skill-system-expansion/`) 전체 구현 및 검증 완료**:
+  - **Task A (도메인 & 계산 정책)**: `SkillType` 10종, 8종 Sealed Records(`Skill`), JPA 엔티티(`BattleState`, `CharacterSkill`), `SkillRankupBonus`(패시브 선형 누적 & 메디테이션 MP 회복), `SkillRankPolicy`(4대 수련 조건), `SkillDamagePolicy`, `BattleResolver`(방어 관통 0 & 3연타/5연타), PBT 검증 완료.
+  - **Task B (카탈로그 & 애플리케이션 서비스)**: 35종 카탈로그 완비, 8종 Jackson 3 파싱, `SkillService` 육성/필드 힐링/승급 분기, `BattleService` 특수 턴 해결(궁극기 절대우위/힐/마나실드/CC/도트/디버프/메디테이션 재생/승리 쿨타임 차감), 단위/PBT 테스트 완료.
+  - **Task C (웹 컨트롤러 계층)**: `SkillRowView.java` (`fieldUsable`, `cooldownBadgeText`), `BattleSkillButton.java` (`ultimateCooldown`, `ready`), `SkillController.java` (`POST /skills/{id}/use`), 컨트롤러 슬라이스 테스트 완료.
+  - **Task D (프론트엔드 UI/UX)**: `skill-popup.html` (`공용` 탭 디펜스+패시브, `[사용]` 버튼, 궁극기 쿨다운 뱃지), `battle-view.html` (궁극기 쿨다운 잠금 뱃지, 준비 완료 황금 펄스), `myrpg.js` (`useFieldSkill`), `myrpg.css` (.skill-use-btn, .badge-cooldown, @keyframes ultimate-ready-pulse), UI 보존 통합 테스트 통과.
+  - **Task E (5대 가드레일 & 통합 검증)**: 전체 1,128개 테스트 100% PASS, Spotless + Error Prone + ArchUnit + JaCoCo(80%+) + PMD/CPD + CodeGraph sync 완료.
+
+3. **브랜치 커밋 및 원격 푸시 완료**:
+   - 브랜치: `feature/014-skill-system-expansion`
+   - 커밋: `feat(myrpg): 스킬 시스템 35종 확장 및 4대 수련 체계·특수 전투 메커니즘 구현` (`beae1a7`)
+   - 커밋: `fix(myrpg): 카운터 어택 성공 시 다음 턴 선제공격 부여 제외` (`dee81cc`)
+   - 원격 푸시: `origin/feature/014-skill-system-expansion` 푸시 완료
 
 ---
 
-## 3. 최근 변경사항 및 확정 설계값 (Recent Changes & Decisions)
+## 3. 다음 단계 (Next Steps)
 
-- **[2026-08-23] 전투 공방 스킬 선택 UI/UX**:
-  - 스킬 선택 토글: A안(선택된 스킬 재클릭 시 선택 해제) 채택.
-  - 자원 부족 시: 스킬 미선택 상태 유지 + 흔들림 애니메이션 및 하단 로그 출력.
-  - 타이머 만료 시점: 최종 선택 스킬 전송 (미선택 시 `timeout` 전송).
-- **[2026-08-23] 디펜스 스킬 경감률 및 몬스터 기본 경감률**:
-  - `defense` 스킬 `blockRateByRank`: F:70% ~ Master:95%
-  - 모든 몬스터 기본 `defenseBlockRate`: 70% 고정 (`monster.json` 오버라이드 지원)
-- **[2026-08-23] `docs/todo.md` 잔여 태스크**:
-  - **1번 섹션**: 인게임 시간대별 웹 배경화면 색상 동적 전환
-  - **2번 섹션**: 간이 로그인 기능 (로그인 화면 우선 구현)
-  - **3번 섹션**: 게임 내 환경 & 시스템 확장 (기존 백로그)
-
----
-
-## 4. 다음 단계 (Next Steps)
-
-1. **`docs/todo.md` 1번 섹션**: 인게임 시간대별 웹 배경화면 색상 동적 전환 (`TimeOfDay` 기반 CSS 테마 전환)
-2. **2번 섹션**: 간이 로그인 기능 (로그인 화면 우선 구현)
+1. **사용자 확인 및 다음 기능/스펙 진행**:
+   - `feature/014-skill-system-expansion` PR 생성 및 머지 여부 확인
+   - 다음 신규 기능 개발 또는 사용자 추가 요청 사항 처리

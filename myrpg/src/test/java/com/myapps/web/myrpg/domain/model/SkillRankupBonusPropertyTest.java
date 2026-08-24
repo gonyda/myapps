@@ -191,6 +191,44 @@ class SkillRankupBonusPropertyTest {
         assertThat(vitalResult).isEqualTo(new VitalMax(0, 0, 0));
     }
 
+    /**
+     * Property 6: 임의의 패시브 스킬과 임의의 랭크(order k)에 대해 합산된 보너스는 round(Max * k / 15) 불변식을 만족한다.
+     *
+     * <p><b>Validates: Requirement 6.3</b>
+     *
+     * @param maxStat MASTER 랭크 기준 최대 보너스 (1~200)
+     * @param rank 임의의 스킬 랭크
+     */
+    @Property(tries = 100)
+    void property6_should_accumulateLinearBonus_for_passiveSkill(
+            @ForAll("positiveMaxStat") final int maxStat, @ForAll("anyRank") final SkillRank rank) {
+        final CharacterSkill passiveOwned = new CharacterSkill(1L, "test_passive", rank, 0, 0);
+        final PassiveSkill passiveSkill =
+                new PassiveSkill(
+                        "test_passive",
+                        "테스트 패시브",
+                        SkillType.PASSIVE,
+                        SkillTalent.COMMON,
+                        0,
+                        Map.of(BonusTarget.STR, maxStat, BonusTarget.HP, maxStat),
+                        "desc");
+
+        final Function<String, Optional<Skill>> lookup =
+                id -> "test_passive".equals(id) ? Optional.of(passiveSkill) : Optional.empty();
+
+        final Stats statResult = bonus.sum(List.of(passiveOwned), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(passiveOwned), lookup);
+
+        final int expectedBonus = Math.round((float) maxStat * rank.order() / 15.0f);
+        assertThat(statResult.str()).isEqualTo(expectedBonus);
+        assertThat(vitalResult.hp()).isEqualTo(expectedBonus);
+    }
+
+    @Provide
+    Arbitrary<Integer> positiveMaxStat() {
+        return Arbitraries.integers().between(1, 200);
+    }
+
     @Provide
     Arbitrary<SkillRank> anyRank() {
         return Arbitraries.of(SkillRank.values());

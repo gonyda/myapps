@@ -21,10 +21,12 @@ import com.myapps.web.myrpg.domain.model.EquipmentKind;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
+import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.StorageKind;
@@ -717,6 +719,7 @@ public class InventoryService {
             case HP -> "HP";
             case MP -> "MP";
             case STAMINA -> "Stamina";
+            case MP_REGEN -> "MP Regen";
         };
     }
 
@@ -848,24 +851,32 @@ public class InventoryService {
             return Optional.empty();
         }
         final Skill catalog = catalogOpt.get();
+        if (catalog instanceof PassiveSkill) {
+            return Optional.empty();
+        }
         final SkillTalent skillTalent = catalog.talent();
 
         if (skillTalent == SkillTalent.COMMON) {
-            return Optional.of(toBattleSkillButton(catalog));
+            return Optional.of(toBattleSkillButton(characterSkill, catalog));
         }
         if (weaponTalent != null && skillTalent == weaponTalent) {
-            return Optional.of(toBattleSkillButton(catalog));
+            return Optional.of(toBattleSkillButton(characterSkill, catalog));
         }
         return Optional.empty();
     }
 
-    private BattleSkillButton toBattleSkillButton(final Skill catalog) {
+    private BattleSkillButton toBattleSkillButton(
+            final CharacterSkill characterSkill, final Skill catalog) {
+        final int cooldown = characterSkill.getUltimateCooldown();
+        final boolean ready = catalog.type() == SkillType.ULTIMATE && cooldown == 0;
         return new BattleSkillButton(
                 catalog.id(),
                 catalog.label(),
                 catalog.type(),
                 catalog.talent().resourceKind(),
-                catalog.resourceCost());
+                catalog.resourceCost(),
+                cooldown,
+                ready);
     }
 
     // ─── durability helpers ─────────────────────────────────────────────────

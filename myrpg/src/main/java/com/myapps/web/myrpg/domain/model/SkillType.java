@@ -17,7 +17,28 @@ public enum SkillType {
     HEAVY("강"),
 
     /** 방어 스킬. */
-    DEFENSE("방어");
+    DEFENSE("방어"),
+
+    /** 회복 스킬 (힐링). */
+    RECOVERY("회복"),
+
+    /** 결전 궁극기 스킬 (메테오, 파이널 히트/샷). */
+    ULTIMATE("궁극기"),
+
+    /** 상시 영구 패시브 스킬 (마스터리, 메디테이션 등). */
+    PASSIVE("패시브"),
+
+    /** 버프 스킬 (마나 실드). */
+    BUFF("버프"),
+
+    /** 디버프 스킬 (레이지 임팩트). */
+    DEBUFF("디버프"),
+
+    /** 군중 제어 스킬 (스파이더 샷). */
+    CC("제어"),
+
+    /** 지속 피해 스킬 (미라지 미사일). */
+    DOT("지속피해");
 
     private final String label;
 
@@ -35,12 +56,22 @@ public enum SkillType {
     }
 
     /**
+     * 막타 처치 수련 조건이 면제되는 타입인지 여부를 반환한다.
+     *
+     * <p>DEFENSE, RECOVERY, ULTIMATE, BUFF, CC, DOT, PASSIVE는 막타 처치 조건이 0(면제)이다. NORMAL, HEAVY,
+     * DEBUFF 직접 타격 스킬만 막타 처치 조건을 요구한다.
+     *
+     * @return 막타 처치 조건 면제 여부
+     */
+    public boolean isKillExempt() {
+        return this != NORMAL && this != HEAVY && this != DEBUFF;
+    }
+
+    /**
      * 문자열로부터 {@code SkillType}을 안전하게 조회한다.
      *
-     * <p>상수명 비교는 대소문자를 구분한다(예: "NORMAL"). {@code null}, 공백, 알려지지 않은 문자열이면 빈 {@code Optional}을 반환한다.
-     *
-     * @param value 조회할 스킬 타입 상수명
-     * @return 유효한 상수명이면 해당 {@code SkillType}을 담은 {@code Optional}, 그 외 빈 값
+     * @param value 조회할 문자열 (null 허용)
+     * @return 일치하는 SkillType을 감싼 {@code Optional}, 불일치 또는 null이면 빈 {@code Optional}
      */
     public static Optional<SkillType> fromString(final String value) {
         if (value == null || value.isBlank()) {

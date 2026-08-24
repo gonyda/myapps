@@ -51,6 +51,7 @@ class SkillRankPolicyTest {
     @Test
     @DisplayName("F→Master 전체 AP 소모 합계는 200")
     void should_sumApCostTo200_when_allRanksAggregated() {
+        // given & when
         int totalAp = 0;
         for (final SkillRank rank : SkillRank.values()) {
             final OptionalInt apCost = policy.apCost(rank);
@@ -58,6 +59,41 @@ class SkillRankPolicyTest {
                 totalAp += apCost.getAsInt();
             }
         }
+
+        // then
         assertThat(totalAp).isEqualTo(200);
+    }
+
+    @Test
+    @DisplayName("궁극기 승급 요구치: F랭크 1회, 1랭크 20회, 막타 처치는 항상 0")
+    void should_returnUltimateRequirements_when_ultimateType() {
+        // given & when
+        final Optional<RankUpRequirement> fReq = policy.ultimateRequirement(SkillRank.F);
+        final Optional<RankUpRequirement> r1Req = policy.ultimateRequirement(SkillRank.R1);
+        final Optional<RankUpRequirement> masterReq = policy.ultimateRequirement(SkillRank.MASTER);
+
+        // then
+        assertThat(fReq).isPresent();
+        assertThat(fReq.get().requiredUsage()).isEqualTo(1);
+        assertThat(fReq.get().requiredKills()).isZero();
+
+        assertThat(r1Req).isPresent();
+        assertThat(r1Req.get().requiredUsage()).isEqualTo(20);
+        assertThat(r1Req.get().requiredKills()).isZero();
+
+        assertThat(masterReq).isEmpty();
+    }
+
+    @Test
+    @DisplayName("requirementFor: PASSIVE는 usage=0, kills=0 즉시 승급 반환")
+    void should_returnZeroUsageRequirement_when_passiveType() {
+        // given & when
+        final Optional<RankUpRequirement> passiveReq =
+                policy.requirementFor(SkillRank.F, SkillType.PASSIVE);
+
+        // then
+        assertThat(passiveReq).isPresent();
+        assertThat(passiveReq.get().requiredUsage()).isZero();
+        assertThat(passiveReq.get().requiredKills()).isZero();
     }
 }

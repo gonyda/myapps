@@ -564,6 +564,48 @@ class BattleServiceClashTest {
     }
 
     @Test
+    @DisplayName("유저 카운터어택 성공(vs 몬스터 일반공격) 시 반격 피해를 입히지만 다음 턴 선제권은 NONE이다")
+    void takeTurn_PlayerCounterAttackVsMonsterNormal_DoesNotGrantPreemptive() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setCurrentMonsterIntent(SkillType.NORMAL);
+        state.setStandby(false);
+        state.setTurnCount(1);
+
+        final DefenseSkill counter = createDefenseSkill("counter_attack", "카운터 어택", 0);
+        when(skillCatalogService.byId("counter_attack")).thenReturn(Optional.of(counter));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "counter_attack"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "counter_attack")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "counter_attack");
+
+        assertThat(result.monsterAction()).isEqualTo(SkillType.NORMAL);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
+    }
+
+    @Test
+    @DisplayName("유저 카운터어택 성공(vs 몬스터 강공격) 시 반격 피해를 입히지만 다음 턴 선제권은 NONE이다")
+    void takeTurn_PlayerCounterAttackVsMonsterHeavy_DoesNotGrantPreemptive() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setCurrentMonsterIntent(SkillType.HEAVY);
+        state.setStandby(false);
+        state.setTurnCount(1);
+
+        final DefenseSkill counter = createDefenseSkill("counter_attack", "카운터 어택", 0);
+        when(skillCatalogService.byId("counter_attack")).thenReturn(Optional.of(counter));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "counter_attack"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "counter_attack")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "counter_attack");
+
+        assertThat(result.monsterAction()).isEqualTo(SkillType.HEAVY);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
+    }
+
+    @Test
     @DisplayName("플레이어 선제권 상태에서 공방 개시 시 선제공격 찬스 뱃지가 부여되고 intent는 null이 된다")
     void startClash_WithPlayerPreemptive_SetsPreemptiveBadgeAndNullIntent() {
         final CharacterProgress progress = createProgress(100);
