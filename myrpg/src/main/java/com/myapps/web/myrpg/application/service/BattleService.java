@@ -388,7 +388,7 @@ public class BattleService {
                         }
                     }
 
-                    if (skill.type() == SkillType.DEFENSE && monsterAction == SkillType.NORMAL) {
+                    if ("defense".equals(skill.id()) && monsterAction == SkillType.NORMAL) {
                         nextPreemptive = PreemptiveParty.PLAYER;
                     } else if (skill.type() == SkillType.NORMAL
                             && monsterAction == SkillType.DEFENSE) {
