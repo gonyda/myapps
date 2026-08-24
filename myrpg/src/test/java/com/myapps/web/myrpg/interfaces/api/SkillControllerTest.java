@@ -121,6 +121,56 @@ class SkillControllerTest {
                 .andExpect(model().attributeExists("message"));
     }
 
+    /** POST /skills/{id}/use 성공 시 FieldSkillResult JSON이 반환되는지 검증한다. */
+    @Test
+    void should_returnSuccessResult_when_useSkillSucceeds() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final com.myapps.web.myrpg.application.dto.FieldSkillResult result =
+                com.myapps.web.myrpg.application.dto.FieldSkillResult.success(
+                        "힐링 발동! 생명력을 20 회복했습니다.", 80, 100, 30, 50, 20);
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.useFieldSkill(progress.getId(), "healing")).thenReturn(result);
+
+        mockMvc.perform(post("/skills/{id}/use", "healing"))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.success")
+                                .value(true))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.healedAmount")
+                                .value(20))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.hpCurrent")
+                                .value(80));
+    }
+
+    /** POST /skills/{id}/use 실패(마나 부족) 시 실패 FieldSkillResult JSON이 반환되는지 검증한다. */
+    @Test
+    void should_returnFailureResult_when_useSkillFailsDueToLowMp() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final com.myapps.web.myrpg.application.dto.FieldSkillResult result =
+                com.myapps.web.myrpg.application.dto.FieldSkillResult.failure(
+                        "마나가 부족합니다.", 50, 100, 2, 50);
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.useFieldSkill(progress.getId(), "healing")).thenReturn(result);
+
+        mockMvc.perform(post("/skills/{id}/use", "healing"))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.success")
+                                .value(false))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.message")
+                                .value("마나가 부족합니다."));
+    }
+
     private SkillListView dummyListView(final String activeTab) {
         final SkillRowView row = new SkillRowView(SKILL_ID, "윈드밀", "근접전투", "F", 0, false, false);
         return new SkillListView(activeTab, List.of(row));

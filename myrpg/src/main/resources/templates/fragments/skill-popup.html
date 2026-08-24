@@ -42,6 +42,15 @@
                       th:if="${!row.maxed()}"
                       th:text="${row.progressPercent()} + '%'">0%</span>
             </div>
+            <!-- 궁극기 쿨타임 뱃지 -->
+            <span class="badge-cooldown"
+                  th:if="${row.cooldownBadgeText() != null}"
+                  th:text="${row.cooldownBadgeText()}"
+                  th:classappend="${row.cooldownBadgeText() == '준비 완료'} ? ' ready' : ' waiting'">준비 완료</span>
+            <!-- 필드 스킬 사용 버튼 (힐링 등) -->
+            <button class="skill-use-btn"
+                    th:if="${row.fieldUsable()}"
+                    th:attr="onclick='useFieldSkill(\'' + ${row.id()} + '\')'">사용</button>
             <button class="skill-rankup-btn"
                     th:classappend="${row.maxed()} ? ' maxed' : (${row.progressPercent() == 100} ? ' ready' : '')"
                     th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"

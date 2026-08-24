@@ -54,15 +54,20 @@
          th:fragment="battle-skills"
          th:classappend="${battleView != null && battleView.standby ? 'disabled-skills' : ''}">
         <button th:each="skill : ${skills != null ? skills : battleView.skills}"
-                th:text="${skill.label()}"
                 th:attr="data-skill-id=${skill.id()},
                          data-skill-label=${skill.label()},
                          data-resource-kind=${skill.resourceKind()},
                          data-resource-cost=${skill.resourceCost()}"
                 class="battle-skill-btn"
-                th:disabled="${battleView != null && battleView.standby}"
+                th:classappend="${skill.type().name() == 'ULTIMATE'} ? (${skill.ultimateCooldown() > 0} ? ' ultimate-cooldown' : ' ultimate-ready') : ''"
+                th:disabled="${(battleView != null && battleView.standby) || (skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0)}"
                 onclick="selectBattleSkill(this)">
-            스킬
+            <span th:text="${skill.label()}">스킬</span>
+            <span th:if="${skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0}"
+                  class="btn-cooldown-text"
+                  th:text="' [🔒 (' + ${skill.ultimateCooldown()} + '승 남음)]'"> [🔒 (30승 남음)]</span>
+            <span th:if="${skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() == 0}"
+                  class="btn-ready-badge"> [⚡ (READY!)]</span>
         </button>
     </div>
 

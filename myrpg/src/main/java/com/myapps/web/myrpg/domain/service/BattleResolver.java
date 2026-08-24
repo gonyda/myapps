@@ -75,6 +75,43 @@ public class BattleResolver {
     }
 
     /**
+     * 방어 관통 여부를 고려하여 감산형 기본피해를 계산한다.
+     *
+     * <p>{@code defensePierce == true}이면 대상 방어력을 0으로 계산하여 100% 관통 피해를 산출한다.
+     *
+     * @param attackPower 공격력
+     * @param skillMultiplierPercent 스킬 배율(%)
+     * @param targetDefense 대상 방어력
+     * @param defensePierce 방어 관통 여부
+     * @return 기본피해 (최소 1)
+     */
+    public int baseDamage(
+            final int attackPower,
+            final int skillMultiplierPercent,
+            final int targetDefense,
+            final boolean defensePierce) {
+        final int effectiveDefense = defensePierce ? 0 : targetDefense;
+        return baseDamage(attackPower, skillMultiplierPercent, effectiveDefense);
+    }
+
+    /**
+     * 랜덤 다단히트 타격 횟수를 산출한다.
+     *
+     * @param minHits 최소 타수
+     * @param maxHits 최대 타수
+     * @return 결정된 타격 횟수 (minHits <= return <= maxHits)
+     */
+    public int rollHitCount(final int minHits, final int maxHits) {
+        if (minHits <= 0 && maxHits <= 0) {
+            return 1;
+        }
+        if (minHits >= maxHits) {
+            return Math.max(1, minHits);
+        }
+        return minHits + random.nextInt(maxHits - minHits + 1);
+    }
+
+    /**
      * 상성계수를 반환한다.
      *
      * <p>상성 결과와 방어 관련 플래그에 따라 계수를 결정한다:
@@ -136,11 +173,39 @@ public class BattleResolver {
     }
 
     /**
-     * 멀티히트 피해를 산출한다.
+     * 멀티히트 피해를 산출한다 (방어 관통 지원).
      *
-     * <p>{@code hitCount}번 반복하여 각 히트마다 감산(방어 차감)·크리티컬·편차를 독립적으로 적용한 결과를 반환한다. 난수 소비 순서는 히트마다 {@code
-     * rollCritical}(크리) → {@code finalDamage}(편차) 순이며, {@code hitCount == 1}이면 기존 단일 {@code
-     * finalDamage} 호출과 동일한 난수 시퀀스를 유지한다.
+     * <p>{@code hitCount}번 반복하여 각 히트마다 감산(방어 차감)·크리티컬·편차를 독립적으로 적용한 결과를 반환한다.
+     *
+     * @param attackPower 공격력
+     * @param perHitMultiplierPercent 1히트당 스킬 배율(%)
+     * @param targetDefense 대상 방어력
+     * @param affinityCoefficient 상성계수
+     * @param critChance 크리티컬 수치 (0~1000)
+     * @param hitCount 히트 수 (1 이상)
+     * @param defensePierce 방어력 100% 관통 여부
+     * @return 각 히트의 피해량과 크리티컬 여부를 담은 리스트 (크기 == hitCount)
+     */
+    public List<HitResult> multiHitDamage(
+            final int attackPower,
+            final int perHitMultiplierPercent,
+            final int targetDefense,
+            final double affinityCoefficient,
+            final int critChance,
+            final int hitCount,
+            final boolean defensePierce) {
+        final List<HitResult> hits = new ArrayList<>(hitCount);
+        for (int i = 0; i < hitCount; i++) {
+            final int base =
+                    baseDamage(attackPower, perHitMultiplierPercent, targetDefense, defensePierce);
+            final boolean crit = rollCritical(critChance);
+            hits.add(new HitResult(finalDamage(base, affinityCoefficient, crit), crit));
+        }
+        return hits;
+    }
+
+    /**
+     * 멀티히트 피해를 산출한다 (하위호환: defensePierce=false).
      *
      * @param attackPower 공격력
      * @param perHitMultiplierPercent 1히트당 스킬 배율(%)
@@ -157,13 +222,14 @@ public class BattleResolver {
             final double affinityCoefficient,
             final int critChance,
             final int hitCount) {
-        final List<HitResult> hits = new ArrayList<>(hitCount);
-        for (int i = 0; i < hitCount; i++) {
-            final int base = baseDamage(attackPower, perHitMultiplierPercent, targetDefense);
-            final boolean crit = rollCritical(critChance);
-            hits.add(new HitResult(finalDamage(base, affinityCoefficient, crit), crit));
-        }
-        return hits;
+        return multiHitDamage(
+                attackPower,
+                perHitMultiplierPercent,
+                targetDefense,
+                affinityCoefficient,
+                critChance,
+                hitCount,
+                false);
     }
 
     /**
@@ -240,9 +306,13 @@ public class BattleResolver {
     private ResolvedTurn resolveAttackWins(final TurnInput input) {
         final List<HitResult> hits =
                 multiHitDamage(
-                        input.playerAttackPower(), input.playerMultiplierPercent(),
-                        input.monsterDefense(), WIN_COEFFICIENT,
-                        input.playerCritical(), input.playerHitCount());
+                        input.playerAttackPower(),
+                        input.playerMultiplierPercent(),
+                        input.monsterDefense(),
+                        WIN_COEFFICIENT,
+                        input.playerCritical(),
+                        input.playerHitCount(),
+                        input.playerDefensePierce());
         final int totalDamage = sumDamage(hits);
         final boolean anyCrit = anyCritical(hits);
 
@@ -310,9 +380,13 @@ public class BattleResolver {
         final double blockCoeff = 1.0 - input.monsterBlockRatePercent() / 100.0;
         final List<HitResult> hits =
                 multiHitDamage(
-                        input.playerAttackPower(), input.playerMultiplierPercent(),
-                        input.monsterDefense(), blockCoeff,
-                        input.playerCritical(), input.playerHitCount());
+                        input.playerAttackPower(),
+                        input.playerMultiplierPercent(),
+                        input.monsterDefense(),
+                        blockCoeff,
+                        input.playerCritical(),
+                        input.playerHitCount(),
+                        input.playerDefensePierce());
         final int totalDamage = sumDamage(hits);
         final boolean anyCrit = anyCritical(hits);
 
@@ -370,9 +444,13 @@ public class BattleResolver {
     private ResolvedTurn resolveDrawAttack(final TurnInput input) {
         final List<HitResult> hits =
                 multiHitDamage(
-                        input.playerAttackPower(), input.playerMultiplierPercent(),
-                        input.monsterDefense(), DRAW_COEFFICIENT,
-                        input.playerCritical(), input.playerHitCount());
+                        input.playerAttackPower(),
+                        input.playerMultiplierPercent(),
+                        input.monsterDefense(),
+                        DRAW_COEFFICIENT,
+                        input.playerCritical(),
+                        input.playerHitCount(),
+                        input.playerDefensePierce());
         final int playerDmg = sumDamage(hits);
         final boolean playerCrit = anyCritical(hits);
 

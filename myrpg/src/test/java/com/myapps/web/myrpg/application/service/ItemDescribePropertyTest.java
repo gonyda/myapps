@@ -400,6 +400,8 @@ class ItemDescribePropertyTest {
             return "HP";
         } else if (target == BonusTarget.MP) {
             return "MP";
+        } else if (target == BonusTarget.MP_REGEN) {
+            return "MP Regen";
         } else if (target == BonusTarget.STAMINA) {
             return "Stamina";
         }

@@ -393,6 +393,40 @@ class BattleControllerTest {
                 .andExpect(content().string(not(containsString("battle-log-line"))));
     }
 
+    /** GET /battle/skills 요청 시 궁극기 쿨다운 및 준비완료 상태가 포함된 스킬 버튼 목록이 모델에 전달되는지 검증한다. */
+    @Test
+    void should_includeUltimateSkillsWithCooldown_when_skillsRequested() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final List<BattleSkillButton> skills =
+                List.of(
+                        new BattleSkillButton(
+                                "smash", "스매시", SkillType.HEAVY, ResourceKind.STAMINA, 5, 0, false),
+                        new BattleSkillButton(
+                                "final_hit",
+                                "파이널 히트",
+                                SkillType.ULTIMATE,
+                                ResourceKind.STAMINA,
+                                15,
+                                5,
+                                false),
+                        new BattleSkillButton(
+                                "meteor_strike",
+                                "메테오 스트라이크",
+                                SkillType.ULTIMATE,
+                                ResourceKind.MP,
+                                30,
+                                0,
+                                true));
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.combatSkills(any(CharacterProgress.class))).thenReturn(skills);
+
+        mockMvc.perform(get("/battle/skills"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("skills"))
+                .andExpect(model().attribute("skills", hasSize(3)));
+    }
+
     // ─── 테스트 데이터 생성 헬퍼 ────────────────────────────────────────────
 
     private Monster createTestMonster() {

@@ -63,6 +63,29 @@ public class BattleLogFormatter {
         }
 
         final String prefix = input.skillLabel() + "(" + input.playerType().label() + ")";
+        if (input.playerType() == SkillType.ULTIMATE) {
+            if (isMultiHit(input)) {
+                lines.add(
+                        "결전 궁극기! "
+                                + prefix
+                                + " "
+                                + input.playerHits().size()
+                                + "연타 (절대 우위 100% 관통)");
+                lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));
+            } else {
+                final String hit =
+                        "결전 궁극기! "
+                                + prefix
+                                + "로 "
+                                + input.monsterName()
+                                + "에게 "
+                                + input.playerDamage()
+                                + " 피해 (절대 우위 100% 관통)";
+                lines.add(input.playerCritical() ? hit + " (크리티컬!)" : hit);
+            }
+            return;
+        }
+
         if (input.playerDamage() <= 0) {
             lines.add("선제 공격 기회였으나 " + prefix + " 태세를 취했다!");
             return;

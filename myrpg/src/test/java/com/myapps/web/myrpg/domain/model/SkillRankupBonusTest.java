@@ -138,6 +138,81 @@ class SkillRankupBonusTest {
         assertThat(result).isEqualTo(Stats.ZERO);
     }
 
+    @Test
+    @DisplayName("패시브 6종 랭크업 시 선형 스탯 및 바이탈 누적 가산")
+    void should_addLinearPassiveBonus_when_passiveSkillsRankedUp() {
+        // given
+        // combat_mastery (STR +20, HP +50), R9 (order 6) -> STR: round(20*6/15)=8, HP:
+        // round(50*6/15)=20
+        final CharacterSkill combat = new CharacterSkill(1L, "combat_mastery", SkillRank.R9, 0, 0);
+        // critical_hit (CRITICAL +100), MASTER (order 15) -> CRITICAL: 100
+        final CharacterSkill crit = new CharacterSkill(1L, "critical_hit", SkillRank.MASTER, 0, 0);
+        // meditation (MP +30), R1 (order 14) -> MP: round(30*14/15)=28
+        final CharacterSkill medi = new CharacterSkill(1L, "meditation", SkillRank.R1, 0, 0);
+
+        final PassiveSkill combatSkill =
+                new PassiveSkill(
+                        "combat_mastery",
+                        "컴뱃 마스터리",
+                        SkillType.PASSIVE,
+                        SkillTalent.COMMON,
+                        0,
+                        Map.of(BonusTarget.STR, 20, BonusTarget.HP, 50),
+                        "desc");
+        final PassiveSkill critSkill =
+                new PassiveSkill(
+                        "critical_hit",
+                        "크리티컬 히트",
+                        SkillType.PASSIVE,
+                        SkillTalent.COMMON,
+                        0,
+                        Map.of(BonusTarget.CRITICAL, 100),
+                        "desc");
+        final PassiveSkill mediSkill =
+                new PassiveSkill(
+                        "meditation",
+                        "메디테이션",
+                        SkillType.PASSIVE,
+                        SkillTalent.COMMON,
+                        0,
+                        Map.of(BonusTarget.MP, 30),
+                        "desc");
+
+        final Function<String, Optional<Skill>> lookup =
+                id ->
+                        switch (id) {
+                            case "combat_mastery" -> Optional.of(combatSkill);
+                            case "critical_hit" -> Optional.of(critSkill);
+                            case "meditation" -> Optional.of(mediSkill);
+                            default -> Optional.empty();
+                        };
+
+        // when
+        final Stats statResult = bonus.sum(List.of(combat, crit, medi), lookup);
+        final VitalMax vitalResult = bonus.sumVital(List.of(combat, crit, medi), lookup);
+        final int regenResult = bonus.sumMpRegen(List.of(medi), lookup);
+
+        // then
+        assertThat(statResult.str()).isEqualTo(8);
+        assertThat(statResult.critical()).isEqualTo(100);
+        assertThat(vitalResult.hp()).isEqualTo(20);
+        assertThat(vitalResult.mp()).isEqualTo(28);
+        assertThat(regenResult).isEqualTo(5); // R1 order 14 -> 5 MP regen
+    }
+
+    @Test
+    @DisplayName("메디테이션 미보유 시 sumMpRegen은 0을 반환")
+    void should_returnZeroMpRegen_when_noMeditationOwned() {
+        // given
+        final Function<String, Optional<Skill>> lookup = id -> Optional.empty();
+
+        // when
+        final int regen = bonus.sumMpRegen(List.of(), lookup);
+
+        // then
+        assertThat(regen).isZero();
+    }
+
     private Function<String, Optional<Skill>> createLookup(
             final String skillId, final SkillTalent talent) {
         final Skill skill = createDamageSkill(skillId, talent);

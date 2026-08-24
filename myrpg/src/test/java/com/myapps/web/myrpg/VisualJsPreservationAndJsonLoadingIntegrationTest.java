@@ -33,7 +33,7 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     private static final String MAP_JSON_PATH = "data/map.json";
     private static final String AMBIENCE_JSON_PATH = "data/ambience.json";
     private static final String SKILL_JSON_PATH = "data/skill.json";
-    private static final int EXPECTED_SKILL_COUNT = 11;
+    private static final int EXPECTED_SKILL_COUNT = 35;
 
     private static final List<String> EXPECTED_FRAGMENTS =
             List.of(
@@ -75,7 +75,9 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
                     "openShop",
                     "closeShop",
                     "openRepair",
-                    "closeRepair");
+                    "closeRepair",
+                    "openSkillPopup",
+                    "useFieldSkill");
 
     private static final List<String> JS_NPC_ACTION_FUNCTIONS =
             List.of(

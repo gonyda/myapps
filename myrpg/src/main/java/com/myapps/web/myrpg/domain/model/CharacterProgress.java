@@ -312,6 +312,7 @@ public class CharacterProgress {
      * @param max 회복할 최대값 (HP/MP/Stamina 모두 동일하게 적용)
      * @deprecated 바이탈별 최대치를 지원하는 {@link #fullRecover(VitalMax)}를 사용할 것
      */
+    @Deprecated
     public void fullRecover(final int max) {
         this.hpCurrent = max;
         this.mpCurrent = max;
@@ -399,6 +400,65 @@ public class CharacterProgress {
             throw new InsufficientGoldException("골드 부족: 소모 요청 " + amount + ", 보유 " + this.gold);
         }
         this.gold -= amount;
+    }
+
+    /**
+     * HP를 지정된 양만큼 회복한다.
+     *
+     * <p>HP는 maxHp를 초과하여 회복되지 않는다.
+     *
+     * @param amount 회복할 양 (양수)
+     * @param maxHp 최대 HP 상한
+     */
+    public void healHp(final int amount, final int maxHp) {
+        if (amount > 0) {
+            this.hpCurrent = Math.min(maxHp, this.hpCurrent + amount);
+        }
+    }
+
+    /**
+     * MP를 지정된 양만큼 소모한다.
+     *
+     * @param amount 소모할 MP (양수)
+     * @throws IllegalArgumentException 소모량이 현재 MP를 초과할 경우
+     */
+    public void spendMp(final int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        if (amount > this.mpCurrent) {
+            throw new IllegalArgumentException("MP 부족: 필요 " + amount + ", 보유 " + this.mpCurrent);
+        }
+        this.mpCurrent -= amount;
+    }
+
+    /**
+     * MP를 지정된 양만큼 회복한다.
+     *
+     * @param amount 회복할 MP (양수)
+     * @param maxMp 최대 MP 상한
+     */
+    public void recoverMp(final int amount, final int maxMp) {
+        if (amount > 0) {
+            this.mpCurrent = Math.min(maxMp, this.mpCurrent + amount);
+        }
+    }
+
+    /**
+     * 스태미나를 지정된 양만큼 소모한다.
+     *
+     * @param amount 소모할 스태미나 (양수)
+     * @throws IllegalArgumentException 소모량이 현재 스태미나를 초과할 경우
+     */
+    public void spendStamina(final int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        if (amount > this.staminaCurrent) {
+            throw new IllegalArgumentException(
+                    "스태미나 부족: 필요 " + amount + ", 보유 " + this.staminaCurrent);
+        }
+        this.staminaCurrent -= amount;
     }
 
     /**

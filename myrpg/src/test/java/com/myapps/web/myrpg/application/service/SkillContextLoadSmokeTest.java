@@ -27,7 +27,7 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class SkillContextLoadSmokeTest {
 
-    private static final int EXPECTED_SKILL_COUNT = 11;
+    private static final int EXPECTED_SKILL_COUNT = 35;
     private static final List<String> DEFAULT_SEED_SKILL_IDS =
             List.of("slash", "aimed_shot", "mana_bolt", "defense");
 
@@ -51,7 +51,7 @@ class SkillContextLoadSmokeTest {
         assertThat(skillService).isNotNull();
     }
 
-    /** SkillCatalogService가 기동 시 11종 스킬을 로드하는지 검증한다. */
+    /** SkillCatalogService가 기동 시 35종 스킬을 로드하는지 검증한다. */
     @Test
     void should_loadElevenSkills_onStartup() {
         assertThat(skillCatalogService.all()).hasSize(EXPECTED_SKILL_COUNT);

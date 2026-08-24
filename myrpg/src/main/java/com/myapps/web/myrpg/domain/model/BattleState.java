@@ -58,6 +58,24 @@ public class BattleState {
     @Column(name = "preemptive_party")
     private PreemptiveParty preemptiveParty;
 
+    @Column(name = "next_attack_amp_percent", nullable = false, columnDefinition = "int default 0")
+    private int nextAttackAmpPercent;
+
+    @Column(name = "mana_shield_turns_left", nullable = false, columnDefinition = "int default 0")
+    private int manaShieldTurnsLeft;
+
+    @Column(name = "mana_shield_absorb_rate", nullable = false, columnDefinition = "int default 0")
+    private int manaShieldAbsorbRate;
+
+    @Column(name = "monster_stunned_turns", nullable = false, columnDefinition = "int default 0")
+    private int monsterStunnedTurns;
+
+    @Column(name = "dot_damage_per_turn", nullable = false, columnDefinition = "int default 0")
+    private int dotDamagePerTurn;
+
+    @Column(name = "dot_turns_left", nullable = false, columnDefinition = "int default 0")
+    private int dotTurnsLeft;
+
     /** JPA 전용 기본 생성자. */
     protected BattleState() {}
 
@@ -250,5 +268,161 @@ public class BattleState {
      */
     public void setPreemptiveParty(final PreemptiveParty preemptiveParty) {
         this.preemptiveParty = preemptiveParty != null ? preemptiveParty : PreemptiveParty.NONE;
+    }
+
+    /**
+     * 다음 공격 피해 증폭율(%)을 반환한다 (레이지 임팩트 디버프).
+     *
+     * @return 피해 증폭율 (기본 0, 발동 시 30)
+     */
+    public int getNextAttackAmpPercent() {
+        return nextAttackAmpPercent;
+    }
+
+    /**
+     * 다음 공격 피해 증폭율(%)을 설정한다.
+     *
+     * @param nextAttackAmpPercent 증폭율
+     */
+    public void setNextAttackAmpPercent(final int nextAttackAmpPercent) {
+        this.nextAttackAmpPercent = nextAttackAmpPercent;
+    }
+
+    /**
+     * 마나 실드 남은 지속 턴 수를 반환한다.
+     *
+     * @return 남은 턴 수 (0이면 비활성)
+     */
+    public int getManaShieldTurnsLeft() {
+        return manaShieldTurnsLeft;
+    }
+
+    /**
+     * 마나 실드 남은 지속 턴 수를 설정한다.
+     *
+     * @param manaShieldTurnsLeft 남은 턴 수
+     */
+    public void setManaShieldTurnsLeft(final int manaShieldTurnsLeft) {
+        this.manaShieldTurnsLeft = Math.max(0, manaShieldTurnsLeft);
+    }
+
+    /** 마나 실드 지속 턴 수를 1 감소시킨다 (하한 0). */
+    public void decrementManaShieldTurns() {
+        if (this.manaShieldTurnsLeft > 0) {
+            this.manaShieldTurnsLeft--;
+        }
+    }
+
+    /**
+     * 마나 실드가 활성화되어 있는지 여부를 반환한다.
+     *
+     * @return 활성화 시 {@code true}
+     */
+    public boolean hasActiveManaShield() {
+        return this.manaShieldTurnsLeft > 0;
+    }
+
+    /**
+     * 마나 실드 피해 감쇄율(%)을 반환한다.
+     *
+     * @return 감쇄율 (0~100)
+     */
+    public int getManaShieldAbsorbRate() {
+        return manaShieldAbsorbRate;
+    }
+
+    /**
+     * 마나 실드 피해 감쇄율(%)을 설정한다.
+     *
+     * @param manaShieldAbsorbRate 감쇄율
+     */
+    public void setManaShieldAbsorbRate(final int manaShieldAbsorbRate) {
+        this.manaShieldAbsorbRate = manaShieldAbsorbRate;
+    }
+
+    /**
+     * 몬스터 기절/속박 남은 턴 수를 반환한다.
+     *
+     * @return 기절 남은 턴 수 (0이면 정상)
+     */
+    public int getMonsterStunnedTurns() {
+        return monsterStunnedTurns;
+    }
+
+    /**
+     * 몬스터 기절/속박 남은 턴 수를 설정한다.
+     *
+     * @param monsterStunnedTurns 기절 턴 수
+     */
+    public void setMonsterStunnedTurns(final int monsterStunnedTurns) {
+        this.monsterStunnedTurns = Math.max(0, monsterStunnedTurns);
+    }
+
+    /** 몬스터 기절 턴 수를 1 감소시킨다 (하한 0). */
+    public void decrementMonsterStunnedTurns() {
+        if (this.monsterStunnedTurns > 0) {
+            this.monsterStunnedTurns--;
+        }
+    }
+
+    /**
+     * 몬스터가 기절/속박 상태인지 여부를 반환한다.
+     *
+     * @return 기절 상태이면 {@code true}
+     */
+    public boolean isMonsterStunned() {
+        return this.monsterStunnedTurns > 0;
+    }
+
+    /**
+     * 턴당 독 도트 피해량을 반환한다.
+     *
+     * @return 턴당 독 피해량
+     */
+    public int getDotDamagePerTurn() {
+        return dotDamagePerTurn;
+    }
+
+    /**
+     * 턴당 독 도트 피해량을 설정한다.
+     *
+     * @param dotDamagePerTurn 독 피해량
+     */
+    public void setDotDamagePerTurn(final int dotDamagePerTurn) {
+        this.dotDamagePerTurn = dotDamagePerTurn;
+    }
+
+    /**
+     * 독 지속 피해 남은 턴 수를 반환한다.
+     *
+     * @return 독 남은 턴 수
+     */
+    public int getDotTurnsLeft() {
+        return dotTurnsLeft;
+    }
+
+    /**
+     * 독 지속 피해 남은 턴 수를 설정한다.
+     *
+     * @param dotTurnsLeft 독 턴 수
+     */
+    public void setDotTurnsLeft(final int dotTurnsLeft) {
+        this.dotTurnsLeft = Math.max(0, dotTurnsLeft);
+    }
+
+    /** 독 지속 턴 수를 1 감소시킨다 (하한 0). */
+    public void decrementDotTurns() {
+        if (this.dotTurnsLeft > 0) {
+            this.dotTurnsLeft--;
+        }
+    }
+
+    /**
+     * 독 지속 피해가 활성화되어 있는지 여부를 반환한다.
+     *
+     * @return 독 활성 시 {@code true}
+     */
+    public boolean hasActiveDot() {
+        return this.dotTurnsLeft > 0 && this.dotDamagePerTurn > 0;
     }
 }

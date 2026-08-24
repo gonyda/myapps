@@ -105,4 +105,24 @@ public class SkillController {
         model.addAttribute("rankUp", rankUpView);
         return FRAGMENT_RANKUP_MODAL;
     }
+
+    /**
+     * 필드 스킬(힐링 등)을 사용한다.
+     *
+     * <p>성공/실패 결과 DTO({@link com.myapps.web.myrpg.application.dto.FieldSkillResult})를 JSON 형태로
+     * 반환한다. 클라이언트(myrpg.js)가 상단바 및 스킬 목록을 실시간 갱신한다.
+     *
+     * @param id 사용할 스킬 카탈로그 ID
+     * @return 필드 스킬 사용 결과 JSON
+     */
+    @PostMapping("/{id}/use")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<
+                    com.myapps.web.myrpg.application.dto.FieldSkillResult>
+            useSkill(@PathVariable final String id) {
+        final CharacterProgress progress = characterService.loadOrCreateDefault();
+        final com.myapps.web.myrpg.application.dto.FieldSkillResult result =
+                skillService.useFieldSkill(progress.getId(), id);
+        return org.springframework.http.ResponseEntity.ok(result);
+    }
 }

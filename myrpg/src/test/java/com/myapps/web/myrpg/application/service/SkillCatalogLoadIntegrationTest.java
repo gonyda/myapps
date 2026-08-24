@@ -26,7 +26,7 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class SkillCatalogLoadIntegrationTest {
 
-    private static final int TOTAL_SKILL_COUNT = 11;
+    private static final int TOTAL_SKILL_COUNT = 35;
     private static final int EXPECTED_RANK_MAP_SIZE = 16;
     private static final Set<String> KNOWN_SKILL_IDS =
             Set.of(
@@ -40,7 +40,12 @@ class SkillCatalogLoadIntegrationTest {
                     "icebolt",
                     "mana_bolt",
                     "defense",
-                    "counter_attack");
+                    "counter_attack",
+                    "healing",
+                    "final_hit",
+                    "mana_shield",
+                    "combat_mastery",
+                    "meditation");
 
     private final SkillCatalogService skillCatalogService;
 
@@ -48,9 +53,9 @@ class SkillCatalogLoadIntegrationTest {
         this.skillCatalogService = skillCatalogService;
     }
 
-    /** 전체 스킬 수가 11개인지 검증한다. */
+    /** 전체 스킬 수가 35개인지 검증한다. */
     @Test
-    void should_loadElevenSkills_when_applicationStarts() {
+    void should_loadAllSkills_when_applicationStarts() {
         final List<Skill> allSkills = skillCatalogService.all();
 
         assertThat(allSkills).hasSize(TOTAL_SKILL_COUNT);

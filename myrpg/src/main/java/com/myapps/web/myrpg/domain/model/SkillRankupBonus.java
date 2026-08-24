@@ -28,7 +28,8 @@ public class SkillRankupBonus {
     /**
      * 보유 스킬 목록과 카탈로그 조회 함수로 스킬 랭크업 영구 스탯 보너스를 합산한다.
      *
-     * <p>카탈로그에서 찾을 수 없는 스킬이나 F 랭크(order 0)는 보너스 계산에서 제외한다. 카운터 어택은 영구 스탯을 제공하지 않는다.
+     * <p>카탈로그에서 찾을 수 없는 스킬이나 F 랭크(order 0)는 보너스 계산에서 제외한다. 카운터 어택은 영구 스탯을 제공하지 않는다. 패시브 스킬 6종은
+     * MASTER 기준 스탯에 대해 {@code rank.order() / 15.0} 선형 비율로 반올림 누적한다.
      *
      * @param owned 캐릭터가 보유한 스킬 목록
      * @param skillLookup 스킬 ID로 카탈로그 항목을 조회하는 함수
@@ -39,53 +40,126 @@ public class SkillRankupBonus {
         Stats result = Stats.ZERO;
         for (final CharacterSkill characterSkill : owned) {
             final Optional<Skill> catalogEntry = skillLookup.apply(characterSkill.getSkillId());
-            if (catalogEntry.isEmpty()) {
+            if (catalogEntry.isEmpty() || characterSkill.getRank().order() == 0) {
                 continue;
             }
-            final Skill skill = catalogEntry.get();
-            final int bonus = characterSkill.getRank().order();
-            if (bonus == 0) {
-                continue;
-            }
-            if ("defense".equals(skill.id())) {
-                result = result.withDefenseDelta(bonus);
-            } else if ("counter_attack".equals(skill.id())) {
-                // counter_attack은 영구 스탯 보너스 없음
-                continue;
-            } else {
-                result = applyBonus(result, skill.talent().rankupStatTarget(), bonus);
-            }
+            result =
+                    accumulateSkillStats(
+                            result, catalogEntry.get(), characterSkill.getRank().order());
+        }
+        return result;
+    }
+
+    private Stats accumulateSkillStats(final Stats current, final Skill skill, final int order) {
+        if (skill instanceof PassiveSkill ps) {
+            return accumulatePassiveStats(current, ps, order);
+        }
+        if ("defense".equals(skill.id())) {
+            return current.withDefenseDelta(order);
+        }
+        if ("counter_attack".equals(skill.id())) {
+            return current;
+        }
+        return applyBonus(current, skill.talent().rankupStatTarget(), order);
+    }
+
+    private Stats accumulatePassiveStats(
+            final Stats current, final PassiveSkill ps, final int order) {
+        if (ps.totalStatBonus() == null) {
+            return current;
+        }
+        Stats result = current;
+        for (final var entry : ps.totalStatBonus().entrySet()) {
+            final int rankBonus = Math.round((float) entry.getValue() * order / 15.0f);
+            result = applyBonus(result, entry.getKey(), rankBonus);
         }
         return result;
     }
 
     /**
-     * 보유 스킬 목록과 카탈로그 조회 함수로 스킬 랭크업 영구 바이탈(HP) 보너스를 합산한다.
+     * 보유 스킬 목록과 카탈로그 조회 함수로 스킬 랭크업 영구 바이탈(HP/MP/Stamina) 보너스를 합산한다.
      *
-     * <p>현재 디펜스({@code defense}) 스킬만 랭크당 HP +5 누적 보너스를 부여하며, 나머지 스킬은 0이다.
+     * <p>디펜스({@code defense})는 랭크당 HP +5 누적 보너스를 부여하며, 패시브 스킬은 {@code totalStatBonus}의 바이탈 항목을 선형
+     * 누적한다.
      *
      * @param owned 캐릭터가 보유한 스킬 목록
      * @param skillLookup 스킬 ID로 카탈로그 항목을 조회하는 함수
-     * @return 합산된 바이탈 보너스 (HP만 양수 가능, MP/Stamina는 0)
+     * @return 합산된 바이탈 보너스 (HP, MP, Stamina)
      */
     public VitalMax sumVital(
             final List<CharacterSkill> owned, final Function<String, Optional<Skill>> skillLookup) {
-        int hpBonus = 0;
+        VitalAccumulator acc = new VitalAccumulator(0, 0, 0);
         for (final CharacterSkill characterSkill : owned) {
             final Optional<Skill> catalogEntry = skillLookup.apply(characterSkill.getSkillId());
-            if (catalogEntry.isEmpty()) {
+            if (catalogEntry.isEmpty() || characterSkill.getRank().order() == 0) {
                 continue;
             }
-            final Skill skill = catalogEntry.get();
-            final int bonus = characterSkill.getRank().order();
-            if (bonus == 0) {
-                continue;
-            }
-            if ("defense".equals(skill.id())) {
-                hpBonus += bonus * 5;
+            acc = accumulateSkillVital(acc, catalogEntry.get(), characterSkill.getRank().order());
+        }
+        return new VitalMax(acc.hp(), acc.mp(), acc.stamina());
+    }
+
+    private VitalAccumulator accumulateSkillVital(
+            final VitalAccumulator acc, final Skill skill, final int order) {
+        if (skill instanceof PassiveSkill ps) {
+            return accumulatePassiveVital(acc, ps, order);
+        }
+        if ("defense".equals(skill.id())) {
+            return acc.addHp(order * 5);
+        }
+        return acc;
+    }
+
+    private VitalAccumulator accumulatePassiveVital(
+            final VitalAccumulator acc, final PassiveSkill ps, final int order) {
+        if (ps.totalStatBonus() == null) {
+            return acc;
+        }
+        VitalAccumulator current = acc;
+        for (final var entry : ps.totalStatBonus().entrySet()) {
+            final int rankBonus = Math.round((float) entry.getValue() * order / 15.0f);
+            current =
+                    switch (entry.getKey()) {
+                        case HP -> current.addHp(rankBonus);
+                        case MP -> current.addMp(rankBonus);
+                        case STAMINA -> current.addStamina(rankBonus);
+                        default -> current;
+                    };
+        }
+        return current;
+    }
+
+    private record VitalAccumulator(int hp, int mp, int stamina) {
+        VitalAccumulator addHp(final int delta) {
+            return new VitalAccumulator(hp + delta, mp, stamina);
+        }
+
+        VitalAccumulator addMp(final int delta) {
+            return new VitalAccumulator(hp, mp + delta, stamina);
+        }
+
+        VitalAccumulator addStamina(final int delta) {
+            return new VitalAccumulator(hp, mp, stamina + delta);
+        }
+    }
+
+    /**
+     * 보유 스킬 목록에서 메디테이션 랭크에 따른 전투 턴 종료 턴당 MP 회복량을 계산한다.
+     *
+     * <p>F~D: 1, C~A: 2, 9~7: 3, 6~4: 4, 3~Master: 5 MP를 회복한다.
+     *
+     * @param owned 캐릭터가 보유한 스킬 목록
+     * @return 턴당 MP 회복량 (메디테이션 미보유 시 0)
+     */
+    public int sumMpRegen(
+            final List<CharacterSkill> owned, final Function<String, Optional<Skill>> skillLookup) {
+        for (final CharacterSkill characterSkill : owned) {
+            if ("meditation".equals(characterSkill.getSkillId())) {
+                final int order = characterSkill.getRank().order();
+                return Math.min(5, (order / 3) + 1);
             }
         }
-        return new VitalMax(hpBonus, 0, 0);
+        return 0;
     }
 
     private Stats applyBonus(final Stats current, final BonusTarget target, final int delta) {
@@ -94,7 +168,8 @@ public class SkillRankupBonus {
             case DEX -> current.withDexDelta(delta);
             case INT -> current.withIntDelta(delta);
             case DEF -> current.withDefenseDelta(delta);
-            case CRITICAL, HP, MP, STAMINA -> current;
+            case CRITICAL -> current.withCriticalDelta(delta);
+            case HP, MP, STAMINA, MP_REGEN -> current;
         };
     }
 }

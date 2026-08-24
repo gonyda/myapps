@@ -91,6 +91,102 @@ class SkillDamagePolicyTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    @DisplayName("궁극기, 힐링, 마나실드, CC, 지속피해, 빙결 수치 조회 검증")
+    void should_returnCorrectValues_for_newSkillTypes() {
+        // given
+        final Map<SkillRank, Integer> monotonicMap = createMonotonicMap(10, 5);
+        final UltimateSkill ultimate =
+                new UltimateSkill(
+                        "meteor",
+                        "메테오",
+                        SkillType.ULTIMATE,
+                        SkillTalent.MAGIC,
+                        40,
+                        monotonicMap,
+                        Map.of(SkillRank.F, 1, SkillRank.MASTER, 1),
+                        10,
+                        Map.of(SkillRank.F, 30, SkillRank.MASTER, 10),
+                        "desc");
+
+        final RecoverySkill recovery =
+                new RecoverySkill(
+                        "healing",
+                        "힐링",
+                        SkillType.RECOVERY,
+                        SkillTalent.MAGIC,
+                        12,
+                        monotonicMap,
+                        Map.of(SkillRank.F, 12, SkillRank.MASTER, 6),
+                        "desc");
+
+        final BuffSkill buff =
+                new BuffSkill(
+                        "mana_shield",
+                        "마나 실드",
+                        SkillType.BUFF,
+                        SkillTalent.MAGIC,
+                        15,
+                        5,
+                        monotonicMap,
+                        "desc");
+
+        final CcSkill cc =
+                new CcSkill(
+                        "spider_shot",
+                        "스파이더 샷",
+                        SkillType.CC,
+                        SkillTalent.ARCHERY,
+                        8,
+                        monotonicMap,
+                        "desc");
+
+        final DotSkill dot =
+                new DotSkill(
+                        "mirage_missile",
+                        "미라지 미사일",
+                        SkillType.DOT,
+                        SkillTalent.ARCHERY,
+                        10,
+                        monotonicMap,
+                        monotonicMap,
+                        Map.of(SkillRank.F, 1, SkillRank.MASTER, 5),
+                        "desc");
+
+        final DamageSkill freezeSkill =
+                new DamageSkill(
+                        "ice_spear",
+                        "아이스 스피어",
+                        SkillType.HEAVY,
+                        SkillTalent.MAGIC,
+                        20,
+                        monotonicMap,
+                        "desc",
+                        2,
+                        0,
+                        0,
+                        0,
+                        false,
+                        monotonicMap);
+
+        // when & then
+        assertThat(policy.ultimateMultiplier(ultimate, SkillRank.F)).isEqualTo(10);
+        assertThat(policy.ultimateHitCount(ultimate, SkillRank.F)).isEqualTo(1);
+        assertThat(policy.ultimateCoolWins(ultimate, SkillRank.F)).isEqualTo(30);
+
+        assertThat(policy.recoveryHealAmount(recovery, SkillRank.F)).isEqualTo(10);
+        assertThat(policy.recoveryCost(recovery, SkillRank.F)).isEqualTo(12);
+
+        assertThat(policy.buffAbsorbRate(buff, SkillRank.F)).isEqualTo(10);
+        assertThat(policy.ccSuccessRate(cc, SkillRank.F)).isEqualTo(10);
+
+        assertThat(policy.dotInitialMultiplier(dot, SkillRank.F)).isEqualTo(10);
+        assertThat(policy.dotDamagePerTurn(dot, SkillRank.F)).isEqualTo(10);
+        assertThat(policy.dotTurns(dot, SkillRank.F)).isEqualTo(1);
+
+        assertThat(policy.freezeRate(freezeSkill, SkillRank.F)).isEqualTo(10);
+    }
+
     /** 16개 랭크에 대해 단조 증가하는 맵을 생성한다. */
     private Map<SkillRank, Integer> createMonotonicMap(final int base, final int increment) {
         final Map<SkillRank, Integer> map = new EnumMap<>(SkillRank.class);

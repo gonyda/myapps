@@ -465,4 +465,55 @@ class BattleLogFormatterTest {
 
         assertThat(lines).containsExactly("적이 공격하지 않아 카운터 어택(방어)이 빗나갔다!", "너구리이(가) 방어 태세를 취했다.");
     }
+
+    @Test
+    @DisplayName("궁극기 멀티히트 시 절대 우위 100% 관통 헤더와 브레이크다운 로그를 남긴다")
+    void should_logUltimateMultiHit_withSuperPriorityHeader() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "파이널 히트",
+                        SkillType.ULTIMATE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        250,
+                        0,
+                        false,
+                        true,
+                        false,
+                        List.of(
+                                new HitResult(50, false),
+                                new HitResult(50, false),
+                                new HitResult(50, true),
+                                new HitResult(50, false),
+                                new HitResult(50, false)));
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines)
+                .containsExactly(
+                        "결전 궁극기! 파이널 히트(궁극기) 5연타 (절대 우위 100% 관통)",
+                        "50  50  50(치명)  50  50 = 250 피해");
+    }
+
+    @Test
+    @DisplayName("궁극기 단일히트 시 절대 우위 100% 관통 단일 로그를 남긴다")
+    void should_logUltimateSingleHit_withSuperPriorityHeader() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "메테오 스트라이크",
+                        SkillType.ULTIMATE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        500,
+                        0,
+                        true,
+                        true,
+                        false,
+                        List.of(new HitResult(500, true)));
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines)
+                .containsExactly("결전 궁극기! 메테오 스트라이크(궁극기)로 너구리에게 500 피해 (절대 우위 100% 관통) (크리티컬!)");
+    }
 }

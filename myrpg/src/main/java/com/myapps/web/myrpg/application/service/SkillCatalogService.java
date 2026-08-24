@@ -1,12 +1,19 @@
 package com.myapps.web.myrpg.application.service;
 
 import com.myapps.web.myrpg.application.exception.SkillDataException;
+import com.myapps.web.myrpg.domain.model.BonusTarget;
+import com.myapps.web.myrpg.domain.model.BuffSkill;
+import com.myapps.web.myrpg.domain.model.CcSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.DefenseSkill;
+import com.myapps.web.myrpg.domain.model.DotSkill;
+import com.myapps.web.myrpg.domain.model.PassiveSkill;
+import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
+import com.myapps.web.myrpg.domain.model.UltimateSkill;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,7 +144,6 @@ public class SkillCatalogService {
         final String label = extractRequiredField(skillNode, "label");
         final String typeString = extractRequiredField(skillNode, "type");
         final String talentString = extractRequiredField(skillNode, "talent");
-        final int resourceCost = extractRequiredInt(skillNode, "resourceCost", id);
         final String description = extractRequiredField(skillNode, "description");
 
         final SkillType skillType =
@@ -162,12 +168,80 @@ public class SkillCatalogService {
                                                         + talentString
                                                         + "'을(를) 변환할 수 없습니다."));
 
-        if (skillType == SkillType.DEFENSE) {
-            return parseDefenseSkill(
+        if (skillType == SkillType.PASSIVE) {
+            final int resourceCost = extractOptionalInt(skillNode, "resourceCost", id, 0, 0, 100);
+            return parsePassiveSkill(
                     skillNode, id, label, skillType, skillTalent, resourceCost, description);
         }
-        return parseDamageSkill(
-                skillNode, id, label, skillType, skillTalent, resourceCost, description);
+
+        final int resourceCost = extractRequiredInt(skillNode, "resourceCost", id);
+
+        return switch (skillType) {
+            case DEFENSE ->
+                    parseDefenseSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case RECOVERY ->
+                    parseRecoverySkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case ULTIMATE ->
+                    parseUltimateSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case BUFF ->
+                    parseBuffSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case CC ->
+                    parseCcSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case DOT ->
+                    parseDotSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case NORMAL, HEAVY, DEBUFF ->
+                    parseDamageSkill(
+                            skillNode,
+                            id,
+                            label,
+                            skillType,
+                            skillTalent,
+                            resourceCost,
+                            description);
+            case PASSIVE -> throw new IllegalStateException("Unreachable");
+        };
     }
 
     private DamageSkill parseDamageSkill(
@@ -191,6 +265,15 @@ public class SkillCatalogService {
                         DEFAULT_CRIT_BONUS,
                         MIN_CRIT_BONUS,
                         MAX_CRIT_BONUS);
+        final int minHits = extractOptionalInt(skillNode, "minHits", id, 0, 0, 16);
+        final int maxHits = extractOptionalInt(skillNode, "maxHits", id, 0, 0, 16);
+        final boolean defensePierce =
+                skillNode.has("defensePierce")
+                        && (skillNode.get("defensePierce").asBoolean()
+                                || skillNode.get("defensePierce").asInt() > 0);
+        final Map<SkillRank, Integer> freezeRateByRank =
+                parseOptionalRankMap(skillNode, "freezeRateByRank", id);
+
         return new DamageSkill(
                 id,
                 label,
@@ -200,7 +283,11 @@ public class SkillCatalogService {
                 multiplierByRank,
                 description,
                 hitCount,
-                critBonus);
+                minHits,
+                maxHits,
+                critBonus,
+                defensePierce,
+                freezeRateByRank);
     }
 
     private DefenseSkill parseDefenseSkill(
@@ -230,6 +317,175 @@ public class SkillCatalogService {
                 description,
                 resourceCostByRank,
                 critBonusByRank);
+    }
+
+    private RecoverySkill parseRecoverySkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final Map<SkillRank, Integer> healAmountByRank =
+                parseRankMap(skillNode, "healAmountByRank", id);
+        final Map<SkillRank, Integer> resourceCostByRank =
+                parseOptionalRankMap(skillNode, "resourceCostByRank", id);
+        final Map<SkillRank, Integer> finalCostMap =
+                resourceCostByRank.isEmpty()
+                        ? fillUniformRankMap(resourceCost)
+                        : resourceCostByRank;
+        return new RecoverySkill(
+                id, label, type, talent, resourceCost, healAmountByRank, finalCostMap, description);
+    }
+
+    private UltimateSkill parseUltimateSkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final Map<SkillRank, Integer> multiplierByRank =
+                parseRankMap(skillNode, "multiplierByRank", id);
+        final int hitCount = extractOptionalInt(skillNode, "hitCount", id, 1, 1, 16);
+        final int critBonus =
+                extractOptionalInt(skillNode, "critBonus", id, 100, MIN_CRIT_BONUS, MAX_CRIT_BONUS);
+        final Map<SkillRank, Integer> hitCountByRank = fillUniformRankMap(hitCount);
+        final Map<SkillRank, Integer> coolWinsByRank = parseCoolWinsMap(skillNode, id);
+        return new UltimateSkill(
+                id,
+                label,
+                type,
+                talent,
+                resourceCost,
+                multiplierByRank,
+                hitCountByRank,
+                critBonus,
+                coolWinsByRank,
+                description);
+    }
+
+    private PassiveSkill parsePassiveSkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final JsonNode bonusNode =
+                skillNode.has("statBonusTotal")
+                        ? skillNode.get("statBonusTotal")
+                        : skillNode.get("totalStatBonus");
+        final Map<BonusTarget, Integer> totalStatBonus = new EnumMap<>(BonusTarget.class);
+        if (bonusNode != null && bonusNode.isObject()) {
+            for (final BonusTarget target : BonusTarget.values()) {
+                final JsonNode valNode = bonusNode.get(target.name());
+                if (valNode != null && valNode.isNumber()) {
+                    totalStatBonus.put(target, valNode.asInt());
+                }
+            }
+        }
+        return new PassiveSkill(
+                id, label, type, talent, resourceCost, Map.copyOf(totalStatBonus), description);
+    }
+
+    private BuffSkill parseBuffSkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final int durationTurns = extractOptionalInt(skillNode, "durationTurns", id, 5, 1, 50);
+        final Map<SkillRank, Integer> absorbRateByRank =
+                parseRankMap(skillNode, "absorbRateByRank", id);
+        return new BuffSkill(
+                id,
+                label,
+                type,
+                talent,
+                resourceCost,
+                durationTurns,
+                absorbRateByRank,
+                description);
+    }
+
+    private CcSkill parseCcSkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final Map<SkillRank, Integer> successRateByRank =
+                parseRankMap(skillNode, "successRateByRank", id);
+        return new CcSkill(id, label, type, talent, resourceCost, successRateByRank, description);
+    }
+
+    private DotSkill parseDotSkill(
+            final JsonNode skillNode,
+            final String id,
+            final String label,
+            final SkillType type,
+            final SkillTalent talent,
+            final int resourceCost,
+            final String description) {
+        final Map<SkillRank, Integer> initialMultiplierByRank =
+                parseRankMap(skillNode, "initialMultiplierByRank", id);
+        final Map<SkillRank, Integer> dotPerTurnByRank =
+                parseRankMap(skillNode, "dotPerTurnByRank", id);
+        final Map<SkillRank, Integer> dotTurnsByRank =
+                parseRankMap(skillNode, "dotTurnsByRank", id);
+        return new DotSkill(
+                id,
+                label,
+                type,
+                talent,
+                resourceCost,
+                initialMultiplierByRank,
+                dotPerTurnByRank,
+                dotTurnsByRank,
+                description);
+    }
+
+    private Map<SkillRank, Integer> fillUniformRankMap(final int value) {
+        final Map<SkillRank, Integer> map = new EnumMap<>(SkillRank.class);
+        for (final SkillRank rank : SkillRank.values()) {
+            map.put(rank, value);
+        }
+        return Map.copyOf(map);
+    }
+
+    private Map<SkillRank, Integer> parseCoolWinsMap(
+            final JsonNode skillNode, final String skillId) {
+        final JsonNode coolWinsNode =
+                skillNode.has("coolWinsByRank")
+                        ? skillNode.get("coolWinsByRank")
+                        : skillNode.get("coolWins");
+        final Map<SkillRank, Integer> result = new EnumMap<>(SkillRank.class);
+        if (coolWinsNode != null && coolWinsNode.isObject()) {
+            if (coolWinsNode.size() == EXPECTED_RANK_MAP_SIZE) {
+                return parseRankMap(skillNode, "coolWinsByRank", skillId);
+            }
+            final int fWins = coolWinsNode.has("F") ? coolWinsNode.get("F").asInt() : 30;
+            final int masterWins =
+                    coolWinsNode.has("MASTER") ? coolWinsNode.get("MASTER").asInt() : 10;
+            for (final SkillRank rank : SkillRank.values()) {
+                final int interpolated =
+                        fWins - Math.round((float) (fWins - masterWins) * rank.order() / 15.0f);
+                result.put(rank, interpolated);
+            }
+            return Map.copyOf(result);
+        }
+        for (final SkillRank rank : SkillRank.values()) {
+            result.put(rank, 30 - Math.round(20.0f * rank.order() / 15.0f));
+        }
+        return Map.copyOf(result);
     }
 
     private Map<SkillRank, Integer> parseOptionalRankMap(

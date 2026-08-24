@@ -24,29 +24,24 @@
 
 ## 2. 현재 작업 맥락 및 상태
 
-- **스킬 시스템 확장 (29종 전체 전면 개편) 상세 기획 및 설계 확정 (`docs/todo.md` Section 4 & `docs/skill-system-dev-guide.md`)**:
-  - **단일 전면 개편 아키텍처**: 29종 전체 스킬에 대해 `Skill` Sealed Interface 8종 Record + 10종 `SkillType` + `BattleState`/`CharacterSkill` 확장을 단일 SDD 아키텍처로 진행.
-  - **전투 상성 & 특수 메커니즘 확정**:
-    - `ULTIMATE`: 절대 우위(Super-Priority) - 적의 모든 행동(일반/강/방어)을 압도하여 100% 관통 및 적중(방어 무시), 해당 턴 몬스터 공격 차단. 쿨타임 F:30승 ~ MASTER:10승 (승리로만 차감).
-    - `RECOVERY` (힐링) & `BUFF` (마나 실드): 시전 턴 몬스터 공격에 100% 무방비 피격되나 힐링 즉시 회복 및 마나실드는 해당 턴부터 MP 감쇄 흡수 적용.
-    - `CC` (스파이더 샷): 시전 턴 피격 후 성공 시(20%~50%) **다음 턴 1턴간** 몬스터 행동 불능(턴 스킵).
-    - `BUFF` (마나 실드): 5턴 지속, INT 비례 감쇄율 상승. MP 고갈 시 잔여 피해 HP 전가 및 버프 유지. 재시전 시 지속시간 갱신(Refresh).
-    - `DOT` (미라지 미사일): 즉발 30% 피해 + 1~5턴 독 피해. 재시전 시 지속시간 및 수치 갱신(Refresh).
-    - `DEBUFF` (레이지 임팩트): 60%~120% 피해 + 다음 공격 피해 +30% 증폭 (1회성).
-    - `아이스 스피어`: 2타 적중 후 **다음 턴 빙결 CC 확률(F 20% ~ MASTER 50%) 발동**.
-    - `라이트닝 로드`: **적 방어력(DEF)을 0으로 계산**하여 100% 방어 관통 피해.
-  - **패시브 및 메디테이션 규칙**:
-    - 패시브 6종은 **스킬 팝업 `공용(common)` 탭**에서 `디펜스`와 함께 관리 (전투 슬롯 미등록, F~MASTER 선형 스탯 분배).
-    - `메디테이션`: 랭크업 시 `MP +30` 누적 + **전투 중 매 턴 종료 시(공방 해결 후 다음 턴 개시 전) `MP +1~+5` 자연 회복** (필드 이동 시 미회복, 회복된 최종 MP는 현재 캐릭터 MP에 유지).
-  - **스킬 습득 및 시드 정책**:
-    - 신규 캐릭터 기본 4종(`slash`, `aimed_shot`, `mana_bolt`, `defense`) 시드 유지.
-    - 나머지 25종 스킬은 추후 NPC 상점 스킬북 구매 및 학습 시스템으로 습득.
+- **014 스킬 시스템 확장 (`.kiro/specs/myrpg/014-skill-system-expansion/`) 전체 구현 및 검증 완료**:
+  - **Task A (도메인 & 계산 정책)**: `SkillType` 10종, 8종 Sealed Records(`Skill`), JPA 엔티티(`BattleState`, `CharacterSkill`), `SkillRankupBonus`(패시브 선형 누적 & 메디테이션 MP 회복), `SkillRankPolicy`(4대 수련 조건), `SkillDamagePolicy`, `BattleResolver`(방어 관통 0 & 3연타/5연타), PBT 검증 완료.
+  - **Task B (카탈로그 & 애플리케이션 서비스)**: 35종 카탈로그 완비, 8종 Jackson 3 파싱, `SkillService` 육성/필드 힐링/승급 분기, `BattleService` 특수 턴 해결(궁극기 절대우위/힐/마나실드/CC/도트/디버프/메디테이션 재생/승리 쿨타임 차감), 단위/PBT 테스트 완료.
+  - **Task C (웹 컨트롤러 계층)**: `SkillRowView.java` (`fieldUsable`, `cooldownBadgeText`), `BattleSkillButton.java` (`ultimateCooldown`, `ready`), `SkillController.java` (`POST /skills/{id}/use`), 컨트롤러 슬라이스 테스트 완료.
+  - **Task D (프론트엔드 UI/UX)**: `skill-popup.html` (`공용` 탭 디펜스+패시브, `[사용]` 버튼, 궁극기 쿨다운 뱃지), `battle-view.html` (궁극기 쿨다운 잠금 뱃지, 준비 완료 황금 펄스), `myrpg.js` (`useFieldSkill`), `myrpg.css` (.skill-use-btn, .badge-cooldown, @keyframes ultimate-ready-pulse), UI 보존 통합 테스트 통과.
+  - **Task E (5대 가드레일 & 통합 검증)**: 전체 1,128개 테스트 100% PASS, Spotless + Error Prone + ArchUnit + JaCoCo(80%+) + PMD/CPD + CodeGraph sync 완료.
+
+- **014-skill-system-expansion 진행 현황**:
+  - **Task A (1~6번 도메인 & 데이터 계층)**: 완료 (`[x]`)
+  - **Task B (7~11번 카탈로그 & 서비스 계층)**: 완료 (`[x]`)
+  - **Task C (12~14번 컨트롤러 계층)**: 완료 (`[x]`)
+  - **Task D (15~18번 프론트엔드 UI/UX)**: 완료 (`[x]`)
+  - **Task E (19~20번 5대 가드레일 & 동기화)**: 완료 (`[x]`)
 
 ---
 
 ## 3. 다음 단계 (Next Steps)
 
-1. **SDD 014 스킬 시스템 확장 Spec 3종 작성 (`.kiro/specs/myrpg/014-skill-system-expansion/`)**:
-   - `requirements.md`: 29종 스킬, 10종 SkillType, 전투 상성(궁극기 절대우위, 힐/버프 피격, CC/빙결 다음턴 속박, 도트/버프 갱신, 메디테이션 턴종료 재생) 명세.
-   - `design.md`: Sealed Interface 8종 Record, `SkillCatalogService`, `BattleService`, `BattleResolver`, `CharacterSkill`/`BattleState` 엔티티 변경, UI(`공용` 탭 및 힐링 필드사용/궁극기 쿨타임) 설계.
-   - `tasks.md`: 순차 구현 및 5대 품질 가드레일 검증 Task 분할.
+1. **사용자 확인 및 다음 기능/스펙 진행**:
+   - `014-skill-system-expansion` 전체 기능 완료 확인
+   - 다음 신규 모듈/기능 개발 또는 사용자 추가 요청 사항 처리
