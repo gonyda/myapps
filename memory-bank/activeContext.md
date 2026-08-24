@@ -31,17 +31,16 @@
   - **Task D (프론트엔드 UI/UX)**: `skill-popup.html` (`공용` 탭 디펜스+패시브, `[사용]` 버튼, 궁극기 쿨다운 뱃지), `battle-view.html` (궁극기 쿨다운 잠금 뱃지, 준비 완료 황금 펄스), `myrpg.js` (`useFieldSkill`), `myrpg.css` (.skill-use-btn, .badge-cooldown, @keyframes ultimate-ready-pulse), UI 보존 통합 테스트 통과.
   - **Task E (5대 가드레일 & 통합 검증)**: 전체 1,128개 테스트 100% PASS, Spotless + Error Prone + ArchUnit + JaCoCo(80%+) + PMD/CPD + CodeGraph sync 완료.
 
-- **014-skill-system-expansion 진행 현황**:
-  - **Task A (1~6번 도메인 & 데이터 계층)**: 완료 (`[x]`)
-  - **Task B (7~11번 카탈로그 & 서비스 계층)**: 완료 (`[x]`)
-  - **Task C (12~14번 컨트롤러 계층)**: 완료 (`[x]`)
-  - **Task D (15~18번 프론트엔드 UI/UX)**: 완료 (`[x]`)
-  - **Task E (19~20번 5대 가드레일 & 동기화)**: 완료 (`[x]`)
+3. **브랜치 커밋 및 원격 푸시 완료**:
+   - 브랜치: `feature/014-skill-system-expansion`
+   - 커밋: `feat(myrpg): 스킬 시스템 35종 확장 및 4대 수련 체계·특수 전투 메커니즘 구현` (`beae1a7`)
+   - 커밋: `fix(myrpg): 카운터 어택 성공 시 다음 턴 선제공격 부여 제외` (`dee81cc`)
+   - 원격 푸시: `origin/feature/014-skill-system-expansion` 푸시 완료
 
 ---
 
 ## 3. 다음 단계 (Next Steps)
 
 1. **사용자 확인 및 다음 기능/스펙 진행**:
-   - `014-skill-system-expansion` 전체 기능 완료 확인
-   - 다음 신규 모듈/기능 개발 또는 사용자 추가 요청 사항 처리
+   - `feature/014-skill-system-expansion` PR 생성 및 머지 여부 확인
+   - 다음 신규 기능 개발 또는 사용자 추가 요청 사항 처리
