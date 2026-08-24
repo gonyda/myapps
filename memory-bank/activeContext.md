@@ -31,16 +31,14 @@
   - **Task D (프론트엔드 UI/UX)**: `skill-popup.html` (`공용` 탭 디펜스+패시브, `[사용]` 버튼, 궁극기 쿨다운 뱃지), `battle-view.html` (궁극기 쿨다운 잠금 뱃지, 준비 완료 황금 펄스), `myrpg.js` (`useFieldSkill`), `myrpg.css` (.skill-use-btn, .badge-cooldown, @keyframes ultimate-ready-pulse), UI 보존 통합 테스트 통과.
   - **Task E (5대 가드레일 & 통합 검증)**: 전체 1,128개 테스트 100% PASS, Spotless + Error Prone + ArchUnit + JaCoCo(80%+) + PMD/CPD + CodeGraph sync 완료.
 
-3. **브랜치 커밋 및 원격 푸시 완료**:
-   - 브랜치: `feature/014-skill-system-expansion`
-   - 커밋: `feat(myrpg): 스킬 시스템 35종 확장 및 4대 수련 체계·특수 전투 메커니즘 구현` (`beae1a7`)
-   - 커밋: `fix(myrpg): 카운터 어택 성공 시 다음 턴 선제공격 부여 제외` (`dee81cc`)
-   - 원격 푸시: `origin/feature/014-skill-system-expansion` 푸시 완료
+3. **`main` 브랜치 머지 및 프로덕션 배포 완료**:
+   - 머지: PR #2 (`feature/014-skill-system-expansion` ➜ `main`, 커밋 `605c607`)
+   - 배포: Oracle Cloud VM (`134.185.116.35:8083`) 자동 배포 (`deploy.sh myrpg`) 및 Health Check (200 OK) 완료
 
 ---
 
 ## 3. 다음 단계 (Next Steps)
 
 1. **사용자 확인 및 다음 기능/스펙 진행**:
-   - `feature/014-skill-system-expansion` PR 생성 및 머지 여부 확인
-   - 다음 신규 기능 개발 또는 사용자 추가 요청 사항 처리
+   - 배포된 `myrpg` 서비스 점검
+   - 다음 신규 기능 개발(`docs/todo.md` 백로그 등) 또는 사용자 추가 요청 사항 처리
