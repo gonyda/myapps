@@ -63,6 +63,17 @@ class ProgressionContextLoadSmokeTest {
         assertThat(progressionService).isNotNull();
     }
 
+    private org.springframework.mock.web.MockHttpSession authenticatedSession() {
+        final org.springframework.mock.web.MockHttpSession session =
+                new org.springframework.mock.web.MockHttpSession();
+        final com.myapps.web.myrpg.application.dto.UserSession userSession =
+                new com.myapps.web.myrpg.application.dto.UserSession(1L, "bbsk", "고니", 1L);
+        session.setAttribute(
+                com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor.SESSION_USER_KEY,
+                userSession);
+        return session;
+    }
+
     /**
      * GET / 요청이 200 OK를 반환하고 정보 팝업 마커를 포함하는지 검증한다.
      *
@@ -71,7 +82,7 @@ class ProgressionContextLoadSmokeTest {
     @Test
     void should_renderInfoPopupContent_when_getRoot() throws Exception {
         final String content =
-                mockMvc.perform(get("/"))
+                mockMvc.perform(get("/").session(authenticatedSession()))
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
@@ -93,7 +104,7 @@ class ProgressionContextLoadSmokeTest {
     @Test
     void should_renderAbilityPointsAndTalentEffect_when_getRoot() throws Exception {
         final String content =
-                mockMvc.perform(get("/"))
+                mockMvc.perform(get("/").session(authenticatedSession()))
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
@@ -111,7 +122,7 @@ class ProgressionContextLoadSmokeTest {
     @Test
     void should_renderTalentSelectOverlay_when_getRoot() throws Exception {
         final String content =
-                mockMvc.perform(get("/"))
+                mockMvc.perform(get("/").session(authenticatedSession()))
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()

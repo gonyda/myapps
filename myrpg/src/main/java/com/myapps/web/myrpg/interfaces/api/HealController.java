@@ -1,5 +1,7 @@
 package com.myapps.web.myrpg.interfaces.api;
 
+import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
+import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
@@ -7,6 +9,8 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.VitalMax;
+import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpSession;
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -61,34 +65,58 @@ public class HealController {
     /**
      * 100골드를 소모하고 HP/MP/스태미나를 풀회복한다.
      *
-     * <p>상단바 최대치와 동일한 기준(레벨·재능 + 장비 바이탈 보너스 + 스킬 바이탈 보너스)으로 {@link VitalMax}를 산출하여 {@code
-     * fullRecover(vitalMax)}를 호출한다. 골드 부족 시 {@code InsufficientGoldException}이 발생하여 {@code
-     * GlobalExceptionHandler}에서 처리된다.
-     *
+     * @param session HTTP 세션
      * @return 200 OK
      */
     @PostMapping
     @ResponseBody
-    public ResponseEntity<Void> heal() {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public ResponseEntity<Void> heal(final HttpSession session) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         progress.spendGold(HEAL_COST);
 
-        final VitalMax baseVitalMax =
-                statProgression.vitalMaxFor(progress.getCurrentLevel(), progress.getTalent());
-        final VitalMax equipVitalBonus = inventoryService.equippedBonus().vitalBonus();
-        final VitalMax skillVitalBonus =
-                Optional.ofNullable(skillService.rankupVitalBonus(progress.getId()))
-                        .orElse(new VitalMax(0, 0, 0));
-        final VitalMax vitalMax =
-                baseVitalMax
-                        .withHpDelta(equipVitalBonus.hp() + skillVitalBonus.hp())
-                        .withMpDelta(equipVitalBonus.mp() + skillVitalBonus.mp())
-                        .withStaminaDelta(equipVitalBonus.stamina() + skillVitalBonus.stamina());
-
-        progress.fullRecover(vitalMax);
+        final VitalMax maxVitals = calculateEffectiveVitalMax(progress);
+        progress.fullRecover(maxVitals);
         characterService.saveTurn(progress);
         actionLog.add("힐러에게 치료를 받았습니다.", LOG_TYPE_ITEM);
 
         return ResponseEntity.ok().build();
+    }
+
+    private VitalMax calculateEffectiveVitalMax(final CharacterProgress progress) {
+        final VitalMax base =
+                statProgression.vitalMaxFor(progress.getCurrentLevel(), progress.getTalent());
+        final EquippedBonusResult bonus =
+                progress.getId() != null
+                        ? Optional.ofNullable(inventoryService.equippedBonus(progress.getId()))
+                                .orElseGet(inventoryService::equippedBonus)
+                        : inventoryService.equippedBonus();
+        final VitalMax eq = bonus != null ? bonus.vitalBonus() : new VitalMax(0, 0, 0);
+        final VitalMax sk =
+                Optional.ofNullable(skillService.rankupVitalBonus(progress.getId()))
+                        .orElse(new VitalMax(0, 0, 0));
+        return new VitalMax(
+                base.hp() + eq.hp() + sk.hp(),
+                base.mp() + eq.mp() + sk.mp(),
+                base.stamina() + eq.stamina() + sk.stamina());
+    }
+
+    /**
+     * 세션 없는 직접 호출을 위한 오버로드.
+     *
+     * @return 200 OK
+     */
+    public ResponseEntity<Void> heal() {
+        return heal(null);
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);
+            if (sessionUser instanceof UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 }

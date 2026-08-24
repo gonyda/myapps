@@ -1,9 +1,12 @@
 package com.myapps.web.myrpg.interfaces.api;
 
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
+import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.DungeonService;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,46 +51,74 @@ public class DungeonController {
      * 던전에 입장하고 시작방 플레이 화면 프래그먼트를 반환한다.
      *
      * @param dungeonId 입장할 던전 식별자 (예: "alby")
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름
      */
     @PostMapping("/enter")
-    public String enter(@RequestParam final String dungeonId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String enter(
+            @RequestParam final String dungeonId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         dungeonService.enterDungeon(progress.getId(), dungeonId);
         final PlayScreenView view = nodeViewAssembler.fromProgress(progress);
         model.addAttribute("view", view);
         return MOVE_RESPONSE_FRAGMENT;
     }
 
+    public String enter(final String dungeonId, final Model model) {
+        return enter(dungeonId, null, model);
+    }
+
     /**
      * 시작방에서 던전을 나가고 필드의 던전 입구 노드 플레이 화면 프래그먼트를 반환한다.
      *
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름
      */
     @PostMapping("/leave")
-    public String leave(final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String leave(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         dungeonService.leaveDungeon(progress.getId());
         final PlayScreenView view = nodeViewAssembler.fromProgress(progress);
         model.addAttribute("view", view);
         return MOVE_RESPONSE_FRAGMENT;
     }
 
+    public String leave(final Model model) {
+        return leave(null, model);
+    }
+
     /**
      * 던전 내 연결된 인접 방으로 이동하고 갱신된 플레이 화면 프래그먼트를 반환한다.
      *
      * @param targetRoomId 이동할 대상 방 ID
+     * @param session HTTP 세션
      * @param model Spring MVC 모델
      * @return 프래그먼트 뷰 이름
      */
     @PostMapping("/move")
-    public String move(@RequestParam final String targetRoomId, final Model model) {
-        final CharacterProgress progress = characterService.loadOrCreateDefault();
+    public String move(
+            @RequestParam final String targetRoomId, final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
         dungeonService.moveToRoom(progress.getId(), targetRoomId);
         final PlayScreenView view = nodeViewAssembler.fromProgress(progress);
         model.addAttribute("view", view);
         return MOVE_RESPONSE_FRAGMENT;
+    }
+
+    public String move(final String targetRoomId, final Model model) {
+        return move(targetRoomId, null, model);
+    }
+
+    private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
+        if (session != null) {
+            final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);
+            if (sessionUser instanceof UserSession userSession
+                    && userSession.characterId() != null) {
+                return characterService.loadByCharacterId(userSession.characterId());
+            }
+        }
+        return characterService.loadOrCreateDefault();
     }
 }

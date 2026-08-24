@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-24 00:18 (Asia/Seoul)
+> 최종 업데이트: 2026-08-24 22:54 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -24,21 +24,21 @@
 
 ## 2. 현재 작업 맥락 및 상태
 
-- **014 스킬 시스템 확장 (`.kiro/specs/myrpg/014-skill-system-expansion/`) 전체 구현 및 검증 완료**:
-  - **Task A (도메인 & 계산 정책)**: `SkillType` 10종, 8종 Sealed Records(`Skill`), JPA 엔티티(`BattleState`, `CharacterSkill`), `SkillRankupBonus`(패시브 선형 누적 & 메디테이션 MP 회복), `SkillRankPolicy`(4대 수련 조건), `SkillDamagePolicy`, `BattleResolver`(방어 관통 0 & 3연타/5연타), PBT 검증 완료.
-  - **Task B (카탈로그 & 애플리케이션 서비스)**: 35종 카탈로그 완비, 8종 Jackson 3 파싱, `SkillService` 육성/필드 힐링/승급 분기, `BattleService` 특수 턴 해결(궁극기 절대우위/힐/마나실드/CC/도트/디버프/메디테이션 재생/승리 쿨타임 차감), 단위/PBT 테스트 완료.
-  - **Task C (웹 컨트롤러 계층)**: `SkillRowView.java` (`fieldUsable`, `cooldownBadgeText`), `BattleSkillButton.java` (`ultimateCooldown`, `ready`), `SkillController.java` (`POST /skills/{id}/use`), 컨트롤러 슬라이스 테스트 완료.
-  - **Task D (프론트엔드 UI/UX)**: `skill-popup.html` (`공용` 탭 디펜스+패시브, `[사용]` 버튼, 궁극기 쿨다운 뱃지), `battle-view.html` (궁극기 쿨다운 잠금 뱃지, 준비 완료 황금 펄스), `myrpg.js` (`useFieldSkill`), `myrpg.css` (.skill-use-btn, .badge-cooldown, @keyframes ultimate-ready-pulse), UI 보존 통합 테스트 통과.
-  - **Task E (5대 가드레일 & 통합 검증)**: 전체 1,128개 테스트 100% PASS, Spotless + Error Prone + ArchUnit + JaCoCo(80%+) + PMD/CPD + CodeGraph sync 완료.
-
-3. **`main` 브랜치 머지 및 프로덕션 배포 완료**:
-   - 머지: PR #2 (`feature/014-skill-system-expansion` ➜ `main`, 커밋 `605c607`)
-   - 배포: Oracle Cloud VM (`134.185.116.35:8083`) 자동 배포 (`deploy.sh myrpg`) 및 Health Check (200 OK) 완료
+- **015 유저 계정 및 간이 로그인 시스템 (`.kiro/specs/myrpg/015-user-authentication-and-login/`) 전체 구현 및 검증 완료**:
+  - **도메인/데이터 계층**: `UserAccount` JPA 엔티티, `UserSession` 불변 Record, `OwnedItem.characterId` 다중 캐릭터 격리, `UserAccountRepository`, PBT Property 1 자격증명 일치성 검증 완료.
+  - **애플리케이션 계층**: `AuthService` 기동 시 `bbsk`(기존 캐릭터 1번 연결) 및 `admin`(관리자 캐릭터 2번, 35종 전체 스킬 F랭크 일괄 습득 + 초보자 풀장비/포션 세트 지급) 자동 시드, PBT Property 2/3 어드민 스킬 무결성 및 인벤토리 격리 검증 완료.
+  - **다중 계정 격리 전면 보강**:
+    - `InventoryService`, `ShopService`, `BattleService`, `DungeonService`, `PlayScreenViewHelper`, `HealController`: 캐릭터별 `characterId` 바인딩, 장착/해제/포션사용/상점/전투장비보너스 격리 및 기본 캐릭터(1L) 하위 호환성 완벽 지원.
+  - **웹/인프라 계층**: `AuthInterceptor` 미인증 브라우저 접근 302 리다이렉트 및 AJAX 401 Unauthorized 처리, `WebMvcConfig`, `AuthController` (`GET/POST /login`, `GET/POST /logout`), 전체 컨트롤러 세션 캐릭터 식별자 연동 완료.
+  - **프론트엔드 UI/UX**: `login.html` 다크 판타지 글래스모피즘 로그인 카드, `[👤 bbsk (고니)]` 및 `[👑 admin (전스킬+풀장비)]` 퀵 로그인 원클릭 버튼, `top-bar.html` 로그아웃 버튼, `myrpg.css` 및 `myrpg.js` 스크립트 연동 완료.
+  - **5대 품질 가드레일**: Spotless 포맷팅, Error Prone 결함 차단, ArchUnit 계층 아키텍처, JaCoCo(1,161개 테스트 통과, 80%+ 커버리지), PMD/CPD 전체 무결점 통과 (`BUILD SUCCESS`).
+  - **CodeGraph 동기화**: `codegraph sync` 완료.
 
 ---
 
 ## 3. 다음 단계 (Next Steps)
 
-1. **사용자 확인 및 다음 기능/스펙 진행**:
-   - 배포된 `myrpg` 서비스 점검
-   - 다음 신규 기능 개발(`docs/todo.md` 백로그 등) 또는 사용자 추가 요청 사항 처리
+1. **사용자 확인 및 서버 재기동 안내**:
+   - `admin` 계정 로그인 시 장비 착용 목록 및 스킬, 인벤토리 정상 출력 확인
+2. **Git 커밋 및 브랜치 병합/푸시**:
+   - `feature/015-user-authentication-and-login` 브랜치 커밋 및 main 병합 검토

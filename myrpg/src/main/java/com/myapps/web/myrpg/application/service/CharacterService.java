@@ -56,6 +56,23 @@ public class CharacterService {
     }
 
     /**
+     * 지정된 식별자의 캐릭터 진행상황을 로드하거나, 없으면 기본 캐릭터를 로드/생성합니다.
+     *
+     * @param characterId 캐릭터 식별자 (null일 경우 기본 캐릭터 로드)
+     * @return 로드되거나 새로 생성된 캐릭터 진행상황
+     * @throws CharacterCreationException 캐릭터 로드 또는 생성 실패 시
+     */
+    @Transactional
+    public CharacterProgress loadByCharacterId(final Long characterId) {
+        if (characterId == null) {
+            return loadOrCreateDefault();
+        }
+        return characterProgressRepository
+                .findById(characterId)
+                .orElseGet(this::createAndSaveDefault);
+    }
+
+    /**
      * 턴 종료 시 변경된 캐릭터 진행상황을 저장합니다.
      *
      * @param progress 저장할 캐릭터 진행상황

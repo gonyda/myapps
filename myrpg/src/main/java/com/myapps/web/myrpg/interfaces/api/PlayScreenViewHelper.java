@@ -312,11 +312,17 @@ public class PlayScreenViewHelper {
         final int level = progress.getCurrentLevel();
         final TalentType talent = progress.getTalent();
         final VitalGauges gauges = buildVitalGauges(progress);
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        EquippedBonusResult equipBonus = null;
+        if (progress.getId() != null) {
+            equipBonus = inventoryService.equippedBonus(progress.getId());
+        }
+        if (equipBonus == null) {
+            equipBonus = inventoryService.equippedBonus();
+        }
 
         final Stats levelStats = statProgression.levelStatsFor(level, talent);
         final Stats skillBonus = skillService.rankupBonus(progress.getId());
-        final Stats equipStatBonus = equipBonus.statBonus();
+        final Stats equipStatBonus = equipBonus != null ? equipBonus.statBonus() : Stats.ZERO;
         final List<StatLine> stats = buildStatLines(levelStats, skillBonus, equipStatBonus);
 
         final String elapsedText = rebirthElapsedText(rebirthStatus);
@@ -387,16 +393,23 @@ public class PlayScreenViewHelper {
     private VitalGauges buildVitalGauges(final CharacterProgress progress) {
         final int level = progress.getCurrentLevel();
         final VitalMax baseVitalMax = statProgression.vitalMaxFor(level, progress.getTalent());
-        final EquippedBonusResult equipBonus = inventoryService.equippedBonus();
+        EquippedBonusResult equipBonus = null;
+        if (progress.getId() != null) {
+            equipBonus = inventoryService.equippedBonus(progress.getId());
+        }
+        if (equipBonus == null) {
+            equipBonus = inventoryService.equippedBonus();
+        }
+        final VitalMax equipVitalBonus =
+                equipBonus != null ? equipBonus.vitalBonus() : new VitalMax(0, 0, 0);
         final VitalMax skillVitalBonus =
                 Optional.ofNullable(skillService.rankupVitalBonus(progress.getId()))
                         .orElse(new VitalMax(0, 0, 0));
         final VitalMax vitalMax =
                 baseVitalMax
-                        .withHpDelta(equipBonus.vitalBonus().hp() + skillVitalBonus.hp())
-                        .withMpDelta(equipBonus.vitalBonus().mp() + skillVitalBonus.mp())
-                        .withStaminaDelta(
-                                equipBonus.vitalBonus().stamina() + skillVitalBonus.stamina());
+                        .withHpDelta(equipVitalBonus.hp() + skillVitalBonus.hp())
+                        .withMpDelta(equipVitalBonus.mp() + skillVitalBonus.mp())
+                        .withStaminaDelta(equipVitalBonus.stamina() + skillVitalBonus.stamina());
         final GaugeView hp = buildGauge(progress.getHpCurrent(), vitalMax.hp());
         final GaugeView mp = buildGauge(progress.getMpCurrent(), vitalMax.mp());
         final GaugeView stamina = buildGauge(progress.getStaminaCurrent(), vitalMax.stamina());
