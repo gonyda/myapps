@@ -4,6 +4,8 @@ import com.myapps.web.myrpg.application.dto.BankView;
 import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.DropResult;
 import com.myapps.web.myrpg.application.dto.DroppedItem;
+import com.myapps.web.myrpg.application.dto.EquipmentSlotView;
+import com.myapps.web.myrpg.application.dto.EquipmentView;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.InventoryView;
 import com.myapps.web.myrpg.application.dto.OwnedItemView;
@@ -36,7 +38,9 @@ import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -413,6 +417,230 @@ public class InventoryService {
         return new BankView(bankGold, gold, bankViews, inventoryViews);
     }
 
+    /**
+     * 기본 캐릭터의 장비 팝업 뷰를 조립한다.
+     *
+     * @return 장비 팝업 뷰
+     */
+    public EquipmentView buildEquipmentView() {
+        return buildEquipmentView(null);
+    }
+
+    /**
+     * 특정 캐릭터의 장비 팝업 뷰를 조립한다.
+     *
+     * <p>3x3 매트릭스 순서(ACC1, HEAD, ACC2, MAIN_HAND, BODY, OFF_HAND, HANDS, FEET, ROBE)로 슬롯을 구성하고, 장착
+     * 장비의 보너스 합산과 평균 내구도를 산출한다.
+     *
+     * @param characterId 캐릭터 식별자
+     * @return 장비 팝업 뷰
+     */
+    public EquipmentView buildEquipmentView(final Long characterId) {
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(characterId);
+        final Map<EquipSlot, OwnedItem> slotMap = resolveEquippedSlotMap(equippedItems);
+        final boolean mainHandIsTwoHanded = isMainHandTwoHanded(slotMap.get(EquipSlot.MAIN_HAND));
+        final List<EquipmentSlotView> slots = assembleEquipmentSlots(slotMap, mainHandIsTwoHanded);
+
+        final EquippedBonusResult bonusResult = equippedBonus(characterId);
+        final int equippedCount = (int) slots.stream().filter(EquipmentSlotView::equipped).count();
+        final int averageDurabilityPercent = calculateAverageDurability(slots);
+        final String weaponTalentLabel = resolveWeaponTalentLabel(characterId);
+
+        return new EquipmentView(
+                slots, bonusResult, equippedCount, averageDurabilityPercent, weaponTalentLabel);
+    }
+
+    private List<OwnedItem> findEquippedInventoryItems(final Long characterId) {
+        List<OwnedItem> items = null;
+        if (characterId == null || characterId.equals(1L)) {
+            items = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
+        }
+        if ((items == null || items.isEmpty()) && characterId != null) {
+            items =
+                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                            characterId, StorageKind.INVENTORY);
+        }
+        return items != null ? items : List.of();
+    }
+
+    private Map<EquipSlot, OwnedItem> resolveEquippedSlotMap(final List<OwnedItem> equippedItems) {
+        final Map<EquipSlot, OwnedItem> slotMap = new EnumMap<>(EquipSlot.class);
+        for (final OwnedItem owned : equippedItems) {
+            final Optional<Item> catalogOpt = itemCatalogService.byId(owned.getItemId());
+            if (catalogOpt.isPresent() && catalogOpt.get() instanceof EquipmentItem equipItem) {
+                slotMap.put(equipItem.kind().primarySlot(), owned);
+            }
+        }
+        return slotMap;
+    }
+
+    private boolean isMainHandTwoHanded(final OwnedItem mainHandOwned) {
+        if (mainHandOwned == null) {
+            return false;
+        }
+        final Optional<Item> mainOpt = itemCatalogService.byId(mainHandOwned.getItemId());
+        return mainOpt.isPresent()
+                && mainOpt.get() instanceof EquipmentItem equipItem
+                && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND);
+    }
+
+    private List<EquipmentSlotView> assembleEquipmentSlots(
+            final Map<EquipSlot, OwnedItem> slotMap, final boolean mainHandIsTwoHanded) {
+        final List<EquipmentSlotView> slots = new ArrayList<>(9);
+        slots.add(EquipmentSlotView.locked("ACC1", "악세사리 1", "💍"));
+        slots.add(toSlotView(EquipSlot.HEAD, "머리", "🪖", slotMap.get(EquipSlot.HEAD), false));
+        slots.add(EquipmentSlotView.locked("ACC2", "악세사리 2", "💍"));
+
+        slots.add(
+                toSlotView(
+                        EquipSlot.MAIN_HAND,
+                        "주무기",
+                        "🗡️",
+                        slotMap.get(EquipSlot.MAIN_HAND),
+                        false));
+        slots.add(toSlotView(EquipSlot.BODY, "갑옷", "🥋", slotMap.get(EquipSlot.BODY), false));
+        if (slotMap.containsKey(EquipSlot.OFF_HAND)) {
+            slots.add(
+                    toSlotView(
+                            EquipSlot.OFF_HAND,
+                            "보조손",
+                            "🛡️",
+                            slotMap.get(EquipSlot.OFF_HAND),
+                            false));
+        } else if (mainHandIsTwoHanded) {
+            slots.add(EquipmentSlotView.blockedByTwoHanded("OFF_HAND", "보조손", "🛡️"));
+        } else {
+            slots.add(EquipmentSlotView.empty("OFF_HAND", "보조손", "🛡️"));
+        }
+
+        slots.add(toSlotView(EquipSlot.HANDS, "손", "🧤", slotMap.get(EquipSlot.HANDS), false));
+        slots.add(toSlotView(EquipSlot.FEET, "발", "👢", slotMap.get(EquipSlot.FEET), false));
+        slots.add(EquipmentSlotView.locked("ROBE", "로브", "🧥"));
+        return List.copyOf(slots);
+    }
+
+    private static int calculateAverageDurability(final List<EquipmentSlotView> slots) {
+        int totalDurabilityPercent = 0;
+        int equippedWithDurability = 0;
+        for (final EquipmentSlotView slot : slots) {
+            if (slot.equipped() && slot.maxDurability() != null && slot.maxDurability() > 0) {
+                totalDurabilityPercent += slot.durabilityPercent();
+                equippedWithDurability++;
+            }
+        }
+        return equippedWithDurability > 0 ? totalDurabilityPercent / equippedWithDurability : 100;
+    }
+
+    private String resolveWeaponTalentLabel(final Long characterId) {
+        final SkillTalent weaponTalent = resolveEquippedWeaponTalent(characterId);
+        if (weaponTalent != null && weaponTalent.matchingTalent().isPresent()) {
+            return weaponTalent.matchingTalent().get().label();
+        }
+        return (weaponTalent == SkillTalent.COMMON) ? "공용" : "맨손";
+    }
+
+    /**
+     * 슬롯 충돌을 자동으로 해결하며 장비를 착용한다.
+     *
+     * <p>양손무기 착용 시 보조손 장비(방패)를 자동 해제하고, 방패 착용 시 주무기의 양손무기를 자동 해제한 후 착용한다.
+     *
+     * @param ownedItemId 착용할 보유 아이템 PK
+     */
+    @Transactional
+    public void smartEquip(final long ownedItemId) {
+        final OwnedItem target = findOwnedItemOrThrow(ownedItemId);
+        final EquipmentItem equipmentItem = resolveEquipmentItem(target);
+        final EquipmentKind targetKind = equipmentItem.kind();
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(target.getCharacterId());
+
+        autoUnequipShieldForTwoHanded(target, targetKind, equippedItems);
+        autoUnequipTwoHandedForShield(target, targetKind, equippedItems);
+
+        equip(ownedItemId);
+    }
+
+    private void autoUnequipShieldForTwoHanded(
+            final OwnedItem target,
+            final EquipmentKind targetKind,
+            final List<OwnedItem> equippedItems) {
+        if (!targetKind.requiredSlots().contains(EquipSlot.OFF_HAND)
+                || targetKind.primarySlot() != EquipSlot.MAIN_HAND) {
+            return;
+        }
+        for (final OwnedItem equipped : equippedItems) {
+            if (equipped.getId().equals(target.getId())) {
+                continue;
+            }
+            final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
+            if (catalogOpt.isPresent()
+                    && catalogOpt.get() instanceof EquipmentItem equipItem
+                    && equipItem.kind().primarySlot() == EquipSlot.OFF_HAND) {
+                equipped.unequip();
+                actionLog.add(equipItem.name() + "을(를) 해제했습니다", LOG_TYPE_ITEM);
+            }
+        }
+    }
+
+    private void autoUnequipTwoHandedForShield(
+            final OwnedItem target,
+            final EquipmentKind targetKind,
+            final List<OwnedItem> equippedItems) {
+        if (targetKind.primarySlot() != EquipSlot.OFF_HAND) {
+            return;
+        }
+        for (final OwnedItem equipped : equippedItems) {
+            if (equipped.getId().equals(target.getId())) {
+                continue;
+            }
+            final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
+            if (catalogOpt.isPresent()
+                    && catalogOpt.get() instanceof EquipmentItem equipItem
+                    && equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
+                    && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
+                equipped.unequip();
+                actionLog.add(equipItem.name() + "을(를) 해제했습니다", LOG_TYPE_ITEM);
+            }
+        }
+    }
+
+    /**
+     * 특정 슬롯에 착용 가능한 인벤토리 아이템 목록을 조회한다.
+     *
+     * @param characterId 캐릭터 PK
+     * @param slotCode 슬롯 코드 (예: "HEAD", "BODY", "MAIN_HAND", "OFF_HAND", "HANDS", "FEET")
+     * @return 착용 가능한 미장착 아이템 뷰 목록
+     */
+    public List<OwnedItemView> findEquippableForSlot(
+            final Long characterId, final String slotCode) {
+        final EquipSlot targetSlot;
+        try {
+            targetSlot = EquipSlot.valueOf(slotCode.toUpperCase());
+        } catch (final IllegalArgumentException e) {
+            return List.of();
+        }
+
+        final List<OwnedItem> inventoryItems =
+                characterId != null
+                        ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                                characterId, StorageKind.INVENTORY)
+                        : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+
+        return inventoryItems.stream()
+                .filter(owned -> !owned.isEquipped())
+                .filter(
+                        owned -> {
+                            final Optional<Item> catalogOpt =
+                                    itemCatalogService.byId(owned.getItemId());
+                            if (catalogOpt.isEmpty()
+                                    || !(catalogOpt.get() instanceof EquipmentItem equipItem)) {
+                                return false;
+                            }
+                            return equipItem.kind().primarySlot() == targetSlot;
+                        })
+                .map(this::toOwnedItemView)
+                .toList();
+    }
+
     /** 기본 캐릭터(1L)에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다. */
     @Transactional
     public void seedDefault() {
@@ -743,7 +971,7 @@ public class InventoryService {
             final EquipSlot slot,
             final OwnedItem excludeTarget) {
         for (final OwnedItem equipped : equippedItems) {
-            if (equipped.getId().equals(excludeTarget.getId())) {
+            if (equipped.getId().equals(excludeTarget.getId()) || !equipped.isEquipped()) {
                 continue;
             }
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
@@ -764,7 +992,7 @@ public class InventoryService {
             final EquipSlot primarySlot,
             final OwnedItem excludeTarget) {
         for (final OwnedItem equipped : equippedItems) {
-            if (equipped.getId().equals(excludeTarget.getId())) {
+            if (equipped.getId().equals(excludeTarget.getId()) || !equipped.isEquipped()) {
                 continue;
             }
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
@@ -1133,5 +1361,86 @@ public class InventoryService {
             case ULTIMATE -> 9;
             case PASSIVE -> 10;
         };
+    }
+
+    private EquipmentSlotView toSlotView(
+            final EquipSlot slot,
+            final String label,
+            final String defaultIcon,
+            final OwnedItem owned,
+            final boolean blocked) {
+        if (blocked) {
+            return EquipmentSlotView.blockedByTwoHanded(slot.name(), label, defaultIcon);
+        }
+        if (owned == null) {
+            return EquipmentSlotView.empty(slot.name(), label, defaultIcon);
+        }
+
+        final Item item = itemCatalogService.byId(owned.getItemId()).orElse(null);
+        if (!(item instanceof EquipmentItem equipItem)) {
+            return EquipmentSlotView.empty(slot.name(), label, defaultIcon);
+        }
+
+        final int maxDura = equipItem.maxDurability();
+        final int currentDura = (int) Math.ceil(owned.getCurrentDurability());
+        final int duraPercent =
+                maxDura > 0
+                        ? Math.min(
+                                100,
+                                Math.max(
+                                        0,
+                                        (int)
+                                                Math.round(
+                                                        (owned.getCurrentDurability() / maxDura)
+                                                                * 100.0)))
+                        : 0;
+        final String duraStatus =
+                duraPercent <= 20 ? "danger" : (duraPercent <= 50 ? "warning" : "normal");
+
+        final String icon = resolveEquipIcon(equipItem);
+        final String bonusSummary = formatBonusesSummary(equipItem.bonuses());
+        final String detail = String.join("||", describe(equipItem, owned));
+
+        return new EquipmentSlotView(
+                slot.name(),
+                label,
+                defaultIcon,
+                true,
+                false,
+                false,
+                owned.getId(),
+                equipItem.name(),
+                icon,
+                equipItem.kind().label(),
+                currentDura,
+                maxDura,
+                duraPercent,
+                duraStatus,
+                bonusSummary,
+                detail);
+    }
+
+    private static String resolveEquipIcon(final EquipmentItem equipItem) {
+        return switch (equipItem.kind()) {
+            case ONE_HANDED_SWORD, TWO_HANDED_SWORD -> "🗡️";
+            case BOW -> "🏹";
+            case WAND, STAFF -> "🔮";
+            case SHIELD -> "🛡️";
+            case ARMOR_BODY -> "🥋";
+            case HELMET -> "🪖";
+            case GLOVES -> "🧤";
+            case BOOTS -> "👢";
+        };
+    }
+
+    private String formatBonusesSummary(final List<EquipBonus> bonuses) {
+        if (bonuses == null || bonuses.isEmpty()) {
+            return "보너스 없음";
+        }
+        final List<String> parts = new ArrayList<>();
+        for (final EquipBonus b : bonuses) {
+            parts.add(formatBonus(b));
+        }
+        return String.join(", ", parts);
     }
 }

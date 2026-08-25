@@ -13,6 +13,7 @@ myapps/                                # Git 레포지토리 루트
 │   ├── coding/                        # Java 코딩 컨벤션, final, 불변성, 테스트 규칙
 │   ├── infra/                         # 배포 절차, 인프라 및 포트 매핑 규칙
 │   ├── module/                        # 신규 모듈 생성 가드 및 DDD 템플릿
+│   ├── myrpg/                         # MyRPG UI/UX 스타일 가이드, 디자인 토큰, 팝업/컴포넌트 규격
 │   ├── project/                       # pom.xml 규칙, 기술 스택, Spec 작성 표준
 │   └── workflow/                      # CodeGraph 우선, 빌드 검증 5대 가드레일, Git 전략
 │
@@ -72,6 +73,7 @@ myapps/                                # Git 레포지토리 루트
 | **Spec 문서 작성/수정** | `rules/project/spec-conventions.md` |
 | **코드 구조 및 심볼 분석** | `rules/workflow/codegraph-first.md` |
 | **Java 소스 코드 작성/수정** | `rules/coding/code-style.md`, `rules/project/tech-stack.md` |
+| **MyRPG UI/UX 및 화면/CSS 작업** | `rules/myrpg/ui-style-guide.md` (다크 판타지, 앤틱 골드, 모바일 세로모드, 원터치 인터랙션 규격) |
 | **pom.xml 의존성/플러그인 수정** | `rules/project/pom-conventions.md` |
 | **신규 모듈 생성** | `rules/module/new-module-guard.md`, `rules/module/module-template.md` |
 | **Task 완료 및 빌드 검증** | `rules/workflow/task-build-validation.md` |
@@ -143,6 +145,7 @@ myapps/                                # Git 레포지토리 루트
 | **Infra** | `rules/infra/deployment.md` | Oracle Cloud VM 배포 절차, 환경변수, 모듈별 포트 매핑 (mystudy:8080, mycalendar:8082, myrpg:8083) |
 | **Module** | `rules/module/module-template.md` | 신규 모듈용 DDD 패키지 구조 및 템플릿 |
 | **Module** | `rules/module/new-module-guard.md` | 신규 모듈 추가 전 사전 점검 체크리스트 |
+| **MyRPG UI/UX** | `rules/myrpg/ui-style-guide.md` | 다크 판타지 앤틱 골드 테마, 모바일 세로모드(360~480px) 100% 최적화, 3x3 슬롯/바텀시트/픽커/토스트 규격, 원터치 인터랙션 규칙 |
 | **Project** | `rules/project/pom-conventions.md` | Parent POM 및 모듈 POM 설정 표준, 5대 가드레일 플러그인 정의 |
 | **Project** | `rules/project/spec-conventions.md` | Spec 3종 문서 구조 및 3자리 순번 폴더 네이밍 규칙 |
 | **Project** | `rules/project/tech-stack.md` | 기술 스택 (Java 21/JDK 25, Spring Boot 4.0, Maven 멀티모듈) |

@@ -152,6 +152,162 @@ function closePanel() {
     document.getElementById("panelOverlay").classList.remove("open");
 }
 
+// ===== 장비 팝업 (모바일 세로모드 3x3 슬롯 & 종합 스탯) =====
+var currentSelectedEquipmentOwnedId = null;
+
+function openEquipment() {
+    fetch('/equipment')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('equipmentContent').innerHTML = html;
+            document.getElementById('equipmentOverlay').classList.add('open');
+        });
+}
+
+function closeEquipment() {
+    var overlay = document.getElementById('equipmentOverlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+    }
+    closeEquipmentActionSheet();
+    closeEquipmentPicker();
+}
+
+function openInventoryFromEquipment() {
+    closeEquipment();
+    openInventory();
+}
+
+function onEquipmentSlotTouch(slotElement) {
+    var locked = slotElement.getAttribute('data-locked') === 'true';
+    if (locked) {
+        showEquipmentToast('💍 향후 업데이트될 예정인 슬롯입니다.');
+        return;
+    }
+
+    var blocked = slotElement.getAttribute('data-blocked') === 'true';
+    if (blocked) {
+        showEquipmentToast('⛔ 양손 무기 착용 중에는 보조손을 사용할 수 없습니다.');
+        return;
+    }
+
+    var equipped = slotElement.getAttribute('data-equipped') === 'true';
+    if (equipped) {
+        var ownedId = slotElement.getAttribute('data-owned-id');
+        currentSelectedEquipmentOwnedId = ownedId;
+
+        var name = slotElement.getAttribute('data-name') || '아이템';
+        var icon = slotElement.getAttribute('data-icon') || '🗡️';
+        var label = slotElement.getAttribute('data-slot-label') || '장비';
+        var dura = slotElement.getAttribute('data-dura') || '';
+        var duraPercent = parseInt(slotElement.getAttribute('data-dura-percent'), 10) || 100;
+        var duraStatus = slotElement.getAttribute('data-dura-status') || 'normal';
+        var detail = slotElement.getAttribute('data-detail') || '';
+
+        document.getElementById('sheetItemIcon').textContent = icon;
+        document.getElementById('sheetSlotTag').textContent = label;
+        document.getElementById('sheetItemName').textContent = name;
+        document.getElementById('sheetDuraVal').textContent = dura;
+
+        var duraFill = document.getElementById('sheetDuraFill');
+        duraFill.className = 'sheet-dura-fill dura-' + duraStatus;
+        duraFill.style.width = duraPercent + '%';
+
+        var body = document.getElementById('sheetDetailContent');
+        body.innerHTML = '';
+        if (detail) {
+            var lines = detail.split('||');
+            for (var i = 0; i < lines.length; i++) {
+                var p = document.createElement('p');
+                var line = lines[i];
+                p.textContent = line;
+                if (line.indexOf(':') !== -1) {
+                    p.classList.add('detail-stat-line');
+                } else if (line.indexOf('“') === 0 || line.indexOf('"') === 0 || line.indexOf('\'') === 0 || line.indexOf('※') === 0) {
+                    p.classList.add('detail-desc-line');
+                } else {
+                    p.classList.add('detail-info-line');
+                }
+                body.appendChild(p);
+            }
+        }
+
+        document.getElementById('equipmentActionSheet').classList.add('open');
+    } else {
+        var slotId = slotElement.getAttribute('data-slot-id');
+        var slotLabel = slotElement.getAttribute('data-slot-label') || '장비';
+        document.getElementById('pickerSlotTitle').textContent = '[' + slotLabel + '] 착용 가능 장비';
+
+        fetch('/equipment/equippable?slot=' + slotId)
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                document.getElementById('equipmentCandidatesArea').innerHTML = html;
+                document.getElementById('equipmentPickerModal').classList.add('open');
+            });
+    }
+}
+
+function closeEquipmentActionSheet() {
+    var sheet = document.getElementById('equipmentActionSheet');
+    if (sheet) {
+        sheet.classList.remove('open');
+    }
+    currentSelectedEquipmentOwnedId = null;
+}
+
+function closeEquipmentPicker() {
+    var modal = document.getElementById('equipmentPickerModal');
+    if (modal) {
+        modal.classList.remove('open');
+    }
+}
+
+function unequipCurrentSlotItem() {
+    if (!currentSelectedEquipmentOwnedId) { return; }
+    fetch('/equipment/unequip?ownedItemId=' + currentSelectedEquipmentOwnedId, { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('equipmentContent').innerHTML = html;
+            }
+            closeEquipmentActionSheet();
+            refreshTopBar();
+            if (battleActive) {
+                refreshBattleSkills();
+            }
+        });
+}
+
+function equipFromPicker(ownedItemId) {
+    if (!ownedItemId) { return; }
+    fetch('/equipment/equip?ownedItemId=' + ownedItemId, { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('equipmentContent').innerHTML = html;
+            }
+            closeEquipmentPicker();
+            refreshTopBar();
+            if (battleActive) {
+                refreshBattleSkills();
+            }
+        });
+}
+
+var equipmentToastTimer = null;
+function showEquipmentToast(message) {
+    var toast = document.getElementById('equipmentToast');
+    if (!toast) { return; }
+    toast.textContent = message;
+    toast.classList.add('show');
+    if (equipmentToastTimer) {
+        clearTimeout(equipmentToastTimer);
+    }
+    equipmentToastTimer = setTimeout(function () {
+        toast.classList.remove('show');
+    }, 2200);
+}
+
 // ===== 이동 패드: POST /move 호출 + DOM fragment swap =====
 function move(dx, dy) {
     if (battleActive) {

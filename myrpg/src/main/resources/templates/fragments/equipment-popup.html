@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 장비 팝업 전체 오버레이 -->
+<div class="overlay equipment-overlay" id="equipmentOverlay" th:fragment="equipment-popup">
+    <div class="panel equipment-panel">
+        <header class="panel-header">
+            <div class="panel-header-title">
+                <span class="panel-header-icon">⚔️</span>
+                <h3>캐릭터 장비</h3>
+            </div>
+            <button class="panel-close" onclick="closeEquipment()" aria-label="닫기">✕</button>
+        </header>
+
+        <div class="panel-body equipment-panel-body" id="equipmentContent">
+            <!-- fetch('/equipment')로 equipment-content fragment가 주입됨 -->
+        </div>
+    </div>
+
+    <!-- 4. 장착된 장비 액션 바텀시트 -->
+    <div class="equipment-action-sheet" id="equipmentActionSheet">
+        <div class="sheet-card">
+            <header class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-item-icon" id="sheetItemIcon">🗡️</span>
+                    <div>
+                        <span class="sheet-slot-tag" id="sheetSlotTag">주무기</span>
+                        <h4 class="sheet-item-name" id="sheetItemName">롱소드</h4>
+                    </div>
+                </div>
+                <button type="button" class="sheet-close" onclick="closeEquipmentActionSheet()">✕</button>
+            </header>
+            <div class="sheet-body">
+                <div class="sheet-dura-box">
+                    <span class="sheet-dura-label">내구도</span>
+                    <div class="sheet-dura-bar"><div class="sheet-dura-fill" id="sheetDuraFill"></div></div>
+                    <span class="sheet-dura-val" id="sheetDuraVal">20/20</span>
+                </div>
+                <div class="sheet-detail-content" id="sheetDetailContent">
+                    <!-- 상세 스펙 및 문구 JS 렌더 -->
+                </div>
+            </div>
+            <footer class="sheet-footer">
+                <button type="button" class="btn-sheet-unequip" onclick="unequipCurrentSlotItem()">
+                    <span>↩️ 장착 해제</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 5. 빈 슬롯 빠른 장착 픽커 모달 -->
+    <div class="equipment-picker-modal" id="equipmentPickerModal">
+        <div class="picker-card">
+            <header class="picker-header">
+                <div>
+                    <span class="picker-badge">EQUIP SELECT</span>
+                    <h4 class="picker-title" id="pickerSlotTitle">머리 장비 선택</h4>
+                </div>
+                <button type="button" class="picker-close" onclick="closeEquipmentPicker()">✕</button>
+            </header>
+            <div class="picker-body" id="equipmentCandidatesArea">
+                <!-- 후보 아이템 목록 (fragment 호출 또는 JS 동적 렌더) -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 화면 중앙 토스트 알림 -->
+    <div class="equipment-toast" id="equipmentToast"></div>
+</div>
+
+<!-- 장비 팝업 내용 (fetch로 교체되는 영역) -->
+<div th:fragment="equipment-content" class="equipment-content-wrap" th:if="${equipment != null}">
+    <!-- 1. 3x3 마비노기 판타지 슬롯 매트릭스 -->
+    <div class="equipment-matrix-section">
+        <div class="equipment-slot-matrix">
+            <div th:each="slot : ${equipment.slots}"
+                 class="equipment-slot-card"
+                 th:classappend="${slot.locked} ? 'slot-is-locked' : (${slot.blockedByTwoHanded} ? 'slot-is-blocked' : (${slot.equipped} ? 'slot-is-equipped' : 'slot-is-empty'))"
+                 th:attr="data-slot-id=${slot.slotId},
+                          data-slot-label=${slot.slotLabel},
+                          data-owned-id=${slot.ownedItemId},
+                          data-equipped=${slot.equipped},
+                          data-locked=${slot.locked},
+                          data-blocked=${slot.blockedByTwoHanded},
+                          data-name=${slot.itemName},
+                          data-icon=${slot.itemIcon},
+                          data-type=${slot.itemType},
+                          data-dura=${slot.currentDurability != null ? slot.currentDurability + '/' + slot.maxDurability : ''},
+                          data-dura-percent=${slot.durabilityPercent},
+                          data-dura-status=${slot.durabilityStatus},
+                          data-bonuses=${slot.bonusesSummary},
+                          data-detail=${slot.detailText}"
+                 onclick="onEquipmentSlotTouch(this)">
+
+                <!-- 무기 슬롯 전용 I / II 탭 -->
+                <div class="weapon-swap-tabs" th:if="${slot.slotId == 'MAIN_HAND' || slot.slotId == 'OFF_HAND'}">
+                    <span class="swap-tab active">I</span>
+                    <span class="swap-tab locked" onclick="event.stopPropagation(); showEquipmentToast('무기 스왑 II 세트는 향후 업데이트될 예정입니다.');">II 🔒</span>
+                </div>
+
+                <!-- 1-1. 잠긴 슬롯 (악세사리, 로브) -->
+                <div class="slot-inner slot-locked-inner" th:if="${slot.locked}">
+                    <span class="slot-silhouette" th:text="${slot.silhouetteIcon}">💍</span>
+                    <span class="slot-label" th:text="${slot.slotLabel}">악세사리</span>
+                    <span class="slot-lock-tag">🔒</span>
+                </div>
+
+                <!-- 1-2. 양손무기 점유 슬롯 -->
+                <div class="slot-inner slot-blocked-inner" th:if="${slot.blockedByTwoHanded}">
+                    <span class="slot-blocked-icon">⛔</span>
+                    <span class="slot-label">양손무기 점유</span>
+                </div>
+
+                <!-- 1-3. 장착된 슬롯 -->
+                <div class="slot-inner slot-equipped-inner" th:if="${slot.equipped}">
+                    <div class="slot-item-top">
+                        <span class="slot-item-icon" th:text="${slot.itemIcon}">🗡️</span>
+                        <span class="slot-tag" th:text="${slot.slotLabel}">주무기</span>
+                    </div>
+                    <span class="slot-item-name" th:text="${slot.itemName}">롱소드</span>
+                    <div class="slot-dura-wrap" th:if="${slot.maxDurability != null}">
+                        <div class="slot-dura-bar">
+                            <div class="slot-dura-fill"
+                                 th:classappend="'dura-' + ${slot.durabilityStatus}"
+                                 th:style="'width:' + ${slot.durabilityPercent} + '%'"></div>
+                        </div>
+                        <span class="slot-dura-text" th:text="${slot.currentDurability} + '/' + ${slot.maxDurability}">10/10</span>
+                    </div>
+                </div>
+
+                <!-- 1-4. 빈 슬롯 -->
+                <div class="slot-inner slot-empty-inner" th:if="${!slot.locked && !slot.blockedByTwoHanded && !slot.equipped}">
+                    <span class="slot-silhouette" th:text="${slot.silhouetteIcon}">🪖</span>
+                    <span class="slot-label" th:text="${slot.slotLabel}">머리</span>
+                    <span class="slot-add-icon">+</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 장비 종합 스탯 보너스 카드 -->
+    <div class="equipment-summary-card">
+        <div class="summary-header">
+            <h4 class="summary-title"><span class="summary-icon">📊</span> 장비 종합 스탯 요약</h4>
+            <span class="summary-equipped-count" th:text="'장착 ' + ${equipment.equippedCount} + ' / 6 부위'">장착 6/6</span>
+        </div>
+
+        <div class="summary-grid">
+            <!-- 공격 스탯 -->
+            <div class="summary-stat-row">
+                <span class="summary-row-label">⚔️ 공격 계열</span>
+                <div class="summary-badges">
+                    <span class="stat-badge" th:if="${equipment.bonusResult.statBonus.str > 0}" th:text="'STR +' + ${equipment.bonusResult.statBonus.str}">STR +0</span>
+                    <span class="stat-badge" th:if="${equipment.bonusResult.statBonus.dex > 0}" th:text="'DEX +' + ${equipment.bonusResult.statBonus.dex}">DEX +0</span>
+                    <span class="stat-badge" th:if="${equipment.bonusResult.statBonus.intelligence > 0}" th:text="'INT +' + ${equipment.bonusResult.statBonus.intelligence}">INT +0</span>
+                    <span class="stat-badge" th:if="${equipment.bonusResult.statBonus.critical > 0}" th:text="'CRIT +' + ${#numbers.formatDecimal(equipment.bonusResult.statBonus.critical / 10.0, 1, 1)} + '%'">CRIT +0.0%</span>
+                    <span class="stat-badge-empty" th:if="${equipment.bonusResult.statBonus.str == 0 && equipment.bonusResult.statBonus.dex == 0 && equipment.bonusResult.statBonus.intelligence == 0 && equipment.bonusResult.statBonus.critical == 0}">보너스 없음</span>
+                </div>
+            </div>
+
+            <!-- 방어 & 바이탈 스탯 -->
+            <div class="summary-stat-row">
+                <span class="summary-row-label">🛡️ 방어·생명</span>
+                <div class="summary-badges">
+                    <span class="stat-badge stat-def" th:if="${equipment.bonusResult.statBonus.defense > 0}" th:text="'DEF +' + ${equipment.bonusResult.statBonus.defense}">DEF +0</span>
+                    <span class="stat-badge stat-hp" th:if="${equipment.bonusResult.vitalBonus.hp > 0}" th:text="'HP +' + ${equipment.bonusResult.vitalBonus.hp}">HP +0</span>
+                    <span class="stat-badge stat-mp" th:if="${equipment.bonusResult.vitalBonus.mp > 0}" th:text="'MP +' + ${equipment.bonusResult.vitalBonus.mp}">MP +0</span>
+                    <span class="stat-badge stat-sp" th:if="${equipment.bonusResult.vitalBonus.stamina > 0}" th:text="'SP +' + ${equipment.bonusResult.vitalBonus.stamina}">SP +0</span>
+                    <span class="stat-badge-empty" th:if="${equipment.bonusResult.statBonus.defense == 0 && equipment.bonusResult.vitalBonus.hp == 0 && equipment.bonusResult.vitalBonus.mp == 0 && equipment.bonusResult.vitalBonus.stamina == 0}">보너스 없음</span>
+                </div>
+            </div>
+
+            <!-- 장비 상태 & 평균 내구도 -->
+            <div class="summary-info-row">
+                <span class="summary-info-item">무기 계열: <strong th:text="${equipment.weaponTalentLabel}">근접전투</strong></span>
+                <span class="summary-info-item">평균 내구도: <strong th:text="${equipment.averageDurabilityPercent} + '%'">100%</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 빠른 인벤토리 가방 전환 버튼 (Full Width) -->
+    <div class="equipment-bottom-actions">
+        <button type="button" class="btn-goto-inventory" onclick="openInventoryFromEquipment()">
+            <span class="btn-icon">🎒</span>
+            <span>소지품 가방 열기</span>
+        </button>
+    </div>
+</div>
+
+<!-- 착용 가능 아이템 후보 목록 프래그먼트 -->
+<div th:fragment="equippable-candidates" class="picker-candidates-wrap">
+    <div th:if="${#lists.isEmpty(candidates)}" class="picker-empty">
+        <span class="empty-icon">📦</span>
+        <p>인벤토리에 착용 가능한 장비가 없습니다.</p>
+    </div>
+    <div th:unless="${#lists.isEmpty(candidates)}" class="picker-list">
+        <div th:each="item : ${candidates}"
+             class="picker-item-row"
+             th:attr="data-owned-id=${item.ownedItemId}"
+             onclick="equipFromPicker(this.getAttribute('data-owned-id'))">
+            <div class="picker-item-main">
+                <span class="picker-item-name" th:text="${item.name}">아이템명</span>
+                <span class="picker-item-type" th:text="${item.type}">한손검</span>
+            </div>
+            <div class="picker-item-meta" th:if="${item.maxDurability != null}">
+                <span class="picker-dura-text" th:text="'내구 ' + ${#numbers.formatDecimal(item.currentDurability, 1, 0)} + '/' + ${item.maxDurability}">내구 20/20</span>
+            </div>
+            <button type="button" class="picker-equip-btn">착용</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
