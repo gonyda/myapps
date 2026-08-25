@@ -184,7 +184,7 @@ class DungeonServiceTest {
         then(dungeonProgressRepository).should().delete(entity);
         assertThat(character.getCurrentNodeId()).isEqualTo("alby-entrance");
         then(characterProgressRepository).should().save(character);
-        then(actionLog).should().add("던전에서 나섰습니다.", "dungeon");
+        then(actionLog).should().add("던전에서 나왔습니다.", "dungeon");
     }
 
     @Test

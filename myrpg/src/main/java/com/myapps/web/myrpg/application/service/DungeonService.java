@@ -165,7 +165,7 @@ public class DungeonService {
             characterProgressRepository.save(character);
         }
 
-        actionLog.add("던전에서 나섰습니다.", LOG_TYPE_DUNGEON);
+        actionLog.add("던전에서 나왔습니다.", LOG_TYPE_DUNGEON);
     }
 
     /**
