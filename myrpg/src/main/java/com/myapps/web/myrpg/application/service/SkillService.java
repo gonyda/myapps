@@ -21,6 +21,7 @@ import com.myapps.web.myrpg.domain.model.SkillDamagePolicy;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
+import com.myapps.web.myrpg.domain.model.SkillRankupBonusDelta;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
@@ -295,59 +296,55 @@ public class SkillService {
         final boolean maxed = currentRank.isMax();
 
         final String currentRankLabel = currentRank.label();
-        final String nextRankLabel = maxed ? null : currentRank.next().orElseThrow().label();
+        final SkillRank nextRank = maxed ? null : currentRank.next().orElse(null);
+        final String nextRankLabel = nextRank != null ? nextRank.label() : null;
 
         final int currentValue = primaryValue(catalog, currentRank);
-        final int nextValue =
-                maxed ? currentValue : primaryValue(catalog, currentRank.next().orElseThrow());
+        final int nextValue = maxed ? currentValue : primaryValue(catalog, nextRank);
 
         final Integer currentCounterValue = counterValue(catalog, currentRank);
         final Integer nextCounterValue =
-                maxed
-                        ? currentCounterValue
-                        : counterValue(catalog, currentRank.next().orElseThrow());
+                maxed ? currentCounterValue : counterValue(catalog, nextRank);
 
         final String primaryStatLabel = primaryStatLabel(catalog);
 
         final String resourceKindLabel = catalog.talent().resourceKind().label();
         final int resourceCost = resourceCost(catalog, currentRank);
-        final Integer nextResourceCost =
-                maxed ? null : resourceCost(catalog, currentRank.next().orElseThrow());
+        final Integer nextResourceCost = maxed ? null : resourceCost(catalog, nextRank);
 
         final Integer currentCritBonus = critBonusValue(catalog, currentRank);
-        final Integer nextCritBonus =
-                maxed ? null : critBonusValue(catalog, currentRank.next().orElseThrow());
+        final Integer nextCritBonus = maxed ? null : critBonusValue(catalog, nextRank);
 
-        final String rankupBonusText = rankupBonusText(catalog);
+        final SkillRankupBonusDelta bonusDelta =
+                maxed
+                        ? SkillRankupBonusDelta.ZERO
+                        : catalog.rankupBonusDelta(currentRank, nextRank);
+        final String rankupBonusText = bonusDelta.toDisplayText();
+
+        final List<com.myapps.web.myrpg.domain.model.SkillEffectRowView> effectRows =
+                catalog.effectRowsAt(currentRank, nextRank);
 
         final int usageCurrent = characterSkill.getUsageCount();
         final int killCurrent = characterSkill.getKillCount();
 
-        final boolean killExempt = isKillExempt(catalog);
-        final boolean isPassive = catalog instanceof PassiveSkill;
+        final boolean killExempt = catalog.isKillExempt();
+        final boolean isPassive = catalog.isPassive();
 
-        final int usageRequired;
-        final int killRequired;
-        final int apCost;
-        if (maxed || isPassive) {
-            usageRequired = 0;
-            killRequired = 0;
-            apCost = maxed ? 0 : skillRankPolicy.apCost(currentRank).orElseThrow();
-        } else {
-            final RankUpRequirement requirement =
-                    skillRankPolicy.requirementFor(currentRank, catalog.type()).orElseThrow();
-            usageRequired = requirement.requiredUsage();
-            killRequired = killExempt ? 0 : requirement.requiredKills();
-            apCost = skillRankPolicy.apCost(currentRank).orElseThrow();
-        }
+        final RankUpRequirementInfo reqInfo =
+                resolveRankUpRequirementInfo(catalog, currentRank, maxed, isPassive, killExempt);
 
         final int apOwned = progress.getAbilityPoints();
         final boolean rankable =
-                !maxed
-                        && apOwned >= apCost
-                        && (isPassive
-                                || (usageCurrent >= usageRequired
-                                        && (killExempt || killCurrent >= killRequired)));
+                isRankableNow(
+                        maxed,
+                        apOwned,
+                        reqInfo.apCost(),
+                        isPassive,
+                        usageCurrent,
+                        reqInfo.usageRequired(),
+                        killExempt,
+                        reqInfo.killRequired(),
+                        killCurrent);
 
         return new SkillRankUpView(
                 catalog.id(),
@@ -367,13 +364,55 @@ public class SkillService {
                 nextCritBonus,
                 rankupBonusText,
                 usageCurrent,
-                usageRequired,
+                reqInfo.usageRequired(),
                 killCurrent,
-                killRequired,
-                apCost,
+                reqInfo.killRequired(),
+                reqInfo.apCost(),
                 apOwned,
                 rankable,
-                maxed);
+                maxed,
+                effectRows,
+                isPassive,
+                !maxed && !isPassive,
+                !maxed && !killExempt);
+    }
+
+    private record RankUpRequirementInfo(int usageRequired, int killRequired, int apCost) {}
+
+    private RankUpRequirementInfo resolveRankUpRequirementInfo(
+            final Skill catalog,
+            final SkillRank currentRank,
+            final boolean maxed,
+            final boolean isPassive,
+            final boolean killExempt) {
+        if (maxed || isPassive) {
+            final int apCost = maxed ? 0 : skillRankPolicy.apCost(currentRank).orElseThrow();
+            return new RankUpRequirementInfo(0, 0, apCost);
+        }
+        final RankUpRequirement requirement =
+                skillRankPolicy.requirementFor(currentRank, catalog.type()).orElseThrow();
+        final int killReq = killExempt ? 0 : requirement.requiredKills();
+        final int apCost = skillRankPolicy.apCost(currentRank).orElseThrow();
+        return new RankUpRequirementInfo(requirement.requiredUsage(), killReq, apCost);
+    }
+
+    private boolean isRankableNow(
+            final boolean maxed,
+            final int apOwned,
+            final int apCost,
+            final boolean isPassive,
+            final int usageCurrent,
+            final int usageRequired,
+            final boolean killExempt,
+            final int killRequired,
+            final int killCurrent) {
+        if (maxed || apOwned < apCost) {
+            return false;
+        }
+        if (isPassive) {
+            return true;
+        }
+        return usageCurrent >= usageRequired && (killExempt || killCurrent >= killRequired);
     }
 
     /**
@@ -707,20 +746,5 @@ public class SkillService {
             return defenseSkill.critBonusAt(rank);
         }
         return null;
-    }
-
-    private String rankupBonusText(final Skill catalog) {
-        if ("defense".equals(catalog.id())) {
-            return "HP +5, DEF +1";
-        }
-        if ("counter_attack".equals(catalog.id())) {
-            return null;
-        }
-        return switch (catalog.talent()) {
-            case MELEE -> "STR +1";
-            case ARCHERY -> "DEX +1";
-            case MAGIC -> "INT +1";
-            case COMMON -> "DEF +1";
-        };
     }
 }

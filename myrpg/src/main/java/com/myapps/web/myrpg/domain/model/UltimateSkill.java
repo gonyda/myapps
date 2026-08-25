@@ -71,4 +71,44 @@ public record UltimateSkill(
         }
         return 30;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curMult = multiplierAt(currentRank);
+        final String nextMult = nextRank != null ? multiplierAt(nextRank) + "%" : null;
+        rows.add(new SkillEffectRowView("결전 피해 배율", curMult + "%", nextMult));
+
+        final int curHits = hitCountAt(currentRank);
+        final String nextHits = nextRank != null ? hitCountAt(nextRank) + "회" : null;
+        rows.add(new SkillEffectRowView("타격 횟수", curHits + "회", nextHits));
+
+        if (critBonus > 0) {
+            final String critText = "+" + (critBonus / 10.0) + "%p";
+            rows.add(
+                    new SkillEffectRowView(
+                            "크리티컬 보너스", critText, nextRank != null ? critText : null));
+        }
+
+        final int curCool = coolWinsAt(currentRank);
+        final String nextCool = nextRank != null ? coolWinsAt(nextRank) + "승" : null;
+        rows.add(new SkillEffectRowView("필요 승리 수 (쿨다운)", curCool + "승", nextCool));
+
+        return java.util.List.copyOf(rows);
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        return switch (talent) {
+            case MELEE -> SkillRankupBonusDelta.str(1);
+            case ARCHERY -> SkillRankupBonusDelta.dex(1);
+            case MAGIC -> SkillRankupBonusDelta.intel(1);
+            case COMMON -> SkillRankupBonusDelta.def(1);
+        };
+    }
 }

@@ -70,4 +70,37 @@ public record DotSkill(
         }
         return 0;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curInit = initialMultiplierAt(currentRank);
+        final String nextInit = nextRank != null ? initialMultiplierAt(nextRank) + "%" : null;
+        rows.add(new SkillEffectRowView("초기 직격 피해", curInit + "%", nextInit));
+
+        final int curTurns = dotTurnsAt(currentRank);
+        final String nextTurns = nextRank != null ? dotTurnsAt(nextRank) + "턴" : null;
+        rows.add(new SkillEffectRowView("독 지속 시간", curTurns + "턴", nextTurns));
+
+        final int curDot = dotPerTurnAt(currentRank);
+        final String nextDot = nextRank != null ? dotPerTurnAt(nextRank) + "%" : null;
+        rows.add(new SkillEffectRowView("턴당 독 피해", curDot + "%", nextDot));
+
+        return java.util.List.copyOf(rows);
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        return switch (talent) {
+            case MELEE -> SkillRankupBonusDelta.str(1);
+            case ARCHERY -> SkillRankupBonusDelta.dex(1);
+            case MAGIC -> SkillRankupBonusDelta.intel(1);
+            case COMMON -> SkillRankupBonusDelta.def(1);
+        };
+    }
 }

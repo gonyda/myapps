@@ -49,4 +49,23 @@ public enum BonusTarget {
     public BonusKind kind() {
         return kind;
     }
+
+    /**
+     * UI 표시용 한글 라벨을 반환한다.
+     *
+     * @return 한글 표시명
+     */
+    public String label() {
+        return switch (this) {
+            case STR -> "체력 (STR)";
+            case DEX -> "솜씨 (DEX)";
+            case INT -> "지력 (INT)";
+            case DEF -> "방어력 (DEF)";
+            case HP -> "최대 생명력 (HP)";
+            case MP -> "최대 마나 (MP)";
+            case STAMINA -> "최대 스태미나";
+            case CRITICAL -> "치명타 확률";
+            case MP_REGEN -> "턴당 마나 회복";
+        };
+    }
 }

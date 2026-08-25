@@ -166,7 +166,7 @@ class SkillServiceViewTest {
         assertThat(view.nextResourceCost()).isEqualTo(15);
         assertThat(view.currentCritBonus()).isNull();
         assertThat(view.nextCritBonus()).isNull();
-        assertThat(view.rankupBonusText()).isEqualTo("STR +1");
+        assertThat(view.rankupBonusText()).isEqualTo("체력(STR) +1");
         assertThat(view.usageCurrent()).isEqualTo(3);
         assertThat(view.usageRequired()).isEqualTo(5);
         assertThat(view.killCurrent()).isZero();
@@ -201,7 +201,9 @@ class SkillServiceViewTest {
         assertThat(view.nextResourceCost()).isEqualTo(5);
         assertThat(view.currentCritBonus()).isNull();
         assertThat(view.nextCritBonus()).isNull();
-        assertThat(view.rankupBonusText()).isEqualTo("HP +5, DEF +1");
+        assertThat(view.rankupBonusText()).isEqualTo("방어력(DEF) +1, 최대 HP +5");
+        assertThat(view.hasKillRequirement()).isFalse();
+        assertThat(view.hasUsageRequirement()).isTrue();
         assertThat(view.rankable()).isTrue();
         assertThat(view.maxed()).isFalse();
     }

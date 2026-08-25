@@ -99,4 +99,45 @@ public record DefenseSkill(
         }
         return 0;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curBlock = blockRateByRank.getOrDefault(currentRank, 0);
+        final String nextBlock =
+                nextRank != null ? blockRateByRank.getOrDefault(nextRank, 0) + "%" : null;
+        rows.add(new SkillEffectRowView("피해 경감률", curBlock + "%", nextBlock));
+
+        final int curCounter = counterMultiplierByRank.getOrDefault(currentRank, 0);
+        if (curCounter > 0
+                || (nextRank != null && counterMultiplierByRank.getOrDefault(nextRank, 0) > 0)) {
+            final String nextCounter =
+                    nextRank != null
+                            ? counterMultiplierByRank.getOrDefault(nextRank, 0) + "%"
+                            : null;
+            rows.add(new SkillEffectRowView("반격 피해 배율", curCounter + "%", nextCounter));
+        }
+
+        if (critBonusByRank != null && !critBonusByRank.isEmpty()) {
+            final int curCrit = critBonusAt(currentRank);
+            final String nextCrit =
+                    nextRank != null ? "+" + (critBonusAt(nextRank) / 10.0) + "%p" : null;
+            rows.add(new SkillEffectRowView("크리티컬 보너스", "+" + (curCrit / 10.0) + "%p", nextCrit));
+        }
+
+        return java.util.List.copyOf(rows);
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        if ("defense".equals(id)) {
+            return SkillRankupBonusDelta.defAndHp(1, 5);
+        }
+        return SkillRankupBonusDelta.ZERO;
+    }
 }

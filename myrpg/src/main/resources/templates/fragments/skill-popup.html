@@ -122,7 +122,22 @@
             </div>
 
             <!-- ① 스킬 정보 -->
-            <div class="rankup-section">
+            <div class="rankup-section" th:if="${rankUp.effectRows() != null && !rankUp.effectRows().isEmpty()}">
+                <h4 class="rankup-section-title">스킬 정보</h4>
+                <div class="rankup-stat-row" th:each="row : ${rankUp.effectRows()}">
+                    <span class="rankup-stat-label" th:text="${row.label()}">1히트당 피해</span>
+                    <span class="rankup-stat-value" th:if="${!rankUp.maxed() && row.nextValue() != null && row.nextValue() != row.currentValue()}">
+                        <span th:text="${row.currentValue()}">100%</span>
+                        <span class="stat-arrow">→</span>
+                        <span class="rankup-stat-next" th:text="${row.nextValue()}">120%</span>
+                    </span>
+                    <span class="rankup-stat-value" th:if="${rankUp.maxed() || row.nextValue() == null || row.nextValue() == row.currentValue()}"
+                          th:text="${row.currentValue()}">100%</span>
+                </div>
+            </div>
+
+            <!-- ①-2 스킬 정보 Fallback (effectRows가 없는 경우) -->
+            <div class="rankup-section" th:if="${rankUp.effectRows() == null || rankUp.effectRows().isEmpty()}">
                 <h4 class="rankup-section-title">스킬 정보</h4>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label" th:text="${rankUp.primaryStatLabel()}">보너스 데미지</span>
@@ -156,8 +171,8 @@
                 </div>
             </div>
 
-            <!-- ② 소모 자원 -->
-            <div class="rankup-section">
+            <!-- ② 소모 자원 (패시브가 아니고 자원 소모가 있을 때만) -->
+            <div class="rankup-section" th:if="${!rankUp.passive() && rankUp.resourceCost() > 0}">
                 <h4 class="rankup-section-title">소모 자원</h4>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label" th:text="${rankUp.resourceKindLabel()}">스태미나</span>
@@ -180,20 +195,30 @@
                 </div>
             </div>
 
-            <!-- ④ 수련 방법 -->
+            <!-- ④ 수련 방법 (미마스터 시) -->
             <div class="rankup-section" th:if="${!rankUp.maxed()}">
                 <h4 class="rankup-section-title">수련 방법</h4>
-                <div class="rankup-stat-row">
-                    <span class="rankup-stat-label">사용 횟수</span>
-                    <span class="rankup-stat-value"
-                          th:classappend="${rankUp.usageCurrent() >= rankUp.usageRequired()} ? ' fulfilled' : ''"
-                          th:text="${rankUp.usageCurrent()} + ' / ' + ${rankUp.usageRequired()}">0 / 5</span>
+
+                <!-- 패시브 전용 안내 -->
+                <div class="rankup-passive-notice" th:if="${rankUp.passive()}">
+                    <span class="passive-notice-icon">✨</span>
+                    <span>패시브 스킬은 수련 없이 AP로 즉시 승급할 수 있습니다.</span>
                 </div>
-                <div class="rankup-stat-row">
-                    <span class="rankup-stat-label">막타 처치</span>
-                    <span class="rankup-stat-value"
-                          th:classappend="${rankUp.killCurrent() >= rankUp.killRequired()} ? ' fulfilled' : ''"
-                          th:text="${rankUp.killCurrent()} + ' / ' + ${rankUp.killRequired()}">0 / 1</span>
+
+                <!-- 액티브 스킬 수련 조건 -->
+                <div th:if="${!rankUp.passive()}">
+                    <div class="rankup-stat-row" th:if="${rankUp.hasUsageRequirement()}">
+                        <span class="rankup-stat-label">사용 횟수</span>
+                        <span class="rankup-stat-value"
+                              th:classappend="${rankUp.usageCurrent() >= rankUp.usageRequired()} ? ' fulfilled' : ''"
+                              th:text="${rankUp.usageCurrent()} + ' / ' + ${rankUp.usageRequired()}">0 / 5</span>
+                    </div>
+                    <div class="rankup-stat-row" th:if="${rankUp.hasKillRequirement()}">
+                        <span class="rankup-stat-label">막타 처치</span>
+                        <span class="rankup-stat-value"
+                              th:classappend="${rankUp.killCurrent() >= rankUp.killRequired()} ? ' fulfilled' : ''"
+                              th:text="${rankUp.killCurrent()} + ' / ' + ${rankUp.killRequired()}">0 / 1</span>
+                    </div>
                 </div>
             </div>
 

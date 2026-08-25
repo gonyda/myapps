@@ -52,4 +52,28 @@ public record RecoverySkill(
         }
         return 0;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curHeal = healAmountAt(currentRank);
+        final String nextHeal = nextRank != null ? healAmountAt(nextRank) + " HP" : null;
+        rows.add(new SkillEffectRowView("생명력 회복량", curHeal + " HP", nextHeal));
+
+        final int curCost = resourceCostAt(currentRank);
+        final String nextCost = nextRank != null ? resourceCostAt(nextRank) + " MP" : null;
+        rows.add(new SkillEffectRowView("소모 마나", curCost + " MP", nextCost));
+
+        return java.util.List.copyOf(rows);
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        return SkillRankupBonusDelta.intel(1);
+    }
 }

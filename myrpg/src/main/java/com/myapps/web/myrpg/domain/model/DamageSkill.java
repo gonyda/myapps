@@ -124,4 +124,74 @@ public record DamageSkill(
     public boolean isRandomHit() {
         return minHits > 0 && maxHits >= minHits;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curMult = multiplierByRank.getOrDefault(currentRank, 0);
+        final String nextMult =
+                nextRank != null ? multiplierByRank.getOrDefault(nextRank, 0) + "%" : null;
+        rows.add(new SkillEffectRowView("1히트당 피해", curMult + "%", nextMult));
+
+        addHitCountRow(rows, nextRank != null);
+        addCritBonusRow(rows, nextRank != null);
+        addSpecialEffectRows(rows, currentRank, nextRank);
+
+        return java.util.List.copyOf(rows);
+    }
+
+    private void addHitCountRow(
+            final java.util.List<SkillEffectRowView> rows, final boolean hasNext) {
+        if (isRandomHit()) {
+            final String text = minHits + "~" + maxHits + "회 (랜덤)";
+            rows.add(new SkillEffectRowView("타격 횟수", text, hasNext ? text : null));
+        } else if (hitCount > 1) {
+            final String text = hitCount + "회";
+            rows.add(new SkillEffectRowView("타격 횟수", text, hasNext ? text : null));
+        }
+    }
+
+    private void addCritBonusRow(
+            final java.util.List<SkillEffectRowView> rows, final boolean hasNext) {
+        if (critBonus > 0) {
+            final String critText = "+" + (critBonus / 10.0) + "%p";
+            rows.add(new SkillEffectRowView("크리티컬 보너스", critText, hasNext ? critText : null));
+        }
+    }
+
+    private void addSpecialEffectRows(
+            final java.util.List<SkillEffectRowView> rows,
+            final SkillRank currentRank,
+            final SkillRank nextRank) {
+        final boolean hasNext = nextRank != null;
+        if (defensePierce) {
+            rows.add(
+                    new SkillEffectRowView("특수 효과", "방어력 100% 관통", hasNext ? "방어력 100% 관통" : null));
+        }
+        if (type == SkillType.DEBUFF) {
+            rows.add(
+                    new SkillEffectRowView(
+                            "디버프 효과", "다음 공격 피해 +30%", hasNext ? "다음 공격 피해 +30%" : null));
+        }
+        if (freezeRateByRank != null && !freezeRateByRank.isEmpty()) {
+            final int curFreeze = freezeRateAt(currentRank);
+            final String nextFreeze = hasNext ? freezeRateAt(nextRank) + "%" : null;
+            rows.add(new SkillEffectRowView("빙결 확률", curFreeze + "%", nextFreeze));
+        }
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        return switch (talent) {
+            case MELEE -> SkillRankupBonusDelta.str(1);
+            case ARCHERY -> SkillRankupBonusDelta.dex(1);
+            case MAGIC -> SkillRankupBonusDelta.intel(1);
+            case COMMON -> SkillRankupBonusDelta.def(1);
+        };
+    }
 }

@@ -1857,6 +1857,24 @@
             font-weight: 700;
         }
 
+        .rankup-passive-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px dashed rgba(212, 175, 55, 0.4);
+            border-radius: 6px;
+            font-size: var(--fs-xs);
+            color: #ffd700;
+            line-height: 1.4;
+        }
+
+        .passive-notice-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
         .rankup-modal-footer {
             padding: 12px 16px 16px 16px;
             border-top: 1px solid rgba(212, 175, 55, 0.2);

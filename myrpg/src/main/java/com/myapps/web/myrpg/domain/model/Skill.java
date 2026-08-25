@@ -74,4 +74,40 @@ public sealed interface Skill
      * @return 스킬 설명 문자열
      */
     String description();
+
+    /**
+     * 현재 랭크 및 다음 랭크 기준의 효과 상세 행 목록을 반환한다.
+     *
+     * @param currentRank 현재 랭크
+     * @param nextRank 다음 랭크 (MASTER 시 null)
+     * @return 효과 항목 목록
+     */
+    java.util.List<SkillEffectRowView> effectRowsAt(SkillRank currentRank, SkillRank nextRank);
+
+    /**
+     * 현재 랭크에서 다음 랭크로 승급 시 획득하는 실제 영구 보너스 변동량(Delta)을 반환한다.
+     *
+     * @param currentRank 현재 랭크
+     * @param nextRank 다음 랭크 (MASTER 시 null)
+     * @return 승급 스탯 델타
+     */
+    SkillRankupBonusDelta rankupBonusDelta(SkillRank currentRank, SkillRank nextRank);
+
+    /**
+     * 상시 영구 패시브 스킬인지 여부를 반환한다.
+     *
+     * @return 패시브 여부
+     */
+    default boolean isPassive() {
+        return type() == SkillType.PASSIVE;
+    }
+
+    /**
+     * 막타 처치 수련 조건이 면제되는 스킬인지 여부를 반환한다.
+     *
+     * @return 막타 면제 여부
+     */
+    default boolean isKillExempt() {
+        return isPassive() || type().isKillExempt();
+    }
 }

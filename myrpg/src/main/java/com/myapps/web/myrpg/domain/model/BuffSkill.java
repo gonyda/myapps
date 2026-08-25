@@ -39,4 +39,34 @@ public record BuffSkill(
         }
         return 0;
     }
+
+    @Override
+    public java.util.List<SkillEffectRowView> effectRowsAt(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        final java.util.List<SkillEffectRowView> rows = new java.util.ArrayList<>();
+        final int curAbsorb = absorbRateAt(currentRank);
+        final String nextAbsorb = nextRank != null ? absorbRateAt(nextRank) + "%" : null;
+        rows.add(new SkillEffectRowView("피해 흡수율", curAbsorb + "%", nextAbsorb));
+        rows.add(
+                new SkillEffectRowView(
+                        "지속 시간",
+                        durationTurns + "턴",
+                        nextRank != null ? durationTurns + "턴" : null));
+
+        return java.util.List.copyOf(rows);
+    }
+
+    @Override
+    public SkillRankupBonusDelta rankupBonusDelta(
+            final SkillRank currentRank, final SkillRank nextRank) {
+        if (nextRank == null) {
+            return SkillRankupBonusDelta.ZERO;
+        }
+        return switch (talent) {
+            case MELEE -> SkillRankupBonusDelta.str(1);
+            case ARCHERY -> SkillRankupBonusDelta.dex(1);
+            case MAGIC -> SkillRankupBonusDelta.intel(1);
+            case COMMON -> SkillRankupBonusDelta.def(1);
+        };
+    }
 }
