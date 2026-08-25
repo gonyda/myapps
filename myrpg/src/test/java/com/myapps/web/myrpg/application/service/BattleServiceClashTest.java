@@ -16,6 +16,7 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult.Outcome;
+import com.myapps.web.myrpg.domain.model.BuffSkill;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
@@ -330,6 +331,34 @@ class BattleServiceClashTest {
         assertThat(result.outcome()).isEqualTo(Outcome.LOSE);
         assertThat(state.isActive()).isFalse();
         verify(progressionService).die(progress);
+    }
+
+    @Test
+    @DisplayName("선제 공격 기회(intent == null)에서 타임아웃 발생 시 0 피해를 입고 선제권이 소멸하며 대치로 복귀한다")
+    void takeTurn_Timeout_PreemptiveIntentNull() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setCurrentMonsterIntent(null);
+        state.setPreemptiveParty(PreemptiveParty.PLAYER);
+        state.setStandby(false);
+        state.setTurnCount(1);
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "timeout");
+
+        assertThat(result.monsterAction()).isNull();
+        assertThat(result.monsterDamage()).isZero();
+        assertThat(result.playerDamage()).isZero();
+        assertThat(progress.getHpCurrent()).isEqualTo(100);
+
+        assertThat(state.isStandby()).isTrue();
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.getCurrentMonsterIntent()).isNull();
+        assertThat(state.getTurnCount()).isEqualTo(2);
+        verify(battleStateRepo).save(state);
+        verify(characterService).saveTurn(progress);
+
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("시간 초과! 선제 공격 기회를 놓쳤습니다."));
+        assertThat(result.battleEnded()).isFalse();
     }
 
     // ─── 상성 턴 해결 및 자원 부족 테스트 (Task 8 & 9) ──────────────────────────
@@ -675,6 +704,39 @@ class BattleServiceClashTest {
         assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
         assertThat(state.isStandby()).isTrue();
         assertThat(result.combatLines()).containsExactly("선제 공격 기회였으나 디펜스(방어) 태세를 취했다!");
+    }
+
+    @Test
+    @DisplayName("플레이어 선제권 턴에서 버프 스킬 사용 시 몬스터 피격 없이 0 피해로 처리되고 선제권이 소멸된다")
+    void
+            takeTurn_WithPlayerPreemptive_WhenBuffSkillUsed_DealsZeroMonsterDamage_AndResetsPreemptive() {
+        final CharacterProgress progress = createProgress(100);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setPreemptiveParty(PreemptiveParty.PLAYER);
+        state.setStandby(false);
+        state.setTurnCount(2);
+
+        final BuffSkill manaShield =
+                new BuffSkill(
+                        "mana_shield",
+                        "마나 실드",
+                        SkillType.BUFF,
+                        SkillTalent.MAGIC,
+                        5,
+                        3,
+                        Map.of(SkillRank.F, 20),
+                        "마나 실드 설명");
+        when(skillCatalogService.byId("mana_shield")).thenReturn(Optional.of(manaShield));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "mana_shield"))
+                .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "mana_shield")));
+
+        final BattleTurnResult result = battleService.takeTurn(progress, state, "mana_shield");
+
+        assertThat(result.firstStrike()).isTrue();
+        assertThat(result.monsterDamage()).isZero();
+        assertThat(progress.getHpCurrent()).isEqualTo(100);
+        assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
+        assertThat(state.isStandby()).isTrue();
     }
 
     @Test

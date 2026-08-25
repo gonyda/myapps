@@ -29,14 +29,15 @@ class BattleLogFormatterMultiHitPropertyTest {
     private static final String SKILL_LABEL = "윈드밀";
     private static final String MONSTER_NAME = "늑대";
     private static final int MULTI_HIT_THRESHOLD = 2;
-    private static final String HIT_SEPARATOR = "  ";
-    private static final String CRITICAL_SUFFIX = "(치명)";
+    private static final String HIT_SEPARATOR = " · ";
+    private static final String CRITICAL_SUFFIX = "💥";
+    private static final String ARROW = " ➔ ";
 
     private final BattleLogFormatter formatter = new BattleLogFormatter();
 
     /**
-     * playerHits.size() ≥ 2일 때, 플레이어 로그가 헤더+브레이크다운 2줄로 구성되고 헤더에 "{스킬}({타입}) {N}연타" 형식이며 브레이크다운에 각
-     * 히트 피해가 올바른 순서·접미사로 나열되고 합계와 일치하는지 검증한다.
+     * playerHits.size() ≥ 2일 때, 플레이어 로그가 1줄 통합 연타 형식("{스킬}({타입}) {N}연타 ({d1} · {d2}💥) ➔ {합계}
+     * 피해")으로 구성되는지 검증한다.
      *
      * @param hits 히트 결과 리스트(size 2~8)
      * @param skillType 플레이어 스킬 타입 (NORMAL 또는 HEAVY)
@@ -64,23 +65,28 @@ class BattleLogFormatterMultiHitPropertyTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        // 플레이어 행동: 헤더 + 브레이크다운 = 2줄, 몬스터 행동 1줄 = 총 3줄
-        assertThat(lines.size()).isGreaterThanOrEqualTo(3);
+        // 플레이어 행동: 1줄, 몬스터 행동 1줄 = 총 2줄
+        assertThat(lines).hasSize(2);
 
-        // 헤더 검증: "{스킬}({타입}) {N}연타"
-        final String expectedHeader =
-                SKILL_LABEL + "(" + skillType.label() + ") " + hits.size() + "연타";
-        assertThat(lines.get(0)).isEqualTo(expectedHeader);
-
-        // 브레이크다운 검증
-        final String breakdownLine = lines.get(1);
-        final String expectedBreakdown = buildExpectedBreakdown(hits, totalDamage);
-        assertThat(breakdownLine).isEqualTo(expectedBreakdown);
+        // 통합 연타 포맷 검증
+        final String expectedPlayerLine =
+                SKILL_LABEL
+                        + "("
+                        + skillType.label()
+                        + ") "
+                        + hits.size()
+                        + "연타 ("
+                        + formatHits(hits)
+                        + ")"
+                        + ARROW
+                        + totalDamage
+                        + " 피해";
+        assertThat(lines.get(0)).isEqualTo(expectedPlayerLine);
     }
 
     /**
-     * playerHits.size() ≥ 2이고 firstStrike일 때, 선제 사격 멀티히트 헤더 "선제 사격! {스킬}({타입}) {N}연타"와 브레이크다운이
-     * 생성되는지 검증한다.
+     * playerHits.size() ≥ 2이고 firstStrike일 때, 선제 사격 멀티히트 "선제 공격! {스킬}({타입}) {N}연타 ({d1} · {d2}💥) ➔
+     * {합계} 피해"가 생성되는지 검증한다.
      *
      * @param hits 히트 결과 리스트(size 2~8)
      * @param skillType 플레이어 스킬 타입 (NORMAL 또는 HEAVY)
@@ -106,17 +112,24 @@ class BattleLogFormatterMultiHitPropertyTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        // 선제 사격 멀티히트: 헤더 + 브레이크다운 = 2줄
-        assertThat(lines).hasSize(2);
+        // 선제 사격 멀티히트: 1줄
+        assertThat(lines).hasSize(1);
 
-        // 헤더 검증: "선제 공격! {스킬}({타입}) {N}연타"
-        final String expectedHeader =
-                "선제 공격! " + SKILL_LABEL + "(" + skillType.label() + ") " + hits.size() + "연타";
-        assertThat(lines.get(0)).isEqualTo(expectedHeader);
-
-        // 브레이크다운 검증
-        final String expectedBreakdown = buildExpectedBreakdown(hits, totalDamage);
-        assertThat(lines.get(1)).isEqualTo(expectedBreakdown);
+        // 헤더 검증: "선제 공격! {스킬}({타입}) {N}연타 (...)"
+        final String expectedLine =
+                "선제 공격! "
+                        + SKILL_LABEL
+                        + "("
+                        + skillType.label()
+                        + ") "
+                        + hits.size()
+                        + "연타 ("
+                        + formatHits(hits)
+                        + ")"
+                        + ARROW
+                        + totalDamage
+                        + " 피해";
+        assertThat(lines.get(0)).isEqualTo(expectedLine);
     }
 
     /**
@@ -203,7 +216,7 @@ class BattleLogFormatterMultiHitPropertyTest {
     }
 
     /**
-     * 브레이크다운 라인의 각 히트 값이 올바르게 "(치명)" 접미사를 가지며 합계가 정확히 일치하는지 검증한다.
+     * 연타 라인의 각 히트 값이 올바르게 "💥" 접미사를 가지며 합계가 정확히 일치하는지 검증한다.
      *
      * @param hits 히트 결과 리스트(size 2~8)
      */
@@ -226,27 +239,26 @@ class BattleLogFormatterMultiHitPropertyTest {
                         hits);
 
         final List<String> lines = formatter.combatLines(input);
-        final String breakdownLine = lines.get(1);
+        final String playerLine = lines.get(0);
 
-        // 브레이크다운은 "= {합계} 피해"로 끝나야 한다
-        assertThat(breakdownLine).endsWith("= " + totalDamage + " 피해");
+        // 연타 라인은 "➔ {합계} 피해"로 끝나야 한다
+        assertThat(playerLine).endsWith(ARROW + totalDamage + " 피해");
 
-        // 각 크리티컬 히트는 해당 값 뒤에 "(치명)"이 있어야 한다
+        // 각 크리티컬 히트는 해당 값 뒤에 "💥"이 있어야 한다
         for (final HitResult hit : hits) {
             if (hit.critical()) {
-                assertThat(breakdownLine).contains(hit.damage() + CRITICAL_SUFFIX);
+                assertThat(playerLine).contains(hit.damage() + CRITICAL_SUFFIX);
             }
         }
     }
 
     /**
-     * 기대 브레이크다운 라인을 구성한다.
+     * 히트별 포맷 문자열을 구성한다.
      *
      * @param hits 히트 결과 리스트
-     * @param totalDamage 합계 피해
-     * @return 브레이크다운 문자열
+     * @return 포맷 문자열
      */
-    private String buildExpectedBreakdown(final List<HitResult> hits, final int totalDamage) {
+    private String formatHits(final List<HitResult> hits) {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < hits.size(); i++) {
             if (i > 0) {
@@ -258,7 +270,6 @@ class BattleLogFormatterMultiHitPropertyTest {
                 builder.append(CRITICAL_SUFFIX);
             }
         }
-        builder.append(" = ").append(totalDamage).append(" 피해");
         return builder.toString();
     }
 

@@ -169,6 +169,8 @@ public class ShopService {
                 continue;
             }
             final Item item = itemOpt.get();
+            final int initialDurability =
+                    item instanceof EquipmentItem equipItem ? equipItem.maxDurability() : 0;
             result.add(
                     new ShopBuyItemView(
                             item.id(),
@@ -177,7 +179,12 @@ public class ShopService {
                             item.buyPrice(),
                             inventoryService.describe(
                                     item,
-                                    new OwnedItem(item.id(), 1, StorageKind.INVENTORY, false, 0))));
+                                    new OwnedItem(
+                                            item.id(),
+                                            1,
+                                            StorageKind.INVENTORY,
+                                            false,
+                                            initialDurability))));
         }
         return List.copyOf(result);
     }

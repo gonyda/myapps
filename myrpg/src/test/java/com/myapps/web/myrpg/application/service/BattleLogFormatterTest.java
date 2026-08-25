@@ -302,7 +302,7 @@ class BattleLogFormatterTest {
     }
 
     @Test
-    @DisplayName("멀티히트(3타) 시 헤더와 브레이크다운을 생성한다")
+    @DisplayName("멀티히트(3타) 시 통합 연타 포맷 로그를 생성한다")
     void should_logMultiHitHeaderAndBreakdown_when_threeHits() {
         final List<HitResult> hits =
                 List.of(
@@ -325,11 +325,11 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("윈드밀(일반) 3연타", "22  33(치명)  19 = 74 피해", "너구리의 일반공격, 10 피해를 입음");
+                .containsExactly("윈드밀(일반) 3연타 (22 · 33💥 · 19) ➔ 74 피해", "너구리의 일반공격, 10 피해를 입음");
     }
 
     @Test
-    @DisplayName("멀티히트(4타) 선제 사격 시 헤더와 브레이크다운을 생성한다")
+    @DisplayName("멀티히트(4타) 선제 사격 시 선제 통합 연타 포맷 로그를 생성한다")
     void should_logMultiHitFirstStrike_when_fourHitsFirstStrike() {
         final List<HitResult> hits =
                 List.of(
@@ -350,11 +350,11 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반) 4연타", "10  12(치명)  9  11 = 42 피해");
+        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반) 4연타 (10 · 12💥 · 9 · 11) ➔ 42 피해");
     }
 
     @Test
-    @DisplayName("멀티히트에서 모든 히트가 크리티컬이면 모든 값에 (치명) 접미사가 붙는다")
+    @DisplayName("멀티히트에서 모든 히트가 크리티컬이면 모든 값에 💥 접미사가 붙는다")
     void should_appendCriticalToAllHits_when_allCritical() {
         final List<HitResult> hits =
                 List.of(new HitResult(30, true), new HitResult(28, true), new HitResult(32, true));
@@ -374,7 +374,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("스매시(강) 3연타", "30(치명)  28(치명)  32(치명) = 90 피해", "너구리의 강공격이 빗나갔다!");
+                .containsExactly("스매시(강) 3연타 (30💥 · 28💥 · 32💥) ➔ 90 피해", "너구리의 강공격이 빗나갔다!");
     }
 
     @Test
@@ -467,7 +467,7 @@ class BattleLogFormatterTest {
     }
 
     @Test
-    @DisplayName("궁극기 멀티히트 시 절대 우위 100% 관통 헤더와 브레이크다운 로그를 남긴다")
+    @DisplayName("궁극기 멀티히트 시 절대 우위 100% 관통 통합 연타 로그를 남긴다")
     void should_logUltimateMultiHit_withSuperPriorityHeader() {
         final BattleLogInput input =
                 new BattleLogInput(
@@ -491,8 +491,7 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "결전 궁극기! 파이널 히트(궁극기) 5연타 (절대 우위 100% 관통)",
-                        "50  50  50(치명)  50  50 = 250 피해");
+                        "결전 궁극기! 파이널 히트(궁극기) 5연타 (50 · 50 · 50💥 · 50 · 50) ➔ 250 피해 (절대 우위 100% 관통)");
     }
 
     @Test

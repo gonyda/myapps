@@ -59,7 +59,7 @@
                          data-resource-kind=${skill.resourceKind()},
                          data-resource-cost=${skill.resourceCost()}"
                 class="battle-skill-btn"
-                th:classappend="${skill.type().name() == 'ULTIMATE'} ? (${skill.ultimateCooldown() > 0} ? ' ultimate-cooldown' : ' ultimate-ready') : ''"
+                th:classappend="${'skill-type-' + #strings.toLowerCase(skill.type().name())} + (${skill.type().name() == 'ULTIMATE'} ? (${skill.ultimateCooldown() > 0} ? ' ultimate-cooldown' : ' ultimate-ready') : '')"
                 th:disabled="${(battleView != null && battleView.standby) || (skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0)}"
                 onclick="selectBattleSkill(this)">
             <span th:text="${skill.label()}">스킬</span>

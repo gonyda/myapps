@@ -35,6 +35,7 @@ import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -597,6 +598,9 @@ public class InventoryService {
         for (final CharacterSkill characterSkill : ownedSkills) {
             buildCombatButton(characterSkill, weaponTalent).ifPresent(buttons::add);
         }
+        buttons.sort(
+                Comparator.comparingInt((BattleSkillButton b) -> skillTypePriority(b.type()))
+                        .thenComparing(BattleSkillButton::id));
         return List.copyOf(buttons);
     }
 
@@ -1111,5 +1115,23 @@ public class InventoryService {
     private void autoUnequipBroken(final OwnedItem equipped, final String itemName) {
         equipped.unequip();
         actionLog.add(itemName + " 내구도 0 — 장착 해제됨", LOG_TYPE_ITEM);
+    }
+
+    private static int skillTypePriority(final SkillType type) {
+        if (type == null) {
+            return 99;
+        }
+        return switch (type) {
+            case NORMAL -> 1;
+            case HEAVY -> 2;
+            case DEFENSE -> 3;
+            case RECOVERY -> 4;
+            case BUFF -> 5;
+            case DEBUFF -> 6;
+            case CC -> 7;
+            case DOT -> 8;
+            case ULTIMATE -> 9;
+            case PASSIVE -> 10;
+        };
     }
 }

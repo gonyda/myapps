@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.myapps.web.myrpg.application.dto.ShopBuyItemView;
 import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.application.exception.InsufficientGoldException;
 import com.myapps.web.myrpg.domain.model.ActionLog;
@@ -377,6 +379,62 @@ class ShopServiceTest {
                 inventoryService,
                 mock(CharacterService.class),
                 actionLog);
+    }
+
+    @Test
+    void should_buildShopBuyList_withEquipmentMaxDurability() {
+        final ItemCatalogService catalog = mock(ItemCatalogService.class);
+        final InventoryService inventoryService = mock(InventoryService.class);
+        final NpcService npcService = mock(NpcService.class);
+        final ActionLog actionLog = fixedActionLog();
+
+        when(npcService.byId(FERGHUS_ID))
+                .thenReturn(
+                        Optional.of(
+                                new Npc(
+                                        FERGHUS_ID,
+                                        "퍼거스",
+                                        NpcType.BLACKSMITH,
+                                        "tir-chonaill",
+                                        "호탕한 대장장이",
+                                        new NpcLines(List.of("어서 오게."), null),
+                                        List.of(SHORT_SWORD_ID))));
+        final EquipmentItem shortSword =
+                new EquipmentItem(
+                        SHORT_SWORD_ID,
+                        "숏소드",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(new EquipBonus(BonusTarget.STR, 8)),
+                        300,
+                        15);
+        when(catalog.byId(SHORT_SWORD_ID)).thenReturn(Optional.of(shortSword));
+        when(inventoryService.describe(eq(shortSword), any(OwnedItem.class)))
+                .thenAnswer(
+                        invocation -> {
+                            final OwnedItem owned = invocation.getArgument(1);
+                            return List.of(
+                                    "한손검",
+                                    "체력 +8",
+                                    "내구도: "
+                                            + (int) owned.getCurrentDurability()
+                                            + "/"
+                                            + shortSword.maxDurability());
+                        });
+
+        final ShopService service =
+                serviceWith(
+                        catalog,
+                        npcService,
+                        mock(OwnedItemRepository.class),
+                        inventoryService,
+                        actionLog);
+
+        final List<ShopBuyItemView> buyList = service.shopBuyList(FERGHUS_ID);
+
+        assertThat(buyList).hasSize(1);
+        assertThat(buyList.get(0).name()).isEqualTo("숏소드");
+        assertThat(buyList.get(0).detailLines()).contains("내구도: 15/15");
     }
 
     private ShopService serviceWith(

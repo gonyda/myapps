@@ -371,7 +371,7 @@
         .minimap .node[class*="link-"]::after {
             content: "";
             position: absolute;
-            background: #4a4a4a;
+            background: rgba(255, 255, 255, 0.45);
             z-index: -1;
         }
 
@@ -412,8 +412,18 @@
 
         /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
         .node.current {
-            box-shadow: 0 0 0 2px #f0c419, 0 0 8px #f0c419;
+            box-shadow: 0 0 0 2px #f0c419, 0 0 8px rgba(240, 196, 25, 0.8);
             z-index: 2;
+            animation: node-current-pulse 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes node-current-pulse {
+            0% {
+                box-shadow: 0 0 0 2px #f0c419, 0 0 6px rgba(240, 196, 25, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 0 2.5px #fde047, 0 0 12px rgba(253, 224, 71, 0.9);
+            }
         }
 
         /* 상하좌우 이동 패드 (우하단 고정 오버레이, 원형 십자 D-pad) */
@@ -655,7 +665,7 @@
          * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비움).
          */
         .map-grid {
-            --map-gap: 12px;
+            --map-gap: 20px;
             display: grid;
             grid-template-columns: repeat(9, 52px);
             grid-template-rows: repeat(6, 52px);
@@ -670,14 +680,15 @@
         /* 노드 이름 라벨: 항상 표시 */
         .map-grid .node-label {
             position: absolute;
-            top: calc(100% + 2px);
+            top: calc(100% + 4px);
             left: 50%;
             transform: translateX(-50%);
             font-size: 11px;
+            font-weight: 500;
             line-height: 1.2;
-            color: #ddd;
+            color: #f1f5f9;
             white-space: nowrap;
-            text-shadow: 0 0 3px #000, 0 0 3px #000;
+            text-shadow: 0 0 3px #000, 0 0 5px #000, 0 1px 2px #000;
             pointer-events: none;
         }
 
@@ -685,7 +696,7 @@
         .map-grid .node[class*="link-"]::after {
             content: "";
             position: absolute;
-            background: #4a4a4a;
+            background: rgba(255, 255, 255, 0.55);
             z-index: -1;
         }
 
@@ -1348,6 +1359,62 @@
         /* ===== 인벤토리 리스트 팝업 ===== */
         .inventory-overlay {
             z-index: 1000;
+        }
+
+        .inventory-overlay .panel-body {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .inventory-list-area,
+        .inventory-content-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .inventory-gold-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: calc(var(--pad) * 0.75) var(--pad);
+            background: linear-gradient(180deg, #252528 0%, #1c1c1f 100%);
+            border-bottom: 1px solid #3d3d45;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .inventory-gold-bar .gold-display {
+            font-size: var(--fs-sm);
+            color: #d9c479;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .inventory-gold-bar .gold-amount {
+            color: #f0c419;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .inventory-gold-bar .gold-unit {
+            color: #d9c479;
+            font-size: var(--fs-xs);
+            font-weight: 600;
+        }
+
+        .inventory-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--pad);
+            min-height: 0;
         }
 
         .inventory-sort-controls {
@@ -2056,6 +2123,79 @@
 
         .battle-skill-btn:active {
             background: #4a3a3a;
+        }
+
+        /* 스킬 타입별 테마 스타일 */
+        .battle-skill-btn.skill-type-normal {
+            background: #332717;
+            color: #fef08a;
+            border: 1px solid #b45309;
+        }
+        .battle-skill-btn.skill-type-normal:hover {
+            border-color: #f59e0b;
+            background: #3f2f1a;
+        }
+
+        .battle-skill-btn.skill-type-heavy {
+            background: #381818;
+            color: #fecaca;
+            border: 1px solid #b91c1c;
+        }
+        .battle-skill-btn.skill-type-heavy:hover {
+            border-color: #ef4444;
+            background: #461d1d;
+        }
+
+        .battle-skill-btn.skill-type-defense {
+            background: #17253b;
+            color: #bfdbfe;
+            border: 1px solid #1d4ed8;
+        }
+        .battle-skill-btn.skill-type-defense:hover {
+            border-color: #3b82f6;
+            background: #1e314d;
+        }
+
+        .battle-skill-btn.skill-type-recovery {
+            background: #132e22;
+            color: #a7f3d0;
+            border: 1px solid #047857;
+        }
+        .battle-skill-btn.skill-type-recovery:hover {
+            border-color: #10b981;
+            background: #1a3c2d;
+        }
+
+        .battle-skill-btn.skill-type-buff {
+            background: #132b36;
+            color: #a5f3fc;
+            border: 1px solid #0e7490;
+        }
+        .battle-skill-btn.skill-type-buff:hover {
+            border-color: #06b6d4;
+            background: #193845;
+        }
+
+        .battle-skill-btn.skill-type-debuff,
+        .battle-skill-btn.skill-type-dot {
+            background: #2e1738;
+            color: #f5d0fe;
+            border: 1px solid #a21caf;
+        }
+        .battle-skill-btn.skill-type-debuff:hover,
+        .battle-skill-btn.skill-type-dot:hover {
+            border-color: #d946ef;
+            background: #3b1e47;
+        }
+
+        .battle-skill-btn.skill-type-cc {
+            background: #332d16;
+            color: #fde68a;
+            border: 1px solid #a16207;
+        }
+        .battle-skill-btn.skill-type-cc:hover {
+            border-color: #eab308;
+            background: #3f371b;
         }
 
         /* 선택된 스킬 버튼 스타일 (황금빛 네온 하이라이트) */

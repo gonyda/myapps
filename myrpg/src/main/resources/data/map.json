@@ -59,23 +59,31 @@
       "type": "field",
       "x": 0,
       "y": 1,
-      "links": ["tir-chonaill", "dugald-south"],
+      "links": ["tir-chonaill", "dugald-isle"],
       "monsters": ["raccoon"]
+    },
+    {
+      "id": "dugald-isle",
+      "name": "두갈드 아일",
+      "type": "field",
+      "x": 0,
+      "y": 2,
+      "links": ["dugald-north", "dugald-south"]
     },
     {
       "id": "dugald-south",
       "name": "두갈드 아일 남부",
       "type": "field",
       "x": 0,
-      "y": 2,
-      "links": ["dugald-north", "dunbarton"]
+      "y": 3,
+      "links": ["dugald-isle", "dunbarton"]
     },
     {
       "id": "dunbarton",
       "name": "던바튼",
       "type": "town",
       "x": 0,
-      "y": 3,
+      "y": 4,
       "links": ["dugald-south", "rabbie-entrance", "west-forest"]
     },
     {
@@ -83,7 +91,7 @@
       "name": "라비 던전 입구",
       "type": "dungeon",
       "x": 1,
-      "y": 3,
+      "y": 4,
       "dungeonId": "rabbie",
       "links": ["dunbarton"]
     },
@@ -92,7 +100,7 @@
       "name": "서쪽 숲",
       "type": "field",
       "x": -1,
-      "y": 3,
+      "y": 4,
       "links": ["dunbarton"]
     }
   ],

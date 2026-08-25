@@ -318,6 +318,9 @@ public class BattleService {
             if (!castFailure) {
                 final SkillTalent equippedTalent =
                         skill.talent() == SkillTalent.COMMON ? SkillTalent.MELEE : skill.talent();
+                final boolean isPlayerPreemptive =
+                        currentPreemptive == PreemptiveParty.PLAYER
+                                || isBowFirstStrike(state, equippedTalent);
 
                 if (skill instanceof UltimateSkill ultimateSkill && ownedSkillOpt.isPresent()) {
                     final TurnCombatResult combat =
@@ -337,8 +340,9 @@ public class BattleService {
                                     ownedSkillOpt.get(),
                                     state,
                                     combatLines,
-                                    monsterAction);
+                                    isPlayerPreemptive ? null : monsterAction);
                     monsterDamage = combat.monsterDamage;
+                    firstStrike = isPlayerPreemptive;
                 } else if (skill instanceof BuffSkill buffSkill && ownedSkillOpt.isPresent()) {
                     final TurnCombatResult combat =
                             resolveBuffCombat(
@@ -348,8 +352,9 @@ public class BattleService {
                                     ownedSkillOpt.get(),
                                     state,
                                     combatLines,
-                                    monsterAction);
+                                    isPlayerPreemptive ? null : monsterAction);
                     monsterDamage = combat.monsterDamage;
+                    firstStrike = isPlayerPreemptive;
                 } else if (skill instanceof CcSkill ccSkill && ownedSkillOpt.isPresent()) {
                     final TurnCombatResult combat =
                             resolveCcCombat(
@@ -359,10 +364,10 @@ public class BattleService {
                                     ownedSkillOpt.get(),
                                     state,
                                     combatLines,
-                                    monsterAction);
+                                    isPlayerPreemptive ? null : monsterAction);
                     monsterDamage = combat.monsterDamage;
-                } else if (currentPreemptive == PreemptiveParty.PLAYER
-                        || isBowFirstStrike(state, equippedTalent)) {
+                    firstStrike = isPlayerPreemptive;
+                } else if (isPlayerPreemptive) {
                     final TurnCombatResult combat =
                             resolvePlayerPreemptive(progress, monster, skill, equippedTalent);
                     playerDamage = combat.playerDamage;
@@ -1000,6 +1005,9 @@ public class BattleService {
             final BattleState state,
             final List<String> combatLines,
             final SkillType monsterAction) {
+        if (monsterAction == null) {
+            return 0;
+        }
         if (state.getMonsterStunnedTurns() > 0) {
             combatLines.add(monster.name() + "이(가) 기절/빙결되어 행동할 수 없습니다.");
             state.setMonsterStunnedTurns(state.getMonsterStunnedTurns() - 1);
@@ -1229,23 +1237,28 @@ public class BattleService {
 
     private BattleTurnResult handleTimeoutTurn(
             final CharacterProgress progress, final BattleState state, final Monster monster) {
-        final SkillType monsterAction =
-                state.getCurrentMonsterIntent() != null
-                        ? state.getCurrentMonsterIntent()
-                        : SkillType.NORMAL;
-
         final List<String> combatLines = new ArrayList<>();
-        combatLines.add("시간 초과! 몬스터의 공격에 무방비로 피격되었습니다!");
+        final SkillType monsterIntent = state.getCurrentMonsterIntent();
+        final int monsterDamage;
+        final SkillType monsterAction;
 
-        final int monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
-        applyManaShieldAndDamage(progress, state, 0, monsterDamage, combatLines);
-
-        if (monsterAction != SkillType.DEFENSE) {
-            final String actionLabel = monsterAction == SkillType.HEAVY ? "강공격" : "일반공격";
-            combatLines.add(
-                    monster.name() + "의 " + actionLabel + "! " + monsterDamage + " 피해를 입었습니다.");
+        if (monsterIntent == null) {
+            combatLines.add("시간 초과! 선제 공격 기회를 놓쳤습니다.");
+            monsterDamage = 0;
+            monsterAction = null;
         } else {
-            combatLines.add(monster.name() + "은(는) 방어 태세를 유지했습니다.");
+            monsterAction = monsterIntent;
+            combatLines.add("시간 초과! 몬스터의 공격에 무방비로 피격되었습니다!");
+            monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
+            applyManaShieldAndDamage(progress, state, 0, monsterDamage, combatLines);
+
+            if (monsterAction != SkillType.DEFENSE) {
+                final String actionLabel = monsterAction == SkillType.HEAVY ? "강공격" : "일반공격";
+                combatLines.add(
+                        monster.name() + "의 " + actionLabel + "! " + monsterDamage + " 피해를 입었습니다.");
+            } else {
+                combatLines.add(monster.name() + "은(는) 방어 태세를 유지했습니다.");
+            }
         }
 
         Outcome outcome = Outcome.NONE;

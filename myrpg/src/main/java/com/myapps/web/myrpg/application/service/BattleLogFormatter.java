@@ -21,8 +21,9 @@ import java.util.List;
  */
 public class BattleLogFormatter {
 
-    private static final String HIT_SEPARATOR = "  ";
-    private static final String CRITICAL_SUFFIX = "(치명)";
+    private static final String HIT_SEPARATOR = " · ";
+    private static final String CRITICAL_SUFFIX = "💥";
+    private static final String ARROW = " ➔ ";
     private static final int MULTI_HIT_THRESHOLD = 2;
 
     /**
@@ -70,8 +71,12 @@ public class BattleLogFormatter {
                                 + prefix
                                 + " "
                                 + input.playerHits().size()
-                                + "연타 (절대 우위 100% 관통)");
-                lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));
+                                + "연타 ("
+                                + formatHits(input.playerHits())
+                                + ")"
+                                + ARROW
+                                + input.playerDamage()
+                                + " 피해 (절대 우위 100% 관통)");
             } else {
                 final String hit =
                         "결전 궁극기! "
@@ -92,8 +97,17 @@ public class BattleLogFormatter {
         }
 
         if (isMultiHit(input)) {
-            lines.add("선제 공격! " + prefix + " " + input.playerHits().size() + "연타");
-            lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));
+            lines.add(
+                    "선제 공격! "
+                            + prefix
+                            + " "
+                            + input.playerHits().size()
+                            + "연타 ("
+                            + formatHits(input.playerHits())
+                            + ")"
+                            + ARROW
+                            + input.playerDamage()
+                            + " 피해");
         } else {
             final String hit =
                     "선제 공격! "
@@ -128,8 +142,16 @@ public class BattleLogFormatter {
         }
         if (input.monsterAction() == SkillType.DEFENSE && input.playerType() == SkillType.NORMAL) {
             if (isMultiHit(input)) {
-                lines.add(prefix + " " + input.playerHits().size() + "연타 (방어에 가로막힘)");
-                lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));
+                lines.add(
+                        prefix
+                                + " "
+                                + input.playerHits().size()
+                                + "연타 ("
+                                + formatHits(input.playerHits())
+                                + ") (방어에 가로막힘)"
+                                + ARROW
+                                + input.playerDamage()
+                                + " 피해");
             } else {
                 final String hit =
                         prefix
@@ -143,17 +165,25 @@ public class BattleLogFormatter {
             return;
         }
         if (isMultiHit(input)) {
-            addMultiHitLines(lines, input, prefix);
+            addMultiHitLine(lines, input, prefix);
         } else {
             addSingleHitLine(lines, input, prefix);
         }
     }
 
-    /** 멀티히트(hitCount ≥ 2) 로그 2줄(헤더 + 브레이크다운)을 추가한다. */
-    private void addMultiHitLines(
+    /** 멀티히트(hitCount ≥ 2) 로그 1줄(통합 단일 라인)을 추가한다. */
+    private void addMultiHitLine(
             final List<String> lines, final BattleLogInput input, final String prefix) {
-        lines.add(prefix + " " + input.playerHits().size() + "연타");
-        lines.add(buildBreakdownLine(input.playerHits(), input.playerDamage()));
+        lines.add(
+                prefix
+                        + " "
+                        + input.playerHits().size()
+                        + "연타 ("
+                        + formatHits(input.playerHits())
+                        + ")"
+                        + ARROW
+                        + input.playerDamage()
+                        + " 피해");
     }
 
     /** 단일 히트 플레이어 공격 로그 1줄을 추가한다. */
@@ -248,15 +278,12 @@ public class BattleLogFormatter {
     }
 
     /**
-     * 히트별 브레이크다운 줄을 생성한다.
-     *
-     * <p>각 히트 피해를 두 칸 공백으로 나열하되, 크리티컬 히트에는 "(치명)" 접미사를 붙인다. 마지막에 "= {합계} 피해"를 추가한다.
+     * 각 히트별 피해 및 크리티컬 여부를 포맷팅한다.
      *
      * @param hits 히트별 결과 목록
-     * @param totalDamage 총 피해 합계
-     * @return 브레이크다운 문자열 (예: "22 33(치명) 19 = 74 피해")
+     * @return 포맷팅된 히트 문자열 (예: "5 · 5💥 · 5")
      */
-    private String buildBreakdownLine(final List<HitResult> hits, final int totalDamage) {
+    private String formatHits(final List<HitResult> hits) {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < hits.size(); i++) {
             if (i > 0) {
@@ -268,7 +295,6 @@ public class BattleLogFormatter {
                 builder.append(CRITICAL_SUFFIX);
             }
         }
-        builder.append(" = ").append(totalDamage).append(" 피해");
         return builder.toString();
     }
 }
