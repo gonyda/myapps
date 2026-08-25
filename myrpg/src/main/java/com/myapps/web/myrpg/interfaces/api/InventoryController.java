@@ -6,6 +6,7 @@ import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -91,8 +92,8 @@ public class InventoryController {
     @PostMapping("/use")
     public String usePotion(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
-        inventoryService.usePotion(ownedItemId);
-        actionLog.add("포션을 사용했습니다", LOG_TYPE_ITEM);
+        final PotionItem potion = inventoryService.usePotion(ownedItemId);
+        actionLog.add("포션 사용: " + potion.name(), LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final InventoryView view = resolveInventoryView(progress);
@@ -119,7 +120,6 @@ public class InventoryController {
     public String equip(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
         inventoryService.equip(ownedItemId);
-        actionLog.add("장비를 착용했습니다", LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final InventoryView view = resolveInventoryView(progress);
@@ -143,7 +143,6 @@ public class InventoryController {
     public String unequip(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
         inventoryService.unequip(ownedItemId);
-        actionLog.add("장비를 해제했습니다", LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final InventoryView view = resolveInventoryView(progress);

@@ -582,46 +582,110 @@
         .move-pad .right { grid-column: 3; grid-row: 2; }
         .move-pad .down  { grid-column: 2; grid-row: 3; }
 
-        /* 하단 행동 로그 (4줄 노출, 넘치면 스크롤 / 최대 10개) */
+        /* 하단 활동 로그 (다크 판타지 & 앤틱 골드, 4~5줄 노출) */
         .action-log {
-            /* 한 줄 = 글자높이(fs*1.6) + 상하 패딩 4px + 점선 border 1px */
-            --log-line-h: calc(var(--fs-sm) * 1.6 + 5px);
-            height: calc(var(--log-line-h) * 4 + var(--pad) * 1.2);
-            background: #161616;
-            border-top: 1px solid #444;
-            padding: calc(var(--pad) * 0.6) var(--pad);
+            --log-line-h: calc(var(--fs-sm) * 1.5 + 6px);
+            height: calc(var(--log-line-h) * 4.5 + var(--pad) * 0.8);
+            background: linear-gradient(180deg, rgba(18, 22, 32, 0.98), rgba(12, 15, 22, 0.99));
+            border-top: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+            padding: calc(var(--pad) * 0.4) calc(var(--pad) * 0.7);
             overflow-y: auto;
             font-size: var(--fs-sm);
-            line-height: 1.6;
-            color: #bbb;
+            line-height: 1.5;
+            color: #cbd5e1;
             flex-shrink: 0;
+            backdrop-filter: blur(8px);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+            z-index: 5;
+        }
+
+        .action-log::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .action-log::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
         }
 
         .action-log .log-line {
-            border-bottom: 1px dotted #333;
-            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 3px 0;
             display: flex;
-            gap: calc(var(--gap) * 0.6);
+            align-items: center;
+            gap: calc(var(--gap) * 0.45);
         }
 
         .action-log .log-time {
-            color: #777;
+            color: #64748b;
+            font-size: clamp(8px, 2.2vw, 10px);
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
             flex-shrink: 0;
+            font-family: monospace, sans-serif;
+            letter-spacing: -0.3px;
+        }
+
+        .action-log .log-badge {
+            font-size: clamp(8px, 2vw, 9.5px);
+            font-weight: 800;
+            padding: 1px 4px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            line-height: 1.2;
+            letter-spacing: -0.2px;
+        }
+
+        .action-log .badge-combat {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .action-log .badge-growth {
+            background: rgba(14, 165, 233, 0.16);
+            border: 1px solid rgba(14, 165, 233, 0.4);
+            color: #7dd3fc;
+            box-shadow: 0 0 6px rgba(14, 165, 233, 0.2);
+        }
+
+        .action-log .badge-item {
+            background: rgba(245, 158, 11, 0.16);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fde047;
+        }
+
+        .action-log .badge-dungeon {
+            background: rgba(168, 85, 247, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #d8b4fe;
+        }
+
+        .action-log .badge-notification,
+        .action-log .badge-move {
+            background: rgba(148, 163, 184, 0.14);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #cbd5e1;
         }
 
         .action-log .log-msg {
             flex: 1;
             min-width: 0;
+            font-size: var(--fs-sm);
+            color: #e2e8f0;
+            word-break: break-all;
+            line-height: 1.35;
         }
 
-        /* 로그 타입별 색상 */
-        .action-log .log-move   { color: #bbbbbb; }   /* 이동 (기본) */
-        .action-log .log-combat { color: #d98b8b; }   /* 전투 (연빨강) */
-        .action-log .log-reward { color: #d9c479; }   /* 보상/획득 (노랑) */
-        .action-log .log-growth { color: #8fb5d9; }   /* 성장 (연파랑) */
-        .action-log .log-item   { color: #8fc98f; }   /* 아이템 (연초록) */
+        .action-log .log-combat { color: #fed7aa; }
+        .action-log .log-growth { color: #e0f2fe; font-weight: 700; }
+        .action-log .log-item   { color: #fef08a; }
+        .action-log .log-dungeon { color: #f3e8ff; }
+        .action-log .log-notification { color: #e2e8f0; }
+        .action-log .log-move   { color: #cbd5e1; }
 
         /* 전체화면 팝업 오버레이 */
         .overlay {

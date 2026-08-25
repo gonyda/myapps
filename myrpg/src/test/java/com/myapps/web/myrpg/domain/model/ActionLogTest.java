@@ -26,7 +26,7 @@ class ActionLogTest {
         final ActionLogEntry entry = actionLog.add("티르코네일로 이동했습니다.", "move");
 
         assertNotNull(entry);
-        assertEquals("2025-03-15 23:30:45", entry.timestamp());
+        assertEquals("23:30:45", entry.timestamp());
         assertEquals("티르코네일로 이동했습니다.", entry.message());
         assertEquals("move", entry.type());
     }

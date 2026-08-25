@@ -11,7 +11,6 @@ import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.ShopService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
@@ -182,7 +181,6 @@ class RepairListFilterPropertyTest {
                         mock(InventoryService.class),
                         catalogService,
                         repository,
-                        mock(ActionLog.class),
                         new Random(0));
 
         return new Fixture(controller);

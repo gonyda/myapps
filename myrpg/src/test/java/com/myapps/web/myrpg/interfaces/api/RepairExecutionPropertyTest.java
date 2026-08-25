@@ -184,7 +184,6 @@ class RepairExecutionPropertyTest {
                         mock(InventoryService.class),
                         catalogService,
                         repository,
-                        fixedAction(),
                         random);
 
         return new Fixture(controller, shopService, progress);

@@ -157,15 +157,16 @@ class BattleServiceLogSplitTest {
                 entries.stream()
                         .allMatch(
                                 e ->
-                                        e.message().contains("골드")
-                                                || e.message().contains("획득")
-                                                || e.message().contains("경험치"));
+                                        e.message().contains("승리")
+                                                || e.message().contains("EXP")
+                                                || e.message().contains("Gold")
+                                                || e.message().contains("레벨업"));
         assertThat(allSettlement).as("actionLog에 추가된 모든 라인이 결산 라인이어야 한다").isTrue();
 
         final List<String> combatLineContents = result.combatLines();
         final boolean noSettlementInCombat =
                 combatLineContents.stream()
-                        .noneMatch(line -> line.contains("골드") || line.contains("경험치를 획득"));
+                        .noneMatch(line -> line.contains("승리! EXP") || line.contains("Gold +"));
         assertThat(noSettlementInCombat).as("combatLines에 결산 라인이 포함되지 않아야 한다").isTrue();
     }
 

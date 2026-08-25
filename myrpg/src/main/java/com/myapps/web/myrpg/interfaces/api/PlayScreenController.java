@@ -238,7 +238,7 @@ public class PlayScreenController {
                 ambusher.ifPresent(
                         monster -> {
                             battleService.start(progress, monster.id(), true);
-                            actionLog.add(monster.name() + "이(가) 기습해왔다!", COMBAT_TYPE);
+                            actionLog.add("🚨 " + monster.name() + " 기습!", COMBAT_TYPE);
                             model.addAttribute("ambushMonsterName", monster.name());
                         });
             }

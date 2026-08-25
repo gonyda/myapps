@@ -64,9 +64,13 @@ class InventoryControllerTest {
     void should_returnRefreshedFragment_when_potionUsed() throws Exception {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final InventoryView inventoryView = dummyInventoryView();
+        final com.myapps.web.myrpg.domain.model.PotionItem dummyPotion =
+                new com.myapps.web.myrpg.domain.model.PotionItem(
+                        "hp_potion_30", "생명력 30 포션", 30, 10);
 
         when(characterService.loadOrCreateDefault()).thenReturn(progress);
         when(inventoryService.buildInventoryView(progress.getGold())).thenReturn(inventoryView);
+        when(inventoryService.usePotion(OWNED_ITEM_ID)).thenReturn(dummyPotion);
 
         mockMvc.perform(post("/inventory/use").param("ownedItemId", String.valueOf(OWNED_ITEM_ID)))
                 .andExpect(status().isOk())
@@ -74,6 +78,7 @@ class InventoryControllerTest {
                 .andExpect(model().attributeExists("inventory"));
 
         verify(inventoryService).usePotion(OWNED_ITEM_ID);
+        verify(actionLog).add("포션 사용: 생명력 30 포션", "item");
     }
 
     /** POST /inventory/equip 요청 시 장비를 착용하고 갱신된 인벤토리 fragment가 반환되는지 검증한다. */

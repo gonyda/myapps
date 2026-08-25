@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -16,7 +17,6 @@ import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.ShopService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
@@ -55,8 +55,6 @@ class RepairControllerTest {
     @MockitoBean private ItemCatalogService itemCatalogService;
 
     @MockitoBean private OwnedItemRepository ownedItemRepository;
-
-    @MockitoBean private ActionLog actionLog;
 
     @MockitoBean private Random random;
 
@@ -102,6 +100,7 @@ class RepairControllerTest {
 
         mockMvc.perform(post("/repair").param("ownedItemId", String.valueOf(OWNED_ITEM_ID)))
                 .andExpect(status().isOk())
+                .andExpect(header().string("X-Repair-Result", "SUCCESS"))
                 .andExpect(view().name(FRAGMENT_REPAIR_POPUP))
                 .andExpect(model().attributeExists("repair"));
 
@@ -129,6 +128,7 @@ class RepairControllerTest {
 
         mockMvc.perform(post("/repair").param("ownedItemId", String.valueOf(OWNED_ITEM_ID)))
                 .andExpect(status().isOk())
+                .andExpect(header().string("X-Repair-Result", "FAIL"))
                 .andExpect(view().name(FRAGMENT_REPAIR_POPUP))
                 .andExpect(model().attributeExists("repair"));
 

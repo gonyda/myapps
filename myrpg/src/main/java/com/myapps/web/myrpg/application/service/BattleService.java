@@ -8,6 +8,7 @@ import com.myapps.web.myrpg.application.dto.DropResult;
 import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
+import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult;
@@ -79,6 +80,7 @@ public class BattleService {
     private static final int PERCENT_DIVISOR = 100;
     private static final int CRITICAL_ROLL_MAX = 1000;
     private static final String LOG_TYPE_COMBAT = "combat";
+    private static final String LOG_TYPE_GROWTH = "growth";
     private static final int NORMAL_CLASH_DURATION_MS = 1000;
     private static final int DEFAULT_CLASH_DURATION_MS = 1500;
     private static final String BADGE_LABEL_NORMAL = "⚡ 일반공격 태세";
@@ -1149,16 +1151,32 @@ public class BattleService {
             final CharacterProgress progress, final Monster monster, final List<String> logLines) {
         final DropResult drop = monsterRewardService.rollDrop(monster);
         inventoryService.acquire(progress, drop);
-        progressionService.gainExperience(progress, monster.experience());
+        final LevelUpResult levelUpResult =
+                progressionService.gainExperience(progress, monster.experience());
 
-        if (drop.gold() > 0) {
-            logLines.add(drop.gold() + "골드를 획득하였습니다.");
+        final StringBuilder sb = new StringBuilder();
+        sb.append("승리! EXP +").append(monster.experience()).append(" | Gold +").append(drop.gold());
+
+        if (!drop.items().isEmpty()) {
+            final List<String> itemSummaries = new ArrayList<>();
+            for (final DroppedItem item : drop.items()) {
+                final String itemName = resolveItemName(item.itemId());
+                itemSummaries.add(itemName + " x" + item.quantity());
+            }
+            sb.append(" | ").append(String.join(", ", itemSummaries));
         }
-        for (final DroppedItem item : drop.items()) {
-            final String itemName = resolveItemName(item.itemId());
-            logLines.add(itemName + " (" + item.quantity() + "개)를 획득하였습니다.");
+        logLines.add(sb.toString());
+
+        if (levelUpResult != null && levelUpResult.levelsGained() > 0) {
+            actionLog.add(
+                    "🎉 레벨업! Lv."
+                            + levelUpResult.newLevel()
+                            + " 달성! (AP +"
+                            + levelUpResult.levelsGained()
+                            + ")",
+                    LOG_TYPE_GROWTH);
         }
-        logLines.add(monster.experience() + " 경험치를 획득하였습니다.");
+
         return drop;
     }
 

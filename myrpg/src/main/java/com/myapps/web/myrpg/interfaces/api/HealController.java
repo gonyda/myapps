@@ -5,7 +5,6 @@ import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.VitalMax;
@@ -38,7 +37,6 @@ public class HealController {
     private final StatProgression statProgression;
     private final InventoryService inventoryService;
     private final SkillService skillService;
-    private final ActionLog actionLog;
 
     /**
      * HealController를 생성한다.
@@ -47,19 +45,16 @@ public class HealController {
      * @param statProgression 스탯/바이탈 계산 정책
      * @param inventoryService 인벤토리 서비스 (장비 바이탈 보너스)
      * @param skillService 스킬 서비스 (스킬 바이탈 보너스)
-     * @param actionLog 활동 로그 (세션 스코프)
      */
     public HealController(
             final CharacterService characterService,
             final StatProgression statProgression,
             final InventoryService inventoryService,
-            final SkillService skillService,
-            final ActionLog actionLog) {
+            final SkillService skillService) {
         this.characterService = characterService;
         this.statProgression = statProgression;
         this.inventoryService = inventoryService;
         this.skillService = skillService;
-        this.actionLog = actionLog;
     }
 
     /**
@@ -77,7 +72,6 @@ public class HealController {
         final VitalMax maxVitals = calculateEffectiveVitalMax(progress);
         progress.fullRecover(maxVitals);
         characterService.saveTurn(progress);
-        actionLog.add("힐러에게 치료를 받았습니다.", LOG_TYPE_ITEM);
 
         return ResponseEntity.ok().build();
     }

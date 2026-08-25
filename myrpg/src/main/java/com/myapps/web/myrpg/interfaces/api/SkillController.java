@@ -6,6 +6,7 @@ import com.myapps.web.myrpg.application.dto.SkillRankUpView;
 import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.SkillService;
+import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpSession;
@@ -38,20 +39,26 @@ public class SkillController {
 
     private static final String FRAGMENT_SKILL_LIST = "fragments/skill-popup :: skill-list";
     private static final String FRAGMENT_RANKUP_MODAL = "fragments/skill-popup :: rankup-modal";
+    private static final String LOG_TYPE_GROWTH = "growth";
 
     private final SkillService skillService;
     private final CharacterService characterService;
+    private final ActionLog actionLog;
 
     /**
      * SkillController를 생성한다.
      *
      * @param skillService 스킬 시스템 서비스
      * @param characterService 캐릭터 진행상황 서비스
+     * @param actionLog 행동 로그
      */
     public SkillController(
-            final SkillService skillService, final CharacterService characterService) {
+            final SkillService skillService,
+            final CharacterService characterService,
+            final ActionLog actionLog) {
         this.skillService = skillService;
         this.characterService = characterService;
+        this.actionLog = actionLog;
     }
 
     /**
@@ -123,6 +130,15 @@ public class SkillController {
             characterService.saveTurn(progress);
         }
         final SkillRankUpView rankUpView = skillService.buildRankUpView(progress.getId(), id);
+        if (success) {
+            actionLog.add(
+                    "✨ ["
+                            + rankUpView.label()
+                            + "] "
+                            + rankUpView.currentRankLabel()
+                            + "랭크로 승급되었습니다!",
+                    LOG_TYPE_GROWTH);
+        }
         model.addAttribute("rankUp", rankUpView);
         return FRAGMENT_RANKUP_MODAL;
     }

@@ -933,12 +933,20 @@ function repairItem(ownedItemId) {
                     return null;
                 });
             }
-            return response.text();
+            var repairResult = response.headers.get('X-Repair-Result');
+            return response.text().then(function (html) {
+                return { html: html, result: repairResult };
+            });
         })
-        .then(function (html) {
-            if (!html) { return; }
-            document.getElementById('repairContent').innerHTML = html;
+        .then(function (data) {
+            if (!data || !data.html) { return; }
+            document.getElementById('repairContent').innerHTML = data.html;
             refreshTopBar();
+            if (data.result === 'SUCCESS') {
+                alert('🔨 수리 성공!');
+            } else if (data.result === 'FAIL') {
+                alert('💥 퍼거스가 손을 삐끗했습니다! 수리 실패');
+            }
         });
 }
 

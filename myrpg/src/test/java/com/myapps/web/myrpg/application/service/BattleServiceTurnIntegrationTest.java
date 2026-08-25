@@ -248,12 +248,7 @@ class BattleServiceTurnIntegrationTest {
                 actionLog.getEntries().stream()
                         .map(com.myapps.web.myrpg.domain.model.ActionLogEntry::message)
                         .toList();
-        assertThat(logMessages)
-                .contains(
-                        "100골드를 획득하였습니다.",
-                        "숏소드 (1개)를 획득하였습니다.",
-                        "생명력 포션 30 (3개)를 획득하였습니다.",
-                        "30 경험치를 획득하였습니다.");
+        assertThat(logMessages).contains("승리! EXP +30 | Gold +100 | 숏소드 x1, 생명력 포션 30 x3");
     }
 
     /** 비처치 턴에서는 onSkillKill이 호출되지 않는지 검증한다. */

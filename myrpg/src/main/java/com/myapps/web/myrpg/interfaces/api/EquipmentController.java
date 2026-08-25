@@ -5,7 +5,6 @@ import com.myapps.web.myrpg.application.dto.OwnedItemView;
 import com.myapps.web.myrpg.application.dto.UserSession;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpSession;
@@ -34,22 +33,17 @@ public class EquipmentController {
 
     private final InventoryService inventoryService;
     private final CharacterService characterService;
-    private final ActionLog actionLog;
 
     /**
      * EquipmentController를 생성한다.
      *
      * @param inventoryService 인벤토리 및 장비 서비스
      * @param characterService 캐릭터 서비스
-     * @param actionLog 세션 행동 로그
      */
     public EquipmentController(
-            final InventoryService inventoryService,
-            final CharacterService characterService,
-            final ActionLog actionLog) {
+            final InventoryService inventoryService, final CharacterService characterService) {
         this.inventoryService = inventoryService;
         this.characterService = characterService;
-        this.actionLog = actionLog;
     }
 
     /**
@@ -84,13 +78,16 @@ public class EquipmentController {
     public String equip(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
         inventoryService.smartEquip(ownedItemId);
-        actionLog.add("장비를 착용했습니다", LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final EquipmentView view =
                 inventoryService.buildEquipmentView(progress != null ? progress.getId() : null);
         model.addAttribute("equipment", view);
         return FRAGMENT_EQUIPMENT_CONTENT;
+    }
+
+    public String equip(final long ownedItemId, final Model model) {
+        return equip(ownedItemId, null, model);
     }
 
     /**
@@ -105,7 +102,6 @@ public class EquipmentController {
     public String unequip(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
         inventoryService.unequip(ownedItemId);
-        actionLog.add("장비를 해제했습니다", LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final EquipmentView view =

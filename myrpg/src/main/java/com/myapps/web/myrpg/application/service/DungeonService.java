@@ -37,9 +37,6 @@ import tools.jackson.databind.ObjectMapper;
 public class DungeonService {
 
     private static final String LOG_TYPE_DUNGEON = "dungeon";
-    private static final String LOG_TYPE_COMBAT = "combat";
-    private static final String BOSS_WARNING_MESSAGE = "어두운 통로 너머 깊은 곳에서 불길하고 강력한 기운이 느껴집니다...";
-    private static final String ROOM_CLEARED_MESSAGE = "방 안의 모든 적을 소탕했습니다! 전진 통로가 열립니다.";
     private static final String BLOCKED_FORWARD_MESSAGE = "앞으로 나아가려면 이 방의 적들을 모두 처치해야 합니다.";
     private static final String UNLINKED_ROOM_MESSAGE = "연결되지 않은 방입니다.";
 
@@ -212,10 +209,6 @@ public class DungeonService {
 
         instance.moveTo(targetRoomId);
 
-        if (instance.isAdjacentToBoss(targetRoomId)) {
-            actionLog.add(BOSS_WARNING_MESSAGE, LOG_TYPE_DUNGEON);
-        }
-
         entity.setCurrentRoomId(targetRoomId);
         entity.setRoomStatesJson(serializeRoomStates(instance.roomStates()));
         dungeonProgressRepository.save(entity);
@@ -244,14 +237,8 @@ public class DungeonService {
         final DungeonProgressEntity entity = entityOpt.get();
         final DungeonInstance instance = restoreInstance(entity);
         final String currentRoomId = instance.currentRoomId();
-        final boolean wasCleared = instance.isRoomCleared(currentRoomId);
 
         instance.removeMonster(currentRoomId, monsterId);
-        final boolean nowCleared = instance.isRoomCleared(currentRoomId);
-
-        if (!wasCleared && nowCleared) {
-            actionLog.add(ROOM_CLEARED_MESSAGE, LOG_TYPE_COMBAT);
-        }
 
         entity.setRoomStatesJson(serializeRoomStates(instance.roomStates()));
         dungeonProgressRepository.save(entity);

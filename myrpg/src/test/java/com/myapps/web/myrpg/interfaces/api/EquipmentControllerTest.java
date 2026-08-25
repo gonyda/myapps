@@ -14,7 +14,6 @@ import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.OwnedItemView;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.Stats;
@@ -41,8 +40,6 @@ class EquipmentControllerTest {
     @MockitoBean private InventoryService inventoryService;
 
     @MockitoBean private CharacterService characterService;
-
-    @MockitoBean private ActionLog actionLog;
 
     /** GET /equipment 요청 시 장비 팝업 fragment가 반환되는지 검증한다. */
     @Test
@@ -76,7 +73,6 @@ class EquipmentControllerTest {
                 .andExpect(model().attributeExists("equipment"));
 
         verify(inventoryService).smartEquip(OWNED_ITEM_ID);
-        verify(actionLog).add("장비를 착용했습니다", "item");
     }
 
     /** POST /equipment/unequip 요청 시 장비를 해제하고 갱신된 장비 fragment가 반환되는지 검증한다. */
@@ -96,7 +92,6 @@ class EquipmentControllerTest {
                 .andExpect(model().attributeExists("equipment"));
 
         verify(inventoryService).unequip(OWNED_ITEM_ID);
-        verify(actionLog).add("장비를 해제했습니다", "item");
     }
 
     /** GET /equipment/equippable 요청 시 슬롯 착용 가능 후보 목록이 반환되는지 검증한다. */

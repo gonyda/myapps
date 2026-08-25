@@ -127,7 +127,7 @@ class BattleControllerTest {
         org.assertj.core.api.Assertions.assertThat(battleView.standby()).isTrue();
         org.assertj.core.api.Assertions.assertThat(battleView.fleeAvailable()).isTrue();
 
-        verify(actionLog).add("너구리와(과) 마주쳤다.", "combat");
+        verify(actionLog).add("⚔️ 너구리 조우!", "combat");
     }
 
     /** POST /battle/turn 요청 시 전투 응답 프래그먼트(top-bar + battle-view + action-log)가 반환되는지 검증한다. */

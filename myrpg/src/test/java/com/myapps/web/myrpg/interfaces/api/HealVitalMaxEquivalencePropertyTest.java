@@ -142,11 +142,7 @@ class HealVitalMaxEquivalencePropertyTest {
         final SkillService skillService = mock(SkillService.class);
         final HealController healController =
                 new HealController(
-                        characterService,
-                        statProgression,
-                        inventoryService,
-                        skillService,
-                        fixedAction());
+                        characterService, statProgression, inventoryService, skillService);
 
         final PlayScreenViewHelper viewHelper =
                 new PlayScreenViewHelper(

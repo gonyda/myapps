@@ -177,7 +177,6 @@ class RepairCostEquivalencePropertyTest {
                         mock(InventoryService.class),
                         catalogService,
                         repository,
-                        mock(ActionLog.class),
                         new Random(0));
 
         return new Fixture(controller, shopService);

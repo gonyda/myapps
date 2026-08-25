@@ -177,7 +177,7 @@ public class InventoryService {
      * @param ownedItemId 사용할 포션 보유 아이템 PK
      */
     @Transactional
-    public void usePotion(final long ownedItemId) {
+    public PotionItem usePotion(final long ownedItemId) {
         final OwnedItem target = findOwnedItemOrThrow(ownedItemId);
         final Item catalogItem =
                 itemCatalogService
@@ -215,6 +215,7 @@ public class InventoryService {
         if (target.getQuantity() == 0) {
             ownedItemRepository.delete(target);
         }
+        return potionItem;
     }
 
     /**
@@ -576,7 +577,6 @@ public class InventoryService {
                     && catalogOpt.get() instanceof EquipmentItem equipItem
                     && equipItem.kind().primarySlot() == EquipSlot.OFF_HAND) {
                 equipped.unequip();
-                actionLog.add(equipItem.name() + "을(를) 해제했습니다", LOG_TYPE_ITEM);
             }
         }
     }
@@ -598,7 +598,6 @@ public class InventoryService {
                     && equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
                     && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
                 equipped.unequip();
-                actionLog.add(equipItem.name() + "을(를) 해제했습니다", LOG_TYPE_ITEM);
             }
         }
     }

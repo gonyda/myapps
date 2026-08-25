@@ -27,7 +27,7 @@ import net.jqwik.api.Provide;
 class ActionLogEntryCompositionPropertyTest {
 
     private static final String DEFAULT_TYPE = "move";
-    private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String TIMESTAMP_PATTERN = "HH:mm:ss";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER =
             DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN);
     private static final ZoneId ZONE_ID = ZoneId.of("Asia/Seoul");
@@ -96,15 +96,15 @@ class ActionLogEntryCompositionPropertyTest {
     }
 
     /**
-     * 타임스탬프 문자열이 {@code yyyy-MM-dd HH:mm:ss} 형식인지 검증한다.
+     * 타임스탬프 문자열이 {@code HH:mm:ss} 형식인지 검증한다.
      *
      * @param timestamp 검증할 타임스탬프 문자열
      */
     private void assertTimestampFormat(final String timestamp) {
         try {
-            LocalDateTime.parse(timestamp, TIMESTAMP_FORMATTER);
+            java.time.LocalTime.parse(timestamp, TIMESTAMP_FORMATTER);
         } catch (final DateTimeParseException e) {
-            throw new AssertionError("타임스탬프가 yyyy-MM-dd HH:mm:ss 형식이 아닙니다: " + timestamp, e);
+            throw new AssertionError("타임스탬프가 HH:mm:ss 형식이 아닙니다: " + timestamp, e);
         }
     }
 

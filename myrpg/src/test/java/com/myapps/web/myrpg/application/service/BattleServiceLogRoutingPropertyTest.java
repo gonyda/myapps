@@ -111,8 +111,12 @@ class BattleServiceLogRoutingPropertyTest {
 
         final boolean hasSettlementLine =
                 actionLog.getEntries().stream()
-                        .anyMatch(e -> e.message().contains("골드") || e.message().contains("경험치"));
-        assertThat(hasSettlementLine).as("actionLog에 결산 라인(골드 또는 경험치)이 포함되어야 한다").isTrue();
+                        .anyMatch(
+                                e ->
+                                        e.message().contains("EXP")
+                                                || e.message().contains("Gold")
+                                                || e.message().contains("승리"));
+        assertThat(hasSettlementLine).as("actionLog에 결산 라인(EXP 또는 Gold)이 포함되어야 한다").isTrue();
 
         final boolean hasActionLine =
                 actionLog.getEntries().stream()

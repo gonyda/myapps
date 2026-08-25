@@ -268,8 +268,8 @@ class DungeonServiceTest {
     }
 
     @Test
-    @DisplayName("보스방과 인접한 방에 진입하면 불길한 기운 경고 힌트가 액션로그에 출력된다")
-    void should_triggerBossWarning_when_movingToBossAdjacentRoom() {
+    @DisplayName("보스방과 인접한 방으로 정상 이동한다")
+    void should_moveToBossAdjacentRoom() {
         // given
         final Long charId = 1L;
         final DungeonInstance instance = createSimpleInstance(charId, "alby");
@@ -280,14 +280,14 @@ class DungeonServiceTest {
         given(characterProgressRepository.findById(charId)).willReturn(Optional.of(character));
 
         // when
-        dungeonService.moveToRoom(charId, "room-1-0");
+        final DungeonInstance moved = dungeonService.moveToRoom(charId, "room-1-0");
 
         // then
-        then(actionLog).should().add("어두운 통로 너머 깊은 곳에서 불길하고 강력한 기운이 느껴집니다...", "dungeon");
+        assertThat(moved.currentRoomId()).isEqualTo("room-1-0");
     }
 
     @Test
-    @DisplayName("방 안의 몬스터를 격파하여 잔여 몬스터가 0이 되면 방이 클리어 상태로 전이되고 액션로그가 기록된다")
+    @DisplayName("방 안의 몬스터를 격파하여 잔여 몬스터가 0이 되면 방이 클리어 상태로 전이된다")
     void should_removeMonster_and_markCleared_when_allMonstersDefeated() {
         // given
         final Long charId = 1L;
@@ -304,7 +304,6 @@ class DungeonServiceTest {
         final DungeonInstance restored = dungeonService.restoreInstance(entity);
         assertThat(restored.isRoomCleared("room-1-0")).isTrue();
         assertThat(restored.getRoomState("room-1-0").remainingMonsters()).isEmpty();
-        then(actionLog).should().add("방 안의 모든 적을 소탕했습니다! 전진 통로가 열립니다.", "combat");
         then(dungeonProgressRepository).should().save(entity);
     }
 

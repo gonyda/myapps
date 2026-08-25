@@ -40,6 +40,8 @@ class SkillControllerTest {
 
     @MockitoBean private CharacterService characterService;
 
+    @MockitoBean private com.myapps.web.myrpg.domain.model.ActionLog actionLog;
+
     /** GET /skills 요청 시 전체 스킬 목록 fragment가 반환되는지 검증한다. */
     @Test
     void should_returnSkillListFragment_when_listRequested() throws Exception {
@@ -101,6 +103,7 @@ class SkillControllerTest {
                 .andExpect(model().attributeExists("rankUp"));
 
         verify(characterService).saveTurn(progress);
+        verify(actionLog).add("✨ [윈드밀] F랭크로 승급되었습니다!", "growth");
     }
 
     /**

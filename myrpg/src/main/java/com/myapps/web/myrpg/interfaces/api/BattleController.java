@@ -109,7 +109,7 @@ public class BattleController {
         }
 
         final Monster monster = monsterOpt.get();
-        actionLog.add(monster.name() + "와(과) 마주쳤다.", COMBAT_TYPE);
+        actionLog.add("⚔️ " + monster.name() + " 조우!", COMBAT_TYPE);
         final BattleView battleView = buildBattleView(state, monster, progress);
         final List<String> turnLog = List.of(monster.name() + " Lv." + monster.level() + " 출현!");
         populateBattleModel(model, progress, battleView, turnLog);

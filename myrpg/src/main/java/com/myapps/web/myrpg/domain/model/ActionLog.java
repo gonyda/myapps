@@ -19,7 +19,7 @@ public class ActionLog {
 
     private static final int MAX_ENTRIES = 10;
     private static final String DEFAULT_TYPE = "move";
-    private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String TIMESTAMP_FORMAT = "HH:mm:ss";
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT);

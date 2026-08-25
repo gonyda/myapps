@@ -10,7 +10,6 @@ import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.SkillService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
@@ -34,8 +33,6 @@ class HealControllerTest {
     @MockitoBean private InventoryService inventoryService;
 
     @MockitoBean private SkillService skillService;
-
-    @MockitoBean private ActionLog actionLog;
 
     /** POST /heal 성공 시 200 OK가 반환되고 100골드 차감·풀회복이 수행되는지 검증한다. */
     @Test

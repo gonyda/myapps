@@ -7,7 +7,6 @@ import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.InventoryService;
 import com.myapps.web.myrpg.application.service.ItemCatalogService;
 import com.myapps.web.myrpg.application.service.ShopService;
-import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.Item;
@@ -15,6 +14,7 @@ import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import com.myapps.web.myrpg.infrastructure.interceptor.AuthInterceptor;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,6 @@ public class RepairController {
     private final InventoryService inventoryService;
     private final ItemCatalogService itemCatalogService;
     private final OwnedItemRepository ownedItemRepository;
-    private final ActionLog actionLog;
     private final Random random;
 
     /**
@@ -58,7 +57,6 @@ public class RepairController {
      * @param inventoryService 인벤토리 서비스 (설명문 생성)
      * @param itemCatalogService 아이템 카탈로그 서비스
      * @param ownedItemRepository 보유 아이템 저장소
-     * @param actionLog 세션 보관 행동 로그
      * @param random 난수 발생기 (성공률 판정용)
      */
     public RepairController(
@@ -67,14 +65,12 @@ public class RepairController {
             final InventoryService inventoryService,
             final ItemCatalogService itemCatalogService,
             final OwnedItemRepository ownedItemRepository,
-            final ActionLog actionLog,
             final Random random) {
         this.characterService = characterService;
         this.shopService = shopService;
         this.inventoryService = inventoryService;
         this.itemCatalogService = itemCatalogService;
         this.ownedItemRepository = ownedItemRepository;
-        this.actionLog = actionLog;
         this.random = random;
     }
 
@@ -114,19 +110,23 @@ public class RepairController {
      *
      * @param ownedItemId 수리할 보유 아이템 PK
      * @param session HTTP 세션
+     * @param response HTTP 응답
      * @param model Spring MVC 모델
      * @return 수리 팝업 fragment 뷰 이름
      */
     @PostMapping
     public String repair(
-            @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
+            @RequestParam final long ownedItemId,
+            final HttpSession session,
+            final HttpServletResponse response,
+            final Model model) {
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final OwnedItem target =
                 ownedItemRepository
                         .findById(ownedItemId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalStateException(
+                                        new IllegalArgumentException(
                                                 "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
 
         final Item catalogItem =
@@ -142,11 +142,12 @@ public class RepairController {
             final long repairCost = shopService.sellValueOf(target);
             progress.spendGold(repairCost);
 
-            if (random.nextInt(100) < REPAIR_SUCCESS_RATE_PERCENT) {
+            final boolean success = random.nextInt(100) < REPAIR_SUCCESS_RATE_PERCENT;
+            if (success) {
                 target.repairBy(REPAIR_AMOUNT, equipItem.maxDurability());
-                actionLog.add("수리 성공! 내구도 +1", LOG_TYPE_ITEM);
-            } else {
-                actionLog.add("퍼거스가 손을 삐끗했다… 수리 실패!", LOG_TYPE_ITEM);
+            }
+            if (response != null) {
+                response.setHeader("X-Repair-Result", success ? "SUCCESS" : "FAIL");
             }
             characterService.saveTurn(progress);
         }
@@ -164,7 +165,7 @@ public class RepairController {
      * @return 수리 팝업 fragment 뷰 이름
      */
     public String repair(final long ownedItemId, final Model model) {
-        return repair(ownedItemId, null, model);
+        return repair(ownedItemId, null, null, model);
     }
 
     /**
