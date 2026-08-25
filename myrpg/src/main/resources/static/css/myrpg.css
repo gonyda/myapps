@@ -52,33 +52,42 @@
             position: relative;   /* move-pad 오버레이 배치 기준 */
         }
 
-        /* 상단 바 */
+        /* 상단 바 (다크 판타지 & 앤틱 골드) */
         .top-bar {
-            background: #2a2a2a;
-            border-bottom: 1px solid #444;
-            padding: calc(var(--pad) * 0.6) var(--pad);
+            background: linear-gradient(180deg, rgba(28, 34, 48, 0.98), rgba(15, 19, 28, 0.98));
+            border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+            padding: calc(var(--pad) * 0.5) var(--pad);
             flex-shrink: 0;
+            backdrop-filter: blur(8px);
+            z-index: 10;
         }
 
         .top-row {
             display: flex;
             align-items: center;
-            gap: var(--gap);
-            margin-bottom: calc(var(--gap) * 0.5);
+            gap: calc(var(--gap) * 0.6);
+            margin-bottom: calc(var(--gap) * 0.4);
         }
 
         .top-row .nickname {
-            font-weight: bold;
+            font-weight: 800;
             font-size: var(--fs-md);
-            color: #fff;
+            color: #f8fafc;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
             white-space: nowrap;
+            letter-spacing: 0.2px;
         }
 
         .top-row .level {
-            background: #3a5a8a;
-            padding: 0.1em 0.6em;
-            border-radius: var(--radius);
-            font-size: var(--fs-sm);
+            background: linear-gradient(135deg, #d4af37, #aa7c11);
+            color: #0f172a;
+            font-size: var(--fs-xs);
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             white-space: nowrap;
         }
 
@@ -86,45 +95,72 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: calc(var(--gap) * 0.5);
+            gap: calc(var(--gap) * 0.4);
             min-width: 0;
         }
 
         .top-row .exp-label {
             font-size: var(--fs-xs);
-            color: #aaa;
+            font-weight: 800;
+            color: #fbbf24;
+            text-shadow: 0 0 4px rgba(251, 191, 36, 0.3);
         }
 
         .stat-bars {
             display: flex;
-            gap: var(--gap);
+            gap: calc(var(--gap) * 0.6);
         }
 
         .stat {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: calc(var(--gap) * 0.25);
+            gap: 2px;
             min-width: 0;
+        }
+
+        .stat .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .stat .label {
             font-size: var(--fs-xs);
-            color: #aaa;
+            font-weight: 700;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 3px;
         }
+
+        .stat .vital-icon {
+            font-size: clamp(9px, 2.4vw, 11px);
+        }
+
+        .stat.stat-hp .label { color: #fca5a5; }
+        .stat.stat-mp .label { color: #7dd3fc; }
+        .stat.stat-stamina .label { color: #86efac; }
 
         .bar {
             height: var(--bar-h);
-            background: #444;
+            background: rgba(10, 14, 22, 0.95);
+            border: 1px solid rgba(51, 65, 85, 0.7);
             border-radius: 999px;
             overflow: hidden;
             position: relative;   /* 게이지 위 수치 오버레이 기준 */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85);
+        }
+
+        .bar.exp {
+            border-color: rgba(212, 175, 55, 0.35);
         }
 
         .bar > .fill {
             display: block;
             height: 100%;
             width: 0;
+            transition: width 0.3s ease;
         }
 
         /* 게이지 바 위 현재값/최대값 수치 (연하게 오버레이) */
@@ -135,19 +171,36 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            font-size: clamp(7px, 2vw, 9px);
+            font-size: clamp(8px, 2.2vw, 10px);
+            font-weight: 700;
             line-height: 1;
-            color: rgba(255, 255, 255, 0.55);
-            text-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
             pointer-events: none;
+            z-index: 2;
         }
 
-        .bar.exp > .fill { background: #f0c419; }
-        .bar.hp  > .fill { background: #d9534f; }
-        .bar.mp  > .fill { background: #4a7bd0; }
-        .bar.stamina > .fill { background: #5cb85c; }
+        .bar.exp > .fill {
+            background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+        }
+
+        .bar.hp > .fill {
+            background: linear-gradient(90deg, #991b1b, #ef4444, #f87171);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+        }
+
+        .bar.mp > .fill {
+            background: linear-gradient(90deg, #075985, #0ea5e9, #38bdf8);
+            box-shadow: 0 0 8px rgba(14, 165, 233, 0.45);
+        }
+
+        .bar.stamina > .fill {
+            background: linear-gradient(90deg, #15803d, #22c55e, #4ade80);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
+        }
 
         /* 본문 */
         .main {
@@ -157,43 +210,103 @@
             min-height: 0;
         }
 
-        /* 왼쪽 사이드바 */
+        /* 왼쪽 사이드바 (다크 아머 메탈 & 앤틱 골드 탭) */
         .left-sidebar {
-            width: clamp(56px, 16vw, 76px);
-            background: #232323;
-            border-right: 1px solid #444;
+            width: clamp(56px, 16vw, 72px);
+            background: linear-gradient(180deg, rgba(20, 25, 36, 0.98), rgba(12, 16, 24, 0.99));
+            border-right: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: 3px 0 12px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             gap: var(--gap);
-            padding: var(--pad) calc(var(--pad) * 0.4);
+            padding: calc(var(--pad) * 0.8) calc(var(--pad) * 0.35);
             flex-shrink: 0;
+            z-index: 5;
         }
 
-        .left-sidebar button {
-            background: #333;
-            color: #ddd;
-            border: 1px solid #555;
+        .sidebar-nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--gap) * 0.6);
+        }
+
+        .left-sidebar .nav-btn,
+        .left-sidebar button:not(.btn-cheat) {
+            background: linear-gradient(145deg, rgba(32, 40, 58, 0.92), rgba(18, 22, 32, 0.96));
+            border: 1px solid rgba(212, 175, 55, 0.25);
             border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.6) 0;
-            font-size: var(--fs-sm);
+            color: #cbd5e1;
             cursor: pointer;
-            min-height: var(--touch);
+            min-height: clamp(48px, 12vw, 56px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 5px 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .left-sidebar button:active {
-            background: #444;
+        .left-sidebar .nav-btn .nav-icon {
+            font-size: clamp(15px, 4vw, 19px);
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+        }
+
+        .left-sidebar .nav-btn .nav-label {
+            font-size: clamp(10px, 2.6vw, 11px);
+            font-weight: 700;
+            color: #cbd5e1;
+            letter-spacing: -0.2px;
+            line-height: 1.2;
+        }
+
+        .left-sidebar .nav-btn:active,
+        .left-sidebar button:not(.btn-cheat):active {
+            transform: scale(0.94);
+            background: linear-gradient(145deg, rgba(46, 58, 84, 0.95), rgba(24, 30, 46, 0.98));
+            border-color: #d4af37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4), inset 0 0 6px rgba(212, 175, 55, 0.25);
+        }
+
+        .left-sidebar .nav-btn:active .nav-label {
+            color: #ffd700;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
+            margin: calc(var(--gap) * 0.1) 0;
+        }
+
+        .sidebar-cheat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .left-sidebar button.btn-cheat {
-            background: #2d261e;
-            color: #ffc107;
-            border: 1px dashed #d39e00;
-            font-size: calc(var(--fs-sm) * 0.85);
-            font-weight: bold;
+            background: rgba(32, 26, 16, 0.65);
+            color: #fbbf24;
+            border: 1px dashed rgba(212, 175, 55, 0.45);
+            border-radius: calc(var(--radius) * 0.8);
+            font-size: clamp(9px, 2.4vw, 10px);
+            font-weight: 800;
+            padding: 5px 2px;
+            min-height: auto;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: all 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .left-sidebar button.btn-cheat:active {
-            background: #463b27;
+            background: rgba(212, 175, 55, 0.25);
+            border-color: #ffd700;
+            transform: scale(0.94);
         }
 
         /* 가운데 영역 */
@@ -4119,21 +4232,36 @@
         /* 로그아웃 버튼 (상단바) */
         .btn-logout {
             margin-left: auto;
-            padding: 2px 8px;
+            padding: 2px 7px;
             font-size: var(--fs-xs);
-            color: #cbd5e1;
-            background: rgba(239, 68, 68, 0.2);
+            font-weight: 700;
+            color: #fca5a5;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(185, 28, 28, 0.25));
             border: 1px solid rgba(239, 68, 68, 0.4);
             border-radius: var(--radius);
             text-decoration: none;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s;
+            transition: all 0.15s ease;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-logout:hover {
-            background: rgba(239, 68, 68, 0.4);
-            color: #ffffff;
+        .btn-logout .logout-icon {
+            font-size: 11px;
+            line-height: 1;
         }
+
+        .btn-logout:hover,
+        .btn-logout:active {
+            background: rgba(239, 68, 68, 0.4);
+            border-color: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+            transform: scale(0.96);
+        }
+
 
 

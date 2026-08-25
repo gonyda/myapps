@@ -2,12 +2,30 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 <nav class="left-sidebar" th:fragment="left-sidebar">
-    <button onclick="openEquipment()">장비</button>
-    <button onclick="openInventory()">인벤토리</button>
-    <button onclick="openSkillPopup()">스킬</button>
-    <button onclick="openInfo()">정보</button>
-    <button type="button" class="btn-cheat" onclick="cheatExp()" title="테스트용 1,000 EXP 획득">+1K EXP</button>
-    <button type="button" class="btn-cheat" onclick="cheatGold()" title="테스트용 1,000 Gold 획득">+1K Gold</button>
+    <div class="sidebar-nav-group">
+        <button type="button" class="nav-btn nav-btn-equipment" onclick="openEquipment()" title="장비 관리">
+            <span class="nav-icon">⚔️</span>
+            <span class="nav-label">장비</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-inventory" onclick="openInventory()" title="소지품 가방">
+            <span class="nav-icon">🎒</span>
+            <span class="nav-label">가방</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-skill" onclick="openSkillPopup()" title="스킬 목록 및 승급">
+            <span class="nav-icon">📜</span>
+            <span class="nav-label">스킬</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-info" onclick="openInfo()" title="영웅 정보 및 스탯">
+            <span class="nav-icon">👑</span>
+            <span class="nav-label">정보</span>
+        </button>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-cheat-group">
+        <button type="button" class="btn-cheat" onclick="cheatExp()" title="테스트용 1,000 EXP 획득">+EXP</button>
+        <button type="button" class="btn-cheat" onclick="cheatGold()" title="테스트용 1,000 Gold 획득">+GOLD</button>
+    </div>
 </nav>
 </body>
 </html>
+
