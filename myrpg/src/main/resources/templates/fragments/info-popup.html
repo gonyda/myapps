@@ -1,73 +1,124 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<div class="overlay" id="infoOverlay" th:fragment="info-popup">
-    <div class="panel">
+<div class="overlay info-overlay" id="infoOverlay" th:fragment="info-popup">
+    <div class="panel info-panel">
         <header class="panel-header">
-            <h3>정보</h3>
+            <div class="panel-header-title">
+                <span class="panel-header-icon">📜</span>
+                <h3>캐릭터 정보</h3>
+            </div>
             <button class="panel-close" onclick="closeInfo()" aria-label="닫기">✕</button>
         </header>
-        <div class="panel-body" id="infoContent" th:fragment="info-content">
-            <!-- 상단: 닉네임, 레벨, 누적레벨, 재능, HP/MP/Stamina -->
+        <div class="panel-body info-panel-body" id="infoContent" th:fragment="info-content">
+            <!-- 상단: 캐릭터 프로필 카드 & 바이탈 게이지 -->
             <div class="info-top">
-                <div class="info-row">
-                    <span class="info-nickname" th:text="${view.info.nickname}">고니</span>
-                    <span class="info-level" th:text="'Lv. ' + ${view.info.currentLevel}">Lv. 1</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">누적 레벨</span>
-                    <span th:text="${view.info.accumulatedLevel}">1</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">재능</span>
-                    <span th:text="${view.info.talentLabel}">근접전투</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">보유 AP</span>
-                    <span th:text="${view.info.abilityPoints}">0</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">재능 효과</span>
-                    <span th:text="${view.info.talentEffectSummary}">근접 데미지 +10%, STR +2/Lv, HP +5/Lv</span>
-                </div>
-                <div class="stat">
-                    <span class="label">HP</span>
-                    <div class="bar hp">
-                        <span class="fill" th:style="'width:' + ${view.info.hp.percent} + '%'"></span>
-                        <span class="bar-text" th:text="${view.info.hp.overlay}">100 / 100</span>
+                <div class="info-hero-card">
+                    <div class="info-hero-profile">
+                        <div class="info-avatar-box">
+                            <span class="info-avatar-icon">👑</span>
+                        </div>
+                        <div class="info-hero-identity">
+                            <div class="info-name-row info-row">
+                                <span class="info-nickname" th:text="${view.info.nickname}">고니</span>
+                                <span class="info-level" th:text="'Lv. ' + ${view.info.currentLevel}">Lv. 1</span>
+                            </div>
+                            <div class="info-acc-row info-row">
+                                <span class="info-label">누적 레벨</span>
+                                <span class="info-acc-val" th:text="${view.info.accumulatedLevel}">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 재능 & 보유 AP 카드 -->
+                    <div class="info-talent-card">
+                        <div class="talent-header-row info-row">
+                            <div class="talent-badge-wrap">
+                                <span class="info-label">재능</span>
+                                <span class="talent-badge info-talent" th:text="${view.info.talentLabel}">근접전투</span>
+                            </div>
+                            <div class="ap-badge-wrap info-ap">
+                                <span class="info-label">보유 AP</span>
+                                <span class="ap-badge info-value" th:text="${view.info.abilityPoints}">0</span>
+                            </div>
+                        </div>
+                        <div class="talent-effect-row info-row info-effect">
+                            <span class="info-label">재능 효과</span>
+                            <span class="talent-effect-text info-value" th:text="${view.info.talentEffectSummary}">근접 데미지 +10%, STR +2/Lv, HP +5/Lv</span>
+                        </div>
                     </div>
                 </div>
-                <div class="stat">
-                    <span class="label">MP</span>
-                    <div class="bar mp">
-                        <span class="fill" th:style="'width:' + ${view.info.mp.percent} + '%'"></span>
-                        <span class="bar-text" th:text="${view.info.mp.overlay}">100 / 100</span>
-                    </div>
-                </div>
-                <div class="stat">
-                    <span class="label">스태미나</span>
-                    <div class="bar stamina">
-                        <span class="fill" th:style="'width:' + ${view.info.stamina.percent} + '%'"></span>
-                        <span class="bar-text" th:text="${view.info.stamina.overlay}">100 / 100</span>
+
+                <!-- 바이탈 게이지 섹션 (HP, MP, Stamina) -->
+                <div class="info-vitals-section">
+                    <h4 class="info-section-title">생명력 및 자원</h4>
+                    <div class="info-vitals-grid">
+                        <div class="vital-card stat-hp stat">
+                            <div class="vital-header">
+                                <span class="vital-label label"><span class="vital-icon">❤️</span> HP</span>
+                                <span class="vital-text bar-text" th:text="${view.info.hp.overlay}">100 / 100</span>
+                            </div>
+                            <div class="bar hp vital-bar">
+                                <span class="fill" th:style="'width:' + ${view.info.hp.percent} + '%'"></span>
+                            </div>
+                        </div>
+                        <div class="vital-card stat-mp stat">
+                            <div class="vital-header">
+                                <span class="vital-label label"><span class="vital-icon">💧</span> MP</span>
+                                <span class="vital-text bar-text" th:text="${view.info.mp.overlay}">100 / 100</span>
+                            </div>
+                            <div class="bar mp vital-bar">
+                                <span class="fill" th:style="'width:' + ${view.info.mp.percent} + '%'"></span>
+                            </div>
+                        </div>
+                        <div class="vital-card stat-stamina stat">
+                            <div class="vital-header">
+                                <span class="vital-label label"><span class="vital-icon">⚡</span> 스태미나</span>
+                                <span class="vital-text bar-text" th:text="${view.info.stamina.overlay}">100 / 100</span>
+                            </div>
+                            <div class="bar stamina vital-bar">
+                                <span class="fill" th:style="'width:' + ${view.info.stamina.percent} + '%'"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 중앙: 스탯 목록 (STR, DEX, INT, CRIT, DEF) -->
-            <div class="info-middle">
-                <div th:each="stat : ${view.info.stats}" class="info-stat-line">
-                    <span class="stat-label" th:text="${stat.label}">STR</span>
-                    <span class="stat-value" th:text="${stat.value}">10</span>
-                    <span class="stat-bonus" th:text="'(' + ${stat.bonus} + ')'"> (+0)</span>
+            <!-- 중앙: 5대 핵심 스탯 그리드 (STR, DEX, INT, CRIT, DEF) -->
+            <div class="info-middle info-stats-section">
+                <h4 class="info-section-title">전투 능력치</h4>
+                <div class="info-stats-grid">
+                    <div th:each="stat : ${view.info.stats}"
+                         class="info-stat-card info-stat-line stat-row"
+                         th:classappend="'stat-type-' + ${stat.label.toLowerCase()}">
+                        <div class="stat-card-left">
+                            <span class="stat-icon" th:if="${stat.label == 'STR'}">💪</span>
+                            <span class="stat-icon" th:if="${stat.label == 'DEX'}">🎯</span>
+                            <span class="stat-icon" th:if="${stat.label == 'INT'}">🔮</span>
+                            <span class="stat-icon" th:if="${stat.label == 'CRIT'}">💥</span>
+                            <span class="stat-icon" th:if="${stat.label == 'DEF'}">🛡️</span>
+                            <span class="stat-label" th:text="${stat.label}">STR</span>
+                        </div>
+                        <div class="stat-card-right">
+                            <span class="stat-value" th:text="${stat.value}">10</span>
+                            <span class="stat-bonus" th:text="'(' + ${stat.bonus} + ')'"> (+0)</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 하단: 환생 버튼 + 경과시간 -->
-            <div class="info-bottom">
+            <!-- 하단: 환생 관리 카드 -->
+            <div class="info-bottom info-rebirth-section">
                 <button class="rebirth-btn"
+                        th:classappend="${view.info.rebirthAvailable} ? 'ready' : ''"
                         th:attr="disabled=${view.info.rebirthAvailable} ? null : 'disabled'"
-                        onclick="rebirth()">환생하기</button>
-                <span class="rebirth-elapsed" th:text="${view.info.rebirthElapsedText}">환생 기록 없음</span>
+                        onclick="rebirth()">
+                    <span class="rebirth-icon">✨</span>
+                    <span>환생하기</span>
+                </button>
+                <div class="rebirth-info">
+                    <span class="rebirth-elapsed" th:text="${view.info.rebirthElapsedText}">환생 기록 없음</span>
+                </div>
             </div>
         </div>
     </div>

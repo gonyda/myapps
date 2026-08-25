@@ -7,54 +7,88 @@
     <!-- 탭 내비게이션 -->
     <div class="skill-tabs">
         <button class="skill-tab"
+                data-tab="all"
                 th:classappend="${skillList.activeTab() == 'all'} ? ' active' : ''"
-                onclick="loadSkillTab('all')">전체</button>
+                onclick="loadSkillTab('all')">
+            <span class="tab-icon">🌐</span>
+            <span class="tab-text">전체</span>
+        </button>
         <button class="skill-tab"
+                data-tab="melee"
                 th:classappend="${skillList.activeTab() == 'melee'} ? ' active' : ''"
-                onclick="loadSkillTab('melee')">근접전투</button>
+                onclick="loadSkillTab('melee')">
+            <span class="tab-icon">⚔️</span>
+            <span class="tab-text">근접전투</span>
+        </button>
         <button class="skill-tab"
+                data-tab="archery"
                 th:classappend="${skillList.activeTab() == 'archery'} ? ' active' : ''"
-                onclick="loadSkillTab('archery')">활</button>
+                onclick="loadSkillTab('archery')">
+            <span class="tab-icon">🏹</span>
+            <span class="tab-text">활</span>
+        </button>
         <button class="skill-tab"
+                data-tab="magic"
                 th:classappend="${skillList.activeTab() == 'magic'} ? ' active' : ''"
-                onclick="loadSkillTab('magic')">마법</button>
+                onclick="loadSkillTab('magic')">
+            <span class="tab-icon">🔮</span>
+            <span class="tab-text">마법</span>
+        </button>
         <button class="skill-tab"
+                data-tab="common"
                 th:classappend="${skillList.activeTab() == 'common'} ? ' active' : ''"
-                onclick="loadSkillTab('common')">공용</button>
+                onclick="loadSkillTab('common')">
+            <span class="tab-icon">🌟</span>
+            <span class="tab-text">공용</span>
+        </button>
     </div>
 
     <!-- 스킬 행 목록 -->
     <div class="skill-rows">
         <div th:each="row : ${skillList.rows()}" class="skill-row">
-            <span class="skill-name" th:text="${row.label()}">스매시</span>
-            <span class="skill-rank" th:text="${row.rankLabel()}">F</span>
-            <div class="skill-progress-bar">
-                <div class="skill-progress-fill"
-                     th:if="${!row.maxed()}"
-                     th:style="'width:' + ${row.progressPercent()} + '%'"></div>
-                <div class="skill-progress-fill maxed"
-                     th:if="${row.maxed()}"
-                     style="width:100%"></div>
-                <span class="skill-progress-text"
-                      th:if="${row.maxed()}"
-                      th:text="'MAX'">MAX</span>
-                <span class="skill-progress-text"
-                      th:if="${!row.maxed()}"
-                      th:text="${row.progressPercent()} + '%'">0%</span>
+            <div class="skill-main-info">
+                <span class="skill-icon">⚡</span>
+                <span class="skill-name" th:text="${row.label()}">스매시</span>
+                <span class="skill-rank"
+                      th:classappend="${row.maxed()} ? ' rank-master' : (' rank-' + ${row.rankLabel().toLowerCase()})"
+                      th:text="${row.rankLabel()}">F</span>
             </div>
-            <!-- 궁극기 쿨타임 뱃지 -->
-            <span class="badge-cooldown"
-                  th:if="${row.cooldownBadgeText() != null}"
-                  th:text="${row.cooldownBadgeText()}"
-                  th:classappend="${row.cooldownBadgeText() == '준비 완료'} ? ' ready' : ' waiting'">준비 완료</span>
-            <!-- 필드 스킬 사용 버튼 (힐링 등) -->
-            <button class="skill-use-btn"
-                    th:if="${row.fieldUsable()}"
-                    th:attr="onclick='useFieldSkill(\'' + ${row.id()} + '\')'">사용</button>
-            <button class="skill-rankup-btn"
-                    th:classappend="${row.maxed()} ? ' maxed' : (${row.progressPercent() == 100} ? ' ready' : '')"
-                    th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"
-                    th:text="${row.maxed()} ? 'MAX' : '승급'">승급</button>
+
+            <div class="skill-progress-container">
+                <div class="skill-progress-bar">
+                    <div class="skill-progress-fill"
+                         th:if="${!row.maxed()}"
+                         th:style="'width:' + ${row.progressPercent()} + '%'"></div>
+                    <div class="skill-progress-fill maxed"
+                         th:if="${row.maxed()}"
+                         style="width:100%"></div>
+                    <span class="skill-progress-text"
+                          th:if="${row.maxed()}"
+                          th:text="'MAX'">MAX</span>
+                    <span class="skill-progress-text"
+                          th:if="${!row.maxed()}"
+                          th:text="${row.progressPercent()} + '%'">0%</span>
+                </div>
+            </div>
+
+            <div class="skill-actions-wrap">
+                <!-- 궁극기 쿨타임 뱃지 -->
+                <span class="badge-cooldown"
+                      th:if="${row.cooldownBadgeText() != null}"
+                      th:text="${row.cooldownBadgeText()}"
+                      th:classappend="${row.cooldownBadgeText() == '준비 완료'} ? ' ready' : ' waiting'">준비 완료</span>
+
+                <!-- 필드 스킬 사용 버튼 (힐링 등) -->
+                <button class="skill-use-btn"
+                        th:if="${row.fieldUsable()}"
+                        th:attr="onclick='useFieldSkill(\'' + ${row.id()} + '\')'">사용</button>
+
+                <!-- 승급 버튼 -->
+                <button class="skill-rankup-btn"
+                        th:classappend="${row.maxed()} ? ' maxed' : (${row.progressPercent() == 100} ? ' ready' : '')"
+                        th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"
+                        th:text="${row.maxed()} ? 'MAX' : '승급'">승급</button>
+            </div>
         </div>
     </div>
 </div>
@@ -64,14 +98,19 @@
     <div class="rankup-modal-inner">
         <!-- 헤더 -->
         <div class="rankup-modal-header">
-            <span class="rankup-skill-name" th:text="${rankUp.label()}">윈드밀</span>
-            <span class="rankup-rank-transition" th:if="${!rankUp.maxed()}">
-                <span th:text="${rankUp.currentRankLabel()}">F</span>
-                →
-                <span class="rankup-next-rank" th:text="${rankUp.nextRankLabel()}">E</span>
-            </span>
-            <span class="rankup-rank-max" th:if="${rankUp.maxed()}">Master</span>
-            <button class="rankup-modal-close" onclick="closeRankUpModal()">✕</button>
+            <div class="rankup-title-wrap">
+                <span class="rankup-badge">SKILL RANK UP</span>
+                <div class="rankup-name-row">
+                    <span class="rankup-skill-name" th:text="${rankUp.label()}">윈드밀</span>
+                    <span class="rankup-rank-transition" th:if="${!rankUp.maxed()}">
+                        <span class="rankup-cur-rank" th:text="${rankUp.currentRankLabel()}">F</span>
+                        <span class="rankup-arrow">➔</span>
+                        <span class="rankup-next-rank" th:text="${rankUp.nextRankLabel()}">E</span>
+                    </span>
+                    <span class="rankup-rank-max" th:if="${rankUp.maxed()}">Master</span>
+                </div>
+            </div>
+            <button class="rankup-modal-close" onclick="closeRankUpModal()" aria-label="닫기">✕</button>
         </div>
 
         <!-- 본문 -->
@@ -89,7 +128,7 @@
                     <span class="rankup-stat-label" th:text="${rankUp.primaryStatLabel()}">보너스 데미지</span>
                     <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
                         <span th:text="${rankUp.currentValue()}">100</span>%
-                        →
+                        <span class="stat-arrow">→</span>
                         <span class="rankup-stat-next" th:text="${rankUp.nextValue()}">120</span>%
                     </span>
                     <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
@@ -99,7 +138,7 @@
                     <span class="rankup-stat-label">반격 배율</span>
                     <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
                         <span th:text="${rankUp.currentCounterValue()}">30</span>%
-                        →
+                        <span class="stat-arrow">→</span>
                         <span class="rankup-stat-next" th:text="${rankUp.nextCounterValue()}">35</span>%
                     </span>
                     <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
@@ -109,7 +148,7 @@
                     <span class="rankup-stat-label">크리티컬 보너스</span>
                     <span class="rankup-stat-value" th:if="${!rankUp.maxed()}">
                         +<span th:text="${rankUp.currentCritBonus() / 10.0}">0.0</span>%p
-                        →
+                        <span class="stat-arrow">→</span>
                         <span class="rankup-stat-next">+<span th:text="${rankUp.nextCritBonus() / 10.0}">1.0</span>%p</span>
                     </span>
                     <span class="rankup-stat-value" th:if="${rankUp.maxed()}"
@@ -124,7 +163,7 @@
                     <span class="rankup-stat-label" th:text="${rankUp.resourceKindLabel()}">스태미나</span>
                     <span class="rankup-stat-value" th:if="${!rankUp.maxed() && rankUp.nextResourceCost() != null && rankUp.nextResourceCost() != rankUp.resourceCost()}">
                         <span th:text="${rankUp.resourceCost()}">5</span>
-                        →
+                        <span class="stat-arrow">→</span>
                         <span class="rankup-stat-next" th:text="${rankUp.nextResourceCost()}">4</span>
                     </span>
                     <span class="rankup-stat-value" th:if="${rankUp.maxed() || rankUp.nextResourceCost() == null || rankUp.nextResourceCost() == rankUp.resourceCost()}"
@@ -137,7 +176,7 @@
                 <h4 class="rankup-section-title">승급 영구 보너스</h4>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label">보너스 스탯</span>
-                    <span class="rankup-stat-value" th:text="${rankUp.rankupBonusText()}">HP +5, DEF +1</span>
+                    <span class="rankup-stat-value bonus-highlight" th:text="${rankUp.rankupBonusText()}">HP +5, DEF +1</span>
                 </div>
             </div>
 
@@ -163,7 +202,7 @@
                 <h4 class="rankup-section-title">승급 비용</h4>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label">필요 AP</span>
-                    <span class="rankup-stat-value" th:text="${rankUp.apCost()}">1</span>
+                    <span class="rankup-stat-value cost-value" th:text="${rankUp.apCost()}">1</span>
                 </div>
                 <div class="rankup-stat-row">
                     <span class="rankup-stat-label">보유 AP</span>
@@ -180,7 +219,10 @@
             <button class="rankup-confirm-btn"
                     th:classappend="${rankUp.rankable()} ? ' rankable' : ' disabled'"
                     th:disabled="${!rankUp.rankable()}"
-                    th:attr="onclick=${rankUp.rankable()} ? 'confirmRankUp(\'' + ${rankUp.id()} + '\')' : null">승급</button>
+                    th:attr="onclick=${rankUp.rankable()} ? 'confirmRankUp(\'' + ${rankUp.id()} + '\')' : null">
+                <span class="btn-icon" th:if="${rankUp.rankable()}">✨</span>
+                <span>승급</span>
+            </button>
         </div>
     </div>
 </div>

@@ -5,7 +5,10 @@
 <div class="overlay inventory-overlay" id="inventoryOverlay" th:fragment="inventory-popup">
     <div class="panel inventory-panel">
         <header class="panel-header">
-            <h3>인벤토리</h3>
+            <div class="panel-header-title">
+                <span class="panel-header-icon">🎒</span>
+                <h3>소지품 가방</h3>
+            </div>
             <div class="inventory-sort-controls">
                 <button class="sort-btn active" data-sort="default" onclick="sortInventory('default')">획득순</button>
                 <button class="sort-btn" data-sort="name" onclick="sortInventory('name')">이름순</button>
@@ -23,7 +26,12 @@
 <div th:fragment="inventory-content" class="inventory-content-wrap">
     <!-- 상단 고정 보유 골드 영역 -->
     <div class="inventory-gold-bar" th:if="${inventory != null}">
-        <span class="gold-display">💰 보유 골드: <strong class="gold-amount" th:text="${inventory.gold}">0</strong> <span class="gold-unit">G</span></span>
+        <span class="gold-display">
+            <span class="gold-icon">💰</span>
+            <span class="gold-label">보유 골드:</span>
+            <strong class="gold-amount" th:text="${inventory.gold}">0</strong>
+            <span class="gold-unit">G</span>
+        </span>
     </div>
 
     <!-- 스크롤 가능한 아이템 목록 영역 -->
@@ -31,34 +39,64 @@
         <div class="inventory-list" id="inventoryList" th:if="${inventory != null and !inventory.items.isEmpty()}">
             <div class="inventory-item" th:each="item : ${inventory.items}"
                  th:attr="data-owned-id=${item.ownedItemId},data-name=${item.name},data-type=${item.type.name()}"
-                 th:data-detail="${#strings.listJoin(item.detailLines, '||')}">
-                <div class="item-info">
-                    <span class="item-name" th:text="${item.name}">아이템명</span>
-                    <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
-                    <button class="item-detail-btn" onclick="openItemDetail(this.parentElement.parentElement)"
-                            aria-label="상세보기">🔍</button>
+                 th:data-detail="${#strings.listJoin(item.detailLines, '||')}"
+                 th:classappend="${item.equipped} ? ' item-is-equipped' : ''">
+                <div class="item-card-top">
+                    <div class="item-info">
+                        <span class="item-icon" th:if="${item.type.name() == 'WEAPON'}">🗡️</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'ARMOR'}">🛡️</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'HELMET'}">🪖</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'GLOVES'}">🧤</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'BOOTS'}">👢</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'POTION'}">🧪</span>
+                        <span class="item-icon" th:if="${item.type.name() == 'MISC'}">📦</span>
+                        <span class="item-name" th:text="${item.name}">아이템명</span>
+                        <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+                    </div>
+                    <button class="item-detail-btn" onclick="openItemDetail(this.closest('.inventory-item'))"
+                            aria-label="상세보기" title="아이템 상세정보">🔍</button>
                 </div>
+
                 <div class="item-meta">
                     <span class="item-type" th:text="${item.typeLabel}">타입</span>
                     <span class="item-quantity" th:if="${item.quantity > 1}" th:text="'×' + ${item.quantity}">×1</span>
-                    <span class="item-durability" th:if="${item.currentDurability != null}"
-                          th:text="'내구도 ' + ${#numbers.formatInteger(T(java.lang.Math).ceil(item.currentDurability), 1)} + '/' + ${item.maxDurability}">
-                    </span>
+
+                    <div class="item-durability-wrap" th:if="${item.currentDurability != null}">
+                        <div class="item-dura-bar">
+                            <div class="item-dura-fill"
+                                 th:style="'width:' + ${item.currentDurability / item.maxDurability * 100} + '%'"
+                                 th:classappend="${item.currentDurability <= 3} ? ' dura-danger' : (${item.currentDurability <= 8} ? ' dura-warning' : '')"></div>
+                        </div>
+                        <span class="item-durability"
+                              th:text="'내구도 ' + ${#numbers.formatInteger(T(java.lang.Math).ceil(item.currentDurability), 1)} + '/' + ${item.maxDurability}">
+                        </span>
+                    </div>
                 </div>
+
                 <div class="item-actions">
                     <button th:if="${item.usable}" class="item-action-btn use-btn"
                             th:attr="data-id=${item.ownedItemId}"
-                            onclick="usePotion(this.dataset.id)">사용</button>
+                            onclick="usePotion(this.dataset.id)">
+                        <span class="btn-icon">🧪</span>
+                        <span>사용</span>
+                    </button>
                     <button th:if="${item.equippable and !item.equipped}" class="item-action-btn equip-btn"
                             th:attr="data-id=${item.ownedItemId}"
-                            onclick="equipItem(this.dataset.id)">착용</button>
+                            onclick="equipItem(this.dataset.id)">
+                        <span class="btn-icon">⚔️</span>
+                        <span>착용</span>
+                    </button>
                     <button th:if="${item.equippable and item.equipped}" class="item-action-btn unequip-btn"
                             th:attr="data-id=${item.ownedItemId}"
-                            onclick="unequipItem(this.dataset.id)">해제</button>
+                            onclick="unequipItem(this.dataset.id)">
+                        <span class="btn-icon">↩️</span>
+                        <span>해제</span>
+                    </button>
                 </div>
             </div>
         </div>
         <div class="inventory-empty" th:if="${inventory == null or inventory.items.isEmpty()}">
+            <span class="empty-icon">📭</span>
             <p>보유 아이템이 없습니다</p>
         </div>
     </div>

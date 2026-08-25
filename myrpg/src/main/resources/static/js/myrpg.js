@@ -884,7 +884,15 @@ function openItemDetail(element) {
         var lines = detailData.split('||');
         for (var i = 0; i < lines.length; i++) {
             var p = document.createElement('p');
-            p.textContent = lines[i];
+            var line = lines[i];
+            p.textContent = line;
+            if (line.indexOf(':') !== -1) {
+                p.classList.add('detail-stat-line');
+            } else if (line.indexOf('“') === 0 || line.indexOf('"') === 0 || line.indexOf('\'') === 0 || line.indexOf('※') === 0) {
+                p.classList.add('detail-desc-line');
+            } else {
+                p.classList.add('detail-info-line');
+            }
             body.appendChild(p);
         }
     }
@@ -1248,14 +1256,14 @@ function updateTopBarVitals(hpCurrent, maxHp, mpCurrent, maxMp) {
 function getCurrentSkillTab() {
     var activeTab = document.querySelector('.skill-tab.active');
     if (!activeTab) return 'all';
+    var dataTab = activeTab.getAttribute('data-tab');
+    if (dataTab) return dataTab;
     var text = activeTab.textContent.trim();
-    switch (text) {
-        case '근접전투': return 'melee';
-        case '활': return 'archery';
-        case '마법': return 'magic';
-        case '공용': return 'common';
-        default: return 'all';
-    }
+    if (text.indexOf('근접전투') !== -1) return 'melee';
+    if (text.indexOf('활') !== -1) return 'archery';
+    if (text.indexOf('마법') !== -1) return 'magic';
+    if (text.indexOf('공용') !== -1) return 'common';
+    return 'all';
 }
 
 // ===== 퀵 로그인: 원클릭 ID/PW 입력 및 폼 자동 제출 (015) =====

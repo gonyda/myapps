@@ -5,12 +5,18 @@
 <div class="overlay item-detail-overlay" id="itemDetailOverlay" th:fragment="item-detail">
     <div class="item-detail-modal">
         <header class="item-detail-header">
-            <h4 id="itemDetailTitle">아이템 상세</h4>
-            <button class="panel-close" onclick="closeItemDetail()" aria-label="닫기">✕</button>
+            <div class="item-detail-title-wrap">
+                <span class="item-detail-badge">ITEM INFO</span>
+                <h4 id="itemDetailTitle">아이템 상세</h4>
+            </div>
+            <button class="item-detail-close" onclick="closeItemDetail()" aria-label="닫기">✕</button>
         </header>
         <div class="item-detail-body" id="itemDetailBody">
             <!-- JS가 data-detail 속성에서 읽어 렌더 -->
         </div>
+        <footer class="item-detail-footer">
+            <button type="button" class="btn-detail-close" onclick="closeItemDetail()">확인</button>
+        </footer>
     </div>
 </div>
 </body>
