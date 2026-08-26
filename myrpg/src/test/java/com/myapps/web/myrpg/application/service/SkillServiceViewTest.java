@@ -6,10 +6,12 @@ import static org.mockito.Mockito.when;
 import com.myapps.web.myrpg.application.dto.SkillListView;
 import com.myapps.web.myrpg.application.dto.SkillRankUpView;
 import com.myapps.web.myrpg.application.dto.SkillRowView;
+import com.myapps.web.myrpg.domain.model.BonusTarget;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.DefenseSkill;
+import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
@@ -38,6 +40,7 @@ class SkillServiceViewTest {
     private static final String WINDMILL_ID = "windmill";
     private static final String DEFENSE_ID = "defense";
     private static final String COUNTER_ATTACK_ID = "counter_attack";
+    private static final String MEDITATION_ID = "meditation";
 
     @Mock private CharacterSkillRepository characterSkillRepository;
 
@@ -124,10 +127,11 @@ class SkillServiceViewTest {
     }
 
     @Test
-    void should_buildListView_with_master_skill_showing_100_percent_and_maxed() {
+    void should_buildListView_with_active_skill_rankable_false_when_usage_fulfilled_but_ap_zero() {
+        // F→E: usage 5, kill 1, but AP 0 (needed: 1)
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
-        final CharacterProgress progress = createProgressWithAp(10);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
         when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
@@ -136,9 +140,42 @@ class SkillServiceViewTest {
         final SkillListView view = skillService.buildListView(CHARACTER_ID, "all");
 
         final SkillRowView row = view.rows().get(0);
-        assertThat(row.maxed()).isTrue();
-        assertThat(row.rankable()).isFalse();
         assertThat(row.progressPercent()).isEqualTo(100);
+        assertThat(row.rankable()).isFalse();
+    }
+
+    @Test
+    void should_buildListView_with_passive_skill_rankable_false_when_ap_insufficient() {
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0, 0);
+        final CharacterProgress progress = createProgressWithAp(0);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(MEDITATION_ID)).thenReturn(Optional.of(createMeditation()));
+
+        final SkillListView view = skillService.buildListView(CHARACTER_ID, "common");
+
+        final SkillRowView row = view.rows().get(0);
+        assertThat(row.progressPercent()).isEqualTo(100);
+        assertThat(row.rankable()).isFalse();
+    }
+
+    @Test
+    void should_buildListView_with_passive_skill_rankable_true_when_ap_sufficient() {
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0, 0);
+        final CharacterProgress progress = createProgressWithAp(1);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(MEDITATION_ID)).thenReturn(Optional.of(createMeditation()));
+
+        final SkillListView view = skillService.buildListView(CHARACTER_ID, "common");
+
+        final SkillRowView row = view.rows().get(0);
+        assertThat(row.progressPercent()).isEqualTo(100);
+        assertThat(row.rankable()).isTrue();
     }
 
     @Test
@@ -350,5 +387,16 @@ class SkillServiceViewTest {
                 "반격 공격",
                 Map.of(),
                 Map.copyOf(critBonusByRank));
+    }
+
+    private PassiveSkill createMeditation() {
+        return new PassiveSkill(
+                MEDITATION_ID,
+                "메디테이션",
+                SkillType.PASSIVE,
+                SkillTalent.COMMON,
+                0,
+                Map.of(BonusTarget.MP, 30, BonusTarget.MP_REGEN, 5),
+                "마나 회복");
     }
 }

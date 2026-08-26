@@ -85,7 +85,7 @@
 
                 <!-- 승급 버튼 -->
                 <button class="skill-rankup-btn"
-                        th:classappend="${row.maxed()} ? ' maxed' : (${row.progressPercent() == 100} ? ' ready' : '')"
+                        th:classappend="${row.maxed()} ? ' maxed' : (${row.rankable()} ? ' ready' : '')"
                         th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"
                         th:text="${row.maxed()} ? 'MAX' : '승급'">승급</button>
             </div>
