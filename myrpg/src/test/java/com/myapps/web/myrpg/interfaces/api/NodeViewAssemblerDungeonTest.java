@@ -269,7 +269,7 @@ class NodeViewAssemblerDungeonTest {
     }
 
     @Test
-    @DisplayName("필드의 던전 입구 노드(alby-entrance)에서는 '알비 던전 입장' 상호작용 버튼이 제공된다")
+    @DisplayName("필드의 던전 입구 노드(alby-entrance)에서는 '던전 입장' 상호작용 버튼이 제공된다")
     void should_assembleFieldDungeonEntrance_with_enterButton() {
         // given
         character.updateCurrentNodeId("alby-entrance");
@@ -303,7 +303,7 @@ class NodeViewAssemblerDungeonTest {
         assertThat(view).isNotNull();
         assertThat(view.interactions()).hasSize(1);
         assertThat(view.interactions().get(0).actionType()).isEqualTo("dungeon-enter");
-        assertThat(view.interactions().get(0).name()).contains("알비 던전 입장");
+        assertThat(view.interactions().get(0).name()).contains("던전 입장");
     }
 
     @Test

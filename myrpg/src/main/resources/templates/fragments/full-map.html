@@ -2,20 +2,25 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div class="overlay map-overlay" id="mapOverlay" th:fragment="full-map">
-    <div class="map-popup">
-        <header class="map-header">
-            <h3>전체 지도</h3>
+    <div class="panel map-panel">
+        <header class="panel-header">
+            <div class="panel-header-title">
+                <span class="panel-header-icon">🗺️</span>
+                <h3>전체 지도</h3>
+            </div>
             <button class="panel-close" onclick="closeMap()" aria-label="닫기">✕</button>
         </header>
         <div class="map-legend">
-            <span class="legend-item"><i class="dot type-town"></i>마을</span>
-            <span class="legend-item"><i class="dot type-field"></i>자유필드</span>
-            <span class="legend-item"><i class="dot type-dungeon"></i>던전</span>
+            <div class="legend-items">
+                <span class="legend-item"><i class="dot type-town"></i>마을</span>
+                <span class="legend-item"><i class="dot type-field"></i>자유필드</span>
+                <span class="legend-item"><i class="dot type-dungeon"></i>던전</span>
+            </div>
         </div>
         <div class="map-body" id="mapViewport">
             <div class="map-canvas" id="mapCanvas">
                 <div class="map-grid" id="mapGrid"
-                     th:style="'grid-template-columns: repeat(' + ${view.fullMap.columns} + ', 52px); grid-template-rows: repeat(' + ${view.fullMap.rows} + ', 52px)'">
+                     th:style="'grid-template-columns: repeat(' + ${view.fullMap.columns} + ', 56px); grid-template-rows: repeat(' + ${view.fullMap.rows} + ', 56px)'">
                     <div th:each="cell : ${view.fullMap.cells}"
                          th:style="'grid-column:' + ${cell.gridColumn} + '; grid-row:' + ${cell.gridRow}"
                          th:classappend="'node type-' + ${cell.type}
@@ -27,8 +32,9 @@
                 </div>
             </div>
             <div class="zoom-controls">
-                <button onclick="mapZoom(1.25)" aria-label="확대">+</button>
-                <button onclick="mapZoom(0.8)" aria-label="축소">−</button>
+                <button class="zoom-btn" onclick="mapZoom(1.25)" aria-label="확대" title="확대">🔍+</button>
+                <button class="zoom-btn" onclick="mapZoom(0.8)" aria-label="축소" title="축소">🔍−</button>
+                <button class="zoom-btn reset-btn" onclick="resetMapView()" aria-label="내 위치" title="위치 초기화">🎯</button>
             </div>
         </div>
     </div>

@@ -1,52 +1,53 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<body>
-<header class="top-bar" th:fragment="top-bar">
-    <div class="top-row">
-        <span class="nickname" th:text="${view.topBar.nickname}">고니</span>
-        <span class="level" th:text="'Lv. ' + ${view.topBar.level}">Lv. 1</span>
-        <div class="exp-wrap">
-            <span class="exp-label">EXP</span>
-            <div class="bar exp" style="flex:1">
-                <span class="fill" th:style="'width:' + ${view.topBar.exp.percent} + '%'"></span>
-                <span class="bar-text" th:text="${view.topBar.exp.overlay}">0 / 100</span>
-            </div>
-        </div>
-        <a th:href="@{/logout}" class="btn-logout" id="btnLogout" title="로그아웃">
-            <span class="logout-icon">🚪</span>
-            <span class="logout-text">로그아웃</span>
-        </a>
-    </div>
-    <div class="stat-bars">
-        <div class="stat stat-hp">
-            <div class="stat-header">
-                <span class="label"><span class="vital-icon">❤️</span> HP</span>
-            </div>
-            <div class="bar hp">
-                <span class="fill" th:style="'width:' + ${view.topBar.hp.percent} + '%'"></span>
-                <span class="bar-text" th:text="${view.topBar.hp.overlay}">100 / 100</span>
-            </div>
-        </div>
-        <div class="stat stat-mp">
-            <div class="stat-header">
-                <span class="label"><span class="vital-icon">💧</span> MP</span>
-            </div>
-            <div class="bar mp">
-                <span class="fill" th:style="'width:' + ${view.topBar.mp.percent} + '%'"></span>
-                <span class="bar-text" th:text="${view.topBar.mp.overlay}">100 / 100</span>
-            </div>
-        </div>
-        <div class="stat stat-stamina">
-            <div class="stat-header">
-                <span class="label"><span class="vital-icon">⚡</span> SP</span>
-            </div>
-            <div class="bar stamina">
-                <span class="fill" th:style="'width:' + ${view.topBar.stamina.percent} + '%'"></span>
-                <span class="bar-text" th:text="${view.topBar.stamina.overlay}">100 / 100</span>
-            </div>
-        </div>
-    </div>
-</header>
-</body>
-</html>
 
+<body>
+    <header class="top-bar" th:fragment="top-bar">
+        <div class="top-row">
+            <span class="nickname" th:text="${view.topBar.nickname}">고니</span>
+            <span class="level" th:text="'Lv. ' + ${view.topBar.level}">Lv. 1</span>
+            <div class="exp-wrap">
+                <span class="exp-label">EXP</span>
+                <div class="bar exp" style="flex:1">
+                    <span class="fill" th:style="'width:' + ${view.topBar.exp.percent} + '%'"></span>
+                    <span class="bar-text" th:text="${view.topBar.exp.overlay}">0 / 100</span>
+                </div>
+            </div>
+            <a th:href="@{/logout}" class="btn-logout" id="btnLogout" title="로그아웃">
+                <span class="logout-icon">🚪</span>
+                <span class="logout-text">로그아웃</span>
+            </a>
+        </div>
+        <div class="stat-bars">
+            <div class="stat stat-hp">
+                <div class="stat-header">
+                    <span class="label"><span class="vital-icon">❤️</span> HP</span>
+                </div>
+                <div class="bar hp">
+                    <span class="fill" th:style="'width:' + ${view.topBar.hp.percent} + '%'"></span>
+                    <span class="bar-text" th:text="${view.topBar.hp.overlay}">100 / 100</span>
+                </div>
+            </div>
+            <div class="stat stat-mp">
+                <div class="stat-header">
+                    <span class="label"><span class="vital-icon">💧</span> MP</span>
+                </div>
+                <div class="bar mp">
+                    <span class="fill" th:style="'width:' + ${view.topBar.mp.percent} + '%'"></span>
+                    <span class="bar-text" th:text="${view.topBar.mp.overlay}">100 / 100</span>
+                </div>
+            </div>
+            <div class="stat stat-stamina">
+                <div class="stat-header">
+                    <span class="label"><span class="vital-icon">⚡</span> 스태미나</span>
+                </div>
+                <div class="bar stamina">
+                    <span class="fill" th:style="'width:' + ${view.topBar.stamina.percent} + '%'"></span>
+                    <span class="bar-text" th:text="${view.topBar.stamina.overlay}">100 / 100</span>
+                </div>
+            </div>
+        </div>
+    </header>
+</body>
+
+</html>

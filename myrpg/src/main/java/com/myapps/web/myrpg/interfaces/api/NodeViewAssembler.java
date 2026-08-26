@@ -174,11 +174,10 @@ public class NodeViewAssembler {
                 new ArrayList<>(playScreenViewHelper.buildInteractions(npcsOnNode, monstersOnNode));
 
         if (currentNode != null && currentNode.dungeonId() != null) {
-            final String dungeonName = "alby".equals(currentNode.dungeonId()) ? "알비 던전" : "던전";
             interactions.add(
                     new InteractionItem(
                             currentNode.dungeonId(),
-                            dungeonName + " 입장 ⚔️",
+                            "던전 입장 ⚔️",
                             false,
                             "dungeon-enter",
                             currentNode.dungeonId()));

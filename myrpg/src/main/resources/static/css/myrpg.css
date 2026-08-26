@@ -366,15 +366,13 @@
             letter-spacing: -0.2px;
         }
 
-        /* [Tier 2] 메인 인터랙션 스테이지 카드 (고정 110px) */
+        /* [Tier 2] 메인 인터랙션 스테이지 카드 */
         .interaction-stage {
             background: linear-gradient(165deg, rgba(28, 34, 48, 0.95), rgba(14, 17, 26, 0.98));
             border: 1px solid rgba(212, 175, 55, 0.35);
             border-radius: var(--radius);
-            padding: 8px 12px;
-            height: 110px;
-            min-height: 110px;
-            max-height: 110px;
+            padding: 8px 12px 10px 12px;
+            min-height: 106px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -443,13 +441,13 @@
             border: 1px solid rgba(239, 68, 68, 0.4);
         }
 
-        /* 스테이지 대사/가이드 2줄 고정 슬롯 */
+        /* 스테이지 대사/가이드 2줄 슬롯 */
         .stage-dialogue {
-            height: 38px;
+            min-height: 36px;
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            margin: 2px 0;
+            margin: 2px 0 4px 0;
         }
 
         .stage-dialogue p {
@@ -469,11 +467,13 @@
             font-style: normal;
         }
 
-        /* 스테이지 액션 바 (버튼 영역 고정 32px) */
+        /* 스테이지 액션 바 */
         .stage-actions {
-            height: 32px;
+            height: 28px;
+            min-height: 28px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             flex-shrink: 0;
         }
@@ -488,8 +488,8 @@
         }
 
         .stage-actions button {
-            height: 30px;
-            min-height: 30px;
+            height: 28px;
+            min-height: 28px;
             padding: 0 12px;
             border-radius: 6px;
             font-size: var(--fs-xs);
@@ -536,9 +536,14 @@
             color: #ffffff;
             border: 1px solid #f87171;
             box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-            max-width: none;
-            width: 100%;
-            font-size: var(--fs-sm);
+            height: 28px;
+            min-height: 28px;
+            padding: 0 16px;
+            font-size: clamp(11px, 2.8vw, 12px);
+            font-weight: 800;
+            max-width: 150px;
+            width: auto;
+            margin: 0 auto;
         }
 
         .stage-actions button.btn-danger:active {
@@ -546,39 +551,34 @@
             filter: brightness(0.9);
         }
 
-        /* [Tier 3] 상호작용 칩 목록 (고정 44px) */
+        /* [Tier 3] 상호작용 그리드 (한 줄당 4개 배치, 최소 2행 74px 고정 슬롯) */
         .interactions {
-            height: 44px;
-            min-height: 44px;
-            max-height: 44px;
-            display: flex;
-            align-items: center;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 34px;
+            align-content: start;
             gap: 6px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            flex-shrink: 0;
+            min-height: 74px;
             padding: 2px 0;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .interactions::-webkit-scrollbar {
-            display: none;
+            width: 100%;
+            flex-shrink: 0;
         }
 
         .interactions button {
-            height: 36px;
-            min-height: 36px;
-            padding: 0 12px;
-            border-radius: 18px;
-            font-size: var(--fs-xs);
+            height: 34px;
+            min-height: 34px;
+            padding: 0 4px;
+            border-radius: 8px;
+            font-size: clamp(10px, 2.7vw, 11.5px);
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
             white-space: nowrap;
-            flex-shrink: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
             transition: all 0.15s ease;
             -webkit-tap-highlight-color: transparent;
         }
@@ -590,54 +590,89 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
         }
 
+        .interactions button.npc:hover,
+        .interactions button.npc:active {
+            background: rgba(45, 62, 90, 0.95);
+            border-color: rgba(147, 197, 253, 0.5);
+            transform: translateY(-1px);
+        }
+
         .interactions button.npc.active-target {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(184, 134, 11, 0.4));
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.35), rgba(184, 134, 11, 0.45));
             color: #ffd700;
             border-color: #ffd700;
-            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.45), inset 0 0 6px rgba(212, 175, 55, 0.2);
         }
 
         .interactions button.monster-btn {
             background: rgba(45, 20, 24, 0.85);
             color: #fca5a5;
             border: 1px solid rgba(239, 68, 68, 0.35);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .interactions button.monster-btn:hover,
+        .interactions button.monster-btn:active {
+            background: rgba(65, 25, 30, 0.95);
+            border-color: rgba(239, 68, 68, 0.5);
+            transform: translateY(-1px);
         }
 
         .interactions button.monster-btn.active-target {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(185, 28, 28, 0.45));
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(185, 28, 28, 0.5));
             color: #fee2e2;
             border-color: #ef4444;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.45), inset 0 0 6px rgba(239, 68, 68, 0.2);
         }
 
         .interactions button.dungeon-btn {
             background: rgba(30, 27, 75, 0.85);
             color: #c7d2fe;
             border: 1px solid rgba(129, 140, 248, 0.4);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .interactions button.dungeon-btn:hover,
+        .interactions button.dungeon-btn:active {
+            background: rgba(45, 40, 110, 0.95);
+            border-color: rgba(129, 140, 248, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .interactions button.dungeon-btn.active-target {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.4), rgba(79, 70, 229, 0.5));
+            color: #ffffff;
+            border-color: #818cf8;
+            box-shadow: 0 0 8px rgba(129, 140, 248, 0.45);
         }
 
         .interactions-empty {
+            grid-column: 1 / -1;
+            grid-row: 1 / span 2;
             color: #64748b;
             font-size: var(--fs-xs);
             display: flex;
             align-items: center;
-            padding-left: 4px;
+            justify-content: center;
+            min-height: 74px;
+            height: 100%;
         }
 
         /* [Tier 4] 미니맵 */
         .minimap {
-            background: linear-gradient(165deg, rgba(24, 30, 42, 0.95), rgba(12, 15, 22, 0.98));
-            border: 1px solid rgba(212, 175, 55, 0.25);
+            background: linear-gradient(165deg, rgba(20, 26, 38, 0.96), rgba(10, 14, 20, 0.99));
+            border: 1px solid rgba(212, 175, 55, 0.3);
             border-radius: var(--radius);
             padding: var(--pad);
             cursor: pointer;
             flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(6px);
         }
 
         .minimap .minimap-title {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
             gap: var(--gap);
             margin-bottom: var(--gap);
@@ -645,8 +680,9 @@
 
         .minimap .map-name {
             font-size: var(--fs-sm);
-            font-weight: bold;
-            color: #eee;
+            font-weight: 800;
+            color: #ffd700;
+            text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -654,13 +690,17 @@
 
         .minimap .map-hint {
             font-size: var(--fs-xs);
-            color: #888;
+            color: #94a3b8;
             white-space: nowrap;
             flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /*
-         * 미니맵: 9x4 그리드 위에 노드를 '있는 곳에만' 배치.
+         * 미니맵: 9x5 그리드 위에 노드를 '있는 곳에만' 배치.
          * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비워둠).
          * 연결선은 노드의 link-* 클래스로 이웃 방향에만 그림.
          */
@@ -681,13 +721,15 @@
             z-index: 1;
         }
 
-        /* 노드 사이 연결선 (이웃 노드 중심까지 이어짐) */
+        /* 노드 사이 연결선 (이웃 노드 중심까지 이어지는 앤틱 골드 빛의 경로) */
         .minimap .node[class*="link-"]::before,
         .minimap .node[class*="link-"]::after {
             content: "";
             position: absolute;
-            background: rgba(255, 255, 255, 0.45);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.75), rgba(255, 215, 0, 0.9));
+            box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
             z-index: -1;
+            border-radius: 1px;
         }
 
         /* 가로선: 오른쪽 이웃으로 */
@@ -709,64 +751,75 @@
         }
 
         .node {
-            border-radius: var(--radius);
-            background: #555;
-            /* 미지정/미탐색 기본색 */
+            border-radius: 6px;
+            background: #334155;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
         }
 
         /*
-         * 맵 유형별 색상 (확장 가능).
-         * 새 유형 추가 시 .type-{name} 규칙만 늘리면 됨.
+         * 맵 유형별 색상 (다크 판타지 쥬얼/타일 스타일).
          */
         .node.type-town,
         .dot.type-town,
         .node.type-dungeon-start,
         .dot.type-dungeon-start {
-            background: #6b93bf;
+            background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+            border: 1px solid #60a5fa;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 0 6px rgba(59, 130, 246, 0.3);
         }
 
-        /* 마을 / 던전 시작방 (연파랑) */
+        /* 자유필드 (에메랄드 포레스트) */
         .node.type-field,
         .dot.type-field {
-            background: #7bb07b;
+            background: linear-gradient(145deg, #16a34a, #15803d);
+            border: 1px solid #4ade80;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 6px rgba(34, 197, 94, 0.25);
         }
 
-        /* 자유필드 (연초록) */
+        /* 던전 / 던전 보스방 (크림슨 블러드스톤) */
         .node.type-dungeon,
         .dot.type-dungeon,
         .node.type-dungeon-boss,
         .dot.type-dungeon-boss {
-            background: #c08585;
+            background: linear-gradient(145deg, #dc2626, #991b1b);
+            border: 1px solid #f87171;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 6px rgba(239, 68, 68, 0.3);
         }
 
-        /* 던전 / 던전 보스방 (연빨강) */
+        /* 던전 클리어 방 (미스틱 실버) */
         .node.type-dungeon-cleared,
         .dot.type-dungeon-cleared {
-            background: #e2e8f0;
+            background: linear-gradient(145deg, #cbd5e1, #64748b);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.5);
         }
 
-        /* 던전 클리어 방 (밝은 실버/아이보리) */
+        /* 던전 미클리어 방 (옵시디언 포그) */
         .node.type-dungeon-uncleared,
         .dot.type-dungeon-uncleared {
-            background: #475569;
+            background: linear-gradient(145deg, #334155, #1e293b);
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
-        /* 던전 미클리어 방 (슬레이트 회색) */
-
-        /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
+        /* 현재 위치: 황금빛 마법 비콘 강조 */
         .node.current {
-            box-shadow: 0 0 0 2px #f0c419, 0 0 8px rgba(240, 196, 25, 0.8);
-            z-index: 2;
-            animation: node-current-pulse 1.5s infinite alternate ease-in-out;
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 0 2px #ffd700, 0 0 10px rgba(255, 215, 0, 0.9), inset 0 0 6px rgba(255, 255, 255, 0.6) !important;
+            z-index: 5;
+            animation: node-current-pulse 1.4s infinite alternate ease-in-out;
         }
 
         @keyframes node-current-pulse {
             0% {
-                box-shadow: 0 0 0 2px #f0c419, 0 0 6px rgba(240, 196, 25, 0.6);
+                box-shadow: 0 0 0 2px #ffd700, 0 0 8px rgba(255, 215, 0, 0.7), inset 0 0 4px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
             }
 
             100% {
-                box-shadow: 0 0 0 2.5px #fde047, 0 0 12px rgba(253, 224, 71, 0.9);
+                box-shadow: 0 0 0 2.5px #fff07c, 0 0 14px rgba(255, 215, 0, 1), inset 0 0 8px rgba(255, 255, 255, 0.8);
+                transform: scale(1.04);
             }
         }
 
@@ -1055,56 +1108,57 @@
             padding: calc(var(--pad) * 3) 0;
         }
 
-        /* 전체 맵 팝업 (가운데 영역에 위치하는 모달) */
-        .map-popup {
-            width: 88%;
-            max-width: 400px;
-            height: 70dvh;
-            background: #2a2a2a;
-            border: 1px solid #555;
+        /* 전체 맵 팝업 (공통 패널 모달 규격) */
+        .map-panel {
+            width: 92%;
+            max-width: 440px;
+            height: 75dvh;
+            max-height: 560px;
+            background: linear-gradient(165deg, rgba(24, 30, 44, 0.98), rgba(12, 16, 24, 0.99));
+            border: 1px solid rgba(212, 175, 55, 0.4);
             border-radius: var(--radius);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
         }
 
-        .map-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--pad);
-            border-bottom: 1px solid #444;
-            flex-shrink: 0;
-        }
-
-        .map-header h3 {
-            color: #fff;
-            font-size: var(--fs-lg);
-        }
-
-        /* 유형 범례 */
+        /* 유형 범례 바 */
         .map-legend {
             display: flex;
-            gap: var(--pad);
-            padding: calc(var(--pad) * 0.5) var(--pad);
-            border-bottom: 1px solid #444;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 14px;
+            background: rgba(15, 23, 42, 0.85);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
             flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .map-legend .legend-items {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .map-legend .legend-item {
             display: flex;
             align-items: center;
-            gap: calc(var(--gap) * 0.4);
+            gap: 5px;
             font-size: var(--fs-xs);
-            color: #bbb;
+            font-weight: 600;
+            color: #cbd5e1;
         }
 
         .map-legend .dot {
-            width: 12px;
-            height: 12px;
+            width: 11px;
+            height: 11px;
             border-radius: 3px;
             flex-shrink: 0;
+            display: inline-block;
         }
 
         /* 지도 뷰포트: 줌/이동을 위해 overflow 숨김 + 터치 제스처 처리 */
@@ -1113,7 +1167,7 @@
             overflow: hidden;
             min-height: 0;
             position: relative;
-            background: #1c1c1c;
+            background: radial-gradient(ellipse at center, #1a2234 0%, #0d111a 100%);
             touch-action: none;
             /* 브라우저 기본 줌/스크롤 막고 직접 처리 */
             cursor: grab;
@@ -1129,7 +1183,7 @@
             top: 0;
             left: 0;
             transform-origin: 0 0;
-            padding: var(--pad);
+            padding: 30px;
             will-change: transform;
         }
 
@@ -1138,39 +1192,47 @@
          * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비움).
          */
         .map-grid {
-            --map-gap: 20px;
+            --map-gap: 24px;
             display: grid;
-            grid-template-columns: repeat(9, 52px);
-            grid-template-rows: repeat(6, 52px);
             gap: var(--map-gap);
         }
 
         .map-grid .node {
+            width: 56px;
+            height: 56px;
             position: relative;
             z-index: 1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
         }
 
         /* 노드 이름 라벨: 항상 표시 */
         .map-grid .node-label {
             position: absolute;
-            top: calc(100% + 4px);
+            top: calc(100% + 5px);
             left: 50%;
             transform: translateX(-50%);
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 800;
             line-height: 1.2;
-            color: #f1f5f9;
+            color: #f8fafc;
             white-space: nowrap;
-            text-shadow: 0 0 3px #000, 0 0 5px #000, 0 1px 2px #000;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
             pointer-events: none;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .map-grid .node[class*="link-"]::before,
         .map-grid .node[class*="link-"]::after {
             content: "";
             position: absolute;
-            background: rgba(255, 255, 255, 0.55);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.85), rgba(255, 215, 0, 1));
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
             z-index: -1;
+            border-radius: 2px;
         }
 
         /* 가로선: 오른쪽 이웃으로 */
@@ -1178,7 +1240,7 @@
             top: 50%;
             left: 100%;
             width: var(--map-gap);
-            height: 3px;
+            height: 4px;
             transform: translateY(-50%);
         }
 
@@ -1186,34 +1248,49 @@
         .map-grid .node.link-down::before {
             left: 50%;
             top: 100%;
-            width: 3px;
+            width: 4px;
             height: var(--map-gap);
             transform: translateX(-50%);
         }
 
-        /* 줌 버튼 */
+        /* 줌 컨트롤 (앤틱 골드 버튼) */
         .zoom-controls {
             position: absolute;
-            right: var(--pad);
-            bottom: var(--pad);
+            right: 12px;
+            bottom: 12px;
             display: flex;
             flex-direction: column;
-            gap: calc(var(--gap) * 0.5);
+            gap: 6px;
+            z-index: 10;
         }
 
-        .zoom-controls button {
-            width: var(--touch);
-            height: var(--touch);
-            background: rgba(51, 51, 51, 0.9);
-            color: #fff;
-            border: 1px solid #666;
-            border-radius: var(--radius);
-            font-size: var(--fs-lg);
+        .zoom-controls .zoom-btn {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
+            color: #ffd700;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .zoom-controls button:active {
-            background: #555;
+        .zoom-controls .zoom-btn:hover {
+            background: linear-gradient(135deg, rgba(45, 62, 90, 0.95), rgba(25, 35, 55, 0.98));
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            transform: scale(1.05);
+        }
+
+        .zoom-controls .zoom-btn:active {
+            transform: scale(0.95);
         }
 
         /* ===== 정보 팝업 (캐릭터 상세 정보) ===== */
