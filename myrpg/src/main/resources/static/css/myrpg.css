@@ -1472,49 +1472,65 @@
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        /* 스킬 행 목록 */
+        /* 스킬 행 목록 (2행 카드 리스트) */
         .skill-rows {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             padding: 12px;
             overflow-y: auto;
             flex: 1;
         }
 
         .skill-row {
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid #334155;
+            background: linear-gradient(145deg, rgba(30, 36, 50, 0.75), rgba(18, 22, 32, 0.88));
+            border: 1px solid rgba(51, 65, 85, 0.8);
             border-radius: 10px;
             padding: 10px 12px;
             display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: border-color 0.15s ease, background 0.15s ease;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .skill-row:hover {
-            border-color: rgba(212, 175, 55, 0.4);
-            background: rgba(0, 0, 0, 0.45);
+            border-color: rgba(212, 175, 55, 0.5);
+            background: linear-gradient(145deg, rgba(35, 42, 58, 0.88), rgba(22, 27, 39, 0.96));
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        .skill-main-info {
+        /* 1행: 헤더 (스킬명, 랭크 / 쿨타임, 사용버튼) */
+        .skill-row-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
-            min-width: 105px;
-            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .skill-title-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            flex: 1;
         }
 
         .skill-icon {
             font-size: 1.1rem;
+            line-height: 1;
+            flex-shrink: 0;
         }
 
         .skill-row .skill-name {
             font-size: var(--fs-sm);
-            font-weight: bold;
-            color: #f1f5f9;
+            font-weight: 700;
+            color: #f8fafc;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .skill-row .skill-rank {
@@ -1523,8 +1539,9 @@
             padding: 2px 6px;
             border-radius: 4px;
             background: #334155;
-            color: #94a3b8;
+            color: #cbd5e1;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .skill-rank.rank-master {
@@ -1540,47 +1557,7 @@
             color: #0f172a;
         }
 
-        .skill-progress-container {
-            flex: 1;
-            min-width: 60px;
-        }
-
-        .skill-progress-bar {
-            height: 14px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid #334155;
-        }
-
-        .skill-progress-fill {
-            display: block;
-            height: 100%;
-            width: 0;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            border-radius: 999px;
-            transition: width 0.3s ease;
-        }
-
-        .skill-progress-fill.maxed {
-            background: linear-gradient(90deg, #d4af37, #ffd700);
-        }
-
-        .skill-progress-text {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 800;
-            color: #f8fafc;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-            pointer-events: none;
-        }
-
-        .skill-actions-wrap {
+        .skill-status-group {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -1593,6 +1570,7 @@
             border-radius: 6px;
             white-space: nowrap;
             font-weight: 600;
+            line-height: 1.2;
         }
 
         .badge-cooldown.waiting {
@@ -1613,17 +1591,74 @@
             color: #ffffff;
             border: 1px solid #34d399;
             border-radius: 6px;
-            padding: 5px 10px;
+            padding: 4px 10px;
             font-size: var(--fs-xs);
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.15s ease;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.3);
         }
 
         .skill-use-btn:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+            filter: brightness(1.15);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .skill-use-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* 2행: 바디 (수련치 게이지 / 승급 버튼) */
+        .skill-row-body {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .skill-progress-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .skill-progress-bar {
+            height: 18px;
+            background: rgba(0, 0, 0, 0.65);
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(71, 85, 105, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .skill-progress-fill {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #2563eb, #38bdf8);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+
+        .skill-progress-fill.maxed {
+            background: linear-gradient(90deg, #d4af37, #ffd700);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .skill-progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
         }
 
         .skill-rankup-btn {
@@ -1631,12 +1666,22 @@
             color: #94a3b8;
             border: 1px solid #475569;
             border-radius: 6px;
-            padding: 5px 12px;
+            width: 68px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: var(--fs-xs);
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
+            flex-shrink: 0;
             transition: all 0.15s ease;
+        }
+
+        .skill-rankup-btn:hover {
+            border-color: #64748b;
+            color: #e2e8f0;
         }
 
         .skill-rankup-btn.ready {
@@ -1654,9 +1699,32 @@
         }
 
         .skill-rankup-btn.maxed {
-            background: rgba(212, 175, 55, 0.15);
+            background: rgba(212, 175, 55, 0.12);
             color: #ffd700;
-            border-color: rgba(212, 175, 55, 0.4);
+            border-color: rgba(212, 175, 55, 0.35);
+            cursor: default;
+        }
+
+        /* 스킬 빈 목록 (Empty State) */
+        .skill-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: #64748b;
+            gap: 10px;
+        }
+
+        .skill-empty-state .empty-icon {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .skill-empty-state .empty-text {
+            font-size: var(--fs-sm);
+            margin: 0;
         }
 
         /* ===== 승급 모달 오버레이 ===== */

@@ -45,50 +45,66 @@
 
     <!-- 스킬 행 목록 -->
     <div class="skill-rows">
-        <div th:each="row : ${skillList.rows()}" class="skill-row">
-            <div class="skill-main-info">
-                <span class="skill-icon">⚡</span>
-                <span class="skill-name" th:text="${row.label()}">스매시</span>
-                <span class="skill-rank"
-                      th:classappend="${row.maxed()} ? ' rank-master' : (' rank-' + ${row.rankLabel().toLowerCase()})"
-                      th:text="${row.rankLabel()}">F</span>
-            </div>
+        <div th:each="row : ${skillList.rows()}" class="skill-row"
+             th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'">
+            <!-- 1행: 헤더 (아이콘 + 스킬명 + 랭크 뱃지 | 쿨타임 뱃지 + 필드 사용 버튼) -->
+            <div class="skill-row-header">
+                <div class="skill-title-group">
+                    <span class="skill-icon"
+                          th:text="${row.talentLabel() == '근접전투' ? '⚔️' : (row.talentLabel() == '활' ? '🏹' : (row.talentLabel() == '마법' ? '🔮' : '🌟'))}">⚡</span>
+                    <span class="skill-name" th:text="${row.label()}">스매시</span>
+                    <span class="skill-rank"
+                          th:classappend="${row.maxed()} ? ' rank-master' : (' rank-' + ${row.rankLabel().toLowerCase()})"
+                          th:text="${row.rankLabel()}">F</span>
+                </div>
 
-            <div class="skill-progress-container">
-                <div class="skill-progress-bar">
-                    <div class="skill-progress-fill"
-                         th:if="${!row.maxed()}"
-                         th:style="'width:' + ${row.progressPercent()} + '%'"></div>
-                    <div class="skill-progress-fill maxed"
-                         th:if="${row.maxed()}"
-                         style="width:100%"></div>
-                    <span class="skill-progress-text"
-                          th:if="${row.maxed()}"
-                          th:text="'MAX'">MAX</span>
-                    <span class="skill-progress-text"
-                          th:if="${!row.maxed()}"
-                          th:text="${row.progressPercent()} + '%'">0%</span>
+                <div class="skill-status-group">
+                    <!-- 궁극기 쿨타임 뱃지 -->
+                    <span class="badge-cooldown"
+                          th:if="${row.cooldownBadgeText() != null}"
+                          th:text="${row.cooldownBadgeText()}"
+                          th:classappend="${row.cooldownBadgeText() == '준비 완료'} ? ' ready' : ' waiting'">준비 완료</span>
+
+                    <!-- 필드 스킬 사용 버튼 (힐링 등) -->
+                    <button class="skill-use-btn"
+                            th:if="${row.fieldUsable()}"
+                            onclick="event.stopPropagation(); useFieldSkill(this.getAttribute('data-skill-id'))"
+                            th:attr="data-skill-id=${row.id()}">✨ 사용</button>
                 </div>
             </div>
 
-            <div class="skill-actions-wrap">
-                <!-- 궁극기 쿨타임 뱃지 -->
-                <span class="badge-cooldown"
-                      th:if="${row.cooldownBadgeText() != null}"
-                      th:text="${row.cooldownBadgeText()}"
-                      th:classappend="${row.cooldownBadgeText() == '준비 완료'} ? ' ready' : ' waiting'">준비 완료</span>
-
-                <!-- 필드 스킬 사용 버튼 (힐링 등) -->
-                <button class="skill-use-btn"
-                        th:if="${row.fieldUsable()}"
-                        th:attr="onclick='useFieldSkill(\'' + ${row.id()} + '\')'">사용</button>
+            <!-- 2행: 바디 (수련치 프로그레스 바 | 승급 버튼) -->
+            <div class="skill-row-body">
+                <div class="skill-progress-container">
+                    <div class="skill-progress-bar">
+                        <div class="skill-progress-fill"
+                             th:if="${!row.maxed()}"
+                             th:style="'width:' + ${row.progressPercent()} + '%'"></div>
+                        <div class="skill-progress-fill maxed"
+                             th:if="${row.maxed()}"
+                             style="width:100%"></div>
+                        <span class="skill-progress-text"
+                              th:if="${row.maxed()}"
+                              th:text="'MAX'">MAX</span>
+                        <span class="skill-progress-text"
+                              th:if="${!row.maxed()}"
+                              th:text="${row.progressPercent()} + '%'">0%</span>
+                    </div>
+                </div>
 
                 <!-- 승급 버튼 -->
                 <button class="skill-rankup-btn"
                         th:classappend="${row.maxed()} ? ' maxed' : (${row.rankable()} ? ' ready' : '')"
-                        th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'"
+                        onclick="event.stopPropagation(); openRankUpModal(this.getAttribute('data-skill-id'))"
+                        th:attr="data-skill-id=${row.id()}"
                         th:text="${row.maxed()} ? 'MAX' : '승급'">승급</button>
             </div>
+        </div>
+
+        <!-- 스킬 빈 목록 (Empty State) -->
+        <div class="skill-empty-state" th:if="${skillList.rows() == null || skillList.rows().isEmpty()}">
+            <span class="empty-icon">📜</span>
+            <p class="empty-text">해당 카테고리에 보유한 스킬이 없습니다.</p>
         </div>
     </div>
 </div>
