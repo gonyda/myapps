@@ -2,23 +2,32 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 <section class="center" th:fragment="center">
-    <!-- 상황 멘트 -->
-    <div class="situation" id="situation" th:text="${view.ambience}">
-        맵 데이터를 불러오는 중...
+    <!-- 1단: 상황 멘트 슬림 바 (고정 32px) -->
+    <div class="situation" id="situation">
+        <span class="situation-icon">🌙</span>
+        <span class="situation-text" th:text="${view.ambience}">맵 데이터를 불러오는 중...</span>
     </div>
 
-    <!-- 대화 영역: 항상 표시, 상태에 따라 NPC(초록)/몬스터(빨강)/빈(회색) -->
-    <div class="npc-talk" id="npcTalk"
-         th:classappend="${view.npcName != null} ? ' active-npc' : (${view.monsterName != null} ? ' active-monster' : '')">
+    <!-- 2단: 메인 인터랙션 스테이지 카드 (고정 110px) -->
+    <div class="interaction-stage npc-talk" id="npcTalk"
+         th:classappend="${view.npcName != null} ? ' active-npc' : (${view.monsterName != null} ? ' active-monster' : ' active-idle')">
 
         <!-- NPC 대사 (NPC 클릭 시) -->
         <th:block th:if="${view.npcName != null}">
-            <span class="npc-name" th:text="${view.npcName}"></span>
-            <p th:text="${view.npcDialogue}"></p>
-            <div class="npc-actions" id="npcActions"
+            <div class="stage-header">
+                <span class="npc-name">
+                    <span class="stage-icon">💬</span>
+                    <span th:text="${view.npcName}"></span>
+                </span>
+            </div>
+            <div class="stage-dialogue">
+                <p th:text="${view.npcDialogue}"></p>
+            </div>
+            <div class="npc-actions stage-actions" id="npcActions"
                  th:if="${view.npcActions != null and !view.npcActions.isEmpty()}">
                 <button th:each="action : ${view.npcActions}"
-                        th:text="${action.label}"
+                        th:text="${action.label == '상점' ? '🛍️ 상점' : (action.label == '수리' ? '🔨 수리' : (action.label == '은행' ? '🏦 은행' : (action.label == '치료받기' ? '💖 치료받기' : action.label)))}"
+                        th:classappend="${action.label == '상점' or action.label == '수리' or action.label == '은행'} ? 'btn-gold' : (${action.label == '치료받기'} ? 'btn-green' : 'btn-default')"
                         th:attr="onclick='npcAction(\'' + ${action.label} + '\', \'' + ${talkingNpcId} + '\')'">
                 </button>
             </div>
@@ -26,23 +35,48 @@
 
         <!-- 몬스터 대사 (몬스터 클릭 시) -->
         <th:block th:if="${view.monsterName != null}">
-            <span class="monster-name" th:text="${view.monsterName}">몬스터</span>
-            <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
-            <p th:text="${view.monsterDialogue}">대사</p>
-            <div class="monster-actions">
+            <div class="stage-header">
+                <span class="monster-name">
+                    <span class="stage-icon">🐺</span>
+                    <span th:text="${view.monsterName}">몬스터</span>
+                </span>
+                <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
+            </div>
+            <div class="stage-dialogue">
+                <p th:text="${view.monsterDialogue}">대사</p>
+            </div>
+            <div class="monster-actions stage-actions">
                 <button th:each="action : ${view.monsterActions}"
-                        th:text="${action.label()}"
+                        th:text="${action.label() == '전투' ? '⚔️ 전투 시작' : action.label()}"
                         th:attr="onclick='startBattle(\'' + ${encounteredMonsterId} + '\')'"
-                        class="monster-action-btn">전투</button>
+                        class="monster-action-btn btn-danger">⚔️ 전투 시작</button>
+            </div>
+        </th:block>
+
+        <!-- 기본 탐색 모드 (대화/조우가 없을 때) -->
+        <th:block th:if="${view.npcName == null and view.monsterName == null}">
+            <div class="stage-header">
+                <span class="idle-title">
+                    <span class="stage-icon">🗺️</span>
+                    <span th:text="${view.minimap != null ? view.minimap.mapName : '주변 탐색'}">주변 탐색</span>
+                </span>
+            </div>
+            <div class="stage-dialogue">
+                <p class="idle-guide">주변의 마을 주민이나 몬스터를 선택하여 상호작용하세요.</p>
+            </div>
+            <div class="stage-actions idle-actions">
+                <span class="idle-hint">✨ 상호작용 가능한 대상이 아래에 있습니다.</span>
             </div>
         </th:block>
     </div>
 
-    <!-- 상호작용 버튼 -->
+    <!-- 3단: 상호작용 칩 목록 (고정 44px) -->
     <div class="interactions" id="interactions">
-        <th:block th:if="${view.interactions != null}">
+        <th:block th:if="${view.interactions != null and !view.interactions.isEmpty()}">
             <button th:each="item : ${view.interactions}"
-                    th:classappend="${item.npc} ? 'npc' : (${item.actionType == 'dungeon-enter' or item.actionType == 'dungeon-leave'} ? 'dungeon-btn' : '')"
+                    th:classappend="(${item.npc} ? 'npc' : (${item.actionType == 'dungeon-enter' or item.actionType == 'dungeon-leave'} ? 'dungeon-btn' : 'monster-btn'))
+                        + (${item.npc and item.id == talkingNpcId} ? ' active-target' : '')
+                        + (${item.actionType == 'monster' and item.id == encounteredMonsterId} ? ' active-target' : '')"
                     th:text="${item.name}"
                     th:attr="data-npc-id=${item.npc ? item.id : null},
                              data-monster-id=${item.actionType == 'monster' ? item.id : null},
@@ -51,9 +85,14 @@
                     onclick="onInteractionClick(this)">
             </button>
         </th:block>
+        <th:block th:if="${view.interactions == null or view.interactions.isEmpty()}">
+            <div class="interactions-empty">
+                <span>주변에 상호작용할 대상이 없습니다.</span>
+            </div>
+        </th:block>
     </div>
 
-    <!-- 미니맵 -->
+    <!-- 4단: 미니맵 (고정 160px 영역) -->
     <div th:replace="~{fragments/minimap :: minimap}"></div>
 </section>
 </body>

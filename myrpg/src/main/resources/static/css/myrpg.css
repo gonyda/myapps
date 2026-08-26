@@ -28,7 +28,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
         }
 
@@ -49,7 +50,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            position: relative;   /* move-pad 오버레이 배치 기준 */
+            position: relative;
+            /* move-pad 오버레이 배치 기준 */
         }
 
         /* 상단 바 (다크 판타지 & 앤틱 골드) */
@@ -138,9 +140,17 @@
             font-size: clamp(9px, 2.4vw, 11px);
         }
 
-        .stat.stat-hp .label { color: #fca5a5; }
-        .stat.stat-mp .label { color: #7dd3fc; }
-        .stat.stat-stamina .label { color: #86efac; }
+        .stat.stat-hp .label {
+            color: #fca5a5;
+        }
+
+        .stat.stat-mp .label {
+            color: #7dd3fc;
+        }
+
+        .stat.stat-stamina .label {
+            color: #86efac;
+        }
 
         .bar {
             height: var(--bar-h);
@@ -148,7 +158,8 @@
             border: 1px solid rgba(51, 65, 85, 0.7);
             border-radius: 999px;
             overflow: hidden;
-            position: relative;   /* 게이지 위 수치 오버레이 기준 */
+            position: relative;
+            /* 게이지 위 수치 오버레이 기준 */
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85);
         }
 
@@ -156,7 +167,7 @@
             border-color: rgba(212, 175, 55, 0.35);
         }
 
-        .bar > .fill {
+        .bar>.fill {
             display: block;
             height: 100%;
             width: 0;
@@ -164,7 +175,7 @@
         }
 
         /* 게이지 바 위 현재값/최대값 수치 (연하게 오버레이) */
-        .bar > .bar-text {
+        .bar>.bar-text {
             position: absolute;
             inset: 0;
             display: flex;
@@ -182,22 +193,22 @@
             z-index: 2;
         }
 
-        .bar.exp > .fill {
+        .bar.exp>.fill {
             background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
             box-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
         }
 
-        .bar.hp > .fill {
+        .bar.hp>.fill {
             background: linear-gradient(90deg, #991b1b, #ef4444, #f87171);
             box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
         }
 
-        .bar.mp > .fill {
+        .bar.mp>.fill {
             background: linear-gradient(90deg, #075985, #0ea5e9, #38bdf8);
             box-shadow: 0 0 8px rgba(14, 165, 233, 0.45);
         }
 
-        .bar.stamina > .fill {
+        .bar.stamina>.fill {
             background: linear-gradient(90deg, #15803d, #22c55e, #4ade80);
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
         }
@@ -314,125 +325,314 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: var(--pad);
-            gap: var(--gap);
+            padding: calc(var(--pad) * 0.8) var(--pad);
+            gap: 8px;
             overflow-y: auto;
+            overflow-x: hidden;
             min-width: 0;
+            justify-content: flex-start;
         }
 
-        /* 상황 멘트 (세로 공간 확장) */
+        /* [Tier 1] 상황 멘트 슬림 바 (고정 32px) */
         .situation {
-            background: #262626;
-            border: 1px solid #444;
+            background: linear-gradient(135deg, rgba(28, 34, 48, 0.85), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(212, 175, 55, 0.25);
             border-radius: var(--radius);
-            padding: var(--pad);
-            font-size: var(--fs-md);
-            line-height: 1.6;
-            flex: 0 0 auto;
-            height: clamp(64px, 12dvh, 120px);
-            overflow-y: auto;
-        }
-
-        /* 대사 영역: 기본 회색(빈 상태), NPC 초록, 몬스터 빨강 */
-        .npc-talk {
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: var(--radius);
-            padding: var(--pad);
-            font-size: var(--fs-md);
-            line-height: 1.6;
-            flex: 0 0 auto;
-            height: clamp(64px, 12dvh, 120px);
-            overflow-y: auto;
-        }
-
-        .npc-talk.active-npc {
-            background: #23281f;
-            border-color: #4a6a4a;
-        }
-
-        .npc-talk.active-monster {
-            background: #281f1f;
-            border-color: #6a4a4a;
-        }
-
-        .npc-talk .npc-name {
-            display: block;
-            color: #9ad19a;
-            font-size: var(--fs-sm);
-            font-weight: bold;
-            margin-bottom: calc(var(--gap) * 0.4);
-        }
-
-        /* NPC 행동 버튼 (멘트 영역 내부 하단) */
-        .npc-actions {
+            padding: 0 12px;
+            height: 32px;
+            min-height: 32px;
+            max-height: 32px;
             display: flex;
-            flex-wrap: wrap;
-            gap: calc(var(--gap) * 0.5);
-            margin-top: calc(var(--gap) * 0.6);
-            padding-top: calc(var(--gap) * 0.5);
-            border-top: 1px solid #3a4a3a;
-        }
-
-        .npc-actions button {
-            background: #2a3a2a;
-            color: #9ad19a;
-            border: 1px solid #4a6a4a;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.4) var(--pad);
-            font-size: var(--fs-sm);
-            cursor: pointer;
-            min-height: calc(var(--touch) * 0.7);
-        }
-
-        .npc-actions button:active {
-            background: #3a4a3a;
-        }
-
-        /* 상호작용 버튼들 (최소 2줄, 넘치면 스크롤) */
-        .interactions {
-            display: flex;
-            gap: var(--gap);
-            flex-wrap: wrap;
-            align-content: flex-start;
+            align-items: center;
+            gap: 8px;
+            font-size: clamp(10px, 2.7vw, 11px);
+            color: #e2e8f0;
             flex-shrink: 0;
-            height: clamp(84px, 14dvh, 120px);
-            max-height: calc(var(--touch) * 2.3 + var(--gap));
-            overflow-y: auto;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .situation .situation-icon {
+            font-size: 13px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));
+        }
+
+        .situation .situation-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            letter-spacing: -0.2px;
+        }
+
+        /* [Tier 2] 메인 인터랙션 스테이지 카드 (고정 110px) */
+        .interaction-stage {
+            background: linear-gradient(165deg, rgba(28, 34, 48, 0.95), rgba(14, 17, 26, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            height: 110px;
+            min-height: 110px;
+            max-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(6px);
+            position: relative;
+        }
+
+        .interaction-stage.active-npc {
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.15), inset 0 0 20px rgba(212, 175, 55, 0.05);
+        }
+
+        .interaction-stage.active-monster {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: linear-gradient(165deg, rgba(38, 20, 24, 0.95), rgba(18, 12, 14, 0.98));
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.15), inset 0 0 20px rgba(239, 68, 68, 0.05);
+        }
+
+        .interaction-stage.active-idle {
+            border-color: rgba(148, 163, 184, 0.25);
+            background: linear-gradient(165deg, rgba(22, 27, 38, 0.95), rgba(12, 15, 22, 0.98));
+        }
+
+        /* 스테이지 헤더 */
+        .stage-header {
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .stage-header .npc-name,
+        .stage-header .monster-name,
+        .stage-header .idle-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: var(--fs-sm);
+            font-weight: 800;
+            letter-spacing: -0.2px;
+        }
+
+        .stage-header .npc-name {
+            color: #ffd700;
+            text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .stage-header .monster-name {
+            color: #f87171;
+            text-shadow: 0 0 6px rgba(248, 113, 113, 0.3);
+        }
+
+        .stage-header .idle-title {
+            color: #94a3b8;
+        }
+
+        .stage-header .monster-meta {
+            font-size: var(--fs-xs);
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        /* 스테이지 대사/가이드 2줄 고정 슬롯 */
+        .stage-dialogue {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            margin: 2px 0;
+        }
+
+        .stage-dialogue p {
+            margin: 0;
+            font-size: var(--fs-xs);
+            line-height: 1.35;
+            color: #cbd5e1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stage-dialogue .idle-guide {
+            color: #94a3b8;
+            font-style: normal;
+        }
+
+        /* 스테이지 액션 바 (버튼 영역 고정 32px) */
+        .stage-actions {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .stage-actions.idle-actions {
+            justify-content: flex-start;
+        }
+
+        .stage-actions .idle-hint {
+            font-size: var(--fs-xs);
+            color: #64748b;
+        }
+
+        .stage-actions button {
+            height: 30px;
+            min-height: 30px;
+            padding: 0 12px;
+            border-radius: 6px;
+            font-size: var(--fs-xs);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+            flex: 1;
+            max-width: 120px;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .stage-actions button.btn-gold {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #0f172a;
+            border: 1px solid #ffd700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 6px rgba(212, 175, 55, 0.3);
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .stage-actions button.btn-gold:active {
+            transform: translateY(1px);
+            filter: brightness(0.9);
+        }
+
+        .stage-actions button.btn-green {
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            color: #ffffff;
+            border: 1px solid #4ade80;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stage-actions button.btn-green:active {
+            transform: translateY(1px);
+            filter: brightness(0.9);
+        }
+
+        .stage-actions button.btn-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: #ffffff;
+            border: 1px solid #f87171;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+            max-width: none;
+            width: 100%;
+            font-size: var(--fs-sm);
+        }
+
+        .stage-actions button.btn-danger:active {
+            transform: translateY(1px);
+            filter: brightness(0.9);
+        }
+
+        /* [Tier 3] 상호작용 칩 목록 (고정 44px) */
+        .interactions {
+            height: 44px;
+            min-height: 44px;
+            max-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+            padding: 2px 0;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .interactions::-webkit-scrollbar {
+            display: none;
         }
 
         .interactions button {
-            background: #3a2a2a;
-            color: #ffcccc;
-            border: 1px solid #6a4a4a;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.8) var(--pad);
-            font-size: var(--fs-md);
+            height: 36px;
+            min-height: 36px;
+            padding: 0 12px;
+            border-radius: 18px;
+            font-size: var(--fs-xs);
+            font-weight: 700;
             cursor: pointer;
-            min-height: var(--touch);
-            flex: 0 0 clamp(80px, 24vw, 110px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .interactions button.npc {
-            background: #2a3a2a;
-            color: #ccffcc;
-            border-color: #4a6a4a;
+            background: rgba(30, 41, 59, 0.85);
+            color: #93c5fd;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .interactions button.npc.active-target {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(184, 134, 11, 0.4));
+            color: #ffd700;
+            border-color: #ffd700;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        .interactions button.monster-btn {
+            background: rgba(45, 20, 24, 0.85);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .interactions button.monster-btn.active-target {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(185, 28, 28, 0.45));
+            color: #fee2e2;
+            border-color: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
         }
 
         .interactions button.dungeon-btn {
-            background: #2a2a3a;
-            color: #ccccff;
-            border-color: #5c6bc0;
+            background: rgba(30, 27, 75, 0.85);
+            color: #c7d2fe;
+            border: 1px solid rgba(129, 140, 248, 0.4);
         }
 
-        /* 미니맵 */
+        .interactions-empty {
+            color: #64748b;
+            font-size: var(--fs-xs);
+            display: flex;
+            align-items: center;
+            padding-left: 4px;
+        }
+
+        /* [Tier 4] 미니맵 */
         .minimap {
-            background: #202020;
-            border: 1px solid #444;
+            background: linear-gradient(165deg, rgba(24, 30, 42, 0.95), rgba(12, 15, 22, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.25);
             border-radius: var(--radius);
             padding: var(--pad);
             cursor: pointer;
             flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .minimap .minimap-title {
@@ -470,12 +670,14 @@
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: var(--nm-gap);
-            aspect-ratio: 9 / 5;   /* 9x5, 가운데가 항상 내 위치 */
+            aspect-ratio: 9 / 5;
+            /* 9x5, 가운데가 항상 내 위치 */
         }
 
         .minimap .node-grid .node {
             position: relative;
-            aspect-ratio: 1 / 1;   /* 각 노드 정사각형 */
+            aspect-ratio: 1 / 1;
+            /* 각 노드 정사각형 */
             z-index: 1;
         }
 
@@ -508,20 +710,48 @@
 
         .node {
             border-radius: var(--radius);
-            background: #555;   /* 미지정/미탐색 기본색 */
+            background: #555;
+            /* 미지정/미탐색 기본색 */
         }
 
         /*
          * 맵 유형별 색상 (확장 가능).
          * 새 유형 추가 시 .type-{name} 규칙만 늘리면 됨.
          */
-        .node.type-town,    .dot.type-town,
-        .node.type-dungeon-start, .dot.type-dungeon-start { background: #6b93bf; }   /* 마을 / 던전 시작방 (연파랑) */
-        .node.type-field,   .dot.type-field   { background: #7bb07b; }   /* 자유필드 (연초록) */
-        .node.type-dungeon, .dot.type-dungeon,
-        .node.type-dungeon-boss, .dot.type-dungeon-boss { background: #c08585; }   /* 던전 / 던전 보스방 (연빨강) */
-        .node.type-dungeon-cleared,   .dot.type-dungeon-cleared   { background: #e2e8f0; }   /* 던전 클리어 방 (밝은 실버/아이보리) */
-        .node.type-dungeon-uncleared, .dot.type-dungeon-uncleared { background: #475569; }   /* 던전 미클리어 방 (슬레이트 회색) */
+        .node.type-town,
+        .dot.type-town,
+        .node.type-dungeon-start,
+        .dot.type-dungeon-start {
+            background: #6b93bf;
+        }
+
+        /* 마을 / 던전 시작방 (연파랑) */
+        .node.type-field,
+        .dot.type-field {
+            background: #7bb07b;
+        }
+
+        /* 자유필드 (연초록) */
+        .node.type-dungeon,
+        .dot.type-dungeon,
+        .node.type-dungeon-boss,
+        .dot.type-dungeon-boss {
+            background: #c08585;
+        }
+
+        /* 던전 / 던전 보스방 (연빨강) */
+        .node.type-dungeon-cleared,
+        .dot.type-dungeon-cleared {
+            background: #e2e8f0;
+        }
+
+        /* 던전 클리어 방 (밝은 실버/아이보리) */
+        .node.type-dungeon-uncleared,
+        .dot.type-dungeon-uncleared {
+            background: #475569;
+        }
+
+        /* 던전 미클리어 방 (슬레이트 회색) */
 
         /* 현재 위치: 유형 색은 유지하고 링으로 강조 */
         .node.current {
@@ -534,6 +764,7 @@
             0% {
                 box-shadow: 0 0 0 2px #f0c419, 0 0 6px rgba(240, 196, 25, 0.6);
             }
+
             100% {
                 box-shadow: 0 0 0 2.5px #fde047, 0 0 12px rgba(253, 224, 71, 0.9);
             }
@@ -577,10 +808,25 @@
         }
 
         /* 십자(+) 배열: 위=상단 중앙, 좌·우=중앙 양옆, 아래=하단 중앙 */
-        .move-pad .up    { grid-column: 2; grid-row: 1; }
-        .move-pad .left  { grid-column: 1; grid-row: 2; }
-        .move-pad .right { grid-column: 3; grid-row: 2; }
-        .move-pad .down  { grid-column: 2; grid-row: 3; }
+        .move-pad .up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .move-pad .left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .move-pad .right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .move-pad .down {
+            grid-column: 2;
+            grid-row: 3;
+        }
 
         /* 하단 활동 로그 (다크 판타지 & 앤틱 골드, 4~5줄 노출) */
         .action-log {
@@ -680,12 +926,30 @@
             line-height: 1.35;
         }
 
-        .action-log .log-combat { color: #fed7aa; }
-        .action-log .log-growth { color: #e0f2fe; font-weight: 700; }
-        .action-log .log-item   { color: #fef08a; }
-        .action-log .log-dungeon { color: #f3e8ff; }
-        .action-log .log-notification { color: #e2e8f0; }
-        .action-log .log-move   { color: #cbd5e1; }
+        .action-log .log-combat {
+            color: #fed7aa;
+        }
+
+        .action-log .log-growth {
+            color: #e0f2fe;
+            font-weight: 700;
+        }
+
+        .action-log .log-item {
+            color: #fef08a;
+        }
+
+        .action-log .log-dungeon {
+            color: #f3e8ff;
+        }
+
+        .action-log .log-notification {
+            color: #e2e8f0;
+        }
+
+        .action-log .log-move {
+            color: #cbd5e1;
+        }
 
         /* 전체화면 팝업 오버레이 */
         .overlay {
@@ -850,7 +1114,8 @@
             min-height: 0;
             position: relative;
             background: #1c1c1c;
-            touch-action: none;      /* 브라우저 기본 줌/스크롤 막고 직접 처리 */
+            touch-action: none;
+            /* 브라우저 기본 줌/스크롤 막고 직접 처리 */
             cursor: grab;
         }
 
@@ -1286,8 +1551,13 @@
         }
 
         @keyframes rebirthGlow {
-            from { box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
-            to { box-shadow: 0 0 20px rgba(212, 175, 55, 0.7); }
+            from {
+                box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            }
+
+            to {
+                box-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
+            }
         }
 
         .rebirth-btn:hover:not(:disabled) {
@@ -1693,9 +1963,20 @@
         }
 
         @keyframes rankupPulse {
-            0% { transform: scale(1); box-shadow: 0 0 6px rgba(212, 175, 55, 0.4); }
-            50% { transform: scale(1.04); box-shadow: 0 0 14px rgba(212, 175, 55, 0.7); }
-            100% { transform: scale(1); box-shadow: 0 0 6px rgba(212, 175, 55, 0.4); }
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+            }
+
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 14px rgba(212, 175, 55, 0.7);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+            }
         }
 
         .skill-rankup-btn.maxed {
@@ -2505,13 +2786,11 @@
 
         .equipment-slot-card.slot-is-blocked {
             opacity: 0.7;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(0, 0, 0, 0.4),
-                rgba(0, 0, 0, 0.4) 10px,
-                rgba(239, 68, 68, 0.1) 10px,
-                rgba(239, 68, 68, 0.1) 20px
-            );
+            background: repeating-linear-gradient(45deg,
+                    rgba(0, 0, 0, 0.4),
+                    rgba(0, 0, 0, 0.4) 10px,
+                    rgba(239, 68, 68, 0.1) 10px,
+                    rgba(239, 68, 68, 0.1) 20px);
             border-color: rgba(239, 68, 68, 0.4);
         }
 
@@ -2823,8 +3102,13 @@
         }
 
         @keyframes sheetSlideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         .sheet-header {
@@ -3581,7 +3865,7 @@
             position: relative;
         }
 
-        .battle-hp-wrap .bar.monster-hp > .fill {
+        .battle-hp-wrap .bar.monster-hp>.fill {
             background: #c0392b;
         }
 
@@ -3649,8 +3933,13 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.03); }
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.03);
+            }
         }
 
         /* 실시간 타이머 바 */
@@ -3735,6 +4024,7 @@
             color: #fef08a;
             border: 1px solid #b45309;
         }
+
         .battle-skill-btn.skill-type-normal:hover {
             border-color: #f59e0b;
             background: #3f2f1a;
@@ -3745,6 +4035,7 @@
             color: #fecaca;
             border: 1px solid #b91c1c;
         }
+
         .battle-skill-btn.skill-type-heavy:hover {
             border-color: #ef4444;
             background: #461d1d;
@@ -3755,6 +4046,7 @@
             color: #bfdbfe;
             border: 1px solid #1d4ed8;
         }
+
         .battle-skill-btn.skill-type-defense:hover {
             border-color: #3b82f6;
             background: #1e314d;
@@ -3765,6 +4057,7 @@
             color: #a7f3d0;
             border: 1px solid #047857;
         }
+
         .battle-skill-btn.skill-type-recovery:hover {
             border-color: #10b981;
             background: #1a3c2d;
@@ -3775,6 +4068,7 @@
             color: #a5f3fc;
             border: 1px solid #0e7490;
         }
+
         .battle-skill-btn.skill-type-buff:hover {
             border-color: #06b6d4;
             background: #193845;
@@ -3786,6 +4080,7 @@
             color: #f5d0fe;
             border: 1px solid #a21caf;
         }
+
         .battle-skill-btn.skill-type-debuff:hover,
         .battle-skill-btn.skill-type-dot:hover {
             border-color: #d946ef;
@@ -3797,6 +4092,7 @@
             color: #fde68a;
             border: 1px solid #a16207;
         }
+
         .battle-skill-btn.skill-type-cc:hover {
             border-color: #eab308;
             background: #3f371b;
@@ -3820,11 +4116,27 @@
         }
 
         @keyframes skill-insufficient-shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-5px); }
-            40% { transform: translateX(5px); }
-            60% { transform: translateX(-4px); }
-            80% { transform: translateX(4px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-5px);
+            }
+
+            40% {
+                transform: translateX(5px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            80% {
+                transform: translateX(4px);
+            }
         }
 
         /* 공방 턴 전송 중 스킬 영역 잠금 */
@@ -3852,6 +4164,7 @@
                 box-shadow: 0 0 6px rgba(255, 215, 0, 0.4), inset 0 0 4px rgba(255, 215, 0, 0.2);
                 transform: scale(1);
             }
+
             100% {
                 box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 0 8px rgba(255, 215, 0, 0.5);
                 transform: scale(1.03);
@@ -4321,6 +4634,7 @@
                 opacity: 0;
                 transform: scale(0.92);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1);
@@ -4740,6 +5054,3 @@
             box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
             transform: scale(0.96);
         }
-
-
-
