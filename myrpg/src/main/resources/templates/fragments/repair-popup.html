@@ -5,55 +5,99 @@
 <div class="overlay repair-overlay" id="repairOverlay" th:fragment="repair-popup">
     <div class="panel repair-panel">
         <header class="panel-header">
-            <h3>수리</h3>
+            <div class="panel-header-title">
+                <span class="panel-header-icon">🔨</span>
+                <h3>대장간 수리</h3>
+            </div>
             <button class="panel-close" onclick="closeRepair()" aria-label="닫기">✕</button>
         </header>
-        <div class="panel-body repair-body" id="repairContent">
+        <div class="panel-body repair-panel-body" id="repairContent">
             <!-- 수리 내용은 openRepair() fetch로 채워짐 -->
         </div>
     </div>
 </div>
 
 <!-- 수리 내용 fragment (fetch 응답용) -->
-<div th:fragment="repair-content" th:if="${repair != null}">
-    <div class="repair-list" id="repairList">
-        <th:block th:if="${repair.repairItems.isEmpty()}">
-            <div class="inventory-empty">
-                <p>수리할 장비가 없습니다</p>
-            </div>
-        </th:block>
-        <div class="inventory-item" th:each="item : ${repair.repairItems}"
-             th:attr="data-owned-id=${item.ownedItemId}">
-            <div class="item-info">
-                <span class="item-name">
-                    <span th:text="${item.name}">아이템명</span>
-                    <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
-                </span>
-                <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
-                <button class="item-detail-btn"
-                        th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
-                        th:data-name="${item.name}"
-                        onclick="openItemDetail(this)">🔍</button>
-            </div>
-            <div class="item-meta">
-                <span class="item-durability"
-                      th:text="'내구도 ' + ${item.currentDurabilityCeil} + '/' + ${item.maxDurability}">
-                    내구도 0/0
-                </span>
-                <span class="item-price" th:text="'💰 ' + ${item.repairCost} + 'G'">수리비</span>
-            </div>
-            <div class="item-actions">
-                <button class="item-action-btn repair-btn"
-                        th:attr="data-id=${item.ownedItemId}"
-                        th:title="'수리 성공 확률 95%'"
-                        onclick="repairItem(this.dataset.id)">수리 (95%)</button>
-            </div>
+<div th:fragment="repair-content" th:if="${repair != null}" class="repair-content-wrap">
+    <!-- 상단 대장간 안내 헤더 바 -->
+    <div class="repair-gold-bar">
+        <div class="gold-display">
+            <span class="gold-icon">💰</span>
+            <span class="gold-label">보유 골드:</span>
+            <strong class="gold-amount" th:text="${repair.currentGold}">0</strong>
+            <span class="gold-unit">G</span>
+        </div>
+        <div class="repair-rate-badge" title="퍼거스의 수리 성공 확률">
+            <span class="rate-icon">🎯</span>
+            <span class="rate-label">성공률</span>
+            <strong class="rate-val">95%</strong>
         </div>
     </div>
 
-    <!-- 소지금 하단 바 -->
-    <div class="inventory-footer" th:if="${repair != null}">
-        <span class="gold-display">💰 보유 골드: <strong th:text="${repair.currentGold}">0</strong></span>
+    <!-- 스크롤 가능한 손상 장비 목록 영역 -->
+    <div class="repair-scroll-container">
+        <div class="repair-item-list" th:if="${!repair.repairItems.isEmpty()}">
+            <div class="repair-card" th:each="item : ${repair.repairItems}"
+                 th:attr="data-owned-id=${item.ownedItemId}"
+                 th:classappend="${item.equipped} ? ' item-is-equipped' : ''">
+                <div class="item-card-top">
+                    <div class="item-info">
+                        <span class="item-icon" th:if="${item.typeLabel == '무기'}">🗡️</span>
+                        <span class="item-icon" th:if="${item.typeLabel == '방어구'}">🛡️</span>
+                        <span class="item-icon" th:if="${item.typeLabel == '투구'}">🪖</span>
+                        <span class="item-icon" th:if="${item.typeLabel == '장갑'}">🧤</span>
+                        <span class="item-icon" th:if="${item.typeLabel == '신발'}">👢</span>
+                        <span class="item-icon" th:if="${item.typeLabel != '무기' and item.typeLabel != '방어구' and item.typeLabel != '투구' and item.typeLabel != '장갑' and item.typeLabel != '신발'}">📦</span>
+                        <span class="item-name" th:text="${item.name}">아이템명</span>
+                        <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+                    </div>
+                    <button class="item-detail-btn"
+                            th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                            th:data-name="${item.name}"
+                            onclick="openItemDetail(this)"
+                            aria-label="상세보기" title="아이템 상세정보">🔍</button>
+                </div>
+
+                <!-- 내구도 게이지 바 및 수리비 -->
+                <div class="repair-meta-box">
+                    <div class="item-durability-wrap">
+                        <span class="item-type" th:text="${item.typeLabel}">타입</span>
+                        <div class="item-dura-bar repair-dura-bar">
+                            <div class="item-dura-fill"
+                                 th:style="'width:' + ${item.currentDurabilityCeil * 100.0 / item.maxDurability} + '%'"
+                                 th:classappend="${item.currentDurabilityCeil <= item.maxDurability * 0.3} ? ' dura-danger' : (${item.currentDurabilityCeil <= item.maxDurability * 0.6} ? ' dura-warning' : '')"></div>
+                        </div>
+                        <span class="item-durability"
+                              th:text="'내구도 ' + ${item.currentDurabilityCeil} + '/' + ${item.maxDurability}">
+                            내구도 0/0
+                        </span>
+                    </div>
+
+                    <div class="repair-cost-tag">
+                        <span class="cost-label">수리비:</span>
+                        <span class="cost-icon">💰</span>
+                        <strong class="cost-amount" th:text="${item.repairCost}">0</strong>
+                        <span class="cost-unit">G</span>
+                    </div>
+                </div>
+
+                <div class="item-actions">
+                    <button class="item-action-btn repair-btn"
+                            th:attr="data-id=${item.ownedItemId}"
+                            onclick="repairItem(this.dataset.id)">
+                        <span class="btn-icon">🔨</span>
+                        <span>수리하기</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 수리 장비 없음 (Empty State) -->
+        <div class="repair-empty-card" th:if="${repair.repairItems.isEmpty()}">
+            <span class="empty-sparkle-icon">✨🛡️✨</span>
+            <h4 class="empty-title">모든 장비가 완벽합니다</h4>
+            <p class="empty-desc">현재 내구도가 손상되어 수리가 필요한 장비가 없습니다.</p>
+        </div>
     </div>
 </div>
 </body>

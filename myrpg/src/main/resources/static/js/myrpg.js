@@ -849,13 +849,40 @@ function heal() {
         });
 }
 
-// ===== 상점 팝업 열기/닫기 및 구매/판매 =====
+// ===== 상점 팝업 열기/닫기, 탭 전환 및 구매/판매 =====
+var currentShopTab = 'buy';
+
+function switchShopTab(tabName) {
+    currentShopTab = tabName;
+    var tabBtns = document.querySelectorAll('.shop-tab-btn');
+    for (var i = 0; i < tabBtns.length; i++) {
+        if (tabBtns[i].getAttribute('data-tab') === tabName) {
+            tabBtns[i].classList.add('active');
+        } else {
+            tabBtns[i].classList.remove('active');
+        }
+    }
+    var buyPane = document.getElementById('shopBuyPane');
+    var sellPane = document.getElementById('shopSellPane');
+    if (buyPane && sellPane) {
+        if (tabName === 'buy') {
+            buyPane.classList.add('active');
+            sellPane.classList.remove('active');
+        } else {
+            buyPane.classList.remove('active');
+            sellPane.classList.add('active');
+        }
+    }
+}
+
 function openShop(npcId) {
+    currentShopTab = 'buy';
     var url = npcId ? '/shop?npcId=' + encodeURIComponent(npcId) : '/shop';
     fetch(url)
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('shopContent').innerHTML = html;
+            switchShopTab(currentShopTab);
             document.getElementById('shopOverlay').classList.add('open');
         });
 }
@@ -881,6 +908,7 @@ function buyShopItem(npcId, itemId) {
         .then(function (html) {
             if (!html) { return; }
             document.getElementById('shopContent').innerHTML = html;
+            switchShopTab(currentShopTab);
             refreshTopBar();
         });
 }
@@ -903,6 +931,7 @@ function sellShopItem(npcId, ownedItemId) {
         .then(function (html) {
             if (!html) { return; }
             document.getElementById('shopContent').innerHTML = html;
+            switchShopTab(currentShopTab);
             refreshTopBar();
         });
 }
@@ -1111,12 +1140,39 @@ function sortInventory(criteria) {
     }
 }
 
-// ===== 은행 팝업 열기/닫기 =====
+// ===== 은행 팝업 열기/닫기, 탭 전환 및 입출금 =====
+var currentBankTab = 'bank';
+
+function switchBankTab(tabName) {
+    currentBankTab = tabName;
+    var tabBtns = document.querySelectorAll('.bank-tab-btn');
+    for (var i = 0; i < tabBtns.length; i++) {
+        if (tabBtns[i].getAttribute('data-tab') === tabName) {
+            tabBtns[i].classList.add('active');
+        } else {
+            tabBtns[i].classList.remove('active');
+        }
+    }
+    var storagePane = document.getElementById('bankStoragePane');
+    var inventoryPane = document.getElementById('bankInventoryPane');
+    if (storagePane && inventoryPane) {
+        if (tabName === 'bank') {
+            storagePane.classList.add('active');
+            inventoryPane.classList.remove('active');
+        } else {
+            storagePane.classList.remove('active');
+            inventoryPane.classList.add('active');
+        }
+    }
+}
+
 function openBank() {
+    currentBankTab = 'bank';
     fetch('/bank')
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('bankContent').innerHTML = html;
+            switchBankTab(currentBankTab);
             document.getElementById('bankOverlay').classList.add('open');
         });
 }
@@ -1150,6 +1206,25 @@ function closeBankModal() {
     }
 }
 
+function addBankQuickAmount(amount) {
+    var input = document.getElementById('bankModalAmount');
+    var current = parseInt(input.value, 10) || 0;
+    input.value = current + amount;
+}
+
+function setBankAllAmount() {
+    var input = document.getElementById('bankModalAmount');
+    if (bankModalMode === 'deposit') {
+        var playerGoldEl = document.getElementById('playerGoldValue');
+        var playerGold = playerGoldEl ? parseInt(playerGoldEl.textContent.replace(/[^0-9]/g, ''), 10) || 0 : 0;
+        input.value = playerGold;
+    } else {
+        var bankGoldEl = document.getElementById('bankGoldValue');
+        var bankGold = bankGoldEl ? parseInt(bankGoldEl.textContent.replace(/[^0-9]/g, ''), 10) || 0 : 0;
+        input.value = bankGold;
+    }
+}
+
 function confirmBankModal() {
     var amountInput = document.getElementById('bankModalAmount');
     var amount = parseInt(amountInput.value, 10);
@@ -1178,6 +1253,7 @@ function confirmBankModal() {
             if (!html) { return; }
             refreshBankPopup(html);
             closeBankModal();
+            refreshTopBar();
         });
 }
 
@@ -1224,6 +1300,7 @@ function withdrawItem(ownedItemId) {
 
 function refreshBankPopup(html) {
     document.getElementById('bankContent').innerHTML = html;
+    switchBankTab(currentBankTab);
 }
 
 // 페이지 로드 시 행동 로그를 맨 아래로 스크롤 + 전투 상태 복원

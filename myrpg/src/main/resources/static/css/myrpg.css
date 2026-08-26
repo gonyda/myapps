@@ -3063,254 +3063,365 @@
             max-height: calc(100dvh - var(--pad) * 2);
         }
 
-        .bank-body {
+        .bank-overlay .panel-body,
+        .bank-panel-body {
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: var(--gap);
-        }
-
-        /* 골드 영역 */
-        .bank-gold-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--gap);
-            padding: var(--pad);
-            background: #262626;
-            border: 1px solid #444;
-            border-radius: var(--radius);
-            align-items: center;
-        }
-
-        .bank-gold-slot {
-            display: flex;
-            flex-direction: column;
-            gap: calc(var(--gap) * 0.3);
+            overflow: hidden;
             flex: 1;
+            min-height: 0;
+        }
+
+        .bank-content-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* 2열 골드 금고 대시보드 */
+        .bank-gold-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 10px 12px;
+            background: linear-gradient(180deg, rgba(20, 24, 38, 0.95) 0%, rgba(14, 17, 26, 0.95) 100%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .bank-gold-card {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .gold-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             min-width: 0;
         }
 
-        .bank-gold-slot .gold-label {
+        .gold-card-label {
             font-size: var(--fs-xs);
-            color: #aaa;
+            color: #94a3b8;
+            font-weight: 600;
         }
 
-        .bank-gold-slot .gold-value {
+        .gold-card-amount {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+
+        .gold-card-amount .gold-value {
             font-size: var(--fs-md);
-            color: #f0c419;
-            font-weight: bold;
-            font-variant-numeric: tabular-nums;
+            color: #facc15;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.25);
         }
 
-        .bank-gold-actions {
-            display: flex;
-            gap: calc(var(--gap) * 0.5);
+        .gold-card-amount .gold-unit {
+            font-size: var(--fs-xs);
+            color: #d4af37;
+            font-weight: 700;
         }
 
         .bank-gold-btn {
-            background: #3a5a8a;
-            color: #fff;
-            border: 1px solid #5a8aba;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.5) calc(var(--pad) * 0.8);
-            font-size: var(--fs-sm);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: var(--fs-xs);
+            font-weight: bold;
             cursor: pointer;
-            min-height: calc(var(--touch) * 0.7);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .bank-gold-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
         }
 
         .bank-gold-btn:active {
-            background: #4a6a9a;
+            transform: translateY(1px);
         }
 
-        /* 아이템 목록 영역 (좌/우) */
-        .bank-lists {
+        .bank-gold-btn.deposit-btn {
+            background: linear-gradient(135deg, #047857, #059669);
+            color: #ffffff;
+            border: 1px solid #34d399;
+        }
+
+        .bank-gold-btn.withdraw-btn {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff;
+            border: 1px solid #60a5fa;
+        }
+
+        /* 세그먼트 탭 컨트롤 */
+        .bank-tab-controls {
             display: flex;
-            flex-direction: column;
-            gap: var(--gap);
+            background: rgba(10, 12, 18, 0.8);
+            padding: 6px 12px;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .bank-tab-btn {
             flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-        }
-
-        .bank-list-section {
-            border: 1px solid #444;
-            border-radius: var(--radius);
-            background: #232323;
-            overflow: hidden;
-        }
-
-        .bank-list-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
             font-size: var(--fs-sm);
-            color: #eee;
-            padding: calc(var(--gap) * 0.6) var(--pad);
-            background: #2a2a2a;
-            border-bottom: 1px solid #444;
-            margin: 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-height: 40px;
+        }
+
+        .bank-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+        }
+
+        .bank-tab-btn.active {
+            background: rgba(212, 175, 55, 0.18);
+            border-color: #d4af37;
+            color: #ffd700;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .bank-tab-btn .tab-badge {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #e2e8f0;
+        }
+
+        .bank-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            min-height: 0;
+        }
+
+        .bank-tab-pane {
+            display: none;
+        }
+
+        .bank-tab-pane.active {
+            display: block;
         }
 
         .bank-item-list {
-            max-height: 30dvh;
-            overflow-y: auto;
-            padding: calc(var(--gap) * 0.4) 0;
-        }
-
-        .bank-item-row {
             display: flex;
-            align-items: center;
-            gap: calc(var(--gap) * 0.5);
-            padding: calc(var(--gap) * 0.5) var(--pad);
-            border-bottom: 1px solid #333;
-            font-size: var(--fs-sm);
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .bank-item-row:last-child {
-            border-bottom: none;
-        }
-
-        .bank-item-row .item-name {
-            flex: 1;
-            min-width: 0;
-            color: #eee;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .bank-item-row .equipped-badge {
-            color: #f0c419;
-            font-size: var(--fs-xs);
-            margin-left: calc(var(--gap) * 0.3);
-        }
-
-        .bank-item-row .item-type-badge {
-            font-size: var(--fs-xs);
-            color: #aaa;
-            background: #3a3a3a;
-            padding: 0.1em 0.4em;
-            border-radius: var(--radius);
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .bank-item-row .item-qty {
-            font-size: var(--fs-xs);
-            color: #8fb5d9;
-            flex-shrink: 0;
-        }
-
-        .bank-item-row .item-detail-btn {
-            background: none;
-            border: none;
-            font-size: var(--fs-sm);
-            cursor: pointer;
-            padding: 2px 4px;
-            flex-shrink: 0;
-        }
-
-        .bank-item-row .item-action-btn {
-            background: #333;
-            color: #ddd;
-            border: 1px solid #555;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.3) calc(var(--pad) * 0.6);
-            font-size: var(--fs-xs);
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            min-height: calc(var(--touch) * 0.6);
+        .bank-card {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            transition: border-color 0.15s ease, background 0.15s ease;
         }
 
-        .bank-item-row .item-action-btn:active {
-            background: #444;
+        .bank-card:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(0, 0, 0, 0.45);
         }
 
-        .bank-empty {
-            color: #888;
-            font-size: var(--fs-sm);
-            text-align: center;
-            padding: var(--pad);
+        .bank-card.item-is-equipped {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.03);
         }
 
-        /* 은행 입출금 모달 */
+        .item-action-btn.withdraw-btn {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff;
+            border: 1px solid #60a5fa;
+        }
+
+        .item-action-btn.deposit-btn {
+            background: linear-gradient(135deg, #047857, #059669);
+            color: #ffffff;
+            border: 1px solid #34d399;
+        }
+
+        /* 은행 입출금 글래스모피즘 모달 */
         .bank-modal-overlay {
-            position: absolute;
+            position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            padding: 16px;
             z-index: 1200;
-            border-radius: var(--radius);
+            animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .bank-modal {
-            background: #2a2a2a;
-            border: 1px solid #555;
-            border-radius: var(--radius);
-            padding: var(--pad);
+            width: 100%;
+            max-width: 320px;
+            background: linear-gradient(165deg, rgba(30, 36, 50, 0.98) 0%, rgba(16, 20, 30, 0.99) 100%);
+            border: 1.5px solid rgba(212, 175, 55, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.15);
             display: flex;
             flex-direction: column;
-            gap: var(--gap);
-            min-width: 200px;
+            gap: 12px;
+        }
+
+        .bank-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-gold-icon {
+            font-size: 1.2rem;
         }
 
         .bank-modal h4 {
-            color: #fff;
+            color: #ffd700;
             font-size: var(--fs-md);
             margin: 0;
+            font-weight: 800;
+        }
+
+        .bank-quick-chips {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+
+        .quick-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            border-radius: 6px;
+            padding: 5px 0;
+            font-size: var(--fs-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .quick-chip:hover,
+        .quick-chip:active {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #d4af37;
+            color: #ffd700;
+        }
+
+        .quick-chip.chip-all {
+            background: rgba(212, 175, 55, 0.12);
+            border-color: rgba(212, 175, 55, 0.3);
+            color: #facc15;
+            font-weight: 700;
+        }
+
+        .bank-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .bank-modal-input {
-            background: #1a1a1a;
-            color: #fff;
-            border: 1px solid #555;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.6) var(--pad);
-            font-size: var(--fs-md);
             width: 100%;
+            padding: 8px 30px 8px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #facc15;
+            font-size: var(--fs-md);
+            font-weight: 700;
             outline: none;
+            transition: border-color 0.15s ease;
         }
 
         .bank-modal-input:focus {
-            border-color: #5a8aba;
+            border-color: #d4af37;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+        }
+
+        .bank-input-wrap .input-unit {
+            position: absolute;
+            right: 10px;
+            color: #d4af37;
+            font-size: var(--fs-xs);
+            font-weight: 700;
+            pointer-events: none;
         }
 
         .bank-modal-actions {
             display: flex;
-            gap: var(--gap);
+            gap: 8px;
+            margin-top: 4px;
         }
 
         .bank-modal-confirm {
             flex: 1;
-            background: #3a5a8a;
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
             color: #fff;
-            border: 1px solid #5a8aba;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.6) var(--pad);
+            border: 1px solid #60a5fa;
+            border-radius: 6px;
+            padding: 8px;
             font-size: var(--fs-sm);
+            font-weight: 700;
             cursor: pointer;
-            min-height: calc(var(--touch) * 0.7);
+            transition: all 0.15s ease;
         }
 
         .bank-modal-confirm:active {
-            background: #4a6a9a;
+            transform: translateY(1px);
         }
 
         .bank-modal-cancel {
             flex: 1;
-            background: #333;
-            color: #aaa;
-            border: 1px solid #555;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.6) var(--pad);
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 8px;
             font-size: var(--fs-sm);
+            font-weight: 600;
             cursor: pointer;
-            min-height: calc(var(--touch) * 0.7);
+            transition: all 0.15s ease;
         }
 
         .bank-modal-cancel:active {
-            background: #444;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         /* ===== 몬스터 대사 영역 ===== */
@@ -3735,142 +3846,192 @@
             max-height: calc(100dvh - var(--pad) * 2);
         }
 
-        .shop-body {
+        .shop-overlay .panel-body,
+        .shop-panel-body {
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: var(--gap);
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-        }
-
-        .shop-buy-section,
-        .shop-sell-section {
-            border: 1px solid #444;
-            border-radius: var(--radius);
-            background: #232323;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
             flex: 1;
             min-height: 0;
         }
 
-        .shop-section-title {
-            font-size: var(--fs-sm);
-            color: #eee;
-            padding: calc(var(--gap) * 0.6) var(--pad);
-            background: #2a2a2a;
-            border-bottom: 1px solid #444;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        .shop-buy-list,
-        .shop-sell-list {
+        .shop-content-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             flex: 1;
-            max-height: 30dvh;
-            overflow-y: auto;
-            padding: calc(var(--gap) * 0.4) 0;
+            min-height: 0;
         }
 
-        .shop-empty {
-            color: #888;
-            font-size: var(--fs-sm);
-            text-align: center;
-            padding: var(--pad);
-        }
-
-        .shop-buy-item,
-        .shop-sell-item {
+        .shop-gold-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: calc(var(--gap) * 0.5);
-            padding: calc(var(--gap) * 0.5) var(--pad);
-            border-bottom: 1px solid #333;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, rgba(20, 24, 38, 0.95) 0%, rgba(14, 17, 26, 0.95) 100%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .shop-gold-bar .gold-display {
             font-size: var(--fs-sm);
-        }
-
-        .shop-buy-item:last-child,
-        .shop-sell-item:last-child {
-            border-bottom: none;
-        }
-
-        .shop-buy-item .item-info,
-        .shop-sell-item .item-info {
-            display: flex;
+            color: #e2e8f0;
+            font-weight: 500;
+            display: inline-flex;
             align-items: center;
-            gap: calc(var(--gap) * 0.4);
-            flex: 1;
-            min-width: 0;
+            gap: 6px;
         }
 
-        .shop-buy-item .item-name,
-        .shop-sell-item .item-name {
-            color: #eee;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .shop-gold-bar .gold-icon {
+            font-size: 1.1rem;
         }
 
-        .shop-buy-item .item-meta,
-        .shop-sell-item .item-meta {
-            display: flex;
-            align-items: center;
-            gap: calc(var(--gap) * 0.5);
-            flex-shrink: 0;
-        }
-
-        .shop-buy-item .item-price,
-        .shop-sell-item .item-price {
+        .shop-gold-bar .gold-label {
+            color: #94a3b8;
             font-size: var(--fs-xs);
-            color: #f0c419;
-            white-space: nowrap;
         }
 
-        .shop-buy-item .item-actions,
-        .shop-sell-item .item-actions {
+        .shop-gold-bar .gold-amount {
+            color: #facc15;
+            font-weight: 800;
+            font-size: var(--fs-md);
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+        }
+
+        .shop-gold-bar .gold-unit {
+            color: #d4af37;
+            font-size: var(--fs-xs);
+            font-weight: 700;
+        }
+
+        /* 상점 세그먼트 탭 컨트롤 */
+        .shop-tab-controls {
             display: flex;
-            align-items: center;
+            background: rgba(10, 12, 18, 0.8);
+            padding: 6px 12px;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
         }
 
-        .item-action-btn.buy-btn {
-            background: #3a5a8a;
-            color: #fff;
-            border-color: #5a8aba;
-        }
-
-        .item-action-btn.buy-btn:active {
-            background: #4a6a9a;
-        }
-
-        .item-action-btn.sell-btn {
-            background: #333;
-            color: #ddd;
-            border-color: #555;
-        }
-
-        .item-action-btn.sell-btn:active {
-            background: #444;
-        }
-
-        .item-action-btn.sell-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            border-color: #333;
-            color: #666;
-        }
-
-        .shop-footer {
+        .shop-tab-btn {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: var(--pad);
-            border-top: 1px solid #444;
-            margin-top: auto;
-            flex-shrink: 0;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            font-size: var(--fs-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-height: 40px;
+        }
+
+        .shop-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+        }
+
+        .shop-tab-btn.active {
+            background: rgba(212, 175, 55, 0.18);
+            border-color: #d4af37;
+            color: #ffd700;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .shop-tab-btn .tab-badge {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #e2e8f0;
+        }
+
+        .shop-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            min-height: 0;
+        }
+
+        .shop-tab-pane {
+            display: none;
+        }
+
+        .shop-tab-pane.active {
+            display: block;
+        }
+
+        .shop-item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .shop-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .shop-card:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .shop-card.item-is-equipped {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.03);
+        }
+
+        .item-price-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--fs-sm);
+            font-weight: 700;
+            color: #facc15;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.2);
+        }
+
+        .item-price-tag.sell-price {
+            color: #fbbf24;
+        }
+
+        .item-action-btn.buy-btn {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff;
+            border: 1px solid #60a5fa;
+        }
+
+        .item-action-btn.sell-btn {
+            background: linear-gradient(135deg, #b45309, #d97706);
+            color: #ffffff;
+            border: 1px solid #fbbf24;
+        }
+
+        .item-action-btn.sell-btn:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+            border-color: #334155;
+            cursor: not-allowed;
+            filter: none;
+            transform: none;
+            opacity: 0.6;
         }
 
         /* ===== 수리 팝업 ===== */
@@ -3881,29 +4042,196 @@
             max-height: calc(100dvh - var(--pad) * 2);
         }
 
-        .repair-body {
+        .repair-overlay .panel-body,
+        .repair-panel-body {
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: var(--gap);
+            overflow: hidden;
             flex: 1;
             min-height: 0;
-            overflow-y: auto;
         }
 
-        .repair-list {
+        .repair-content-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             flex: 1;
             min-height: 0;
+        }
+
+        .repair-gold-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, rgba(20, 24, 38, 0.95) 0%, rgba(14, 17, 26, 0.95) 100%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .repair-gold-bar .gold-display {
+            font-size: var(--fs-sm);
+            color: #e2e8f0;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .repair-gold-bar .gold-icon {
+            font-size: 1.1rem;
+        }
+
+        .repair-gold-bar .gold-label {
+            color: #94a3b8;
+            font-size: var(--fs-xs);
+        }
+
+        .repair-gold-bar .gold-amount {
+            color: #facc15;
+            font-weight: 800;
+            font-size: var(--fs-md);
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+        }
+
+        .repair-gold-bar .gold-unit {
+            color: #d4af37;
+            font-size: var(--fs-xs);
+            font-weight: 700;
+        }
+
+        .repair-rate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            border-radius: 12px;
+            padding: 3px 8px;
+            font-size: var(--fs-xs);
+            color: #86efac;
+            font-weight: 600;
+        }
+
+        .repair-rate-badge .rate-val {
+            color: #4ade80;
+            font-weight: 800;
+        }
+
+        .repair-scroll-container {
+            flex: 1;
             overflow-y: auto;
+            padding: 12px;
+            min-height: 0;
+        }
+
+        .repair-item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .repair-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .repair-card:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .repair-card.item-is-equipped {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.03);
+        }
+
+        .repair-meta-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .repair-dura-bar {
+            width: 70px;
+        }
+
+        .repair-cost-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--fs-xs);
+            color: #cbd5e1;
+        }
+
+        .repair-cost-tag .cost-label {
+            color: #94a3b8;
+        }
+
+        .repair-cost-tag .cost-amount {
+            color: #facc15;
+            font-weight: 800;
+            font-size: var(--fs-sm);
+        }
+
+        .repair-cost-tag .cost-unit {
+            color: #d4af37;
+            font-weight: 700;
         }
 
         .item-action-btn.repair-btn {
-            background: #5a4a2a;
-            color: #ffd98f;
-            border-color: #8a7a4a;
+            background: linear-gradient(135deg, #b45309, #d97706);
+            color: #ffffff;
+            border: 1px solid #fbbf24;
         }
 
-        .item-action-btn.repair-btn:active {
-            background: #6a5a3a;
+        .repair-empty-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 36px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .repair-empty-card .empty-sparkle-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.4));
+        }
+
+        .repair-empty-card .empty-title {
+            margin: 0;
+            color: #ffd700;
+            font-size: var(--fs-md);
+            font-weight: 800;
+        }
+
+        .repair-empty-card .empty-desc {
+            margin: 0;
+            color: #94a3b8;
+            font-size: var(--fs-xs);
+            line-height: 1.5;
         }
 
         /* ===== 던전 클리어 결과 모달 ===== */

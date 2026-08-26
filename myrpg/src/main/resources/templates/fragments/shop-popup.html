@@ -5,81 +5,141 @@
 <div class="overlay shop-overlay" id="shopOverlay" th:fragment="shop-popup">
     <div class="panel shop-panel">
         <header class="panel-header">
-            <h3>상점</h3>
+            <div class="panel-header-title">
+                <span class="panel-header-icon">🛒</span>
+                <h3>상점</h3>
+            </div>
             <button class="panel-close" onclick="closeShop()" aria-label="닫기">✕</button>
         </header>
-        <div class="panel-body shop-body" id="shopContent">
+        <div class="panel-body shop-panel-body" id="shopContent">
             <!-- 상점 내용은 openShop() fetch로 채워짐 -->
         </div>
     </div>
 </div>
 
 <!-- 상점 내용 fragment (fetch 응답용) -->
-<div th:fragment="shop-content" th:if="${shop != null}">
-    <!-- 상점 물건 목록 (위) -->
-    <div class="shop-buy-section">
-        <h4 class="shop-section-title">상점 물건</h4>
-        <div class="shop-buy-list" id="shopBuyList">
-            <th:block th:if="${shop.buyItems.isEmpty()}">
-                <div class="shop-empty">판매 물건이 없습니다</div>
-            </th:block>
-            <div th:each="item : ${shop.buyItems}" class="shop-buy-item">
-                <div class="item-info">
-                    <span class="item-name" th:text="${item.name}">아이템</span>
-                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
-                    <button class="item-detail-btn"
-                            th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
-                            th:data-name="${item.name}"
-                            onclick="openItemDetail(this)">🔍</button>
-                </div>
-                <div class="item-meta">
-                    <span class="item-price" th:text="'💰 ' + ${item.buyPrice} + 'G'">가격</span>
-                </div>
-                <div class="item-actions">
-                    <button class="item-action-btn buy-btn"
-                            th:attr="data-npc-id=${shop.npcId},data-item-id=${item.id}"
-                            onclick="buyShopItem(this.dataset.npcId, this.dataset.itemId)">구매</button>
-                </div>
-            </div>
-        </div>
+<div th:fragment="shop-content" th:if="${shop != null}" class="shop-content-wrap">
+    <!-- 상단 고정 보유 골드 영역 -->
+    <div class="shop-gold-bar">
+        <span class="gold-display">
+            <span class="gold-icon">💰</span>
+            <span class="gold-label">보유 골드:</span>
+            <strong class="gold-amount" th:text="${shop.currentGold}">0</strong>
+            <span class="gold-unit">G</span>
+        </span>
     </div>
 
-    <!-- 내 소지품 목록 (아래) -->
-    <div class="shop-sell-section">
-        <h4 class="shop-section-title">내 소지품</h4>
-        <div class="shop-sell-list" id="shopSellList">
-            <th:block th:if="${shop.sellItems.isEmpty()}">
-                <div class="shop-empty">판매할 아이템이 없습니다</div>
-            </th:block>
-            <div th:each="item : ${shop.sellItems}" class="shop-sell-item">
-                <div class="item-info">
-                    <span class="item-name">
-                        <span th:text="${item.name}">아이템</span>
-                        <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
-                    </span>
-                    <span class="item-type-badge" th:text="${item.typeLabel}">타입</span>
-                    <span class="item-qty" th:if="${item.quantity > 1}" th:text="'x' + ${item.quantity}"></span>
-                    <button class="item-detail-btn"
-                            th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
-                            th:data-name="${item.name}"
-                            onclick="openItemDetail(this)">🔍</button>
-                </div>
-                <div class="item-meta">
-                    <span class="item-price" th:text="'💰 ' + ${item.sellValue} + 'G'">판매가</span>
-                </div>
-                <div class="item-actions">
-                    <button class="item-action-btn sell-btn"
-                            th:attr="data-npc-id=${shop.npcId},data-owned-id=${item.ownedItemId}"
-                            th:disabled="${item.equipped}"
-                            onclick="sellShopItem(this.dataset.npcId, this.dataset.ownedId)">판매</button>
-                </div>
-            </div>
-        </div>
+    <!-- 세그먼트 탭 컨트롤 -->
+    <div class="shop-tab-controls">
+        <button class="shop-tab-btn active" data-tab="buy" onclick="switchShopTab('buy')">
+            <span class="tab-label">🛍️ 상점 물품</span>
+            <span class="tab-badge" th:text="${shop.buyItems.size()}">0</span>
+        </button>
+        <button class="shop-tab-btn" data-tab="sell" onclick="switchShopTab('sell')">
+            <span class="tab-label">💰 내 소지품</span>
+            <span class="tab-badge" th:text="${shop.sellItems.size()}">0</span>
+        </button>
     </div>
 
-    <!-- 골드 하단 -->
-    <div class="shop-footer">
-        <span class="gold-display">💰 보유 골드: <strong th:text="${shop.currentGold}">0</strong></span>
+    <!-- 스크롤 컨테이너 -->
+    <div class="shop-scroll-container">
+        <!-- 1. 상점 구매 탭 -->
+        <div class="shop-tab-pane active" id="shopBuyPane">
+            <div class="shop-item-list" th:if="${!shop.buyItems.isEmpty()}">
+                <div class="shop-card" th:each="item : ${shop.buyItems}">
+                    <div class="item-card-top">
+                        <div class="item-info">
+                            <span class="item-icon" th:if="${item.typeLabel == '무기'}">🗡️</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '방어구'}">🛡️</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '투구'}">🪖</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '장갑'}">🧤</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '신발'}">👢</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '포션'}">🧪</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '기타' or (item.typeLabel != '무기' and item.typeLabel != '방어구' and item.typeLabel != '투구' and item.typeLabel != '장갑' and item.typeLabel != '신발' and item.typeLabel != '포션')}">📦</span>
+                            <span class="item-name" th:text="${item.name}">아이템명</span>
+                        </div>
+                        <button class="item-detail-btn"
+                                th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                                th:data-name="${item.name}"
+                                onclick="openItemDetail(this)"
+                                aria-label="상세보기" title="아이템 상세정보">🔍</button>
+                    </div>
+
+                    <div class="item-meta">
+                        <span class="item-type" th:text="${item.typeLabel}">타입</span>
+                        <div class="item-price-tag">
+                            <span class="price-icon">💰</span>
+                            <span class="price-val" th:text="${item.buyPrice}">0</span>
+                            <span class="price-unit">G</span>
+                        </div>
+                    </div>
+
+                    <div class="item-actions">
+                        <button class="item-action-btn buy-btn"
+                                th:attr="data-npc-id=${shop.npcId},data-item-id=${item.id}"
+                                onclick="buyShopItem(this.dataset.npcId, this.dataset.itemId)">
+                            <span class="btn-icon">🛒</span>
+                            <span>구매</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="inventory-empty" th:if="${shop.buyItems.isEmpty()}">
+                <span class="empty-icon">🏪</span>
+                <p>판매 중인 물품이 없습니다</p>
+            </div>
+        </div>
+
+        <!-- 2. 소지품 판매 탭 -->
+        <div class="shop-tab-pane" id="shopSellPane">
+            <div class="shop-item-list" th:if="${!shop.sellItems.isEmpty()}">
+                <div class="shop-card" th:each="item : ${shop.sellItems}"
+                     th:classappend="${item.equipped} ? ' item-is-equipped' : ''">
+                    <div class="item-card-top">
+                        <div class="item-info">
+                            <span class="item-icon" th:if="${item.typeLabel == '무기'}">🗡️</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '방어구'}">🛡️</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '투구'}">🪖</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '장갑'}">🧤</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '신발'}">👢</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '포션'}">🧪</span>
+                            <span class="item-icon" th:if="${item.typeLabel == '기타' or (item.typeLabel != '무기' and item.typeLabel != '방어구' and item.typeLabel != '투구' and item.typeLabel != '장갑' and item.typeLabel != '신발' and item.typeLabel != '포션')}">📦</span>
+                            <span class="item-name" th:text="${item.name}">아이템명</span>
+                            <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
+                        </div>
+                        <button class="item-detail-btn"
+                                th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                                th:data-name="${item.name}"
+                                onclick="openItemDetail(this)"
+                                aria-label="상세보기" title="아이템 상세정보">🔍</button>
+                    </div>
+
+                    <div class="item-meta">
+                        <span class="item-type" th:text="${item.typeLabel}">타입</span>
+                        <span class="item-quantity" th:if="${item.quantity > 1}" th:text="'×' + ${item.quantity}">×1</span>
+                        <div class="item-price-tag sell-price">
+                            <span class="price-icon">💰</span>
+                            <span class="price-val" th:text="${item.sellValue}">0</span>
+                            <span class="price-unit">G</span>
+                        </div>
+                    </div>
+
+                    <div class="item-actions">
+                        <button class="item-action-btn sell-btn"
+                                th:attr="data-npc-id=${shop.npcId},data-owned-id=${item.ownedItemId}"
+                                th:disabled="${item.equipped}"
+                                onclick="sellShopItem(this.dataset.npcId, this.dataset.ownedId)">
+                            <span class="btn-icon">🪙</span>
+                            <span th:text="${item.equipped} ? '장착중 불가' : '판매'">판매</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="inventory-empty" th:if="${shop.sellItems.isEmpty()}">
+                <span class="empty-icon">📭</span>
+                <p>판매할 수 있는 소지품이 없습니다</p>
+            </div>
+        </div>
     </div>
 </div>
 </body>
