@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RepairController {
 
     private static final String FRAGMENT_REPAIR_POPUP = "fragments/repair-popup :: repair-content";
-    private static final String LOG_TYPE_ITEM = "item";
     private static final int REPAIR_SUCCESS_RATE_PERCENT = 95;
     private static final int REPAIR_AMOUNT = 1;
 

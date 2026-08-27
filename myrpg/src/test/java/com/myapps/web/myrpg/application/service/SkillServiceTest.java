@@ -381,6 +381,162 @@ class SkillServiceTest {
         assertThat(skill.getKillCount()).isEqualTo(3);
     }
 
+    @Test
+    void should_throw_when_slotIndex_out_of_bounds() {
+        assertThatThrownBy(() -> skillService.assignSkillSlot(CHARACTER_ID, "skillA", -1))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> skillService.assignSkillSlot(CHARACTER_ID, "skillA", 10))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void should_throw_when_skill_not_found_in_catalog() {
+        when(skillCatalogService.byId("unknown_skill")).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> skillService.assignSkillSlot(CHARACTER_ID, "unknown_skill", 0))
+                .isInstanceOf(java.util.NoSuchElementException.class);
+    }
+
+    @Test
+    void should_assign_to_empty_slot_without_swapping() {
+        final CharacterSkill skillA =
+                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, null);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skillA));
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "skillA"))
+                .thenReturn(Optional.of(skillA));
+        when(skillCatalogService.byId("skillA"))
+                .thenReturn(Optional.of(createDummySkill("skillA")));
+
+        skillService.assignSkillSlot(CHARACTER_ID, "skillA", 5);
+
+        assertThat(skillA.getSlotIndex()).isEqualTo(5);
+        verify(characterSkillRepository).save(skillA);
+    }
+
+    @Test
+    void should_assignSkillSlot_and_swap_existing_slot_occupant() {
+        final CharacterSkill skillA =
+                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, 0);
+        final CharacterSkill skillB =
+                new CharacterSkill(CHARACTER_ID, "skillB", SkillRank.F, 0, 0, 0, 1);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
+                .thenReturn(List.of(skillA, skillB));
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "skillB"))
+                .thenReturn(Optional.of(skillB));
+        when(skillCatalogService.byId("skillB"))
+                .thenReturn(Optional.of(createDummySkill("skillB")));
+
+        // skillB를 0번 슬롯으로 이동 -> 기존 0번 skillA는 1번으로 스왑
+        skillService.assignSkillSlot(CHARACTER_ID, "skillB", 0);
+
+        assertThat(skillB.getSlotIndex()).isEqualTo(0);
+        assertThat(skillA.getSlotIndex()).isEqualTo(1);
+        verify(characterSkillRepository).save(skillB);
+        verify(characterSkillRepository).save(skillA);
+    }
+
+    @Test
+    void should_prevent_assigning_passive_skill_to_slot() {
+        when(skillCatalogService.byId("combat_mastery"))
+                .thenReturn(
+                        Optional.of(
+                                new com.myapps.web.myrpg.domain.model.PassiveSkill(
+                                        "combat_mastery",
+                                        "컴뱃 마스터리",
+                                        SkillType.PASSIVE,
+                                        SkillTalent.MELEE,
+                                        0,
+                                        java.util.Map.of(),
+                                        "패시브")));
+
+        assertThatThrownBy(() -> skillService.assignSkillSlot(CHARACTER_ID, "combat_mastery", 0))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(characterSkillRepository, never()).save(any());
+    }
+
+    @Test
+    void should_clearSkillSlot_successfully() {
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, 3);
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "skillA"))
+                .thenReturn(Optional.of(skill));
+
+        skillService.clearSkillSlot(CHARACTER_ID, "skillA");
+
+        assertThat(skill.getSlotIndex()).isNull();
+        verify(characterSkillRepository).save(skill);
+    }
+
+    @Test
+    void should_clearAllSkillSlots_successfully() {
+        final CharacterSkill skill1 =
+                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, 0);
+        final CharacterSkill skill2 =
+                new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, 0, 0, 1);
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
+                .thenReturn(List.of(skill1, skill2));
+
+        skillService.clearAllSkillSlots(CHARACTER_ID);
+
+        assertThat(skill1.getSlotIndex()).isNull();
+        assertThat(skill2.getSlotIndex()).isNull();
+        verify(characterSkillRepository).save(skill1);
+        verify(characterSkillRepository).save(skill2);
+    }
+
+    @Test
+    void should_autoAssignDefaultSlots_for_active_skills_only() {
+        final CharacterSkill skill1 =
+                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, null);
+        final CharacterSkill passive =
+                new CharacterSkill(CHARACTER_ID, "passive", SkillRank.F, 0, 0, 0, null);
+        final CharacterSkill skill2 =
+                new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, 0, 0, null);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
+                .thenReturn(List.of(skill1, passive, skill2));
+        when(skillCatalogService.byId("skill1"))
+                .thenReturn(Optional.of(createDummySkill("skill1")));
+        when(skillCatalogService.byId("passive"))
+                .thenReturn(
+                        Optional.of(
+                                new com.myapps.web.myrpg.domain.model.PassiveSkill(
+                                        "passive",
+                                        "패시브",
+                                        SkillType.PASSIVE,
+                                        SkillTalent.MELEE,
+                                        0,
+                                        java.util.Map.of(),
+                                        "설명")));
+        when(skillCatalogService.byId("skill2"))
+                .thenReturn(Optional.of(createDummySkill("skill2")));
+
+        skillService.autoAssignDefaultSlots(CHARACTER_ID);
+
+        assertThat(skill1.getSlotIndex()).isEqualTo(0);
+        assertThat(passive.getSlotIndex()).isNull();
+        assertThat(skill2.getSlotIndex()).isEqualTo(1);
+    }
+
+    @Test
+    void should_buildSkillSlots_returning_exactly_10_slots() {
+        final CharacterSkill skill1 =
+                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, 0);
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill1));
+        when(skillCatalogService.byId("skill1"))
+                .thenReturn(Optional.of(createDummySkill("skill1")));
+
+        final List<com.myapps.web.myrpg.application.dto.BattleSkillButton> slots =
+                skillService.buildSkillSlots(CHARACTER_ID);
+
+        assertThat(slots).hasSize(10);
+        assertThat(slots.get(0).empty()).isFalse();
+        assertThat(slots.get(0).id()).isEqualTo("skill1");
+        assertThat(slots.get(1).empty()).isTrue();
+    }
+
     private CharacterProgress createProgressWithAp(final int abilityPoints) {
         final CharacterProgress progress =
                 new CharacterProgress(

@@ -551,6 +551,31 @@ class BattleControllerTest {
                 List.of("도망쳤다!"));
     }
 
+    @Test
+    void should_returnBattleResponseFragment_when_swapWeaponRequested() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        final Monster monster = createTestMonster();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(battleService.resumeIfActive(any(CharacterProgress.class)))
+                .thenReturn(Optional.of(state));
+        when(monsterService.byId(MONSTER_ID)).thenReturn(Optional.of(monster));
+        when(battleService.combatSkills(any(CharacterProgress.class)))
+                .thenReturn(createTestSkills());
+        when(playScreenViewHelper.buildTopBar(any(CharacterProgress.class)))
+                .thenReturn(createTestTopBar());
+        when(mapService.minimap(anyString())).thenReturn(createTestMinimap());
+        when(actionLog.getEntries()).thenReturn(List.of());
+
+        mockMvc.perform(post("/battle/swap-weapon"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_BATTLE_RESPONSE))
+                .andExpect(model().attributeExists("battleView"))
+                .andExpect(model().attributeExists("skills"));
+        verify(battleService).swapWeapon(progress);
+    }
+
     private BattleTurnResult createFleeFailResult() {
         return new BattleTurnResult(
                 null,

@@ -176,7 +176,7 @@ class BattleServiceManaShieldTest {
         // then: 3턴 지속, 50% 흡수율 활성화
         assertThat(state.getManaShieldTurnsLeft()).isGreaterThanOrEqualTo(2);
         assertThat(state.getManaShieldAbsorbRate()).isEqualTo(50);
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("마나 실드 활성화"));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("마나 실드"));
     }
 
     @Test
@@ -197,7 +197,7 @@ class BattleServiceManaShieldTest {
 
         // then: MP가 감소하고 combatLines에 흡수 메시지 기록
         assertThat(progress.getMpCurrent()).isLessThan(100);
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("마나 실드가 피해"));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("MP로 흡수"));
         assertThat(state.getManaShieldTurnsLeft()).isEqualTo(2); // 1턴 차감
     }
 

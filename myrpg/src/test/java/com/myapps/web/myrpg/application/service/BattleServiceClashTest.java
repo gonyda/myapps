@@ -272,8 +272,8 @@ class BattleServiceClashTest {
         verify(characterService).saveTurn(progress);
 
         assertThat(result.combatLines())
-                .anyMatch(line -> line.contains("시간 초과! 몬스터의 공격에 무방비로 피격되었습니다!"))
-                .anyMatch(line -> line.contains("너구리의 일반공격!"));
+                .anyMatch(line -> line.contains("⏳ [시간 초과] 무방비 피격"))
+                .anyMatch(line -> line.contains("일반공격 ➔"));
         assertThat(result.battleEnded()).isFalse();
     }
 
@@ -293,7 +293,7 @@ class BattleServiceClashTest {
         assertThat(result.playerDamage()).isZero();
         assertThat(state.isStandby()).isTrue();
         assertThat(state.getCurrentMonsterIntent()).isNull();
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("너구리의 강공격!"));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("강공격 ➔"));
     }
 
     @Test
@@ -312,7 +312,7 @@ class BattleServiceClashTest {
         assertThat(progress.getHpCurrent()).isEqualTo(100);
         assertThat(state.isStandby()).isTrue();
         assertThat(state.getCurrentMonsterIntent()).isNull();
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("너구리은(는) 방어 태세를 유지했습니다."));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("방어 태세"));
     }
 
     @Test
@@ -357,7 +357,7 @@ class BattleServiceClashTest {
         verify(battleStateRepo).save(state);
         verify(characterService).saveTurn(progress);
 
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("시간 초과! 선제 공격 기회를 놓쳤습니다."));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("선제 공격 기회 상실"));
         assertThat(result.battleEnded()).isFalse();
     }
 
@@ -524,7 +524,7 @@ class BattleServiceClashTest {
         assertThat(result.monsterAction()).isEqualTo(SkillType.NORMAL);
         assertThat(result.monsterDamage()).isPositive();
         assertThat(result.battleEnded()).isFalse();
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("도망 실패!"));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("도망 실패"));
         assertThat(state.isStandby()).isTrue();
         assertThat(state.getCurrentMonsterIntent()).isNull();
         assertThat(state.getTurnCount()).isEqualTo(2);
@@ -703,7 +703,7 @@ class BattleServiceClashTest {
         assertThat(result.monsterDamage()).isZero();
         assertThat(state.getPreemptiveParty()).isEqualTo(PreemptiveParty.NONE);
         assertThat(state.isStandby()).isTrue();
-        assertThat(result.combatLines()).containsExactly("선제 공격 기회였으나 디펜스(방어) 태세를 취했다!");
+        assertThat(result.combatLines()).containsExactly("⚡ [선제 공격] 선제 찬스였으나 [디펜스] 태세 유지");
     }
 
     @Test

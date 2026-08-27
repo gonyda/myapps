@@ -4,11 +4,39 @@
 
 <!-- 스킬 목록 팝업 fragment -->
 <div th:fragment="skill-list" id="skillListContent">
+    <!-- 10개 핫바 스킬 슬롯 도크 -->
+    <div class="skill-dock-container">
+        <div class="skill-dock-header">
+            <div class="skill-dock-title">
+                <span class="dock-icon">⚡</span>
+                <span class="dock-label">전투 스킬 핫바</span>
+                <span class="dock-desc">(최대 10개 등록)</span>
+            </div>
+            <div class="skill-dock-actions">
+                <button type="button" class="dock-action-btn auto" onclick="autoAssignSkillSlots()">🔄 자동배치</button>
+                <button type="button" class="dock-action-btn clear" onclick="clearAllSkillSlots()">🗑️ 비우기</button>
+            </div>
+        </div>
+        <div class="skill-dock-grid">
+            <div th:each="slot, stat : ${skillList.slots()}"
+                 class="skill-dock-slot"
+                 th:classappend="${slot.empty()} ? ' slot-empty' : ' slot-filled'"
+                 th:attr="data-slot-index=${stat.index}, data-skill-id=${slot.id()}"
+                 onclick="onDockSlotClick(this.getAttribute('data-slot-index'), this.getAttribute('data-skill-id'))">
+                <span class="dock-slot-number" th:text="${stat.index + 1}">1</span>
+                <div class="dock-slot-content">
+                    <span class="dock-slot-icon" th:text="${slot.empty() ? '➕' : slot.icon()}">⚔️</span>
+                    <span class="dock-slot-name" th:text="${slot.empty() ? '미등록' : slot.label()}">베기</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 탭 내비게이션 -->
     <div class="skill-tabs">
         <button class="skill-tab"
                 data-tab="all"
-                th:classappend="${skillList.activeTab() == 'all'} ? ' active' : ''"
+                th:classappend="${skillList.activeTab() == 'all' or skillList.activeTab() == null} ? ' active' : ''"
                 onclick="loadSkillTab('all')">
             <span class="tab-icon">🌐</span>
             <span class="tab-text">전체</span>
@@ -47,7 +75,7 @@
     <div class="skill-rows">
         <div th:each="row : ${skillList.rows()}" class="skill-row"
              th:attr="onclick='openRankUpModal(\'' + ${row.id()} + '\')'">
-            <!-- 1행: 헤더 (아이콘 + 스킬명 + 랭크 뱃지 | 쿨타임 뱃지 + 필드 사용 버튼) -->
+            <!-- 1행: 헤더 (아이콘 + 스킬명 + 랭크 뱃지 | 슬롯 뱃지 + 궁극기 쿨타임 + 필드 사용 버튼) -->
             <div class="skill-row-header">
                 <div class="skill-title-group">
                     <span class="skill-icon"
@@ -59,6 +87,22 @@
                 </div>
 
                 <div class="skill-status-group">
+                    <!-- 슬롯 등록 뱃지 / 버튼 -->
+                    <span class="badge-slot-assigned"
+                          th:if="${row.slotIndex() != null}"
+                          onclick="event.stopPropagation(); clearSkillSlot(this.getAttribute('data-skill-id'))"
+                          th:attr="data-skill-id=${row.id()}"
+                          th:text="'슬롯 ' + (${row.slotIndex() + 1}) + ' ✕'">슬롯 1 ✕</span>
+
+                    <button class="skill-slot-btn"
+                            type="button"
+                            th:if="${row.slotIndex() == null and !row.isPassive()}"
+                            onclick="event.stopPropagation(); openSlotAssignPicker(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-name'))"
+                            th:attr="data-skill-id=${row.id()}, data-skill-name=${row.label()}">➕ 슬롯</button>
+
+                    <span class="badge-passive"
+                          th:if="${row.isPassive()}">패시브</span>
+
                     <!-- 궁극기 쿨타임 뱃지 -->
                     <span class="badge-cooldown"
                           th:if="${row.cooldownBadgeText() != null}"
@@ -67,6 +111,7 @@
 
                     <!-- 필드 스킬 사용 버튼 (힐링 등) -->
                     <button class="skill-use-btn"
+                            type="button"
                             th:if="${row.fieldUsable()}"
                             onclick="event.stopPropagation(); useFieldSkill(this.getAttribute('data-skill-id'))"
                             th:attr="data-skill-id=${row.id()}">✨ 사용</button>
@@ -94,6 +139,7 @@
 
                 <!-- 승급 버튼 -->
                 <button class="skill-rankup-btn"
+                        type="button"
                         th:classappend="${row.maxed()} ? ' maxed' : (${row.rankable()} ? ' ready' : '')"
                         onclick="event.stopPropagation(); openRankUpModal(this.getAttribute('data-skill-id'))"
                         th:attr="data-skill-id=${row.id()}"

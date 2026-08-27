@@ -151,6 +151,37 @@ public class BattleController {
     }
 
     /**
+     * 대치 페이즈에서 무기 세트를 즉시 교체(스왑)하고 갱신된 전투 응답 프래그먼트를 반환한다.
+     *
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 전투 응답 프래그먼트 뷰 이름
+     */
+    @PostMapping("/swap-weapon")
+    public String swapWeapon(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        final Optional<BattleState> stateOpt = battleService.resumeIfActive(progress);
+
+        if (stateOpt.isEmpty()) {
+            return returnCenterFragment(progress, model);
+        }
+
+        final BattleState state = stateOpt.get();
+        final boolean swapped = battleService.swapWeapon(progress);
+        final Optional<Monster> monsterOpt = monsterService.byId(state.getMonsterId());
+        final Monster monster = monsterOpt.orElse(null);
+        final BattleView battleView = buildBattleView(state, monster, progress);
+        final List<String> turnLog =
+                swapped ? List.of("🔄 무기 세트를 전환했습니다.") : List.of("⚠️ 교체 가능한 다른 무기가 없습니다.");
+        populateBattleModel(model, progress, battleView, turnLog);
+        return "fragments/battle-view :: battle-response";
+    }
+
+    public String swapWeapon(final Model model) {
+        return swapWeapon(null, model);
+    }
+
+    /**
      * 전투 턴을 진행하고 갱신된 프래그먼트들을 반환한다.
      *
      * <p>플레이어가 선택한 스킬로 한 턴을 진행한다. 활성 전투가 없으면 일반 플레이 화면을 반환한다. 턴 결과에 따라 전투

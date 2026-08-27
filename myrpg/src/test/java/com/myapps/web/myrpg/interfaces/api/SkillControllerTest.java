@@ -179,6 +179,67 @@ class SkillControllerTest {
         return new SkillListView(activeTab, List.of(row));
     }
 
+    @Test
+    void should_assignSlot_and_return_skill_list_fragment() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final SkillListView listView = dummyListView("all");
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.buildListView(progress.getId(), "all")).thenReturn(listView);
+
+        mockMvc.perform(
+                        post("/skills/slots/assign")
+                                .param("skillId", SKILL_ID)
+                                .param("slotIndex", "0")
+                                .param("tab", "all"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_SKILL_LIST))
+                .andExpect(model().attributeExists("skillList"));
+        verify(skillService).assignSkillSlot(progress.getId(), SKILL_ID, 0);
+    }
+
+    @Test
+    void should_clearSlot_and_return_skill_list_fragment() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final SkillListView listView = dummyListView("all");
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.buildListView(progress.getId(), "all")).thenReturn(listView);
+
+        mockMvc.perform(post("/skills/slots/clear").param("skillId", SKILL_ID).param("tab", "all"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_SKILL_LIST));
+        verify(skillService).clearSkillSlot(progress.getId(), SKILL_ID);
+    }
+
+    @Test
+    void should_clearAllSlots_and_return_skill_list_fragment() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final SkillListView listView = dummyListView("all");
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.buildListView(progress.getId(), "all")).thenReturn(listView);
+
+        mockMvc.perform(post("/skills/slots/clear-all").param("tab", "all"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_SKILL_LIST));
+        verify(skillService).clearAllSkillSlots(progress.getId());
+    }
+
+    @Test
+    void should_autoAssignSlots_and_return_skill_list_fragment() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final SkillListView listView = dummyListView("all");
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(skillService.buildListView(progress.getId(), "all")).thenReturn(listView);
+
+        mockMvc.perform(post("/skills/slots/auto-assign").param("tab", "all"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_SKILL_LIST));
+        verify(skillService).autoAssignDefaultSlots(progress.getId());
+    }
+
     private SkillRankUpView dummyRankUpView() {
         return new SkillRankUpView(
                 SKILL_ID,

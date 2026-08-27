@@ -99,15 +99,15 @@ class CombatSkillListPropertyTest {
                 .thenReturn(List.of(weapon));
         when(itemCatalogService.byId("weapon_1")).thenReturn(Optional.of(weaponCatalog));
 
-        // 캐릭터가 3재능 스킬 + 공통 스킬을 모두 보유
-        final List<CharacterSkill> allSkills =
+        // 첫 번째 테스트
+        final List<CharacterSkill> allSkills1 =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
 
-        when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
+        when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills1);
 
         when(skillCatalogService.byId("melee_normal"))
                 .thenReturn(
@@ -140,8 +140,14 @@ class CombatSkillListPropertyTest {
 
         final List<BattleSkillButton> result = service.combatSkills(progress);
 
-        // 무기 재능 스킬 + 공통만 포함
-        assertThat(result)
+        // 10개 슬롯 반환 검증
+        assertThat(result).hasSize(10);
+
+        // 활성화된(enabled=true) 스킬은 무기 재능 또는 공통만 가능
+        final List<BattleSkillButton> enabledButtons =
+                result.stream().filter(b -> !b.empty() && b.enabled()).toList();
+        assertThat(enabledButtons)
+                .isNotEmpty()
                 .allSatisfy(
                         button -> {
                             final Optional<Skill> skill = skillCatalogService.byId(button.id());
@@ -150,12 +156,12 @@ class CombatSkillListPropertyTest {
                             assertThat(talent).isIn(weaponTalent, SkillTalent.COMMON);
                         });
 
-        // 공통(방어)은 반드시 포함
-        assertThat(result).anyMatch(button -> button.id().equals("defense"));
+        // 공통(방어)은 반드시 활성화
+        assertThat(enabledButtons).anyMatch(button -> "defense".equals(button.id()));
     }
 
     /**
-     * 다른 재능의 스킬이 결과에 포함되지 않음을 검증한다.
+     * 다른 재능의 스킬은 비활성화(enabled=false)됨을 검증한다.
      *
      * @param weaponTalent 착용 무기의 재능
      */
@@ -202,10 +208,10 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 
@@ -240,16 +246,23 @@ class CombatSkillListPropertyTest {
 
         final List<BattleSkillButton> result = service.combatSkills(progress);
 
-        // 다른 재능 스킬은 제외
+        // 다른 재능 스킬은 enabled=false
         for (final BattleSkillButton button : result) {
-            final Optional<Skill> skill = skillCatalogService.byId(button.id());
-            assertThat(skill).isPresent();
-            final SkillTalent talent = skill.get().talent();
-            assertThat(talent).isNotIn(otherTalents(weaponTalent));
+            if (!button.empty() && button.id() != null) {
+                final Optional<Skill> skill = skillCatalogService.byId(button.id());
+                assertThat(skill).isPresent();
+                final SkillTalent talent = skill.get().talent();
+                final SkillTalent[] others = otherTalents(weaponTalent);
+                for (final SkillTalent other : others) {
+                    if (talent == other) {
+                        assertThat(button.enabled()).isFalse();
+                    }
+                }
+            }
         }
     }
 
-    /** 무기 미장착 시 공통 스킬(방어)만 반환됨을 검증한다. */
+    /** 무기 미장착 시 공통 스킬(방어)만 활성화(enabled=true)됨을 검증한다. */
     @Property(tries = 100)
     void should_returnOnlyCommon_when_noWeaponEquipped() {
 
@@ -279,9 +292,9 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 2));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 
@@ -308,19 +321,21 @@ class CombatSkillListPropertyTest {
 
         final List<BattleSkillButton> result = service.combatSkills(progress);
 
-        // 공통 스킬만 포함
-        assertThat(result)
+        // 활성화된 스킬은 공통 스킬만 존재
+        final List<BattleSkillButton> enabledButtons =
+                result.stream().filter(b -> !b.empty() && b.enabled()).toList();
+        assertThat(enabledButtons)
+                .isNotEmpty()
                 .allSatisfy(
                         button -> {
                             final Optional<Skill> skill = skillCatalogService.byId(button.id());
                             assertThat(skill).isPresent();
                             assertThat(skill.get().talent()).isEqualTo(SkillTalent.COMMON);
                         });
-        assertThat(result).isNotEmpty();
     }
 
     /**
-     * 무기 변경 시 스킬 목록이 새 무기 재능으로 바뀜을 검증한다.
+     * 무기 변경 시 활성화된 스킬 목록이 새 무기 재능으로 바뀜을 검증한다.
      *
      * @param talentPair 변경 전/후 무기 재능 쌍
      */
@@ -369,10 +384,10 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 
@@ -426,12 +441,20 @@ class CombatSkillListPropertyTest {
 
         final List<BattleSkillButton> secondResult = service.combatSkills(progress);
 
-        // 목록이 달라져야 함 (재능 스킬 ID가 다름)
-        final List<String> firstIds =
-                firstResult.stream().map(BattleSkillButton::id).sorted().toList();
-        final List<String> secondIds =
-                secondResult.stream().map(BattleSkillButton::id).sorted().toList();
-        assertThat(firstIds).isNotEqualTo(secondIds);
+        // 활성화된 스킬 목록이 달라져야 함 (재능 스킬 ID가 다름)
+        final List<String> firstEnabledIds =
+                firstResult.stream()
+                        .filter(b -> !b.empty() && b.enabled())
+                        .map(BattleSkillButton::id)
+                        .sorted()
+                        .toList();
+        final List<String> secondEnabledIds =
+                secondResult.stream()
+                        .filter(b -> !b.empty() && b.enabled())
+                        .map(BattleSkillButton::id)
+                        .sorted()
+                        .toList();
+        assertThat(firstEnabledIds).isNotEqualTo(secondEnabledIds);
     }
 
     // ─── Arbitrary Providers ────────────────────────────────────────────────

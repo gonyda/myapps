@@ -25,6 +25,7 @@ import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.PotionItem;
+import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
@@ -37,7 +38,6 @@ import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -807,9 +807,42 @@ public class InventoryService {
      * @param progress 캐릭터 진행상황 (보유 스킬·착용 장비 조회용)
      * @return 전투에서 사용 가능한 스킬 버튼 목록
      */
+    /**
+     * 전투에서 사용할 10개 스킬 슬롯 버튼 목록을 반환한다.
+     *
+     * <p>0~9번 10개 슬롯을 순서대로 생성하며, 착용 중인 무기 계열({@code weaponTalent})과 일치하거나 공통(COMMON) 스킬만 {@code
+     * enabled=true}로 활성화된다. 착용 무기와 다른 계열의 스킬은 슬롯 자리는 유지하되 {@code enabled=false}로 비활성화된다.
+     *
+     * @param progress 캐릭터 진행상황 (보유 스킬·착용 장비 조회용)
+     * @return 10개 슬롯의 BattleSkillButton 목록
+     */
     public List<BattleSkillButton> combatSkills(final CharacterProgress progress) {
         final Long charId = progress != null ? progress.getId() : null;
+        if (charId != null) {
+            ensureDefaultSlotsIfEmpty(charId);
+        }
         final SkillTalent weaponTalent = resolveEquippedWeaponTalent(charId);
+        final List<CharacterSkill> ownedSkills = resolveOwnedSkills(charId);
+
+        final BattleSkillButton[] slotArray = new BattleSkillButton[10];
+        for (int i = 0; i < 10; i++) {
+            slotArray[i] = BattleSkillButton.emptySlot(i);
+        }
+
+        for (final CharacterSkill characterSkill : ownedSkills) {
+            final Integer slotIdx = characterSkill.getSlotIndex();
+            if (slotIdx != null && slotIdx >= 0 && slotIdx < 10) {
+                final BattleSkillButton button =
+                        buildSlotButton(characterSkill, slotIdx, weaponTalent);
+                if (button != null) {
+                    slotArray[slotIdx] = button;
+                }
+            }
+        }
+        return List.of(slotArray);
+    }
+
+    private List<CharacterSkill> resolveOwnedSkills(final Long charId) {
         List<CharacterSkill> ownedSkills = List.of();
         if (charId != null) {
             ownedSkills = characterSkillRepository.findByCharacterId(charId);
@@ -817,18 +850,118 @@ public class InventoryService {
         if (ownedSkills == null || ownedSkills.isEmpty()) {
             ownedSkills = characterSkillRepository.findByCharacterId(null);
         }
-        if (ownedSkills == null) {
-            ownedSkills = List.of();
+        return ownedSkills != null ? ownedSkills : List.of();
+    }
+
+    private BattleSkillButton buildSlotButton(
+            final CharacterSkill characterSkill,
+            final int slotIdx,
+            final SkillTalent weaponTalent) {
+        final Optional<Skill> catalogOpt = skillCatalogService.byId(characterSkill.getSkillId());
+        if (catalogOpt.isEmpty() || catalogOpt.get() instanceof PassiveSkill) {
+            return null;
+        }
+        final Skill catalog = catalogOpt.get();
+        final boolean isCommon = catalog.talent() == SkillTalent.COMMON;
+        final boolean isMatched = weaponTalent != null && catalog.talent() == weaponTalent;
+        final boolean enabled = isCommon || isMatched;
+        final String disabledReason =
+                enabled ? null : (weaponTalent == null ? "무기 장착 필요" : "장착 무기 불일치");
+        final int cooldown = characterSkill.getUltimateCooldown();
+        final boolean ready = catalog.type() == SkillType.ULTIMATE && cooldown == 0;
+        final String icon = resolveSkillIcon(catalog);
+
+        return new BattleSkillButton(
+                catalog.id(),
+                catalog.label(),
+                catalog.type(),
+                catalog.talent().resourceKind(),
+                catalog.resourceCost(),
+                cooldown,
+                ready,
+                slotIdx,
+                enabled,
+                disabledReason,
+                false,
+                icon);
+    }
+
+    private void ensureDefaultSlotsIfEmpty(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        final boolean hasAnySlot = owned.stream().anyMatch(cs -> cs.getSlotIndex() != null);
+        if (!hasAnySlot && !owned.isEmpty()) {
+            int slot = 0;
+            for (final CharacterSkill cs : owned) {
+                final Optional<Skill> catalogOpt = skillCatalogService.byId(cs.getSkillId());
+                if (catalogOpt.isPresent() && !(catalogOpt.get() instanceof PassiveSkill)) {
+                    cs.setSlotIndex(slot++);
+                    characterSkillRepository.save(cs);
+                    if (slot >= 10) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 대치 페이즈에서 인벤토리 내 다른 무기로 즉시 스왑한다.
+     *
+     * <p>현재 장착 중인 무기와 다른 계열(또는 다음 무기)을 찾아 원터치로 교체 장착한다.
+     *
+     * @param progress 캐릭터 진행 상태
+     * @return 무기 스왑 성공 시 true, 스왑할 무기가 없으면 false
+     */
+    @Transactional
+    public boolean swapWeapon(final CharacterProgress progress) {
+        final Long charId = progress != null ? progress.getId() : null;
+        final List<OwnedItem> inventoryItems = loadInventoryItems(charId);
+
+        final List<OwnedItem> unequippedWeapons = new ArrayList<>();
+        for (final OwnedItem item : inventoryItems) {
+            final Optional<Item> catalogOpt = itemCatalogService.byId(item.getItemId());
+            if (catalogOpt.isPresent()
+                    && catalogOpt.get().type() == ItemType.WEAPON
+                    && !item.isEquipped()) {
+                unequippedWeapons.add(item);
+            }
         }
 
-        final List<BattleSkillButton> buttons = new ArrayList<>();
-        for (final CharacterSkill characterSkill : ownedSkills) {
-            buildCombatButton(characterSkill, weaponTalent).ifPresent(buttons::add);
+        if (unequippedWeapons.isEmpty()) {
+            return false;
         }
-        buttons.sort(
-                Comparator.comparingInt((BattleSkillButton b) -> skillTypePriority(b.type()))
-                        .thenComparing(BattleSkillButton::id));
-        return List.copyOf(buttons);
+
+        final SkillTalent currentTalent = resolveEquippedWeaponTalent(charId);
+        final OwnedItem targetWeapon = selectTargetWeaponForSwap(unequippedWeapons, currentTalent);
+        smartEquip(targetWeapon.getId());
+        return true;
+    }
+
+    private List<OwnedItem> loadInventoryItems(final Long charId) {
+        List<OwnedItem> inventoryItems = List.of();
+        if (charId != null) {
+            inventoryItems =
+                    ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                            charId, StorageKind.INVENTORY);
+        }
+        if (inventoryItems == null || inventoryItems.isEmpty()) {
+            inventoryItems = ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+        }
+        return inventoryItems != null ? inventoryItems : List.of();
+    }
+
+    private OwnedItem selectTargetWeaponForSwap(
+            final List<OwnedItem> unequippedWeapons, final SkillTalent currentTalent) {
+        for (final OwnedItem unequipped : unequippedWeapons) {
+            final Optional<Item> catOpt = itemCatalogService.byId(unequipped.getItemId());
+            if (catOpt.isPresent() && catOpt.get() instanceof EquipmentItem eqItem) {
+                final SkillTalent talent = mapKindToSkillTalent(eqItem.kind());
+                if (currentTalent == null || talent != currentTalent) {
+                    return unequipped;
+                }
+            }
+        }
+        return unequippedWeapons.get(0);
     }
 
     /**
@@ -1302,39 +1435,25 @@ public class InventoryService {
         };
     }
 
-    private Optional<BattleSkillButton> buildCombatButton(
-            final CharacterSkill characterSkill, final SkillTalent weaponTalent) {
-        final Optional<Skill> catalogOpt = skillCatalogService.byId(characterSkill.getSkillId());
-        if (catalogOpt.isEmpty()) {
-            return Optional.empty();
-        }
-        final Skill catalog = catalogOpt.get();
+    private String resolveSkillIcon(final Skill catalog) {
         if (catalog instanceof PassiveSkill) {
-            return Optional.empty();
+            return "🛡️";
         }
-        final SkillTalent skillTalent = catalog.talent();
-
-        if (skillTalent == SkillTalent.COMMON) {
-            return Optional.of(toBattleSkillButton(characterSkill, catalog));
+        if (catalog.type() == SkillType.ULTIMATE) {
+            return "👑";
         }
-        if (weaponTalent != null && skillTalent == weaponTalent) {
-            return Optional.of(toBattleSkillButton(characterSkill, catalog));
+        if (catalog instanceof RecoverySkill) {
+            return "💖";
         }
-        return Optional.empty();
-    }
-
-    private BattleSkillButton toBattleSkillButton(
-            final CharacterSkill characterSkill, final Skill catalog) {
-        final int cooldown = characterSkill.getUltimateCooldown();
-        final boolean ready = catalog.type() == SkillType.ULTIMATE && cooldown == 0;
-        return new BattleSkillButton(
-                catalog.id(),
-                catalog.label(),
-                catalog.type(),
-                catalog.talent().resourceKind(),
-                catalog.resourceCost(),
-                cooldown,
-                ready);
+        if (catalog.type() == SkillType.DEFENSE) {
+            return "🛡️";
+        }
+        return switch (catalog.talent()) {
+            case MELEE -> "⚔️";
+            case ARCHERY -> "🏹";
+            case MAGIC -> "🔮";
+            case COMMON -> "🌟";
+        };
     }
 
     // ─── durability helpers ─────────────────────────────────────────────────

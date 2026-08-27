@@ -181,7 +181,7 @@ class BattleServiceChainCombatTest {
 
         then(dungeonService).should().onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
         then(dungeonService).should(never()).onBossDefeated(any());
-        assertThat(result.combatLines()).anyMatch(line -> line.contains("무리가 추가로 기습해왔다!"));
+        assertThat(result.combatLines()).anyMatch(line -> line.contains("연쇄 조우"));
     }
 
     @Test

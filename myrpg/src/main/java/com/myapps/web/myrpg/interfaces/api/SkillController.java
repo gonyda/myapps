@@ -170,6 +170,92 @@ public class SkillController {
         return useSkill(id, null);
     }
 
+    /**
+     * 스킬을 핫바 슬롯(0~9)에 배정한다.
+     *
+     * @param skillId 스킬 카탈로그 ID
+     * @param slotIndex 대상 슬롯 번호 (0~9)
+     * @param tab 현재 활성 탭
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 갱신된 스킬 목록 fragment
+     */
+    @PostMapping("/slots/assign")
+    public String assignSlot(
+            @RequestParam final String skillId,
+            @RequestParam final int slotIndex,
+            @RequestParam(name = "tab", required = false) final String tab,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        skillService.assignSkillSlot(progress.getId(), skillId, slotIndex);
+        final SkillListView listView = skillService.buildListView(progress.getId(), tab);
+        model.addAttribute("skillList", listView);
+        return FRAGMENT_SKILL_LIST;
+    }
+
+    /**
+     * 스킬의 핫바 슬롯 배정을 해제한다.
+     *
+     * @param skillId 스킬 카탈로그 ID
+     * @param tab 현재 활성 탭
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 갱신된 스킬 목록 fragment
+     */
+    @PostMapping("/slots/clear")
+    public String clearSlot(
+            @RequestParam final String skillId,
+            @RequestParam(name = "tab", required = false) final String tab,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        skillService.clearSkillSlot(progress.getId(), skillId);
+        final SkillListView listView = skillService.buildListView(progress.getId(), tab);
+        model.addAttribute("skillList", listView);
+        return FRAGMENT_SKILL_LIST;
+    }
+
+    /**
+     * 모든 스킬의 핫바 슬롯 배정을 초기화한다.
+     *
+     * @param tab 현재 활성 탭
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 갱신된 스킬 목록 fragment
+     */
+    @PostMapping("/slots/clear-all")
+    public String clearAllSlots(
+            @RequestParam(name = "tab", required = false) final String tab,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        skillService.clearAllSkillSlots(progress.getId());
+        final SkillListView listView = skillService.buildListView(progress.getId(), tab);
+        model.addAttribute("skillList", listView);
+        return FRAGMENT_SKILL_LIST;
+    }
+
+    /**
+     * 액티브 스킬들을 슬롯에 자동 배정한다.
+     *
+     * @param tab 현재 활성 탭
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 갱신된 스킬 목록 fragment
+     */
+    @PostMapping("/slots/auto-assign")
+    public String autoAssignSlots(
+            @RequestParam(name = "tab", required = false) final String tab,
+            final HttpSession session,
+            final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        skillService.autoAssignDefaultSlots(progress.getId());
+        final SkillListView listView = skillService.buildListView(progress.getId(), tab);
+        model.addAttribute("skillList", listView);
+        return FRAGMENT_SKILL_LIST;
+    }
+
     private CharacterProgress resolveCurrentCharacter(final HttpSession session) {
         if (session != null) {
             final Object sessionUser = session.getAttribute(AuthInterceptor.SESSION_USER_KEY);

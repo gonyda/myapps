@@ -24,7 +24,34 @@ public record SkillRowView(
         boolean rankable,
         boolean maxed,
         boolean fieldUsable,
-        String cooldownBadgeText) {
+        String cooldownBadgeText,
+        Integer slotIndex,
+        boolean isPassive) {
+
+    /** 하위호환 생성자 (9인자). */
+    public SkillRowView(
+            final String id,
+            final String label,
+            final String talentLabel,
+            final String rankLabel,
+            final int progressPercent,
+            final boolean rankable,
+            final boolean maxed,
+            final boolean fieldUsable,
+            final String cooldownBadgeText) {
+        this(
+                id,
+                label,
+                talentLabel,
+                rankLabel,
+                progressPercent,
+                rankable,
+                maxed,
+                fieldUsable,
+                cooldownBadgeText,
+                null,
+                false);
+    }
 
     /** 하위호환 생성자: fieldUsable=false, cooldownBadgeText=null. */
     public SkillRowView(
@@ -35,6 +62,17 @@ public record SkillRowView(
             final int progressPercent,
             final boolean rankable,
             final boolean maxed) {
-        this(id, label, talentLabel, rankLabel, progressPercent, rankable, maxed, false, null);
+        this(
+                id,
+                label,
+                talentLabel,
+                rankLabel,
+                progressPercent,
+                rankable,
+                maxed,
+                false,
+                null,
+                null,
+                false);
     }
 }

@@ -480,4 +480,93 @@ class InventoryServiceTest {
         setId(item, id);
         return item;
     }
+
+    private CharacterProgress createProgress(final int currentHp, final int maxHp) {
+        final CharacterProgress progress =
+                new CharacterProgress(
+                        "테스트",
+                        1,
+                        1,
+                        0L,
+                        TalentType.MELEE,
+                        null,
+                        maxHp,
+                        100,
+                        100,
+                        "tir-chonaill",
+                        0,
+                        0L);
+        try {
+            final Field idField = CharacterProgress.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(progress, 1L);
+        } catch (final ReflectiveOperationException exception) {
+            throw new RuntimeException("CharacterProgress id 설정 실패", exception);
+        }
+        return progress;
+    }
+
+    @Test
+    void should_swapWeapon_when_different_weapon_exists() {
+        final CharacterProgress progress = createProgress(100, 100);
+        final OwnedItem currentSword = createOwnedItem(1L, "sword", true);
+        final OwnedItem bow = createOwnedItem(2L, "bow", false);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+        final EquipmentItem bowCat =
+                new EquipmentItem(
+                        "bow",
+                        "활",
+                        ItemType.WEAPON,
+                        EquipmentKind.BOW,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+
+        when(ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                        progress.getId(), StorageKind.INVENTORY))
+                .thenReturn(List.of(currentSword, bow));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+        when(itemCatalogService.byId("bow")).thenReturn(Optional.of(bowCat));
+        when(ownedItemRepository.findById(2L)).thenReturn(Optional.of(bow));
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of(currentSword));
+
+        final boolean swapped = inventoryService.swapWeapon(progress);
+
+        assertThat(swapped).isTrue();
+    }
+
+    @Test
+    void should_return_false_when_no_other_weapon_to_swap() {
+        final CharacterProgress progress = createProgress(100, 100);
+        final OwnedItem currentSword = createOwnedItem(1L, "sword", true);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+
+        when(ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                        progress.getId(), StorageKind.INVENTORY))
+                .thenReturn(List.of(currentSword));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+
+        final boolean swapped = inventoryService.swapWeapon(progress);
+
+        assertThat(swapped).isFalse();
+    }
 }

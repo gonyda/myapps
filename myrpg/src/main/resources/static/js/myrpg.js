@@ -541,13 +541,27 @@ function addClientActionLog(message) {
     actionLog.scrollTop = actionLog.scrollHeight;
 }
 
-// ===== 스킬 선택 및 자원 검사 (A안: 재클릭 시 토글 해제) =====
+// ===== 스킬 선택 및 자원 검사 (10슬롯 매트릭스 지원) =====
 function selectBattleSkill(btn) {
     if (clashSubmitting) {
         return;
     }
     var skillsContainer = document.getElementById("battleSkills");
     if (skillsContainer && skillsContainer.classList.contains("disabled-skills")) {
+        return;
+    }
+
+    var isEmpty = btn.getAttribute("data-empty") === "true";
+    if (isEmpty) {
+        return;
+    }
+
+    var isEnabled = btn.getAttribute("data-enabled") === "true";
+    if (!isEnabled) {
+        btn.classList.remove("insufficient-shake");
+        void btn.offsetWidth; // reflow trigger
+        btn.classList.add("insufficient-shake");
+        addClientActionLog("현재 착용 중인 무기로 사용할 수 없는 스킬입니다.");
         return;
     }
 
@@ -568,7 +582,7 @@ function selectBattleSkill(btn) {
         return;
     }
 
-    // 이미 선택된 스킬 클릭 시: 토글 해제 (A안)
+    // 이미 선택된 스킬 클릭 시: 토글 해제
     if (btn.classList.contains("selected") || selectedSkillId === skillId) {
         btn.classList.remove("selected");
         selectedSkillId = null;
@@ -576,12 +590,32 @@ function selectBattleSkill(btn) {
     }
 
     // 새로운 스킬 선택: 기존 선택 해제 후 현재 스킬 하이라이트
-    var allSkillButtons = document.querySelectorAll(".battle-skill-btn");
+    var allSkillButtons = document.querySelectorAll(".battle-slot-btn, .battle-skill-btn");
     for (var i = 0; i < allSkillButtons.length; i++) {
         allSkillButtons[i].classList.remove("selected");
     }
     btn.classList.add("selected");
     selectedSkillId = skillId;
+}
+
+// ===== 대치 페이즈 무기 세트 전환 (무기 스왑) =====
+function swapCombatWeapon() {
+    if (clashTimerTimeoutId) {
+        clearTimeout(clashTimerTimeoutId);
+        clashTimerTimeoutId = null;
+    }
+    selectedSkillId = null;
+    clashSubmitting = false;
+    fetch("/battle/swap-weapon", { method: "POST" })
+        .then(function (response) {
+            if (!response.ok) {
+                return;
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            swapBattleResponse(html);
+        });
 }
 
 // ===== 공방 응답 DOM 교체 공통 함수 =====
@@ -1505,6 +1539,64 @@ function getCurrentSkillTab() {
     if (text.indexOf('마법') !== -1) return 'magic';
     if (text.indexOf('공용') !== -1) return 'common';
     return 'all';
+}
+
+// ─── 스킬 슬롯(핫바) 관리 ──────────────────
+function assignSkillSlot(skillId, slotIndex) {
+    var currentTab = getCurrentSkillTab();
+    fetch('/skills/slots/assign?skillId=' + encodeURIComponent(skillId) + '&slotIndex=' + slotIndex + '&tab=' + encodeURIComponent(currentTab), { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('skillListArea').innerHTML = html;
+        });
+}
+
+function clearSkillSlot(skillId) {
+    var currentTab = getCurrentSkillTab();
+    fetch('/skills/slots/clear?skillId=' + encodeURIComponent(skillId) + '&tab=' + encodeURIComponent(currentTab), { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('skillListArea').innerHTML = html;
+        });
+}
+
+function clearAllSkillSlots() {
+    if (!confirm('모든 스킬 슬롯 배정을 비우시겠습니까?')) return;
+    var currentTab = getCurrentSkillTab();
+    fetch('/skills/slots/clear-all?tab=' + encodeURIComponent(currentTab), { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('skillListArea').innerHTML = html;
+        });
+}
+
+function autoAssignSkillSlots() {
+    var currentTab = getCurrentSkillTab();
+    fetch('/skills/slots/auto-assign?tab=' + encodeURIComponent(currentTab), { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            document.getElementById('skillListArea').innerHTML = html;
+        });
+}
+
+function onDockSlotClick(slotIndex, skillId) {
+    if (!skillId) {
+        return;
+    }
+    if (confirm((parseInt(slotIndex, 10) + 1) + '번 슬롯을 비우시겠습니까?')) {
+        clearSkillSlot(skillId);
+    }
+}
+
+function openSlotAssignPicker(skillId, skillName) {
+    var slotNumStr = prompt('[' + skillName + '] 스킬을 등록할 슬롯 번호를 입력하세요 (1~10):');
+    if (!slotNumStr) return;
+    var slotNum = parseInt(slotNumStr, 10);
+    if (isNaN(slotNum) || slotNum < 1 || slotNum > 10) {
+        alert('1부터 10 사이의 슬롯 번호를 입력해 주세요.');
+        return;
+    }
+    assignSkillSlot(skillId, slotNum - 1);
 }
 
 // ===== 퀵 로그인: 원클릭 ID/PW 입력 및 폼 자동 제출 (015) =====

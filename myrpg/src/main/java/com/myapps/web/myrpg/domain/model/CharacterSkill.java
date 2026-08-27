@@ -44,11 +44,42 @@ public class CharacterSkill {
     @Column(name = "ultimate_cooldown", nullable = false)
     private int ultimateCooldown;
 
+    @Column(name = "slot_index")
+    private Integer slotIndex;
+
     /** JPA 전용 기본 생성자. */
     protected CharacterSkill() {}
 
     /**
      * 전체 필드를 지정하는 생성자.
+     *
+     * @param characterId 소유 캐릭터 ID
+     * @param skillId 스킬 카탈로그 ID (skill.json 참조)
+     * @param rank 현재 스킬 랭크
+     * @param usageCount 현재 랭크 사용 횟수
+     * @param killCount 현재 랭크 막타 처치 수
+     * @param ultimateCooldown 궁극기 쿨타임(남은 승리 횟수)
+     * @param slotIndex 핫바 슬롯 번호 (0~9, 미등록 시 null)
+     */
+    public CharacterSkill(
+            final Long characterId,
+            final String skillId,
+            final SkillRank rank,
+            final int usageCount,
+            final int killCount,
+            final int ultimateCooldown,
+            final Integer slotIndex) {
+        this.characterId = characterId;
+        this.skillId = skillId;
+        this.rank = rank;
+        this.usageCount = usageCount;
+        this.killCount = killCount;
+        this.ultimateCooldown = ultimateCooldown;
+        this.slotIndex = slotIndex;
+    }
+
+    /**
+     * 하위호환 생성자 (slotIndex = null).
      *
      * @param characterId 소유 캐릭터 ID
      * @param skillId 스킬 카탈로그 ID (skill.json 참조)
@@ -64,16 +95,11 @@ public class CharacterSkill {
             final int usageCount,
             final int killCount,
             final int ultimateCooldown) {
-        this.characterId = characterId;
-        this.skillId = skillId;
-        this.rank = rank;
-        this.usageCount = usageCount;
-        this.killCount = killCount;
-        this.ultimateCooldown = ultimateCooldown;
+        this(characterId, skillId, rank, usageCount, killCount, ultimateCooldown, null);
     }
 
     /**
-     * 하위호환 생성자 (ultimateCooldown = 0).
+     * 하위호환 생성자 (ultimateCooldown = 0, slotIndex = null).
      *
      * @param characterId 소유 캐릭터 ID
      * @param skillId 스킬 카탈로그 ID (skill.json 참조)
@@ -87,7 +113,7 @@ public class CharacterSkill {
             final SkillRank rank,
             final int usageCount,
             final int killCount) {
-        this(characterId, skillId, rank, usageCount, killCount, 0);
+        this(characterId, skillId, rank, usageCount, killCount, 0, null);
     }
 
     /**
@@ -225,5 +251,40 @@ public class CharacterSkill {
         if (this.ultimateCooldown > 0) {
             this.ultimateCooldown--;
         }
+    }
+
+    /**
+     * 핫바 슬롯 번호(0~9)를 반환한다.
+     *
+     * @return 슬롯 번호 (미등록 시 null)
+     */
+    public Integer getSlotIndex() {
+        return slotIndex;
+    }
+
+    /**
+     * 핫바 슬롯 번호를 설정한다.
+     *
+     * @param slotIndex 슬롯 번호 (0~9, 해제 시 null)
+     */
+    public void setSlotIndex(final Integer slotIndex) {
+        this.slotIndex = slotIndex;
+    }
+
+    /**
+     * 핫바 슬롯에 등록한다 (0~9 범위 검증).
+     *
+     * @param slotIndex 등록할 슬롯 인덱스 (0~9)
+     */
+    public void assignToSlot(final int slotIndex) {
+        if (slotIndex < 0 || slotIndex > 9) {
+            throw new IllegalArgumentException("스킬 슬롯 번호는 0~9 사이여야 합니다: " + slotIndex);
+        }
+        this.slotIndex = slotIndex;
+    }
+
+    /** 핫바 슬롯 등록을 해제한다. */
+    public void clearSlot() {
+        this.slotIndex = null;
     }
 }

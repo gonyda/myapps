@@ -1,5 +1,6 @@
 package com.myapps.web.myrpg.application.service;
 
+import com.myapps.web.myrpg.application.dto.BattleSkillButton;
 import com.myapps.web.myrpg.application.dto.FieldSkillResult;
 import com.myapps.web.myrpg.application.dto.SkillListView;
 import com.myapps.web.myrpg.application.dto.SkillRankUpView;
@@ -23,6 +24,7 @@ import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonusDelta;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
+import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.UltimateSkill;
@@ -242,15 +244,14 @@ public class SkillService {
     /**
      * 스킬 목록 팝업 뷰를 조립한다.
      *
-     * <p>보유 스킬을 탭 필터로 걸러 행(SkillRowView)을 구성한다. 진행바는 동일가중 평균({@code
-     * (min(usage/req,1)+min(kill/req,1))/2×100})이고, rankable은 조건+AP+MASTER 아님을 모두 충족해야 {@code
-     * true}이다.
+     * <p>보유 스킬을 탭 필터로 걸러 행(SkillRowView)을 구성하며, 상단 10개 슬롯 도크 정보(slots)를 함께 조립한다.
      *
      * @param characterId 캐릭터 ID
      * @param activeTab 활성 탭 ("all"/"melee"/"archery"/"magic"/"common")
      * @return 스킬 목록 뷰 모델
      */
     public SkillListView buildListView(final Long characterId, final String activeTab) {
+        ensureDefaultSlotsIfEmpty(characterId);
         final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
         final CharacterProgress progress =
                 characterProgressRepository.findById(characterId).orElseThrow();
@@ -273,7 +274,153 @@ public class SkillService {
             rows.add(row);
         }
 
-        return new SkillListView(activeTab, List.copyOf(rows));
+        final List<BattleSkillButton> slots = buildSkillSlots(characterId);
+        return new SkillListView(activeTab, List.copyOf(rows), slots);
+    }
+
+    /**
+     * 캐릭터의 10개 스킬 슬롯(0~9번) 뷰 목록을 조립한다.
+     *
+     * @param characterId 캐릭터 ID
+     * @return 10개 슬롯의 BattleSkillButton 목록
+     */
+    public List<BattleSkillButton> buildSkillSlots(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        final BattleSkillButton[] slotArray = new BattleSkillButton[10];
+        for (int i = 0; i < 10; i++) {
+            slotArray[i] = BattleSkillButton.emptySlot(i);
+        }
+
+        for (final CharacterSkill cs : owned) {
+            final Integer slotIdx = cs.getSlotIndex();
+            if (slotIdx != null && slotIdx >= 0 && slotIdx < 10) {
+                final Optional<Skill> catalogOpt = skillCatalogService.byId(cs.getSkillId());
+                if (catalogOpt.isPresent()) {
+                    final Skill catalog = catalogOpt.get();
+                    final String icon = resolveSkillIcon(catalog);
+                    final int cooldown = cs.getUltimateCooldown();
+                    final boolean ready = catalog.type() == SkillType.ULTIMATE && cooldown == 0;
+                    slotArray[slotIdx] =
+                            new BattleSkillButton(
+                                    catalog.id(),
+                                    catalog.label(),
+                                    catalog.type(),
+                                    catalog.talent().resourceKind(),
+                                    catalog.resourceCost(),
+                                    cooldown,
+                                    ready,
+                                    slotIdx,
+                                    true,
+                                    null,
+                                    false,
+                                    icon);
+                }
+            }
+        }
+        return List.of(slotArray);
+    }
+
+    /**
+     * 스킬을 지정된 핫바 슬롯(0~9)에 등록한다 (스왑 및 패시브 검증 포함).
+     *
+     * @param characterId 캐릭터 ID
+     * @param skillId 스킬 카탈로그 ID
+     * @param targetSlotIndex 배정할 슬롯 번호 (0~9)
+     */
+    @Transactional
+    public void assignSkillSlot(
+            final Long characterId, final String skillId, final int targetSlotIndex) {
+        if (targetSlotIndex < 0 || targetSlotIndex > 9) {
+            throw new IllegalArgumentException("슬롯 번호는 0~9 사이여야 합니다: " + targetSlotIndex);
+        }
+        final Skill catalog = skillCatalogService.byId(skillId).orElseThrow();
+        if (catalog instanceof PassiveSkill) {
+            throw new IllegalArgumentException("패시브 스킬은 슬롯에 등록할 수 없습니다: " + skillId);
+        }
+
+        final CharacterSkill currentSkill = findSkill(characterId, skillId);
+        final Integer originalSlot = currentSkill.getSlotIndex();
+
+        // 대상 슬롯에 이미 다른 스킬이 장착되어 있는지 확인
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        for (final CharacterSkill other : owned) {
+            if (!other.getSkillId().equals(skillId)
+                    && other.getSlotIndex() != null
+                    && other.getSlotIndex() == targetSlotIndex) {
+                // 맞교환(스왑) 또는 해제
+                other.setSlotIndex(originalSlot);
+                characterSkillRepository.save(other);
+                break;
+            }
+        }
+
+        currentSkill.setSlotIndex(targetSlotIndex);
+        characterSkillRepository.save(currentSkill);
+    }
+
+    /**
+     * 특정 스킬의 슬롯 등록을 해제한다.
+     *
+     * @param characterId 캐릭터 ID
+     * @param skillId 스킬 카탈로그 ID
+     */
+    @Transactional
+    public void clearSkillSlot(final Long characterId, final String skillId) {
+        final CharacterSkill skill = findSkill(characterId, skillId);
+        skill.clearSlot();
+        characterSkillRepository.save(skill);
+    }
+
+    /**
+     * 캐릭터의 모든 스킬 슬롯 등록을 초기화한다.
+     *
+     * @param characterId 캐릭터 ID
+     */
+    @Transactional
+    public void clearAllSkillSlots(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        for (final CharacterSkill cs : owned) {
+            if (cs.getSlotIndex() != null) {
+                cs.clearSlot();
+                characterSkillRepository.save(cs);
+            }
+        }
+    }
+
+    /**
+     * 보유 액티브 스킬들을 기본 순서대로 0~9번 슬롯에 자동 배정한다.
+     *
+     * @param characterId 캐릭터 ID
+     */
+    @Transactional
+    public void autoAssignDefaultSlots(final Long characterId) {
+        clearAllSkillSlots(characterId);
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        int slot = 0;
+        for (final CharacterSkill cs : owned) {
+            final Optional<Skill> catalogOpt = skillCatalogService.byId(cs.getSkillId());
+            if (catalogOpt.isPresent() && !(catalogOpt.get() instanceof PassiveSkill)) {
+                cs.setSlotIndex(slot++);
+                characterSkillRepository.save(cs);
+                if (slot >= 10) {
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 만약 모든 스킬의 슬롯이 비어있다면 기본 슬롯을 자동 배정한다 (하위호환성 보장).
+     *
+     * @param characterId 캐릭터 ID
+     */
+    @Transactional
+    public void ensureDefaultSlotsIfEmpty(final Long characterId) {
+        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
+        final boolean hasAnySlot = owned.stream().anyMatch(cs -> cs.getSlotIndex() != null);
+        if (!hasAnySlot && !owned.isEmpty()) {
+            autoAssignDefaultSlots(characterId);
+        }
     }
 
     /**
@@ -589,6 +736,7 @@ public class SkillService {
         final String talentLabel = talentLabel(catalog.talent());
         final boolean fieldUsable = catalog instanceof RecoverySkill;
         final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
+        final boolean isPassive = catalog instanceof PassiveSkill;
 
         return new SkillRowView(
                 catalog.id(),
@@ -599,7 +747,30 @@ public class SkillService {
                 rankable,
                 maxed,
                 fieldUsable,
-                cooldownBadgeText);
+                cooldownBadgeText,
+                characterSkill.getSlotIndex(),
+                isPassive);
+    }
+
+    private String resolveSkillIcon(final Skill catalog) {
+        if (catalog instanceof PassiveSkill) {
+            return "🛡️";
+        }
+        if (catalog.type() == SkillType.ULTIMATE) {
+            return "👑";
+        }
+        if (catalog instanceof RecoverySkill) {
+            return "💖";
+        }
+        if (catalog.type() == SkillType.DEFENSE) {
+            return "🛡️";
+        }
+        return switch (catalog.talent()) {
+            case MELEE -> "⚔️";
+            case ARCHERY -> "🏹";
+            case MAGIC -> "🔮";
+            case COMMON -> "🌟";
+        };
     }
 
     private String resolveCooldownBadgeText(

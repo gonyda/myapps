@@ -4035,161 +4035,476 @@
             background: linear-gradient(90deg, #f6ad55, #e53e3e);
         }
 
+        /* 대치 페이즈 액션 버튼군 */
+        .battle-standby-actions {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr;
+            gap: calc(var(--gap) * 0.5);
+            width: 100%;
+            margin-bottom: calc(var(--gap) * 0.4);
+        }
+
         /* 공방 개시 버튼 */
         .btn-clash-start {
             display: block;
             width: 100%;
-            padding: calc(var(--gap) * 0.8) var(--pad);
+            padding: calc(var(--gap) * 0.7) var(--pad);
             font-size: var(--fs-md);
             font-weight: bold;
             color: #fff;
             background: linear-gradient(135deg, #e53e3e, #dd6b20);
-            border: none;
+            border: 1px solid #ff7875;
             border-radius: var(--radius);
             cursor: pointer;
-            margin-bottom: calc(var(--gap) * 0.4);
-            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.35);
             transition: transform 0.1s, box-shadow 0.1s;
             text-align: center;
         }
 
         .btn-clash-start:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(229, 62, 62, 0.5);
+            box-shadow: 0 6px 16px rgba(229, 62, 62, 0.55);
         }
 
         .btn-clash-start:active {
             transform: translateY(0);
         }
 
-        #battleSkills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: calc(var(--gap) * 0.5);
-            padding: calc(var(--gap) * 0.5) 0;
+        /* 무기 스왑 버튼 */
+        .btn-weapon-swap {
+            display: block;
+            width: 100%;
+            padding: calc(var(--gap) * 0.7) calc(var(--pad) * 0.6);
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #dbeafe;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            border: 1px solid #60a5fa;
+            border-radius: var(--radius);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-align: center;
+        }
+
+        .btn-weapon-swap:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-weapon-swap:active {
+            transform: translateY(0);
+        }
+
+        /* 도망 버튼 (대치 페이즈) */
+        .btn-flee {
+            display: block;
+            width: 100%;
+            padding: calc(var(--gap) * 0.7) calc(var(--pad) * 0.6);
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #f1f5f9;
+            background: linear-gradient(135deg, #475569, #334155);
+            border: 1px solid #64748b;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: transform 0.1s, background 0.1s;
+            text-align: center;
+        }
+
+        .btn-flee:hover {
+            background: #475569;
+        }
+
+        /* ===== 10개 전투 스킬 슬롯 그리드 (2행 5열 매트릭스) ===== */
+        .battle-skill-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            width: 100%;
+            padding: calc(var(--gap) * 0.4) 0;
         }
 
         /* 비활성화 스킬 버튼 스타일 (대치 상태) */
-        .disabled-skills .battle-skill-btn {
-            opacity: 0.5;
+        .disabled-skills .battle-slot-btn {
+            opacity: 0.6;
             cursor: not-allowed;
-            filter: grayscale(0.5);
             pointer-events: none;
         }
 
-        .battle-skill-btn {
-            background: #3a2a2a;
-            color: #ffcccc;
-            border: 1px solid #6a4a4a;
-            border-radius: var(--radius);
-            padding: calc(var(--gap) * 0.8) var(--pad);
-            font-size: var(--fs-md);
+        .battle-slot-btn {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            padding: 3px 2px 4px 2px;
+            background: #252326;
+            color: #e2e8f0;
+            border: 1px solid #4a454d;
+            border-radius: 6px;
             cursor: pointer;
-            min-height: var(--touch);
-            flex: 0 0 calc(50% - var(--gap) * 0.25);
             text-align: center;
+            overflow: hidden;
             transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+            user-select: none;
         }
 
-        .battle-skill-btn:active {
-            background: #4a3a3a;
+        .battle-slot-btn:active {
+            transform: scale(0.97);
+        }
+
+        .battle-slot-btn .slot-idx-tag {
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #94a3b8;
+            line-height: 1;
+        }
+
+        .battle-slot-btn .slot-icon {
+            font-size: 18px;
+            line-height: 1.1;
+            margin-top: 1px;
+        }
+
+        .battle-slot-btn .slot-name {
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            line-height: 1.2;
+            margin-top: 1px;
+        }
+
+        .battle-slot-btn .slot-cost-tag {
+            font-size: 9px;
+            color: #facc15;
+            line-height: 1;
+            margin-top: 1px;
+        }
+
+        .battle-slot-btn .slot-disabled-tag {
+            font-size: 8px;
+            color: #ef4444;
+            line-height: 1;
+            margin-top: 1px;
+            white-space: nowrap;
+        }
+
+        .battle-slot-btn .slot-cooldown-tag {
+            font-size: 8px;
+            color: #f87171;
+            font-weight: bold;
+            line-height: 1;
+            margin-top: 1px;
+        }
+
+        .battle-slot-btn .slot-ready-tag {
+            font-size: 8px;
+            color: #4ade80;
+            font-weight: bold;
+            line-height: 1;
+            margin-top: 1px;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        /* 빈 슬롯 스타일 */
+        .battle-slot-btn.slot-empty {
+            background: rgba(30, 27, 34, 0.4);
+            border: 1px dashed #4b5563;
+            color: #6b7280;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .battle-slot-btn.slot-empty .slot-icon {
+            opacity: 0.35;
+        }
+
+        .battle-slot-btn.slot-empty .slot-name {
+            color: #6b7280;
+            font-size: 10px;
+        }
+
+        /* 무기 불일치 비활성 슬롯 */
+        .battle-slot-btn.slot-disabled {
+            background: #1c191f;
+            border: 1px solid #332d38;
+            opacity: 0.45;
+            filter: grayscale(0.8);
+            cursor: not-allowed;
         }
 
         /* 스킬 타입별 테마 스타일 */
-        .battle-skill-btn.skill-type-normal {
-            background: #332717;
+        .battle-slot-btn.skill-type-normal {
+            background: #2b2315;
             color: #fef08a;
             border: 1px solid #b45309;
         }
 
-        .battle-skill-btn.skill-type-normal:hover {
+        .battle-slot-btn.skill-type-normal:hover {
             border-color: #f59e0b;
-            background: #3f2f1a;
+            background: #382c19;
         }
 
-        .battle-skill-btn.skill-type-heavy {
-            background: #381818;
+        .battle-slot-btn.skill-type-heavy {
+            background: #331717;
             color: #fecaca;
             border: 1px solid #b91c1c;
         }
 
-        .battle-skill-btn.skill-type-heavy:hover {
+        .battle-slot-btn.skill-type-heavy:hover {
             border-color: #ef4444;
-            background: #461d1d;
+            background: #421d1d;
         }
 
-        .battle-skill-btn.skill-type-defense {
-            background: #17253b;
+        .battle-slot-btn.skill-type-defense {
+            background: #152238;
             color: #bfdbfe;
             border: 1px solid #1d4ed8;
         }
 
-        .battle-skill-btn.skill-type-defense:hover {
+        .battle-slot-btn.skill-type-defense:hover {
             border-color: #3b82f6;
-            background: #1e314d;
+            background: #1b2d4a;
         }
 
-        .battle-skill-btn.skill-type-recovery {
-            background: #132e22;
+        .battle-slot-btn.skill-type-recovery {
+            background: #10291e;
             color: #a7f3d0;
             border: 1px solid #047857;
         }
 
-        .battle-skill-btn.skill-type-recovery:hover {
+        .battle-slot-btn.skill-type-recovery:hover {
             border-color: #10b981;
-            background: #1a3c2d;
+            background: #163628;
         }
 
-        .battle-skill-btn.skill-type-buff {
-            background: #132b36;
+        .battle-slot-btn.skill-type-buff {
+            background: #102630;
             color: #a5f3fc;
             border: 1px solid #0e7490;
         }
 
-        .battle-skill-btn.skill-type-buff:hover {
+        .battle-slot-btn.skill-type-buff:hover {
             border-color: #06b6d4;
-            background: #193845;
+            background: #153240;
         }
 
-        .battle-skill-btn.skill-type-debuff,
-        .battle-skill-btn.skill-type-dot {
-            background: #2e1738;
+        .battle-slot-btn.skill-type-debuff,
+        .battle-slot-btn.skill-type-dot {
+            background: #291533;
             color: #f5d0fe;
             border: 1px solid #a21caf;
         }
 
-        .battle-skill-btn.skill-type-debuff:hover,
-        .battle-skill-btn.skill-type-dot:hover {
+        .battle-slot-btn.skill-type-debuff:hover,
+        .battle-slot-btn.skill-type-dot:hover {
             border-color: #d946ef;
-            background: #3b1e47;
+            background: #361b42;
         }
 
-        .battle-skill-btn.skill-type-cc {
-            background: #332d16;
+        .battle-slot-btn.skill-type-cc {
+            background: #2e2814;
             color: #fde68a;
             border: 1px solid #a16207;
         }
 
-        .battle-skill-btn.skill-type-cc:hover {
+        .battle-slot-btn.skill-type-cc:hover {
             border-color: #eab308;
-            background: #3f371b;
+            background: #3b3319;
+        }
+
+        .battle-slot-btn.skill-type-ultimate {
+            background: #3b1e08;
+            color: #fde047;
+            border: 1px solid #d97706;
         }
 
         /* 선택된 스킬 버튼 스타일 (황금빛 네온 하이라이트) */
-        .battle-skill-btn.selected {
-            background: #523824;
-            color: #ffffff;
-            border: 1px solid #ffd700;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.3);
+        .battle-slot-btn.selected {
+            background: #523824 !important;
+            color: #ffffff !important;
+            border: 1.5px solid #ffd700 !important;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.7), inset 0 0 6px rgba(255, 215, 0, 0.4);
             font-weight: bold;
-            transform: scale(1.03);
+            transform: scale(1.05);
+            z-index: 2;
         }
 
-        /* 자원 부족 시 흔들림 애니메이션 */
-        .battle-skill-btn.insufficient-shake {
+        /* 자원 부족/불가 시 흔들림 애니메이션 */
+        .battle-slot-btn.insufficient-shake {
             animation: skill-insufficient-shake 0.35s ease-in-out;
             border-color: #ff4444 !important;
-            color: #ff8888;
+            color: #ff8888 !important;
+        }
+
+        /* ===== 스킬 팝업 핫바 도크 스타일 ===== */
+        .skill-dock-container {
+            background: #18151c;
+            border: 1px solid #3d3545;
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            margin-bottom: calc(var(--gap) * 0.6);
+        }
+
+        .skill-dock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .skill-dock-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--fs-sm);
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+
+        .skill-dock-title .dock-desc {
+            font-size: var(--fs-xs);
+            color: #94a3b8;
+            font-weight: normal;
+        }
+
+        .skill-dock-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dock-action-btn {
+            background: #2a2433;
+            border: 1px solid #4a3e5c;
+            border-radius: 4px;
+            color: #cbd5e1;
+            font-size: 10px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        .dock-action-btn:hover {
+            background: #3b3247;
+            border-color: #63537d;
+        }
+
+        .skill-dock-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .skill-dock-slot {
+            position: relative;
+            background: #231e2b;
+            border: 1px solid #423852;
+            border-radius: 4px;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 2px;
+            overflow: hidden;
+            transition: all 0.15s ease;
+        }
+
+        .skill-dock-slot:hover {
+            border-color: #8b5cf6;
+            background: #2b2536;
+        }
+
+        .skill-dock-slot.slot-empty {
+            border-style: dashed;
+            border-color: #3b324a;
+            background: rgba(35, 30, 43, 0.4);
+        }
+
+        .skill-dock-slot .dock-slot-number {
+            position: absolute;
+            top: 1px;
+            left: 2px;
+            font-size: 8px;
+            color: #64748b;
+            line-height: 1;
+        }
+
+        .skill-dock-slot .dock-slot-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .skill-dock-slot .dock-slot-icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .skill-dock-slot .dock-slot-name {
+            font-size: 9px;
+            color: #cbd5e1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            line-height: 1.1;
+            margin-top: 1px;
+        }
+
+        .badge-slot-assigned {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid #a855f7;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .badge-slot-assigned:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .skill-slot-btn {
+            background: #2a2433;
+            border: 1px solid #6b7280;
+            border-radius: 4px;
+            color: #93c5fd;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        .skill-slot-btn:hover {
+            background: #3b3247;
+            border-color: #3b82f6;
+        }
+
+        .badge-passive {
+            display: inline-block;
+            padding: 2px 5px;
+            font-size: 9px;
+            font-weight: bold;
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            border: 1px solid #475569;
+            border-radius: 4px;
         }
 
         @keyframes skill-insufficient-shake {

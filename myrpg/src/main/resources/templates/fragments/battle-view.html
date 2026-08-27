@@ -25,8 +25,12 @@
     <div class="battle-stance-area" id="battleStanceArea">
         <!-- 1단계: 대치 페이즈 (시간 정지 ⏸️) -->
         <th:block th:if="${battleView.standby}">
-            <div class="stance-badge badge-standby">⏸️ 대치 중 (정비 가능)</div>
-            <button class="btn-clash-start" onclick="startClash()">⚔️ 공방 개시</button>
+            <div class="stance-badge badge-standby">⏸️ 대치 중 (전투 정비)</div>
+            <div class="battle-standby-actions">
+                <button type="button" class="btn-clash-start" onclick="startClash()">⚔️ 공방 개시</button>
+                <button type="button" class="btn-weapon-swap" onclick="swapCombatWeapon()">🔄 무기 스왑</button>
+                <button type="button" th:if="${battleView.fleeAvailable}" class="btn-flee flee-btn" onclick="flee()">🏃 도망</button>
+            </div>
         </th:block>
 
         <!-- 2단계: 액티브 공방 페이즈 (1.0~1.5초 실시간 피지컬 ⚡) -->
@@ -44,40 +48,45 @@
         </th:block>
     </div>
 
-    <!-- 이번 턴 전투 로그(중앙). 매 턴 교체, 누적 안 함 -->
+    <!-- 이번 턴 전투 로그(중앙 카드). 매 턴 교체, 누적 안 함 -->
     <div class="battle-log" id="battleLog">
         <div th:each="line : ${turnLog}" class="battle-log-line" th:text="${line}">로그</div>
     </div>
 
-    <!-- 전투 스킬 버튼 영역 -->
+    <!-- 10개 전투 스킬 슬롯 (2행 5열 매트릭스) -->
     <div id="battleSkills"
+         class="battle-skill-slots-grid"
          th:fragment="battle-skills"
          th:classappend="${battleView != null && battleView.standby ? 'disabled-skills' : ''}">
         <button th:each="skill : ${skills != null ? skills : battleView.skills}"
+                type="button"
                 th:attr="data-skill-id=${skill.id()},
                          data-skill-label=${skill.label()},
                          data-resource-kind=${skill.resourceKind()},
-                         data-resource-cost=${skill.resourceCost()}"
-                class="battle-skill-btn"
-                th:classappend="${'skill-type-' + #strings.toLowerCase(skill.type().name())} + (${skill.type().name() == 'ULTIMATE'} ? (${skill.ultimateCooldown() > 0} ? ' ultimate-cooldown' : ' ultimate-ready') : '')"
-                th:disabled="${(battleView != null && battleView.standby) || (skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0)}"
+                         data-resource-cost=${skill.resourceCost()},
+                         data-slot-index=${skill.slotIndex()},
+                         data-enabled=${skill.enabled()},
+                         data-empty=${skill.empty()}"
+                class="battle-slot-btn battle-skill-btn"
+                th:classappend="${skill.cssClass()}"
+                th:disabled="${(battleView != null && battleView.standby) || skill.empty() || !skill.enabled() || (skill.type() != null && skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0)}"
                 onclick="selectBattleSkill(this)">
-            <span th:text="${skill.label()}">스킬</span>
-            <span th:if="${skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0}"
-                  class="btn-cooldown-text"
-                  th:text="' [🔒 (' + ${skill.ultimateCooldown()} + '승 남음)]'"> [🔒 (30승 남음)]</span>
-            <span th:if="${skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() == 0}"
-                  class="btn-ready-badge"> [⚡ (READY!)]</span>
+            <span class="slot-idx-tag" th:text="${skill.slotIndex() + 1}">1</span>
+            <span class="slot-icon" th:text="${skill.empty() ? '➕' : skill.icon()}">⚔️</span>
+            <span class="slot-name" th:text="${skill.empty() ? '빈 슬롯' : skill.label()}">스킬</span>
+            <span th:if="${!skill.empty() && skill.enabled() && skill.resourceCost() > 0}"
+                  class="slot-cost-tag"
+                  th:text="${(skill.resourceKind() != null && skill.resourceKind().name() == 'MP' ? 'MP ' : 'ST ') + skill.resourceCost()}">ST 5</span>
+            <span th:if="${!skill.empty() && !skill.enabled()}"
+                  class="slot-disabled-tag"
+                  th:text="${skill.disabledReason() != null ? skill.disabledReason() : '사용 불가'}">무기 불일치</span>
+            <span th:if="${skill.type() != null && skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() > 0}"
+                  class="slot-cooldown-tag"
+                  th:text="'🔒' + ${skill.ultimateCooldown()} + '승'">🔒30승</span>
+            <span th:if="${skill.type() != null && skill.type().name() == 'ULTIMATE' && skill.ultimateCooldown() == 0}"
+                  class="slot-ready-tag">READY</span>
         </button>
     </div>
-
-    <!-- 도망 버튼 (대치 페이즈에서만 노출) -->
-    <button th:if="${battleView.standby && battleView.fleeAvailable}"
-            class="flee-btn"
-            onclick="flee()">도망</button>
-
-    <!-- 미니맵 -->
-    <div th:replace="~{fragments/minimap :: minimap}"></div>
 </div>
 
 <!-- 전투 뷰 전체 프래그먼트: .center 교체용 (전투 시작 시 사용) -->

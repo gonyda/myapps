@@ -70,23 +70,23 @@ class BattleLogFormatterMultiHitPropertyTest {
 
         // 통합 연타 포맷 검증
         final String expectedPlayerLine =
-                SKILL_LABEL
-                        + "("
-                        + skillType.label()
-                        + ") "
+                "⚔️ ["
+                        + SKILL_LABEL
+                        + "] "
                         + hits.size()
                         + "연타 ("
                         + formatHits(hits)
                         + ")"
                         + ARROW
+                        + "총 "
                         + totalDamage
                         + " 피해";
         assertThat(lines.get(0)).isEqualTo(expectedPlayerLine);
     }
 
     /**
-     * playerHits.size() ≥ 2이고 firstStrike일 때, 선제 사격 멀티히트 "선제 공격! {스킬}({타입}) {N}연타 ({d1} · {d2}💥) ➔
-     * {합계} 피해"가 생성되는지 검증한다.
+     * playerHits.size() ≥ 2이고 firstStrike일 때, 선제 사격 멀티히트 "⚡ [선제 공격] [{스킬}] {N}연타 ({d1} · {d2}💥) ➔
+     * 총 {합계} 피해"가 생성되는지 검증한다.
      *
      * @param hits 히트 결과 리스트(size 2~8)
      * @param skillType 플레이어 스킬 타입 (NORMAL 또는 HEAVY)
@@ -115,26 +115,24 @@ class BattleLogFormatterMultiHitPropertyTest {
         // 선제 사격 멀티히트: 1줄
         assertThat(lines).hasSize(1);
 
-        // 헤더 검증: "선제 공격! {스킬}({타입}) {N}연타 (...)"
+        // 헤더 검증: "⚡ [선제 공격] [{스킬}] {N}연타 (...)"
         final String expectedLine =
-                "선제 공격! "
+                "⚡ [선제 공격] ["
                         + SKILL_LABEL
-                        + "("
-                        + skillType.label()
-                        + ") "
+                        + "] "
                         + hits.size()
                         + "연타 ("
                         + formatHits(hits)
                         + ")"
                         + ARROW
+                        + "총 "
                         + totalDamage
                         + " 피해";
         assertThat(lines.get(0)).isEqualTo(expectedLine);
     }
 
     /**
-     * playerHits.size() ≤ 1일 때, 플레이어 로그가 단일 형식 1줄 ("{스킬}({타입})로 {몬스터}에게 {N} 피해"(+크리티컬))로 생성되는지
-     * 검증한다.
+     * playerHits.size() ≤ 1일 때, 플레이어 로그가 단일 형식 1줄 ("🗡️ [{스킬}] (💥) ➔ {몬스터}에게 {N} 피해")로 생성되는지 검증한다.
      *
      * @param damage 플레이어 피해
      * @param critical 크리티컬 여부
@@ -167,17 +165,18 @@ class BattleLogFormatterMultiHitPropertyTest {
         // 단일 히트: 플레이어 1줄 + 몬스터 1줄 = 2줄
         assertThat(lines).hasSize(2);
 
-        // 단일 형식: "{스킬}({타입})로 {몬스터}에게 {N} 피해" (+ " (크리티컬!)")
-        final String baseLine =
-                SKILL_LABEL
-                        + "("
-                        + skillType.label()
-                        + ")로 "
+        // 단일 형식: "🗡️ [{스킬}] (💥) ➔ {몬스터}에게 {N} 피해"
+        final String critTag = critical ? " 💥" : "";
+        final String expectedPlayerLine =
+                "🗡️ ["
+                        + SKILL_LABEL
+                        + "]"
+                        + critTag
+                        + ARROW
                         + MONSTER_NAME
                         + "에게 "
                         + damage
                         + " 피해";
-        final String expectedPlayerLine = critical ? baseLine + " (크리티컬!)" : baseLine;
         assertThat(lines.get(0)).isEqualTo(expectedPlayerLine);
     }
 
@@ -211,7 +210,7 @@ class BattleLogFormatterMultiHitPropertyTest {
         assertThat(lines).hasSize(2);
 
         // 빗나감 형식
-        final String expectedMissLine = SKILL_LABEL + "(" + skillType.label() + ") 공격이 빗나갔다!";
+        final String expectedMissLine = "🗡️ [" + SKILL_LABEL + "] 빗나감 (0 피해)";
         assertThat(lines.get(0)).isEqualTo(expectedMissLine);
     }
 
@@ -241,8 +240,8 @@ class BattleLogFormatterMultiHitPropertyTest {
         final List<String> lines = formatter.combatLines(input);
         final String playerLine = lines.get(0);
 
-        // 연타 라인은 "➔ {합계} 피해"로 끝나야 한다
-        assertThat(playerLine).endsWith(ARROW + totalDamage + " 피해");
+        // 연타 라인은 "➔ 총 {합계} 피해"로 끝나야 한다
+        assertThat(playerLine).endsWith(ARROW + "총 " + totalDamage + " 피해");
 
         // 각 크리티컬 히트는 해당 값 뒤에 "💥"이 있어야 한다
         for (final HitResult hit : hits) {

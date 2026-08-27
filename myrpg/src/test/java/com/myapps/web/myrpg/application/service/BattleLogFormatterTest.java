@@ -44,11 +44,11 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("윈드밀(일반)로 너구리에게 10 피해", "너구리의 일반공격, 13 피해를 입음");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "🐺 [너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
-    @DisplayName("크리티컬 시 플레이어 피해 로그에 (크리티컬!)을 붙인다")
+    @DisplayName("크리티컬 시 플레이어 피해 로그에 💥를 붙인다")
     void should_appendCriticalMark_when_playerCritical() {
         final BattleLogInput input =
                 new BattleLogInput(
@@ -65,7 +65,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("윈드밀(일반)로 너구리에게 15 피해 (크리티컬!)", "너구리의 강공격이 빗나갔다!");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] 💥 ➔ 너구리에게 15 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -86,7 +86,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("스매시(강) 공격이 빗나갔다!", "너구리의 일반공격, 13 피해를 입음");
+        assertThat(lines).containsExactly("🗡️ [스매시] 빗나감 (0 피해)", "🐺 [너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
@@ -107,7 +107,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("윈드밀(일반)로 너구리에게 10 피해", "너구리의 강공격이 빗나갔다!");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -129,7 +129,8 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("윈드밀(일반)로 너구리에게 3 피해 (방어에 가로막힘)", "너구리이(가) 방어하며 반격! (7 피해)");
+                .containsExactly(
+                        "⚔️ [윈드밀] 🛡️ 적 방어에 막힘 ➔ 3 피해", "🐺 [너구리] 🛡️ 방어 성공 & 반격 ➔ 7 피해 피격");
     }
 
     @Test
@@ -151,7 +152,9 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("디펜스(방어)로 방어하며 반격! (9 피해)", "너구리의 일반공격, 방어 경감되어 6 피해를 입음");
+                .containsExactly(
+                        "🛡️ [디펜스] 방어 성공 & 반격! ➔ 너구리에게 9 반격 피해",
+                        "🐺 [너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 6 피해");
     }
 
     @Test
@@ -172,7 +175,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("스매시(강)로 너구리에게 18 피해", "너구리의 방어가 뚫렸다!");
+        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 18 피해", "🐺 [너구리] 💥 방어선 관통됨!");
     }
 
     @Test
@@ -193,7 +196,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("디펜스(방어) 방어가 뚫렸다!", "너구리의 강공격, 20 피해를 입음");
+        assertThat(lines).containsExactly("⚠️ [디펜스] 몬스터 강공격에 방어선 관통!", "🐺 [너구리] 강공격 ➔ 20 피해 피격");
     }
 
     @Test
@@ -214,11 +217,11 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("디펜스(방어)로 맞서 교착 상태!", "너구리이(가) 방어 태세를 취했다.");
+        assertThat(lines).containsExactly("🛡️ [디펜스] 맞방어 교착 상태", "🐺 [너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
-    @DisplayName("활 1턴 선제 사격(단일 히트)은 기존 형식 한 줄만 남긴다")
+    @DisplayName("활 1턴 선제 사격(단일 히트)은 선제 공격 형식 한 줄만 남긴다")
     void should_logSingleFirstStrikeLine_when_firstStrike() {
         final BattleLogInput input =
                 new BattleLogInput(
@@ -235,7 +238,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반)로 너구리에게 12 피해");
+        assertThat(lines).containsExactly("⚡ [선제 공격] [윈드밀] ➔ 너구리에게 12 피해");
     }
 
     @Test
@@ -256,7 +259,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 공격 기회였으나 디펜스(방어) 태세를 취했다!");
+        assertThat(lines).containsExactly("⚡ [선제 공격] 선제 찬스였으나 [디펜스] 태세 유지");
     }
 
     @Test
@@ -277,7 +280,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("너구리의 일반공격, 13 피해를 입음");
+        assertThat(lines).containsExactly("🐺 [너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
@@ -298,7 +301,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("너구리이(가) 방어 태세를 취했다.");
+        assertThat(lines).containsExactly("🐺 [너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -325,7 +328,8 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("윈드밀(일반) 3연타 (22 · 33💥 · 19) ➔ 74 피해", "너구리의 일반공격, 10 피해를 입음");
+                .containsExactly(
+                        "⚔️ [윈드밀] 3연타 (22 · 33💥 · 19) ➔ 총 74 피해", "🐺 [너구리] 일반공격 ➔ 10 피해 피격");
     }
 
     @Test
@@ -350,7 +354,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("선제 공격! 윈드밀(일반) 4연타 (10 · 12💥 · 9 · 11) ➔ 42 피해");
+        assertThat(lines).containsExactly("⚡ [선제 공격] [윈드밀] 4연타 (10 · 12💥 · 9 · 11) ➔ 총 42 피해");
     }
 
     @Test
@@ -374,7 +378,8 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("스매시(강) 3연타 (30💥 · 28💥 · 32💥) ➔ 90 피해", "너구리의 강공격이 빗나갔다!");
+                .containsExactly(
+                        "⚔️ [스매시] 3연타 (30💥 · 28💥 · 32💥) ➔ 총 90 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -397,7 +402,8 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "디펜스(방어)로 적의 공격을 막아내며 빈틈을 포착! (다음 턴 선제 기회)", "너구리의 일반공격, 방어 경감되어 0 피해를 입음");
+                        "🛡️ [디펜스] 완벽 방어! ➔ 빈틈 포착 (다음 턴 선제 찬스⚡)",
+                        "🐺 [너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 0 피해");
     }
 
     @Test
@@ -420,7 +426,8 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "상대의 방어에 공격이 가로막혔다!", "너구리이(가) 공격을 막아내며 반격 태세를 갖췄습니다! (다음 턴 선제 일반공격)");
+                        "⚔️ [윈드밀] 🛡️ 너구리의 완전 방어에 가로막힘 (0 피해)",
+                        "🐺 [너구리] 🛡️ 공격 방어 성공 ➔ 반격 태세 (다음 턴 선제 주의⚠️)");
     }
 
     @Test
@@ -442,7 +449,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("카운터 어택(방어)으로 적의 공격을 흘려내며 치명적인 반격! (45 피해)", "너구리의 일반공격이 빗나갔다!");
+                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 45 치명 반격!", "🐺 [너구리] 일반공격 ➔ 빗나감");
     }
 
     @Test
@@ -463,7 +470,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("적이 공격하지 않아 카운터 어택(방어)이 빗나갔다!", "너구리이(가) 방어 태세를 취했다.");
+        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "🐺 [너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -491,7 +498,7 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "결전 궁극기! 파이널 히트(궁극기) 5연타 (50 · 50 · 50💥 · 50 · 50) ➔ 250 피해 (절대 우위 100% 관통)");
+                        "👑 [결전 궁극기] [파이널 히트] 5연타 (50 · 50 · 50💥 · 50 · 50) ➔ 총 250 관통 피해");
     }
 
     @Test
@@ -512,7 +519,112 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
+        assertThat(lines).containsExactly("👑 [결전 궁극기] [메테오 스트라이크] 💥 100% 관통 ➔ 500 피해");
+    }
+
+    @Test
+    @DisplayName("선제공격 시 대미지가 0이면 태세 유지 로그를 남긴다")
+    void should_logFirstStrikeStance_when_playerDamageIsZero() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        DEFENSE_SKILL,
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        0,
+                        0,
+                        false,
+                        true,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("⚡ [선제 공격] 선제 찬스였으나 [디펜스] 태세 유지");
+    }
+
+    @Test
+    @DisplayName("카운터 어택 성공 시 치명 반격 로그를 남긴다")
+    void should_logCounterAttackSuccess() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "카운터 어택",
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        30,
+                        0,
+                        true,
+                        false,
+                        false,
+                        List.of(new HitResult(30, true)));
+
+        final List<String> lines = formatter.combatLines(input);
+
         assertThat(lines)
-                .containsExactly("결전 궁극기! 메테오 스트라이크(궁극기)로 너구리에게 500 피해 (절대 우위 100% 관통) (크리티컬!)");
+                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 30 치명 반격!", "🐺 [너구리] 일반공격 ➔ 빗나감");
+    }
+
+    @Test
+    @DisplayName("카운터 어택 시 적이 공격하지 않으면 빗나감 로그를 남긴다")
+    void should_logCounterAttackMiss_when_monsterDoesNotAttack() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        "카운터 어택",
+                        SkillType.DEFENSE,
+                        MONSTER_NAME,
+                        SkillType.DEFENSE,
+                        0,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "🐺 [너구리] 🛡️ 방어 태세 유지");
+    }
+
+    @Test
+    @DisplayName("몬스터 방어 시 플레이어 강공격에 방어선 관통 로그를 남긴다")
+    void should_logMonsterDefensePierced_when_playerDealsDamage() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        HEAVY_SKILL,
+                        SkillType.HEAVY,
+                        MONSTER_NAME,
+                        SkillType.DEFENSE,
+                        40,
+                        0,
+                        false,
+                        false,
+                        false,
+                        List.of(new HitResult(40, false)));
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 40 피해", "🐺 [너구리] 💥 방어선 관통됨!");
+    }
+
+    @Test
+    @DisplayName("적 선제공격 시 기습 로그를 남긴다")
+    void should_logEnemyFirstStrike_when_monsterDamagePositiveAndPlayerZero() {
+        final BattleLogInput input =
+                new BattleLogInput(
+                        ATTACK_SKILL,
+                        SkillType.NORMAL,
+                        MONSTER_NAME,
+                        SkillType.NORMAL,
+                        0,
+                        25,
+                        false,
+                        true,
+                        false,
+                        List.of());
+
+        final List<String> lines = formatter.combatLines(input);
+
+        assertThat(lines).containsExactly("⚠️ [적 선제공격] [너구리] 기습 ➔ 25 피해 피격");
     }
 }

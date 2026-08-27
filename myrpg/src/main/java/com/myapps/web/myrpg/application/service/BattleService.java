@@ -570,6 +570,17 @@ public class BattleService {
         return inventoryService.combatSkills(progress);
     }
 
+    /**
+     * 대치 페이즈에서 무기 세트를 전환(스왑)한다.
+     *
+     * @param progress 캐릭터 진행 상태
+     * @return 무기 교체 성공 시 true, 교체할 무기가 없으면 false
+     */
+    @Transactional
+    public boolean swapWeapon(final CharacterProgress progress) {
+        return inventoryService.swapWeapon(progress);
+    }
+
     // ─── Private: attack power ──────────────────────────────────────────────
 
     /**
@@ -644,7 +655,7 @@ public class BattleService {
         }
         final boolean failed = random.nextInt(PERCENT_DIVISOR) < MAGIC_FAIL_PERCENT;
         if (failed) {
-            logLines.add(skill.label() + " 캐스팅 실패!");
+            logLines.add("🔮 [" + skill.label() + "] 캐스팅 실패! (집중이 흐트러짐)");
         }
         return failed;
     }
@@ -947,7 +958,7 @@ public class BattleService {
         final int beforeHp = progress.getHpCurrent();
         progress.healHp(healAmount, maxHp);
         final int actualHealed = progress.getHpCurrent() - beforeHp;
-        combatLines.add(recoverySkill.label() + " 발동! 생명력을 " + actualHealed + " 회복했습니다.");
+        combatLines.add("💖 [" + recoverySkill.label() + "] HP +" + actualHealed + " 회복");
 
         final int monsterDamage =
                 resolveMonsterDamageForSupportTurn(
@@ -966,11 +977,11 @@ public class BattleService {
         state.setManaShieldTurnsLeft(buffSkill.durationTurns());
         state.setManaShieldAbsorbRate(buffSkill.absorbRateAt(charSkill.getRank()));
         combatLines.add(
-                "마나 실드 활성화! 피해 "
+                "✨ [마나 실드] 피해 "
                         + buffSkill.absorbRateAt(charSkill.getRank())
-                        + "% 흡수 ("
+                        + "% MP 흡수 버프 ("
                         + buffSkill.durationTurns()
-                        + "턴 지속)");
+                        + "턴)");
 
         final int monsterDamage =
                 resolveMonsterDamageForSupportTurn(
@@ -990,9 +1001,9 @@ public class BattleService {
         final boolean success = random.nextInt(PERCENT_DIVISOR) < rate;
         if (success) {
             state.setMonsterStunnedTurns(1);
-            combatLines.add(ccSkill.label() + " 적중! " + monster.name() + "이(가) 묶여 기절했습니다. (1턴)");
+            combatLines.add("⛓️ [" + ccSkill.label() + "] " + monster.name() + " 기절 성공! (1턴)");
         } else {
-            combatLines.add(ccSkill.label() + " 실패! 제어 효과가 걸리지 않았습니다.");
+            combatLines.add("⛓️ [" + ccSkill.label() + "] 저항으로 제어 효과 실패");
         }
 
         final int monsterDamage =
@@ -1011,7 +1022,7 @@ public class BattleService {
             return 0;
         }
         if (state.getMonsterStunnedTurns() > 0) {
-            combatLines.add(monster.name() + "이(가) 기절/빙결되어 행동할 수 없습니다.");
+            combatLines.add("❄️ [" + monster.name() + "] 빙결/기절 상태로 행동 불가");
             state.setMonsterStunnedTurns(state.getMonsterStunnedTurns() - 1);
             return 0;
         }
@@ -1035,7 +1046,7 @@ public class BattleService {
             final int freezeRate = damageSkill.freezeRateAt(charSkill.getRank());
             if (freezeRate > 0 && random.nextInt(PERCENT_DIVISOR) < freezeRate) {
                 state.setMonsterStunnedTurns(1);
-                combatLines.add(monster.name() + "이(가) 빙결되어 얼어붙었습니다! (1턴 행동 불가)");
+                combatLines.add("❄️ [빙결] " + monster.name() + " 꽁꽁 얼어붙음! (1턴 행동 불가)");
             }
         }
 
@@ -1045,17 +1056,18 @@ public class BattleService {
             state.setDotTurnsLeft(dotTurns);
             state.setDotDamagePerTurn(dotDamage);
             combatLines.add(
-                    skill.label()
-                            + " 명중! "
+                    "🩸 ["
+                            + skill.label()
+                            + "] "
                             + monster.name()
-                            + "에게 지속 피해 표식을 남겼습니다. ("
+                            + "에게 지속 피해 표식 ("
                             + dotTurns
                             + "턴)");
         }
 
         if (skill.type() == SkillType.DEBUFF) {
             state.setNextAttackAmpPercent(30);
-            combatLines.add("레이지 임팩트 디버프! 다음 물리 공격 피해가 +30% 증폭됩니다.");
+            combatLines.add("💢 [레이지 임팩트] 다음 물리 피해 +30% 증폭");
         }
     }
 
@@ -1097,9 +1109,9 @@ public class BattleService {
                 progress.spendMp(actualAbsorbed);
                 monsterDamage -= actualAbsorbed;
                 combatLines.add(
-                        "마나 실드가 피해 "
+                        "✨ [마나 실드] "
                                 + actualAbsorbed
-                                + "을(를) 마나로 흡수했습니다! (남은 MP: "
+                                + " 피해를 MP로 흡수 (남은 MP: "
                                 + progress.getMpCurrent()
                                 + ")");
             }
@@ -1121,7 +1133,7 @@ public class BattleService {
             final int dotDmg = state.getDotDamagePerTurn();
             state.setMonsterCurrentHp(Math.max(0, state.getMonsterCurrentHp() - dotDmg));
             state.setDotTurnsLeft(state.getDotTurnsLeft() - 1);
-            combatLines.add(monster.name() + "이(가) 지속 피해로 " + dotDmg + "의 피해를 입었습니다.");
+            combatLines.add("🩸 [지속 피해] " + monster.name() + " " + dotDmg + " 도트 피해");
         }
     }
 
@@ -1139,7 +1151,7 @@ public class BattleService {
                 progress.recoverMp(regen, maxMp);
                 final int actualRegened = progress.getMpCurrent() - beforeMp;
                 if (actualRegened > 0) {
-                    combatLines.add("메디테이션 효과로 마나 " + actualRegened + "을(를) 회복했습니다.");
+                    combatLines.add("🧘 [메디테이션] MP +" + actualRegened + " 회복");
                 }
             }
         }
@@ -1223,7 +1235,7 @@ public class BattleService {
                 state.setMonsterCurrentHp(monster.maxHp());
                 state.setTurnCount(1);
                 state.setActive(true);
-                final String chainMsg = monster.name() + " 무리가 추가로 기습해왔다!";
+                final String chainMsg = "🚨 [연쇄 조우] " + monster.name() + " 무리가 추가로 기습!";
                 combatLines.add(chainMsg);
                 settlementLines.add(chainMsg);
                 return new KillResolution(Outcome.NONE, null);
@@ -1261,21 +1273,27 @@ public class BattleService {
         final SkillType monsterAction;
 
         if (monsterIntent == null) {
-            combatLines.add("시간 초과! 선제 공격 기회를 놓쳤습니다.");
+            combatLines.add("⏳ [시간 초과] 선제 공격 기회 상실");
             monsterDamage = 0;
             monsterAction = null;
         } else {
             monsterAction = monsterIntent;
-            combatLines.add("시간 초과! 몬스터의 공격에 무방비로 피격되었습니다!");
+            combatLines.add("⏳ [시간 초과] 무방비 피격");
             monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
             applyManaShieldAndDamage(progress, state, 0, monsterDamage, combatLines);
 
             if (monsterAction != SkillType.DEFENSE) {
                 final String actionLabel = monsterAction == SkillType.HEAVY ? "강공격" : "일반공격";
                 combatLines.add(
-                        monster.name() + "의 " + actionLabel + "! " + monsterDamage + " 피해를 입었습니다.");
+                        "🐺 ["
+                                + monster.name()
+                                + "] "
+                                + actionLabel
+                                + " ➔ "
+                                + monsterDamage
+                                + " 피해 피격");
             } else {
-                combatLines.add(monster.name() + "은(는) 방어 태세를 유지했습니다.");
+                combatLines.add("🐺 [" + monster.name() + "] 🛡️ 방어 태세 유지");
             }
         }
 
@@ -1358,7 +1376,7 @@ public class BattleService {
             deathLines.forEach(line -> actionLog.add(line, LOG_TYPE_COMBAT));
         }
 
-        combatLines.add("도망 실패! " + monster.name() + "에게 " + monsterDmg + " 피해");
+        combatLines.add("⚠️ [도망 실패] " + monster.name() + "에게 저지당해 " + monsterDmg + " 피해");
 
         state.setPreemptiveParty(PreemptiveParty.NONE);
         state.setCurrentMonsterIntent(null);
