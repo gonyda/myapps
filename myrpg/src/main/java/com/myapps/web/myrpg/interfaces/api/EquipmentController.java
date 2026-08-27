@@ -111,6 +111,24 @@ public class EquipmentController {
     }
 
     /**
+     * 장비 팝업에서 인벤토리 내 다른 무기로 원터치 스왑하고 갱신된 장비 팝업 fragment를 반환한다.
+     *
+     * @param session HTTP 세션
+     * @param model Spring MVC 모델
+     * @return 장비 팝업 fragment 뷰 이름
+     */
+    @PostMapping("/swap-weapon")
+    public String swapWeapon(final HttpSession session, final Model model) {
+        final CharacterProgress progress = resolveCurrentCharacter(session);
+        final boolean swapped = inventoryService.swapWeapon(progress);
+        final EquipmentView view =
+                inventoryService.buildEquipmentView(progress != null ? progress.getId() : null);
+        model.addAttribute("equipment", view);
+        model.addAttribute("swapped", swapped);
+        return FRAGMENT_EQUIPMENT_CONTENT;
+    }
+
+    /**
      * 특정 슬롯에 착용 가능한 인벤토리 아이템 후보 목록을 반환한다.
      *
      * @param slot 슬롯 코드 (예: "HEAD", "BODY", "MAIN_HAND", "OFF_HAND", "HANDS", "FEET")

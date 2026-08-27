@@ -94,8 +94,8 @@
 
                 <!-- 무기 슬롯 전용 I / II 탭 -->
                 <div class="weapon-swap-tabs" th:if="${slot.slotId == 'MAIN_HAND' || slot.slotId == 'OFF_HAND'}">
-                    <span class="swap-tab active">I</span>
-                    <span class="swap-tab locked" onclick="event.stopPropagation(); showEquipmentToast('무기 스왑 II 세트는 향후 업데이트될 예정입니다.');">II 🔒</span>
+                    <span class="swap-tab active" title="현재 착용 무기 (I 세트)">I</span>
+                    <span class="swap-tab swap-tab-btn" onclick="event.stopPropagation(); swapEquipmentWeapon();" title="인벤토리 다른 무기로 스왑 (II 세트)">II 🔄</span>
                 </div>
 
                 <!-- 1-1. 잠긴 슬롯 (악세사리, 로브) -->
@@ -178,11 +178,15 @@
         </div>
     </div>
 
-    <!-- 3. 빠른 인벤토리 가방 전환 버튼 (Full Width) -->
+    <!-- 3. 빠른 액션 바 (무기 스왑 & 인벤토리) -->
     <div class="equipment-bottom-actions">
+        <button type="button" class="btn-swap-equipment" onclick="swapEquipmentWeapon()">
+            <span class="btn-icon">🔄</span>
+            <span>무기 세트 스왑</span>
+        </button>
         <button type="button" class="btn-goto-inventory" onclick="openInventoryFromEquipment()">
             <span class="btn-icon">🎒</span>
-            <span>소지품 가방 열기</span>
+            <span>소지품 가방</span>
         </button>
     </div>
 </div>

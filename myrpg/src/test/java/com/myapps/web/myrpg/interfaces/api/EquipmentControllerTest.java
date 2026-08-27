@@ -94,6 +94,25 @@ class EquipmentControllerTest {
         verify(inventoryService).unequip(OWNED_ITEM_ID);
     }
 
+    /** POST /equipment/swap-weapon 요청 시 무기 스왑을 실행하고 갱신된 장비 fragment가 반환되는지 검증한다. */
+    @Test
+    void should_swapWeaponAndReturnRefreshedFragment_when_swapWeaponRequested() throws Exception {
+        final CharacterProgress progress = CharacterProgress.createDefault();
+        final EquipmentView equipmentView = dummyEquipmentView();
+
+        when(characterService.loadOrCreateDefault()).thenReturn(progress);
+        when(inventoryService.swapWeapon(progress)).thenReturn(true);
+        when(inventoryService.buildEquipmentView(progress.getId())).thenReturn(equipmentView);
+
+        mockMvc.perform(post("/equipment/swap-weapon"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(FRAGMENT_EQUIPMENT_CONTENT))
+                .andExpect(model().attributeExists("equipment"))
+                .andExpect(model().attribute("swapped", true));
+
+        verify(inventoryService).swapWeapon(progress);
+    }
+
     /** GET /equipment/equippable 요청 시 슬롯 착용 가능 후보 목록이 반환되는지 검증한다. */
     @Test
     void should_returnCandidatesFragment_when_equippableRequested() throws Exception {

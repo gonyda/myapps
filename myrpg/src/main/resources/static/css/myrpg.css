@@ -2899,6 +2899,24 @@
             box-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
         }
 
+        .swap-tab.swap-tab-btn {
+            background: rgba(30, 41, 59, 0.85);
+            color: #94a3b8;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .swap-tab.swap-tab-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+
+        .swap-tab.swap-tab-btn:active {
+            transform: scale(0.95);
+        }
+
         .swap-tab.locked {
             color: #475569;
             cursor: pointer;
@@ -3120,15 +3138,45 @@
             color: #f8fafc;
         }
 
-        /* 3. 하단 빠른 가방 전환 버튼 */
+        /* 3. 하단 빠른 액션 바 (무기 스왑 & 가방) */
         .equipment-bottom-actions {
             margin-top: 2px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-swap-equipment {
+            flex: 1;
+            padding: 11px 8px;
+            font-size: var(--fs-sm);
+            font-weight: 700;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            color: #ffd700;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.15s ease;
+        }
+
+        .btn-swap-equipment:hover {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(184, 134, 11, 0.35));
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-swap-equipment:active {
+            transform: scale(0.98);
         }
 
         .btn-goto-inventory {
-            width: 100%;
-            padding: 12px;
-            font-size: var(--fs-md);
+            flex: 1;
+            padding: 11px 8px;
+            font-size: var(--fs-sm);
             font-weight: bold;
             background: linear-gradient(135deg, #d4af37, #b8860b);
             color: #0f172a;
@@ -3138,7 +3186,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
             transition: all 0.15s ease;
         }

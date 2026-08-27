@@ -294,6 +294,24 @@ function equipFromPicker(ownedItemId) {
         });
 }
 
+function swapEquipmentWeapon() {
+    fetch('/equipment/swap-weapon', { method: 'POST' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            if (html) {
+                document.getElementById('equipmentContent').innerHTML = html;
+            }
+            refreshTopBar();
+            if (battleActive) {
+                refreshBattleSkills();
+            }
+            showEquipmentToast('무기 세트를 스왑했습니다! ⚔️🔄');
+        })
+        .catch(function () {
+            showEquipmentToast('무기 스왑 중 오류가 발생했습니다.');
+        });
+}
+
 var equipmentToastTimer = null;
 function showEquipmentToast(message) {
     var toast = document.getElementById('equipmentToast');
