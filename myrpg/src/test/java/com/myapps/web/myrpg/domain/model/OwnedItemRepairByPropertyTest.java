@@ -88,6 +88,45 @@ class OwnedItemRepairByPropertyTest {
     }
 
     /**
+     * reduceMaxDurability 호출 시 최대 내구도가 1 이상으로 유지되며, 현재 내구도가 유효 최대 내구도를 초과하지 않음을 검증한다.
+     *
+     * @param catalogMax 카탈로그 최대 내구도 (1~100)
+     * @param currentDurability 현재 내구도 (0~100)
+     * @param reduceAmount 감소량 (1~10)
+     */
+    @Property(tries = 100)
+    void should_maintainValidMaxAndClampCurrent_when_reduceMaxDurability(
+            @ForAll("catalogMaxArbitrary") final int catalogMax,
+            @ForAll("currentDurabilityArbitrary") final double currentDurability,
+            @ForAll("reduceAmountArbitrary") final int reduceAmount) {
+
+        final OwnedItem item = createEquipmentWithDurability(currentDurability);
+        final int initialMax = item.effectiveMaxDurability(catalogMax);
+
+        item.reduceMaxDurability(reduceAmount, catalogMax);
+
+        final int expectedMax = Math.max(1, initialMax - reduceAmount);
+        assertThat(item.effectiveMaxDurability(catalogMax)).isEqualTo(expectedMax);
+        assertThat(item.getCurrentDurability()).isLessThanOrEqualTo((double) expectedMax);
+        assertThat(item.effectiveMaxDurability(catalogMax)).isGreaterThanOrEqualTo(1);
+    }
+
+    @Provide
+    Arbitrary<Integer> catalogMaxArbitrary() {
+        return Arbitraries.integers().between(1, 100);
+    }
+
+    @Provide
+    Arbitrary<Double> currentDurabilityArbitrary() {
+        return Arbitraries.doubles().between(0.0, 100.0);
+    }
+
+    @Provide
+    Arbitrary<Integer> reduceAmountArbitrary() {
+        return Arbitraries.integers().between(1, 10);
+    }
+
+    /**
      * (현재 내구도, 최대 내구도) 쌍을 생성하는 Arbitrary 제공자.
      *
      * @return (currentDurability ∈ [0,100], max ∈ (0,100]) 튜플의 Arbitrary

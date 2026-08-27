@@ -44,7 +44,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "🐺 [너구리] 일반공격 ➔ 13 피해 피격");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "[너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
@@ -65,7 +65,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [윈드밀] 💥 ➔ 너구리에게 15 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] 💥 ➔ 너구리에게 15 피해", "[너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -86,7 +86,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [스매시] 빗나감 (0 피해)", "🐺 [너구리] 일반공격 ➔ 13 피해 피격");
+        assertThat(lines).containsExactly("🗡️ [스매시] 빗나감 (0 피해)", "[너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
@@ -107,7 +107,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
+        assertThat(lines).containsExactly("🗡️ [윈드밀] ➔ 너구리에게 10 피해", "[너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -129,8 +129,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly(
-                        "⚔️ [윈드밀] 🛡️ 적 방어에 막힘 ➔ 3 피해", "🐺 [너구리] 🛡️ 방어 성공 & 반격 ➔ 7 피해 피격");
+                .containsExactly("⚔️ [윈드밀] 🛡️ 적 방어에 막힘 ➔ 3 피해", "[너구리] 🛡️ 방어 성공 & 반격 ➔ 7 피해 피격");
     }
 
     @Test
@@ -153,8 +152,7 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "🛡️ [디펜스] 방어 성공 & 반격! ➔ 너구리에게 9 반격 피해",
-                        "🐺 [너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 6 피해");
+                        "🛡️ [디펜스] 방어 성공 & 반격! ➔ 너구리에게 9 반격 피해", "[너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 6 피해");
     }
 
     @Test
@@ -175,7 +173,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 18 피해", "🐺 [너구리] 💥 방어선 관통됨!");
+        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 18 피해", "[너구리] 💥 방어선 관통됨!");
     }
 
     @Test
@@ -196,7 +194,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("⚠️ [디펜스] 몬스터 강공격에 방어선 관통!", "🐺 [너구리] 강공격 ➔ 20 피해 피격");
+        assertThat(lines).containsExactly("⚠️ [디펜스] 몬스터 강공격에 방어선 관통!", "[너구리] 강공격 ➔ 20 피해 피격");
     }
 
     @Test
@@ -217,7 +215,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🛡️ [디펜스] 맞방어 교착 상태", "🐺 [너구리] 🛡️ 방어 태세 유지");
+        assertThat(lines).containsExactly("🛡️ [디펜스] 맞방어 교착 상태", "[너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -280,7 +278,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🐺 [너구리] 일반공격 ➔ 13 피해 피격");
+        assertThat(lines).containsExactly("[너구리] 일반공격 ➔ 13 피해 피격");
     }
 
     @Test
@@ -301,7 +299,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🐺 [너구리] 🛡️ 방어 태세 유지");
+        assertThat(lines).containsExactly("[너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -329,7 +327,7 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "⚔️ [윈드밀] 3연타 (22 · 33💥 · 19) ➔ 총 74 피해", "🐺 [너구리] 일반공격 ➔ 10 피해 피격");
+                        "⚔️ [윈드밀] 3연타 (22 · 33💥 · 19) ➔ 총 74 피해", "[너구리] 일반공격 ➔ 10 피해 피격");
     }
 
     @Test
@@ -378,8 +376,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly(
-                        "⚔️ [스매시] 3연타 (30💥 · 28💥 · 32💥) ➔ 총 90 피해", "🐺 [너구리] 강공격 ➔ 빗나감");
+                .containsExactly("⚔️ [스매시] 3연타 (30💥 · 28💥 · 32💥) ➔ 총 90 피해", "[너구리] 강공격 ➔ 빗나감");
     }
 
     @Test
@@ -402,8 +399,7 @@ class BattleLogFormatterTest {
 
         assertThat(lines)
                 .containsExactly(
-                        "🛡️ [디펜스] 완벽 방어! ➔ 빈틈 포착 (다음 턴 선제 찬스⚡)",
-                        "🐺 [너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 0 피해");
+                        "🛡️ [디펜스] 완벽 방어! ➔ 빈틈 포착 (다음 턴 선제 찬스⚡)", "[너구리] 일반공격 ➔ 🛡️ 방어로 경감되어 0 피해");
     }
 
     @Test
@@ -427,7 +423,7 @@ class BattleLogFormatterTest {
         assertThat(lines)
                 .containsExactly(
                         "⚔️ [윈드밀] 🛡️ 너구리의 완전 방어에 가로막힘 (0 피해)",
-                        "🐺 [너구리] 🛡️ 공격 방어 성공 ➔ 반격 태세 (다음 턴 선제 주의⚠️)");
+                        "[너구리] 🛡️ 공격 방어 성공 ➔ 반격 태세 (다음 턴 선제 주의⚠️)");
     }
 
     @Test
@@ -449,7 +445,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 45 치명 반격!", "🐺 [너구리] 일반공격 ➔ 빗나감");
+                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 45 치명 반격!", "[너구리] 일반공격 ➔ 빗나감");
     }
 
     @Test
@@ -470,7 +466,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "🐺 [너구리] 🛡️ 방어 태세 유지");
+        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "[너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -562,7 +558,7 @@ class BattleLogFormatterTest {
         final List<String> lines = formatter.combatLines(input);
 
         assertThat(lines)
-                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 30 치명 반격!", "🐺 [너구리] 일반공격 ➔ 빗나감");
+                .containsExactly("⚡ [카운터 어택] 💥 적 공격을 흘려내며 ➔ 30 치명 반격!", "[너구리] 일반공격 ➔ 빗나감");
     }
 
     @Test
@@ -583,7 +579,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "🐺 [너구리] 🛡️ 방어 태세 유지");
+        assertThat(lines).containsExactly("⚡ [카운터 어택] 적이 공격하지 않아 빗나감", "[너구리] 🛡️ 방어 태세 유지");
     }
 
     @Test
@@ -604,7 +600,7 @@ class BattleLogFormatterTest {
 
         final List<String> lines = formatter.combatLines(input);
 
-        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 40 피해", "🐺 [너구리] 💥 방어선 관통됨!");
+        assertThat(lines).containsExactly("🗡️ [스매시] ➔ 너구리에게 40 피해", "[너구리] 💥 방어선 관통됨!");
     }
 
     @Test

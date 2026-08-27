@@ -70,6 +70,21 @@ public class CharacterProgress {
     @Column(nullable = false)
     private long gold;
 
+    @Column(name = "active_weapon_set", nullable = false)
+    private int activeWeaponSet = 1;
+
+    @Column(name = "weapon_1_main_id")
+    private Long weapon1MainId;
+
+    @Column(name = "weapon_1_off_id")
+    private Long weapon1OffId;
+
+    @Column(name = "weapon_2_main_id")
+    private Long weapon2MainId;
+
+    @Column(name = "weapon_2_off_id")
+    private Long weapon2OffId;
+
     /** JPA 전용 기본 생성자. */
     protected CharacterProgress() {}
 
@@ -102,6 +117,45 @@ public class CharacterProgress {
             final String currentNodeId,
             final int abilityPoints,
             final long gold) {
+        this(
+                nickname,
+                currentLevel,
+                accumulatedLevel,
+                experience,
+                talent,
+                lastRebirthAt,
+                hpCurrent,
+                mpCurrent,
+                staminaCurrent,
+                currentNodeId,
+                abilityPoints,
+                gold,
+                1,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    /** 무기 세트 슬롯을 포함하여 캐릭터 진행상황을 생성한다. */
+    public CharacterProgress(
+            final String nickname,
+            final int currentLevel,
+            final int accumulatedLevel,
+            final long experience,
+            final TalentType talent,
+            final LocalDateTime lastRebirthAt,
+            final int hpCurrent,
+            final int mpCurrent,
+            final int staminaCurrent,
+            final String currentNodeId,
+            final int abilityPoints,
+            final long gold,
+            final int activeWeaponSet,
+            final Long weapon1MainId,
+            final Long weapon1OffId,
+            final Long weapon2MainId,
+            final Long weapon2OffId) {
         this.nickname = nickname;
         this.currentLevel = currentLevel;
         this.accumulatedLevel = accumulatedLevel;
@@ -114,6 +168,11 @@ public class CharacterProgress {
         this.currentNodeId = currentNodeId;
         this.abilityPoints = abilityPoints;
         this.gold = gold;
+        this.activeWeaponSet = activeWeaponSet > 0 ? activeWeaponSet : 1;
+        this.weapon1MainId = weapon1MainId;
+        this.weapon1OffId = weapon1OffId;
+        this.weapon2MainId = weapon2MainId;
+        this.weapon2OffId = weapon2OffId;
     }
 
     /**
@@ -491,5 +550,77 @@ public class CharacterProgress {
      */
     public boolean isDead() {
         return this.hpCurrent == 0;
+    }
+
+    public int getActiveWeaponSet() {
+        return activeWeaponSet > 0 ? activeWeaponSet : 1;
+    }
+
+    public void setActiveWeaponSet(final int activeWeaponSet) {
+        this.activeWeaponSet = activeWeaponSet == 2 ? 2 : 1;
+    }
+
+    public void toggleWeaponSet() {
+        this.activeWeaponSet = this.activeWeaponSet == 1 ? 2 : 1;
+    }
+
+    public Long getWeapon1MainId() {
+        return weapon1MainId;
+    }
+
+    public void setWeapon1MainId(final Long weapon1MainId) {
+        this.weapon1MainId = weapon1MainId;
+    }
+
+    public Long getWeapon1OffId() {
+        return weapon1OffId;
+    }
+
+    public void setWeapon1OffId(final Long weapon1OffId) {
+        this.weapon1OffId = weapon1OffId;
+    }
+
+    public Long getWeapon2MainId() {
+        return weapon2MainId;
+    }
+
+    public void setWeapon2MainId(final Long weapon2MainId) {
+        this.weapon2MainId = weapon2MainId;
+    }
+
+    public Long getWeapon2OffId() {
+        return weapon2OffId;
+    }
+
+    public void setWeapon2OffId(final Long weapon2OffId) {
+        this.weapon2OffId = weapon2OffId;
+    }
+
+    /** 현재 활성 세트의 주무기 ID를 반환한다. */
+    public Long getActiveMainWeaponId() {
+        return getActiveWeaponSet() == 1 ? weapon1MainId : weapon2MainId;
+    }
+
+    /** 현재 활성 세트의 보조무기(방패) ID를 반환한다. */
+    public Long getActiveOffWeaponId() {
+        return getActiveWeaponSet() == 1 ? weapon1OffId : weapon2OffId;
+    }
+
+    /** 현재 활성 세트의 주무기 ID를 갱신한다. */
+    public void setActiveMainWeaponId(final Long id) {
+        if (getActiveWeaponSet() == 1) {
+            this.weapon1MainId = id;
+        } else {
+            this.weapon2MainId = id;
+        }
+    }
+
+    /** 현재 활성 세트의 보조무기 ID를 갱신한다. */
+    public void setActiveOffWeaponId(final Long id) {
+        if (getActiveWeaponSet() == 1) {
+            this.weapon1OffId = id;
+        } else {
+            this.weapon2OffId = id;
+        }
     }
 }

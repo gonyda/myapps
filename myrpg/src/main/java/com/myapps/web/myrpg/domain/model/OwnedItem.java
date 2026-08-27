@@ -44,6 +44,9 @@ public class OwnedItem {
     @Column(name = "current_durability", nullable = false)
     private double currentDurability;
 
+    @Column(name = "max_durability", nullable = true)
+    private Integer maxDurability;
+
     /** JPA 전용 기본 생성자. */
     protected OwnedItem() {}
 
@@ -62,7 +65,7 @@ public class OwnedItem {
             final StorageKind storage,
             final boolean equipped,
             final double currentDurability) {
-        this(1L, itemId, quantity, storage, equipped, currentDurability);
+        this(1L, itemId, quantity, storage, equipped, currentDurability, null);
     }
 
     /**
@@ -82,12 +85,35 @@ public class OwnedItem {
             final StorageKind storage,
             final boolean equipped,
             final double currentDurability) {
+        this(characterId, itemId, quantity, storage, equipped, currentDurability, null);
+    }
+
+    /**
+     * 최대 내구도를 포함하여 전체 필드를 지정하는 생성자.
+     *
+     * @param characterId 캐릭터 식별자
+     * @param itemId 아이템 카탈로그 ID
+     * @param quantity 보유 수량
+     * @param storage 저장 위치
+     * @param equipped 장착 여부
+     * @param currentDurability 현재 내구도
+     * @param maxDurability 최대 내구도 (장비만 의미, 미지정 시 null)
+     */
+    public OwnedItem(
+            final Long characterId,
+            final String itemId,
+            final int quantity,
+            final StorageKind storage,
+            final boolean equipped,
+            final double currentDurability,
+            final Integer maxDurability) {
         this.characterId = characterId;
         this.itemId = itemId;
         this.quantity = quantity;
         this.storage = storage;
         this.equipped = equipped;
         this.currentDurability = currentDurability;
+        this.maxDurability = maxDurability;
     }
 
     /**
@@ -228,5 +254,43 @@ public class OwnedItem {
      */
     public void repairToMax(final double max) {
         this.currentDurability = max;
+    }
+
+    /**
+     * 영속화된 최대 내구도를 반환한다 (없으면 null).
+     *
+     * @return 최대 내구도
+     */
+    public Integer getMaxDurability() {
+        return maxDurability;
+    }
+
+    /**
+     * 카탈로그 최대 내구도를 fallback으로 하는 유효 최대 내구도를 반환한다.
+     *
+     * @param catalogMax 카탈로그 최대 내구도
+     * @return 유효 최대 내구도 (1 이상)
+     */
+    public int effectiveMaxDurability(final int catalogMax) {
+        if (maxDurability != null && maxDurability > 0) {
+            return maxDurability;
+        }
+        return catalogMax;
+    }
+
+    /**
+     * 최대 내구도를 지정된 양만큼 감소시킨다 (수리 실패 페널티).
+     *
+     * <p>최대 내구도는 1 미만으로 내려가지 않으며, 현재 내구도가 새로운 최대 내구도를 초과하면 현재 내구도도 함께 조정된다.
+     *
+     * @param amount 감소할 최대 내구도 양 (1 이상)
+     * @param catalogMax 카탈로그 기본 최대 내구도
+     */
+    public void reduceMaxDurability(final int amount, final int catalogMax) {
+        final int currentMax = effectiveMaxDurability(catalogMax);
+        this.maxDurability = Math.max(1, currentMax - amount);
+        if (this.currentDurability > this.maxDurability) {
+            this.currentDurability = this.maxDurability;
+        }
     }
 }

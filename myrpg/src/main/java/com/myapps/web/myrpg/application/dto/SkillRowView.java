@@ -14,6 +14,9 @@ package com.myapps.web.myrpg.application.dto;
  * @param maxed 최고 랭크(MASTER) 여부
  * @param fieldUsable 필드 사용 가능 여부 (힐링 등)
  * @param cooldownBadgeText 쿨타임 뱃지 텍스트 (궁극기 대기 상태 등, 없으면 null)
+ * @param slotIndex 배정된 슬롯 번호 (0~9, 미배정 시 null)
+ * @param isPassive 패시브 스킬 여부
+ * @param icon 스킬 표시 이모지 (예: "👑", "⚔️", "🏹", "🔮")
  */
 public record SkillRowView(
         String id,
@@ -26,7 +29,36 @@ public record SkillRowView(
         boolean fieldUsable,
         String cooldownBadgeText,
         Integer slotIndex,
-        boolean isPassive) {
+        boolean isPassive,
+        String icon) {
+
+    /** 11인자 하위호환 생성자 (icon="⚔️" 기본값). */
+    public SkillRowView(
+            final String id,
+            final String label,
+            final String talentLabel,
+            final String rankLabel,
+            final int progressPercent,
+            final boolean rankable,
+            final boolean maxed,
+            final boolean fieldUsable,
+            final String cooldownBadgeText,
+            final Integer slotIndex,
+            final boolean isPassive) {
+        this(
+                id,
+                label,
+                talentLabel,
+                rankLabel,
+                progressPercent,
+                rankable,
+                maxed,
+                fieldUsable,
+                cooldownBadgeText,
+                slotIndex,
+                isPassive,
+                "⚔️");
+    }
 
     /** 하위호환 생성자 (9인자). */
     public SkillRowView(
@@ -50,7 +82,8 @@ public record SkillRowView(
                 fieldUsable,
                 cooldownBadgeText,
                 null,
-                false);
+                false,
+                "⚔️");
     }
 
     /** 하위호환 생성자: fieldUsable=false, cooldownBadgeText=null. */
@@ -73,6 +106,7 @@ public record SkillRowView(
                 false,
                 null,
                 null,
-                false);
+                false,
+                "⚔️");
     }
 }

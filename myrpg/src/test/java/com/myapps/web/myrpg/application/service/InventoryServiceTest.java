@@ -509,6 +509,7 @@ class InventoryServiceTest {
     @Test
     void should_swapWeapon_when_different_weapon_exists() {
         final CharacterProgress progress = createProgress(100, 100);
+        progress.setWeapon2MainId(2L);
         final OwnedItem currentSword = createOwnedItem(1L, "sword", true);
         final OwnedItem bow = createOwnedItem(2L, "bow", false);
 
@@ -531,9 +532,8 @@ class InventoryServiceTest {
                         null,
                         MAX_DURABILITY);
 
-        when(ownedItemRepository.findByCharacterIdAndStorageOrderById(
-                        progress.getId(), StorageKind.INVENTORY))
-                .thenReturn(List.of(currentSword, bow));
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
         when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
         when(itemCatalogService.byId("bow")).thenReturn(Optional.of(bowCat));
         when(ownedItemRepository.findById(2L)).thenReturn(Optional.of(bow));
@@ -543,12 +543,158 @@ class InventoryServiceTest {
         final boolean swapped = inventoryService.swapWeapon(progress);
 
         assertThat(swapped).isTrue();
+        assertThat(progress.getActiveWeaponSet()).isEqualTo(2);
+        assertThat(bow.isEquipped()).isTrue();
+        assertThat(currentSword.isEquipped()).isFalse();
     }
 
     @Test
     void should_return_false_when_no_other_weapon_to_swap() {
         final CharacterProgress progress = createProgress(100, 100);
-        final OwnedItem currentSword = createOwnedItem(1L, "sword", true);
+        final OwnedItem currentSword = createOwnedItem(1L, "sword", false);
+
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of());
+
+        final boolean swapped = inventoryService.swapWeapon(progress);
+
+        assertThat(swapped).isFalse();
+    }
+
+    @Test
+    void should_restore_shield_when_swapping_back_to_one_handed_weapon_set() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setWeapon2MainId(3L);
+        final OwnedItem sword = createOwnedItem(1L, "sword", true);
+        final OwnedItem shield = createOwnedItem(2L, "shield", true);
+        final OwnedItem bow = createOwnedItem(3L, "bow", false);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+        final EquipmentItem shieldCat =
+                new EquipmentItem(
+                        "shield",
+                        "방패",
+                        ItemType.ARMOR,
+                        EquipmentKind.SHIELD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+        final EquipmentItem bowCat =
+                new EquipmentItem(
+                        "bow",
+                        "활",
+                        ItemType.WEAPON,
+                        EquipmentKind.BOW,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+        when(itemCatalogService.byId("shield")).thenReturn(Optional.of(shieldCat));
+        when(itemCatalogService.byId("bow")).thenReturn(Optional.of(bowCat));
+        when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(sword));
+        when(ownedItemRepository.findById(2L)).thenReturn(Optional.of(shield));
+        when(ownedItemRepository.findById(3L)).thenReturn(Optional.of(bow));
+
+        // 1. 처음에는 한손검 + 방패 착용 상태에서 세트 2(활)로 스왑
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of(sword, shield));
+
+        final boolean swapToSet2 = inventoryService.swapWeapon(progress);
+        assertThat(swapToSet2).isTrue();
+        assertThat(progress.getActiveWeaponSet()).isEqualTo(2);
+        assertThat(sword.isEquipped()).isFalse();
+        assertThat(shield.isEquipped()).isFalse();
+        assertThat(bow.isEquipped()).isTrue();
+
+        // 2. 세트 2(활)에서 세트 1(한손검+방패)로 다시 스왑
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of(bow));
+
+        final boolean swapToSet1 = inventoryService.swapWeapon(progress);
+        assertThat(swapToSet1).isTrue();
+        assertThat(progress.getActiveWeaponSet()).isEqualTo(1);
+        assertThat(sword.isEquipped()).isTrue();
+        assertThat(shield.isEquipped()).isTrue();
+        assertThat(bow.isEquipped()).isFalse();
+    }
+
+    @Test
+    void should_allow_bare_hands_swap_when_weapon_set_is_empty() {
+        final CharacterProgress progress = createProgress(100, 100);
+        // 세트 1: 한손검(1L)+방패(2L), 세트 2: 빈손(null)
+        final OwnedItem sword = createOwnedItem(1L, "sword", true);
+        final OwnedItem shield = createOwnedItem(2L, "shield", true);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+        final EquipmentItem shieldCat =
+                new EquipmentItem(
+                        "shield",
+                        "방패",
+                        ItemType.ARMOR,
+                        EquipmentKind.SHIELD,
+                        List.of(),
+                        null,
+                        MAX_DURABILITY);
+
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+        when(itemCatalogService.byId("shield")).thenReturn(Optional.of(shieldCat));
+        when(ownedItemRepository.findById(1L)).thenReturn(Optional.of(sword));
+        when(ownedItemRepository.findById(2L)).thenReturn(Optional.of(shield));
+
+        // 1. 한손검+방패 착용 상태에서 빈손 세트(2번 세트)로 스왑
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of(sword, shield));
+
+        final boolean swapToBareHands = inventoryService.swapWeapon(progress);
+        assertThat(swapToBareHands).isTrue();
+        assertThat(progress.getActiveWeaponSet()).isEqualTo(2);
+        assertThat(sword.isEquipped()).isFalse();
+        assertThat(shield.isEquipped()).isFalse();
+
+        // 2. 빈손 세트(2번)에서 다시 1번 세트(한손검+방패)로 스왑
+        when(ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY))
+                .thenReturn(List.of());
+
+        final boolean swapBackToOneHand = inventoryService.swapWeapon(progress);
+        assertThat(swapBackToOneHand).isTrue();
+        assertThat(progress.getActiveWeaponSet()).isEqualTo(1);
+        assertThat(sword.isEquipped()).isTrue();
+        assertThat(shield.isEquipped()).isTrue();
+    }
+
+    @Test
+    void should_exclude_other_weapon_set_items_from_equippable_candidates() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setActiveWeaponSet(2); // 현재 2번 세트 활성화 중
+        progress.setWeapon1MainId(1L); // 1번 세트에 1L 한손검 등록됨
+        progress.setWeapon1OffId(2L); // 1번 세트에 2L 방패 등록됨
+
+        final OwnedItem set1Sword = createOwnedItem(1L, "sword", false);
+        final OwnedItem set1Shield = createOwnedItem(2L, "shield", false);
+        final OwnedItem freeDagger = createOwnedItem(3L, "dagger", false);
 
         final EquipmentItem swordCat =
                 new EquipmentItem(
@@ -558,15 +704,29 @@ class InventoryServiceTest {
                         EquipmentKind.ONE_HANDED_SWORD,
                         List.of(),
                         null,
-                        MAX_DURABILITY);
+                        20);
+        final EquipmentItem daggerCat =
+                new EquipmentItem(
+                        "dagger",
+                        "단검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        15);
 
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
         when(ownedItemRepository.findByCharacterIdAndStorageOrderById(
                         progress.getId(), StorageKind.INVENTORY))
-                .thenReturn(List.of(currentSword));
-        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+                .thenReturn(List.of(set1Sword, set1Shield, freeDagger));
+        when(itemCatalogService.byId("dagger")).thenReturn(Optional.of(daggerCat));
 
-        final boolean swapped = inventoryService.swapWeapon(progress);
+        final List<com.myapps.web.myrpg.application.dto.OwnedItemView> candidates =
+                inventoryService.findEquippableForSlot(progress.getId(), "MAIN_HAND");
 
-        assertThat(swapped).isFalse();
+        // 1번 세트에 등록된 set1Sword(1L)는 제외되고, 여유 장비인 freeDagger(3L)만 나와야 함
+        assertThat(candidates).hasSize(1);
+        assertThat(candidates.get(0).ownedItemId()).isEqualTo(3L);
     }
 }

@@ -10,10 +10,22 @@ import java.util.List;
  * @param equippedCount 현재 장착된 부위 수 (최대 6부위)
  * @param averageDurabilityPercent 장착 장비들의 평균 내구도 백분율
  * @param weaponTalentLabel 현재 장착 중인 무기의 재능 분류 라벨
+ * @param activeWeaponSet 현재 활성화된 무기 세트 번호 (1 또는 2)
  */
 public record EquipmentView(
         List<EquipmentSlotView> slots,
         EquippedBonusResult bonusResult,
         int equippedCount,
         int averageDurabilityPercent,
-        String weaponTalentLabel) {}
+        String weaponTalentLabel,
+        int activeWeaponSet) {
+
+    public EquipmentView(
+            final List<EquipmentSlotView> slots,
+            final EquippedBonusResult bonusResult,
+            final int equippedCount,
+            final int averageDurabilityPercent,
+            final String weaponTalentLabel) {
+        this(slots, bonusResult, equippedCount, averageDurabilityPercent, weaponTalentLabel, 1);
+    }
+}

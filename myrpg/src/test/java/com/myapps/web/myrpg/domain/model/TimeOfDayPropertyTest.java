@@ -73,6 +73,14 @@ class TimeOfDayPropertyTest {
         }
     }
 
+    /** 모든 {@link TimeOfDay} 상수가 비어있지 않은 이모지를 제공하는지 검증한다. */
+    @Property(tries = 10)
+    void should_provideNonBlankEmoji_when_allConstantsChecked() {
+        for (final TimeOfDay tod : TimeOfDay.values()) {
+            assertThat(tod.emoji()).isNotBlank();
+        }
+    }
+
     /**
      * 유효한 시각(0~23)을 생성하는 Arbitrary 제공자.
      *

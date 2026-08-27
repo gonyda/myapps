@@ -18,11 +18,16 @@ import com.myapps.web.myrpg.domain.model.ActionLogEntry;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.StatProgression;
 import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
+import com.myapps.web.myrpg.domain.model.TimeOfDay;
 import com.myapps.web.myrpg.domain.model.VitalMax;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +55,7 @@ public class PlayScreenViewHelper {
     private final StatProgression statProgression;
     private final SkillService skillService;
     private final InventoryService inventoryService;
+    private final Clock clock;
 
     /**
      * PlayScreenViewHelper를 생성한다.
@@ -58,16 +64,34 @@ public class PlayScreenViewHelper {
      * @param statProgression 스탯 진행 정책 (HP/MP/Stamina 최대값 산출용)
      * @param skillService 스킬 서비스 (랭크업 영구 보너스 합산용)
      * @param inventoryService 인벤토리 서비스 (장비 보너스 합산용)
+     * @param clock 시간 산출용 Clock
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    public PlayScreenViewHelper(
+            final ExperiencePolicy experiencePolicy,
+            final StatProgression statProgression,
+            final SkillService skillService,
+            final InventoryService inventoryService,
+            final Clock clock) {
+        this.experiencePolicy = experiencePolicy;
+        this.statProgression = statProgression;
+        this.skillService = skillService;
+        this.inventoryService = inventoryService;
+        this.clock = clock;
+    }
+
+    /** 4인자 하위 호환 생성자 (기본 Clock 사용). */
     public PlayScreenViewHelper(
             final ExperiencePolicy experiencePolicy,
             final StatProgression statProgression,
             final SkillService skillService,
             final InventoryService inventoryService) {
-        this.experiencePolicy = experiencePolicy;
-        this.statProgression = statProgression;
-        this.skillService = skillService;
-        this.inventoryService = inventoryService;
+        this(
+                experiencePolicy,
+                statProgression,
+                skillService,
+                inventoryService,
+                Clock.system(ZoneId.of("Asia/Seoul")));
     }
 
     /**
@@ -243,11 +267,16 @@ public class PlayScreenViewHelper {
             monsterActions = buildMonsterActions(talkTarget.monster());
         }
 
+        final String ambienceEmoji = TimeOfDay.fromHour(LocalDateTime.now(clock).getHour()).emoji();
+        final boolean monsterBoss =
+                talkTarget.monster() != null && talkTarget.monster().type() == MonsterType.BOSS;
+
         return new PlayScreenView(
                 topBar,
                 minimap,
                 fullMap,
                 ambience,
+                ambienceEmoji,
                 npcName,
                 npcDialogue,
                 interactions,
@@ -257,6 +286,7 @@ public class PlayScreenViewHelper {
                 monsterLevel,
                 monsterMaxHp,
                 monsterActions,
+                monsterBoss,
                 logs,
                 info);
     }

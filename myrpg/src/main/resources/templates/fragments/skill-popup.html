@@ -66,7 +66,7 @@
                 data-tab="common"
                 th:classappend="${skillList.activeTab() == 'common'} ? ' active' : ''"
                 onclick="loadSkillTab('common')">
-            <span class="tab-icon">🌟</span>
+            <span class="tab-icon">👑</span>
             <span class="tab-text">공용</span>
         </button>
     </div>
@@ -78,8 +78,7 @@
             <!-- 1행: 헤더 (아이콘 + 스킬명 + 랭크 뱃지 | 슬롯 뱃지 + 궁극기 쿨타임 + 필드 사용 버튼) -->
             <div class="skill-row-header">
                 <div class="skill-title-group">
-                    <span class="skill-icon"
-                          th:text="${row.talentLabel() == '근접전투' ? '⚔️' : (row.talentLabel() == '활' ? '🏹' : (row.talentLabel() == '마법' ? '🔮' : '🌟'))}">⚡</span>
+                    <span class="skill-icon" th:text="${row.icon()}">⚔️</span>
                     <span class="skill-name" th:text="${row.label()}">스매시</span>
                     <span class="skill-rank"
                           th:classappend="${row.maxed()} ? ' rank-master' : (' rank-' + ${row.rankLabel().toLowerCase()})"

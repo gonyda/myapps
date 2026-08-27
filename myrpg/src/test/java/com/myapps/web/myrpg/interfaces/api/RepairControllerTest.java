@@ -132,6 +132,8 @@ class RepairControllerTest {
                 .andExpect(view().name(FRAGMENT_REPAIR_POPUP))
                 .andExpect(model().attributeExists("repair"));
 
+        org.assertj.core.api.Assertions.assertThat(owned.effectiveMaxDurability(20)).isEqualTo(19);
+        verify(ownedItemRepository).save(owned);
         verify(characterService).saveTurn(progress);
     }
 

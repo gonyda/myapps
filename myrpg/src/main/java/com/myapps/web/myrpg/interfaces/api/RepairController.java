@@ -136,19 +136,24 @@ public class RepairController {
                                         new IllegalStateException(
                                                 "카탈로그에 아이템이 없습니다: " + target.getItemId()));
 
-        if (catalogItem instanceof EquipmentItem equipItem
-                && Math.ceil(target.getCurrentDurability()) < equipItem.maxDurability()) {
-            final long repairCost = shopService.sellValueOf(target);
-            progress.spendGold(repairCost);
+        if (catalogItem instanceof EquipmentItem equipItem) {
+            final int effectiveMax = target.effectiveMaxDurability(equipItem.maxDurability());
+            if (Math.ceil(target.getCurrentDurability()) < effectiveMax) {
+                final long repairCost = shopService.sellValueOf(target);
+                progress.spendGold(repairCost);
 
-            final boolean success = random.nextInt(100) < REPAIR_SUCCESS_RATE_PERCENT;
-            if (success) {
-                target.repairBy(REPAIR_AMOUNT, equipItem.maxDurability());
+                final boolean success = random.nextInt(100) < REPAIR_SUCCESS_RATE_PERCENT;
+                if (success) {
+                    target.repairBy(REPAIR_AMOUNT, effectiveMax);
+                } else {
+                    target.reduceMaxDurability(1, equipItem.maxDurability());
+                }
+                ownedItemRepository.save(target);
+                if (response != null) {
+                    response.setHeader("X-Repair-Result", success ? "SUCCESS" : "FAIL");
+                }
+                characterService.saveTurn(progress);
             }
-            if (response != null) {
-                response.setHeader("X-Repair-Result", success ? "SUCCESS" : "FAIL");
-            }
-            characterService.saveTurn(progress);
         }
 
         final RepairView view = buildRepairView(progress.getId(), progress.getGold());
@@ -189,7 +194,8 @@ public class RepairController {
             if (catalogOpt.isEmpty() || !(catalogOpt.get() instanceof EquipmentItem equipItem)) {
                 continue;
             }
-            if (Math.ceil(owned.getCurrentDurability()) >= equipItem.maxDurability()) {
+            final int effectiveMax = owned.effectiveMaxDurability(equipItem.maxDurability());
+            if (Math.ceil(owned.getCurrentDurability()) >= effectiveMax) {
                 continue;
             }
             repairItems.add(
@@ -198,7 +204,7 @@ public class RepairController {
                             equipItem.name(),
                             equipItem.type().label(),
                             (int) Math.ceil(owned.getCurrentDurability()),
-                            equipItem.maxDurability(),
+                            effectiveMax,
                             shopService.sellValueOf(owned),
                             owned.isEquipped(),
                             inventoryService.describe(equipItem, owned)));

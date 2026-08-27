@@ -1293,7 +1293,7 @@ public class BattleService {
             if (monsterAction != SkillType.DEFENSE) {
                 final String actionLabel = monsterAction == SkillType.HEAVY ? "강공격" : "일반공격";
                 combatLines.add(
-                        "🐺 ["
+                        "["
                                 + monster.name()
                                 + "] "
                                 + actionLabel
@@ -1301,7 +1301,7 @@ public class BattleService {
                                 + monsterDamage
                                 + " 피해 피격");
             } else {
-                combatLines.add("🐺 [" + monster.name() + "] 🛡️ 방어 태세 유지");
+                combatLines.add("[" + monster.name() + "] 🛡️ 방어 태세 유지");
             }
         }
 

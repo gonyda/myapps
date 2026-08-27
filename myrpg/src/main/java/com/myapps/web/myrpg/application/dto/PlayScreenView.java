@@ -15,6 +15,7 @@ import java.util.List;
  * @param minimap 미니맵 뷰 모델
  * @param fullMap 전체지도 뷰 모델
  * @param ambience 상황 멘트 텍스트
+ * @param ambienceEmoji 상황 멘트 시간대 이모지 (예: "🌅", "☀️", "🌙")
  * @param npcName 현재 노드 NPC 이름 (없으면 null)
  * @param npcDialogue NPC 대사 텍스트 (없으면 null)
  * @param interactions 상호작용 대상 목록 (없으면 null)
@@ -24,6 +25,7 @@ import java.util.List;
  * @param monsterLevel 몬스터 레벨 (조우 중이 아니면 null)
  * @param monsterMaxHp 몬스터 최대 체력 (조우 중이 아니면 null)
  * @param monsterActions 몬스터 행동 버튼 목록 (조우 중이 아니면 null)
+ * @param monsterBoss 보스 몬스터 여부
  * @param logs 행동 로그 항목 목록 (오름차순)
  * @param info 정보 팝업 뷰 모델 (상/중/하 3구역)
  */
@@ -32,6 +34,7 @@ public record PlayScreenView(
         MinimapView minimap,
         FullMapView fullMap,
         String ambience,
+        String ambienceEmoji,
         String npcName,
         String npcDialogue,
         List<InteractionItem> interactions,
@@ -41,14 +44,49 @@ public record PlayScreenView(
         Integer monsterLevel,
         Integer monsterMaxHp,
         List<ActionButton> monsterActions,
+        boolean monsterBoss,
         List<ActionLogEntry> logs,
         InfoPopupView info) {
 
+    /** 기존 15인자 보조 생성자 (하위 호환: ambienceEmoji="☀️", monsterBoss=false). */
+    public PlayScreenView(
+            final TopBarView topBar,
+            final MinimapView minimap,
+            final FullMapView fullMap,
+            final String ambience,
+            final String npcName,
+            final String npcDialogue,
+            final List<InteractionItem> interactions,
+            final List<ActionButton> npcActions,
+            final String monsterName,
+            final String monsterDialogue,
+            final Integer monsterLevel,
+            final Integer monsterMaxHp,
+            final List<ActionButton> monsterActions,
+            final List<ActionLogEntry> logs,
+            final InfoPopupView info) {
+        this(
+                topBar,
+                minimap,
+                fullMap,
+                ambience,
+                "☀️",
+                npcName,
+                npcDialogue,
+                interactions,
+                npcActions,
+                monsterName,
+                monsterDialogue,
+                monsterLevel,
+                monsterMaxHp,
+                monsterActions,
+                false,
+                logs,
+                info);
+    }
+
     /**
      * 몬스터 슬롯 없는 기존 10인자 보조 생성자 (하위 호환).
-     *
-     * <p>기존 호출부(테스트 포함)가 몬스터 관련 필드를 명시하지 않고 기존 10개 인자만으로 인스턴스를 생성할 수 있도록 유지한다. 몬스터 슬롯 5개 필드는 모두
-     * null로 설정된다.
      *
      * @param topBar 상단바 뷰 모델
      * @param minimap 미니맵 뷰 모델
@@ -77,6 +115,7 @@ public record PlayScreenView(
                 minimap,
                 fullMap,
                 ambience,
+                "☀️",
                 npcName,
                 npcDialogue,
                 interactions,
@@ -86,6 +125,7 @@ public record PlayScreenView(
                 null,
                 null,
                 null,
+                false,
                 logs,
                 info);
     }

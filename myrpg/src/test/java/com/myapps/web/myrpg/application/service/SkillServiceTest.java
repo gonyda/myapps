@@ -537,6 +537,66 @@ class SkillServiceTest {
         assertThat(slots.get(1).empty()).isTrue();
     }
 
+    @Test
+    void should_returnCrownIcon_when_skillTalentIsCommonOrPassive() {
+        final Skill commonSkill =
+                new DamageSkill(
+                        "defense",
+                        "디펜스",
+                        SkillType.DEFENSE,
+                        SkillTalent.COMMON,
+                        0,
+                        java.util.Map.of(),
+                        "설명");
+        final Skill passiveMeleeSkill =
+                new com.myapps.web.myrpg.domain.model.PassiveSkill(
+                        "combat_mastery",
+                        "컴뱃 마스터리",
+                        SkillType.PASSIVE,
+                        SkillTalent.MELEE,
+                        0,
+                        java.util.Map.of(),
+                        "설명");
+
+        assertThat(skillService.resolveSkillIcon(commonSkill)).isEqualTo("👑");
+        assertThat(skillService.resolveSkillIcon(passiveMeleeSkill)).isEqualTo("👑");
+    }
+
+    @Test
+    void should_returnTabSpecificIcons_when_skillTalentsAreMeleeArcheryMagic() {
+        final Skill meleeSkill =
+                new DamageSkill(
+                        "smash",
+                        "스매시",
+                        SkillType.HEAVY,
+                        SkillTalent.MELEE,
+                        0,
+                        java.util.Map.of(),
+                        "설명");
+        final Skill archerySkill =
+                new DamageSkill(
+                        "magnum",
+                        "매그넘 샷",
+                        SkillType.HEAVY,
+                        SkillTalent.ARCHERY,
+                        0,
+                        java.util.Map.of(),
+                        "설명");
+        final Skill magicSkill =
+                new DamageSkill(
+                        "firebolt",
+                        "파이어볼트",
+                        SkillType.HEAVY,
+                        SkillTalent.MAGIC,
+                        0,
+                        java.util.Map.of(),
+                        "설명");
+
+        assertThat(skillService.resolveSkillIcon(meleeSkill)).isEqualTo("⚔️");
+        assertThat(skillService.resolveSkillIcon(archerySkill)).isEqualTo("🏹");
+        assertThat(skillService.resolveSkillIcon(magicSkill)).isEqualTo("🔮");
+    }
+
     private CharacterProgress createProgressWithAp(final int abilityPoints) {
         final CharacterProgress progress =
                 new CharacterProgress(

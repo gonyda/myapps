@@ -67,6 +67,22 @@ class TimeOfDayTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "LATE_NIGHT, 🌌",
+        "DAWN, 🌅",
+        "MORNING, 🌄",
+        "AFTERNOON, ☀️",
+        "LATE_AFTERNOON, 🌇",
+        "NIGHT, 🌙"
+    })
+    void should_haveCorrectEmoji_when_enumConstantAccessed(
+            final String name, final String expectedEmoji) {
+        final TimeOfDay timeOfDay = TimeOfDay.valueOf(name);
+
+        assertEquals(expectedEmoji, timeOfDay.emoji());
+    }
+
     @Test
     void should_haveSixConstants_when_valuesChecked() {
         assertEquals(6, TimeOfDay.values().length);

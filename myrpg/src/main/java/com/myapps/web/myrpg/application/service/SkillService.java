@@ -738,6 +738,8 @@ public class SkillService {
         final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
         final boolean isPassive = catalog instanceof PassiveSkill;
 
+        final String icon = resolveSkillIcon(catalog);
+
         return new SkillRowView(
                 catalog.id(),
                 catalog.label(),
@@ -749,27 +751,22 @@ public class SkillService {
                 fieldUsable,
                 cooldownBadgeText,
                 characterSkill.getSlotIndex(),
-                isPassive);
+                isPassive,
+                icon);
     }
 
-    private String resolveSkillIcon(final Skill catalog) {
-        if (catalog instanceof PassiveSkill) {
-            return "🛡️";
+    public String resolveSkillIcon(final Skill catalog) {
+        if (catalog == null) {
+            return "⚔️";
         }
-        if (catalog.type() == SkillType.ULTIMATE) {
+        if (catalog.talent() == SkillTalent.COMMON || catalog instanceof PassiveSkill) {
             return "👑";
-        }
-        if (catalog instanceof RecoverySkill) {
-            return "💖";
-        }
-        if (catalog.type() == SkillType.DEFENSE) {
-            return "🛡️";
         }
         return switch (catalog.talent()) {
             case MELEE -> "⚔️";
             case ARCHERY -> "🏹";
             case MAGIC -> "🔮";
-            case COMMON -> "🌟";
+            case COMMON -> "👑";
         };
     }
 

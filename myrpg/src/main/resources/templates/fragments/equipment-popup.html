@@ -94,8 +94,14 @@
 
                 <!-- 무기 슬롯 전용 I / II 탭 -->
                 <div class="weapon-swap-tabs" th:if="${slot.slotId == 'MAIN_HAND' || slot.slotId == 'OFF_HAND'}">
-                    <span class="swap-tab active" title="현재 착용 무기 (I 세트)">I</span>
-                    <span class="swap-tab swap-tab-btn" onclick="event.stopPropagation(); swapEquipmentWeapon();" title="인벤토리 다른 무기로 스왑 (II 세트)">II 🔄</span>
+                    <span class="swap-tab"
+                          th:classappend="${equipment.activeWeaponSet == 1} ? 'active' : 'swap-tab-btn'"
+                          th:attr="onclick=${equipment.activeWeaponSet == 2} ? 'event.stopPropagation(); swapEquipmentWeapon();' : null"
+                          th:title="${equipment.activeWeaponSet == 1} ? '현재 착용 무기 (I 세트)' : 'I 세트로 스왑 🔄'">I<span th:if="${equipment.activeWeaponSet == 2}"> 🔄</span></span>
+                    <span class="swap-tab"
+                          th:classappend="${equipment.activeWeaponSet == 2} ? 'active' : 'swap-tab-btn'"
+                          th:attr="onclick=${equipment.activeWeaponSet == 1} ? 'event.stopPropagation(); swapEquipmentWeapon();' : null"
+                          th:title="${equipment.activeWeaponSet == 2} ? '현재 착용 무기 (II 세트)' : 'II 세트로 스왑 🔄'">II<span th:if="${equipment.activeWeaponSet == 1}"> 🔄</span></span>
                 </div>
 
                 <!-- 1-1. 잠긴 슬롯 (악세사리, 로브) -->
@@ -182,7 +188,7 @@
     <div class="equipment-bottom-actions">
         <button type="button" class="btn-swap-equipment" onclick="swapEquipmentWeapon()">
             <span class="btn-icon">🔄</span>
-            <span>무기 세트 스왑</span>
+            <span th:text="${equipment.activeWeaponSet == 1 ? '무기 세트 전환 (➔ II)' : '무기 세트 전환 (➔ I)'}">무기 세트 스왑</span>
         </button>
         <button type="button" class="btn-goto-inventory" onclick="openInventoryFromEquipment()">
             <span class="btn-icon">🎒</span>

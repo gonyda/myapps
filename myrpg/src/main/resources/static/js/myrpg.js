@@ -1026,7 +1026,7 @@ function repairItem(ownedItemId) {
             if (data.result === 'SUCCESS') {
                 alert('🔨 수리 성공!');
             } else if (data.result === 'FAIL') {
-                alert('💥 퍼거스가 손을 삐끗했습니다! 수리 실패');
+                alert('💥 수리 실패 (최대 내구도 1 감소)');
             }
         });
 }

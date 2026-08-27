@@ -248,11 +248,10 @@ public class BattleLogFormatter {
         final boolean isCounter = input.skillLabel() != null && input.skillLabel().contains("카운터");
         if (input.playerType() == SkillType.DEFENSE && input.monsterAction() == SkillType.NORMAL) {
             if (isCounter) {
-                lines.add("🐺 " + monsterTag + " " + actionLabel + ARROW + "빗나감");
+                lines.add(monsterTag + " " + actionLabel + ARROW + "빗나감");
             } else {
                 lines.add(
-                        "🐺 "
-                                + monsterTag
+                        monsterTag
                                 + " "
                                 + actionLabel
                                 + ARROW
@@ -261,16 +260,9 @@ public class BattleLogFormatter {
                                 + " 피해");
             }
         } else if (input.monsterDamage() > 0) {
-            lines.add(
-                    "🐺 "
-                            + monsterTag
-                            + " "
-                            + actionLabel
-                            + ARROW
-                            + input.monsterDamage()
-                            + " 피해 피격");
+            lines.add(monsterTag + " " + actionLabel + ARROW + input.monsterDamage() + " 피해 피격");
         } else {
-            lines.add("🐺 " + monsterTag + " " + actionLabel + ARROW + "빗나감");
+            lines.add(monsterTag + " " + actionLabel + ARROW + "빗나감");
         }
     }
 
@@ -278,21 +270,15 @@ public class BattleLogFormatter {
     private void addMonsterDefenseLine(final List<String> lines, final BattleLogInput input) {
         final String monsterTag = "[" + input.monsterName() + "]";
         if (input.castFailure() || input.playerType() == SkillType.DEFENSE) {
-            lines.add("🐺 " + monsterTag + " 🛡️ 방어 태세 유지");
+            lines.add(monsterTag + " 🛡️ 방어 태세 유지");
         } else if (input.monsterDamage() > 0) {
-            lines.add(
-                    "🐺 "
-                            + monsterTag
-                            + " 🛡️ 방어 성공 & 반격"
-                            + ARROW
-                            + input.monsterDamage()
-                            + " 피해 피격");
+            lines.add(monsterTag + " 🛡️ 방어 성공 & 반격" + ARROW + input.monsterDamage() + " 피해 피격");
         } else if (RockPaperScissors.isNormalFamily(input.playerType())) {
-            lines.add("🐺 " + monsterTag + " 🛡️ 공격 방어 성공" + ARROW + "반격 태세 (다음 턴 선제 주의⚠️)");
+            lines.add(monsterTag + " 🛡️ 공격 방어 성공" + ARROW + "반격 태세 (다음 턴 선제 주의⚠️)");
         } else if (input.playerDamage() > 0) {
-            lines.add("🐺 " + monsterTag + " 💥 방어선 관통됨!");
+            lines.add(monsterTag + " 💥 방어선 관통됨!");
         } else {
-            lines.add("🐺 " + monsterTag + " 🛡️ 완전 방어 (0 피해)");
+            lines.add(monsterTag + " 🛡️ 완전 방어 (0 피해)");
         }
     }
 

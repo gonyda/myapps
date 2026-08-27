@@ -9,31 +9,33 @@ package com.myapps.web.myrpg.domain.model;
 public enum TimeOfDay {
 
     /** 심야 시간대. */
-    LATE_NIGHT("late-night", 0, 5),
+    LATE_NIGHT("late-night", 0, 5, "🌌"),
 
     /** 새벽 시간대. */
-    DAWN("dawn", 5, 8),
+    DAWN("dawn", 5, 8, "🌅"),
 
     /** 오전 시간대. */
-    MORNING("morning", 8, 12),
+    MORNING("morning", 8, 12, "🌄"),
 
     /** 오후 시간대. */
-    AFTERNOON("afternoon", 12, 16),
+    AFTERNOON("afternoon", 12, 16, "☀️"),
 
     /** 늦은 오후 시간대. */
-    LATE_AFTERNOON("late-afternoon", 16, 19),
+    LATE_AFTERNOON("late-afternoon", 16, 19, "🌇"),
 
     /** 밤 시간대. */
-    NIGHT("night", 19, 24);
+    NIGHT("night", 19, 24, "🌙");
 
     private final String key;
     private final int from;
     private final int to;
+    private final String emoji;
 
-    TimeOfDay(final String key, final int from, final int to) {
+    TimeOfDay(final String key, final int from, final int to, final String emoji) {
         this.key = key;
         this.from = from;
         this.to = to;
+        this.emoji = emoji;
     }
 
     /**
@@ -61,6 +63,15 @@ public enum TimeOfDay {
      */
     public int to() {
         return to;
+    }
+
+    /**
+     * 이 시간대의 대표 이모지를 반환한다.
+     *
+     * @return 시간대 이모지 문자열 (예: "🌅", "☀️", "🌙")
+     */
+    public String emoji() {
+        return emoji;
     }
 
     /**

@@ -281,7 +281,7 @@ public class BattleController {
             final BattleState state, final Monster monster, final CharacterProgress progress) {
         final List<BattleSkillButton> skills = battleService.combatSkills(progress);
         return new BattleView(
-                monster.name(),
+                monster.buttonLabel(),
                 monster.level(),
                 state.getMonsterCurrentHp(),
                 monster.maxHp(),

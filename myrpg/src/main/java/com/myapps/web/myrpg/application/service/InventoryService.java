@@ -25,7 +25,6 @@ import com.myapps.web.myrpg.domain.model.ItemType;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.PotionItem;
-import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
@@ -39,6 +38,7 @@ import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -166,6 +166,17 @@ public class InventoryService {
     public void unequip(final long ownedItemId) {
         final OwnedItem target = findOwnedItemOrThrow(ownedItemId);
         target.unequip();
+
+        final CharacterProgress progress = findCharacterSafe(target.getCharacterId());
+        if (progress != null) {
+            if (Long.valueOf(ownedItemId).equals(progress.getActiveMainWeaponId())) {
+                progress.setActiveMainWeaponId(null);
+                characterProgressRepository.save(progress);
+            } else if (Long.valueOf(ownedItemId).equals(progress.getActiveOffWeaponId())) {
+                progress.setActiveOffWeaponId(null);
+                characterProgressRepository.save(progress);
+            }
+        }
     }
 
     /**
@@ -446,9 +457,16 @@ public class InventoryService {
         final int equippedCount = (int) slots.stream().filter(EquipmentSlotView::equipped).count();
         final int averageDurabilityPercent = calculateAverageDurability(slots);
         final String weaponTalentLabel = resolveWeaponTalentLabel(characterId);
+        final CharacterProgress progress = findCharacterSafe(characterId);
+        final int activeWeaponSet = progress != null ? progress.getActiveWeaponSet() : 1;
 
         return new EquipmentView(
-                slots, bonusResult, equippedCount, averageDurabilityPercent, weaponTalentLabel);
+                slots,
+                bonusResult,
+                equippedCount,
+                averageDurabilityPercent,
+                weaponTalentLabel,
+                activeWeaponSet);
     }
 
     private List<OwnedItem> findEquippedInventoryItems(final Long characterId) {
@@ -558,6 +576,20 @@ public class InventoryService {
         autoUnequipTwoHandedForShield(target, targetKind, equippedItems);
 
         equip(ownedItemId);
+
+        final CharacterProgress progress = findCharacterSafe(target.getCharacterId());
+        if (progress != null) {
+            if (targetKind.primarySlot() == EquipSlot.MAIN_HAND) {
+                progress.setActiveMainWeaponId(target.getId());
+                if (targetKind.requiredSlots().contains(EquipSlot.OFF_HAND)) {
+                    progress.setActiveOffWeaponId(null);
+                }
+                characterProgressRepository.save(progress);
+            } else if (targetKind.primarySlot() == EquipSlot.OFF_HAND) {
+                progress.setActiveOffWeaponId(target.getId());
+                characterProgressRepository.save(progress);
+            }
+        }
     }
 
     private void autoUnequipShieldForTwoHanded(
@@ -624,8 +656,11 @@ public class InventoryService {
                                 characterId, StorageKind.INVENTORY)
                         : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
 
+        final Set<Long> otherSetAssignedItemIds = resolveOtherSetAssignedItemIds(characterId);
+
         return inventoryItems.stream()
                 .filter(owned -> !owned.isEquipped())
+                .filter(owned -> !otherSetAssignedItemIds.contains(owned.getId()))
                 .filter(
                         owned -> {
                             final Optional<Item> catalogOpt =
@@ -638,6 +673,31 @@ public class InventoryService {
                         })
                 .map(this::toOwnedItemView)
                 .toList();
+    }
+
+    private Set<Long> resolveOtherSetAssignedItemIds(final Long characterId) {
+        final CharacterProgress progress = findCharacterSafe(characterId);
+        if (progress == null) {
+            return Set.of();
+        }
+        final Set<Long> ids = new HashSet<>();
+        final int activeSet = progress.getActiveWeaponSet();
+        if (activeSet == 1) {
+            if (progress.getWeapon2MainId() != null) {
+                ids.add(progress.getWeapon2MainId());
+            }
+            if (progress.getWeapon2OffId() != null) {
+                ids.add(progress.getWeapon2OffId());
+            }
+        } else {
+            if (progress.getWeapon1MainId() != null) {
+                ids.add(progress.getWeapon1MainId());
+            }
+            if (progress.getWeapon1OffId() != null) {
+                ids.add(progress.getWeapon1OffId());
+            }
+        }
+        return Set.copyOf(ids);
     }
 
     /** 기본 캐릭터(1L)에 모든 초보자용 장비와 기본 소비품을 지급하고 기본 장비를 장착한다. */
@@ -905,63 +965,121 @@ public class InventoryService {
     }
 
     /**
-     * 대치 페이즈에서 인벤토리 내 다른 무기로 즉시 스왑한다.
+     * 대치 페이즈 또는 장비창에서 무기 세트(I / II)를 즉시 스왑한다.
      *
-     * <p>현재 장착 중인 무기와 다른 계열(또는 다음 무기)을 찾아 원터치로 교체 장착한다.
+     * <p>주무기(MAIN_HAND)뿐만 아니라 보조손 장비(방패 등 OFF_HAND)까지 각 무기 세트별로 저장 및 복원하여 완벽하게 페어로 전환한다.
      *
-     * @param progress 캐릭터 진행 상태
-     * @return 무기 스왑 성공 시 true, 스왑할 무기가 없으면 false
+     * @param progressParam 캐릭터 진행 상태
+     * @return 무기 스왑 성공 시 true, 스왑할 무기 세트가 없으면 false
      */
     @Transactional
-    public boolean swapWeapon(final CharacterProgress progress) {
-        final Long charId = progress != null ? progress.getId() : null;
-        final List<OwnedItem> inventoryItems = loadInventoryItems(charId);
-
-        final List<OwnedItem> unequippedWeapons = new ArrayList<>();
-        for (final OwnedItem item : inventoryItems) {
-            final Optional<Item> catalogOpt = itemCatalogService.byId(item.getItemId());
-            if (catalogOpt.isPresent()
-                    && catalogOpt.get().type() == ItemType.WEAPON
-                    && !item.isEquipped()) {
-                unequippedWeapons.add(item);
-            }
-        }
-
-        if (unequippedWeapons.isEmpty()) {
+    public boolean swapWeapon(final CharacterProgress progressParam) {
+        final CharacterProgress progress = resolveProgressForSwap(progressParam);
+        if (progress == null) {
             return false;
         }
 
-        final SkillTalent currentTalent = resolveEquippedWeaponTalent(charId);
-        final OwnedItem targetWeapon = selectTargetWeaponForSwap(unequippedWeapons, currentTalent);
-        smartEquip(targetWeapon.getId());
+        final Long charId = progress.getId();
+        final int currentSet = progress.getActiveWeaponSet();
+        final int targetSet = currentSet == 1 ? 2 : 1;
+
+        final List<OwnedItem> currentlyEquipped = findEquippedInventoryItems(charId);
+        final Map<EquipSlot, OwnedItem> currentSlotMap = resolveEquippedSlotMap(currentlyEquipped);
+        syncCurrentWeaponSetSlots(progress, currentSet, currentSlotMap);
+
+        final Long targetMainId =
+                resolveExistingOwnedId(
+                        targetSet == 1 ? progress.getWeapon1MainId() : progress.getWeapon2MainId());
+        final Long targetOffId =
+                resolveExistingOwnedId(
+                        targetSet == 1 ? progress.getWeapon1OffId() : progress.getWeapon2OffId());
+
+        final boolean currentHasAny =
+                currentSlotMap.containsKey(EquipSlot.MAIN_HAND)
+                        || currentSlotMap.containsKey(EquipSlot.OFF_HAND);
+        final boolean targetHasAny = targetMainId != null || targetOffId != null;
+
+        if (!currentHasAny && !targetHasAny) {
+            return false;
+        }
+
+        unequipWeaponSlots(currentSlotMap);
+        equipTargetWeaponSet(targetMainId, targetOffId);
+
+        progress.setActiveWeaponSet(targetSet);
+        characterProgressRepository.save(progress);
         return true;
     }
 
-    private List<OwnedItem> loadInventoryItems(final Long charId) {
-        List<OwnedItem> inventoryItems = List.of();
-        if (charId != null) {
-            inventoryItems =
-                    ownedItemRepository.findByCharacterIdAndStorageOrderById(
-                            charId, StorageKind.INVENTORY);
+    private CharacterProgress resolveProgressForSwap(final CharacterProgress progressParam) {
+        if (progressParam != null) {
+            return characterProgressRepository
+                    .findById(progressParam.getId())
+                    .orElse(progressParam);
         }
-        if (inventoryItems == null || inventoryItems.isEmpty()) {
-            inventoryItems = ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
-        }
-        return inventoryItems != null ? inventoryItems : List.of();
+        return characterProgressRepository.findById(1L).orElse(null);
     }
 
-    private OwnedItem selectTargetWeaponForSwap(
-            final List<OwnedItem> unequippedWeapons, final SkillTalent currentTalent) {
-        for (final OwnedItem unequipped : unequippedWeapons) {
-            final Optional<Item> catOpt = itemCatalogService.byId(unequipped.getItemId());
-            if (catOpt.isPresent() && catOpt.get() instanceof EquipmentItem eqItem) {
-                final SkillTalent talent = mapKindToSkillTalent(eqItem.kind());
-                if (currentTalent == null || talent != currentTalent) {
-                    return unequipped;
+    private void syncCurrentWeaponSetSlots(
+            final CharacterProgress progress,
+            final int currentSet,
+            final Map<EquipSlot, OwnedItem> currentSlotMap) {
+        final Long mainId =
+                currentSlotMap.containsKey(EquipSlot.MAIN_HAND)
+                        ? currentSlotMap.get(EquipSlot.MAIN_HAND).getId()
+                        : null;
+        final Long offId =
+                currentSlotMap.containsKey(EquipSlot.OFF_HAND)
+                        ? currentSlotMap.get(EquipSlot.OFF_HAND).getId()
+                        : null;
+        if (currentSet == 1) {
+            progress.setWeapon1MainId(mainId);
+            progress.setWeapon1OffId(offId);
+        } else {
+            progress.setWeapon2MainId(mainId);
+            progress.setWeapon2OffId(offId);
+        }
+    }
+
+    private Long resolveExistingOwnedId(final Long ownedItemId) {
+        if (ownedItemId == null) {
+            return null;
+        }
+        return ownedItemRepository
+                .findById(ownedItemId)
+                .filter(it -> it.getStorage() == StorageKind.INVENTORY)
+                .map(OwnedItem::getId)
+                .orElse(null);
+    }
+
+    private void unequipWeaponSlots(final Map<EquipSlot, OwnedItem> currentSlotMap) {
+        if (currentSlotMap.containsKey(EquipSlot.MAIN_HAND)) {
+            currentSlotMap.get(EquipSlot.MAIN_HAND).unequip();
+        }
+        if (currentSlotMap.containsKey(EquipSlot.OFF_HAND)) {
+            currentSlotMap.get(EquipSlot.OFF_HAND).unequip();
+        }
+    }
+
+    private void equipTargetWeaponSet(final Long targetMainId, final Long targetOffId) {
+        boolean mainIsTwoHanded = false;
+        if (targetMainId != null) {
+            final Optional<OwnedItem> mainOpt = ownedItemRepository.findById(targetMainId);
+            if (mainOpt.isPresent() && mainOpt.get().getStorage() == StorageKind.INVENTORY) {
+                mainOpt.get().equip();
+                final Optional<Item> catOpt = itemCatalogService.byId(mainOpt.get().getItemId());
+                if (catOpt.isPresent() && catOpt.get() instanceof EquipmentItem equipItem) {
+                    mainIsTwoHanded = equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND);
                 }
             }
         }
-        return unequippedWeapons.get(0);
+
+        if (targetOffId != null && !mainIsTwoHanded) {
+            final Optional<OwnedItem> offOpt = ownedItemRepository.findById(targetOffId);
+            if (offOpt.isPresent() && offOpt.get().getStorage() == StorageKind.INVENTORY) {
+                offOpt.get().equip();
+            }
+        }
     }
 
     /**
@@ -1036,11 +1154,18 @@ public class InventoryService {
                 lines.add("방패와 함께 착용할 수 없습니다.");
             }
 
+            final int maxDura =
+                    owned != null
+                            ? owned.effectiveMaxDurability(equipItem.maxDurability())
+                            : equipItem.maxDurability();
             lines.add(
                     "내구도: "
-                            + formatDurability(owned.getCurrentDurability())
+                            + formatDurability(
+                                    owned != null
+                                            ? owned.getCurrentDurability()
+                                            : equipItem.maxDurability())
                             + "/"
-                            + equipItem.maxDurability());
+                            + maxDura);
         }
 
         return List.copyOf(lines);
@@ -1061,7 +1186,9 @@ public class InventoryService {
         final boolean equippable = catalogItem.type().isEquipment();
         final Double currentDurability = equippable ? owned.getCurrentDurability() : null;
         final Integer maxDurability =
-                (catalogItem instanceof EquipmentItem equipItem) ? equipItem.maxDurability() : null;
+                (catalogItem instanceof EquipmentItem equipItem)
+                        ? owned.effectiveMaxDurability(equipItem.maxDurability())
+                        : null;
         final List<String> detailLines = describe(catalogItem, owned);
 
         return new OwnedItemView(
@@ -1205,6 +1332,16 @@ public class InventoryService {
 
     private boolean hasCapacity(final Long characterId, final StorageKind storage) {
         return countStorage(characterId, storage) < MAX_CAPACITY;
+    }
+
+    private CharacterProgress findCharacterSafe(final Long characterId) {
+        if (characterId != null) {
+            return characterProgressRepository
+                    .findById(characterId)
+                    .or(() -> characterProgressRepository.findFirstByOrderByIdAsc())
+                    .orElse(null);
+        }
+        return characterProgressRepository.findFirstByOrderByIdAsc().orElse(null);
     }
 
     private CharacterProgress loadCharacter(final Long characterId) {
@@ -1436,23 +1573,17 @@ public class InventoryService {
     }
 
     private String resolveSkillIcon(final Skill catalog) {
-        if (catalog instanceof PassiveSkill) {
-            return "🛡️";
+        if (catalog == null) {
+            return "⚔️";
         }
-        if (catalog.type() == SkillType.ULTIMATE) {
+        if (catalog.talent() == SkillTalent.COMMON || catalog instanceof PassiveSkill) {
             return "👑";
-        }
-        if (catalog instanceof RecoverySkill) {
-            return "💖";
-        }
-        if (catalog.type() == SkillType.DEFENSE) {
-            return "🛡️";
         }
         return switch (catalog.talent()) {
             case MELEE -> "⚔️";
             case ARCHERY -> "🏹";
             case MAGIC -> "🔮";
-            case COMMON -> "🌟";
+            case COMMON -> "👑";
         };
     }
 
@@ -1499,7 +1630,7 @@ public class InventoryService {
             return EquipmentSlotView.empty(slot.name(), label, defaultIcon);
         }
 
-        final int maxDura = equipItem.maxDurability();
+        final int maxDura = owned.effectiveMaxDurability(equipItem.maxDurability());
         final int currentDura = (int) Math.ceil(owned.getCurrentDurability());
         final int duraPercent =
                 maxDura > 0

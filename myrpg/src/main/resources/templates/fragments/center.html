@@ -4,7 +4,7 @@
 <section class="center" th:fragment="center">
     <!-- 1단: 상황 멘트 슬림 바 (고정 32px) -->
     <div class="situation" id="situation">
-        <span class="situation-icon">🌙</span>
+        <span class="situation-icon" th:text="${view.ambienceEmoji != null ? view.ambienceEmoji : '☀️'}">☀️</span>
         <span class="situation-text" th:text="${view.ambience}">맵 데이터를 불러오는 중...</span>
     </div>
 
@@ -37,7 +37,7 @@
         <th:block th:if="${view.monsterName != null}">
             <div class="stage-header">
                 <span class="monster-name">
-                    <span class="stage-icon">🐺</span>
+                    <span class="stage-icon" th:if="${view.monsterBoss}">👑</span>
                     <span th:text="${view.monsterName}">몬스터</span>
                 </span>
                 <span class="monster-meta" th:text="'Lv.' + ${view.monsterLevel} + ' · HP ' + ${view.monsterMaxHp}">Lv.1 · HP 25</span>
