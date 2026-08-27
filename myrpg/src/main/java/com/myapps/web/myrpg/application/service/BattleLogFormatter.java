@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.application.service;
 import com.myapps.web.myrpg.application.dto.BattleLogInput;
 import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.SkillType;
+import com.myapps.web.myrpg.domain.service.RockPaperScissors;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,7 +131,8 @@ public class BattleLogFormatter {
             }
             return;
         }
-        if (input.monsterAction() == SkillType.DEFENSE && input.playerType() == SkillType.NORMAL) {
+        if (input.monsterAction() == SkillType.DEFENSE
+                && RockPaperScissors.isNormalFamily(input.playerType())) {
             if (isMultiHit(input)) {
                 lines.add(
                         "⚔️ "
@@ -285,7 +287,7 @@ public class BattleLogFormatter {
                             + ARROW
                             + input.monsterDamage()
                             + " 피해 피격");
-        } else if (input.playerType() == SkillType.NORMAL) {
+        } else if (RockPaperScissors.isNormalFamily(input.playerType())) {
             lines.add("🐺 " + monsterTag + " 🛡️ 공격 방어 성공" + ARROW + "반격 태세 (다음 턴 선제 주의⚠️)");
         } else if (input.playerDamage() > 0) {
             lines.add("🐺 " + monsterTag + " 💥 방어선 관통됨!");

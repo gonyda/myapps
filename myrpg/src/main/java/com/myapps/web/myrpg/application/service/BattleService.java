@@ -41,6 +41,7 @@ import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
+import com.myapps.web.myrpg.domain.service.RockPaperScissors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -398,9 +399,10 @@ public class BattleService {
                         }
                     }
 
-                    if ("defense".equals(skill.id()) && monsterAction == SkillType.NORMAL) {
+                    if ("defense".equals(skill.id())
+                            && RockPaperScissors.isNormalFamily(monsterAction)) {
                         nextPreemptive = PreemptiveParty.PLAYER;
-                    } else if (skill.type() == SkillType.NORMAL
+                    } else if (RockPaperScissors.isNormalFamily(skill.type())
                             && monsterAction == SkillType.DEFENSE) {
                         nextPreemptive = PreemptiveParty.MONSTER;
                     }
@@ -442,7 +444,9 @@ public class BattleService {
                         playerHits);
         combatLines.addAll(logFormatter.combatLines(logInput));
 
-        applyDoTTick(state, monster, combatLines);
+        if (skill.type() != SkillType.DOT) {
+            applyDoTTick(state, monster, combatLines);
+        }
         applyMeditationRegen(progress, combatLines);
 
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
@@ -777,13 +781,15 @@ public class BattleService {
      * @return {@code true}면 플레이어가 먼저 공격
      */
     private boolean determineTurnOrder(final SkillType playerType, final SkillType monsterType) {
-        if (playerType == monsterType) {
+        if (playerType == monsterType
+                || (RockPaperScissors.isNormalFamily(playerType)
+                        && RockPaperScissors.isNormalFamily(monsterType))) {
             return random.nextInt(2) == 0;
         }
-        if (playerType == SkillType.NORMAL && monsterType == SkillType.DEFENSE) {
+        if (RockPaperScissors.isNormalFamily(playerType) && monsterType == SkillType.DEFENSE) {
             return true;
         }
-        if (playerType == SkillType.DEFENSE && monsterType == SkillType.NORMAL) {
+        if (playerType == SkillType.DEFENSE && RockPaperScissors.isNormalFamily(monsterType)) {
             return false;
         }
         return random.nextInt(2) == 0;
@@ -1052,7 +1058,9 @@ public class BattleService {
 
         if (skill instanceof DotSkill dotSkill) {
             final int dotTurns = dotSkill.dotTurnsAt(charSkill.getRank());
-            final int dotDamage = dotSkill.dotPerTurnAt(charSkill.getRank());
+            final int dotRate = dotSkill.dotPerTurnAt(charSkill.getRank());
+            final int playerAttack = attackPower(progress, equippedTalent);
+            final int dotDamage = Math.max(1, (playerAttack * dotRate) / 100);
             state.setDotTurnsLeft(dotTurns);
             state.setDotDamagePerTurn(dotDamage);
             combatLines.add(

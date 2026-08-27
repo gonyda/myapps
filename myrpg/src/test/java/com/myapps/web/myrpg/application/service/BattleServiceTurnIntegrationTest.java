@@ -264,6 +264,48 @@ class BattleServiceTurnIntegrationTest {
         verify(skillService, never()).onSkillKill(any(), anyString());
     }
 
+    /** DoT 스킬 사용 시 첫 턴에는 직격만 적용되고 다음 턴부터 지속 피해(DoT)가 적용되는지 검증한다. */
+    @Test
+    @DisplayName("DoT 스킬 사용 시 당일 턴에는 DoT 틱이 실행되지 않고 다음 턴부터 발동된다")
+    void should_applyDotDamageFromNextTurn_when_usingDotSkill() {
+        final String dotSkillId = "mirage_missile";
+        final com.myapps.web.myrpg.domain.model.DotSkill dotSkill =
+                new com.myapps.web.myrpg.domain.model.DotSkill(
+                        dotSkillId,
+                        "미라지 미사일",
+                        SkillType.DOT,
+                        SkillTalent.ARCHERY,
+                        10,
+                        createFullRankMap(30),
+                        createFullRankMap(60),
+                        createFullRankMap(3),
+                        "미라지 설명");
+        when(skillCatalogService.byId(dotSkillId)).thenReturn(Optional.of(dotSkill));
+        when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, dotSkillId))
+                .thenReturn(
+                        Optional.of(
+                                new CharacterSkill(CHARACTER_ID, dotSkillId, SkillRank.F, 0, 0)));
+
+        final CharacterProgress progress = createProgress(HIGH_HP);
+        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
+        state.setTurnCount(2);
+
+        // 1턴: 미라지 미사일 시전
+        battleService.takeTurn(progress, state, dotSkillId);
+
+        // DoT 표식(3턴)과 턴당 피해량이 세팅되지만, 이번 턴에는 틱이 차감되지 않아 여전히 3턴 유지
+        assertThat(state.getDotTurnsLeft()).isEqualTo(3);
+        assertThat(state.getDotDamagePerTurn()).isGreaterThan(0);
+
+        final int hpAfterCast = state.getMonsterCurrentHp();
+
+        // 2턴: 일반 공격(윈드밀) 시전
+        battleService.takeTurn(progress, state, SKILL_ID);
+
+        // 이번 턴 종료 시 DoT 1틱이 소모되어 2턴으로 감소
+        assertThat(state.getDotTurnsLeft()).isEqualTo(2);
+    }
+
     // ─── Helpers ────────────────────────────────────────────────────────────
 
     private CharacterProgress createProgress(final int hp) {

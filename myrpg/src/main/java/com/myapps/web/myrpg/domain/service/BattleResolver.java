@@ -292,7 +292,7 @@ public class BattleResolver {
      * </ul>
      */
     private ResolvedTurn resolvePlayerLose(final TurnInput input) {
-        if (input.playerType() == SkillType.NORMAL) {
+        if (RockPaperScissors.isNormalFamily(input.playerType())) {
             return resolveNormalLosesToDefense(input);
         }
         return resolveAttackLoses(input);

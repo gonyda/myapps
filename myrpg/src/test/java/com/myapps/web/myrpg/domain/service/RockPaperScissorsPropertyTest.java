@@ -55,6 +55,27 @@ class RockPaperScissorsPropertyTest {
                 .isEqualTo(AffinityResult.LOSE);
     }
 
+    /** 지속피해(DOT)가 강(HEAVY)을 이기는지 검증한다. */
+    @Property(tries = 100)
+    void should_returnWin_when_dotVsHeavy() {
+        final AffinityResult result = RockPaperScissors.judge(SkillType.DOT, SkillType.HEAVY);
+        assertThat(result).isEqualTo(AffinityResult.WIN);
+    }
+
+    /** 지속피해(DOT)가 방어(DEFENSE)에 패배하는지 검증한다. */
+    @Property(tries = 100)
+    void should_returnLose_when_dotVsDefense() {
+        final AffinityResult result = RockPaperScissors.judge(SkillType.DOT, SkillType.DEFENSE);
+        assertThat(result).isEqualTo(AffinityResult.LOSE);
+    }
+
+    /** 지속피해(DOT)와 일반(NORMAL)은 동등 상성(DRAW)인지 검증한다. */
+    @Property(tries = 100)
+    void should_returnDraw_when_dotVsNormal() {
+        final AffinityResult result = RockPaperScissors.judge(SkillType.DOT, SkillType.NORMAL);
+        assertThat(result).isEqualTo(AffinityResult.DRAW);
+    }
+
     /**
      * 동일 타입끼리는 항상 DRAW를 반환하는지 검증한다.
      *
@@ -95,7 +116,7 @@ class RockPaperScissorsPropertyTest {
      */
     @Provide
     Arbitrary<SkillType> skillTypes() {
-        return Arbitraries.of(SkillType.NORMAL, SkillType.HEAVY, SkillType.DEFENSE);
+        return Arbitraries.of(SkillType.class);
     }
 
     /**
@@ -105,8 +126,7 @@ class RockPaperScissorsPropertyTest {
      */
     @Provide
     Arbitrary<Tuple.Tuple2<SkillType, SkillType>> skillTypePairs() {
-        final Arbitrary<SkillType> types =
-                Arbitraries.of(SkillType.NORMAL, SkillType.HEAVY, SkillType.DEFENSE);
+        final Arbitrary<SkillType> types = Arbitraries.of(SkillType.class);
         return types.flatMap(mine -> types.map(other -> Tuple.of(mine, other)));
     }
 }
