@@ -28,7 +28,7 @@
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **배포 상태**: **Oracle Cloud 프로덕션 배포 대기 (로컬 검증 완료)**
+- **배포 상태**: **Oracle Cloud 프로덕션 배포 완료 (`DEPLOY_SUCCESS`, port 8083)**
 - **5대 품질 가드레일 상태**: 1,225개 테스트 100% 통과, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
