@@ -22,6 +22,10 @@
 - **무기 세트 I / II (주무기 + 방패 페어 & 맨손) 스왑 시스템 완비 (2026-08-27)**:
   - `CharacterProgress`에 세트별 무기/방패 ID 영속화 및 스왑 시 방패(`OFF_HAND`) 동시 복원.
   - 빈손(맨손) 스왑 정상 허용 및 타 세트 배정 장비 픽커(Picker) 후보 제외 필터링 적용.
+- **MyRPG 전문 게임 시스템 기획 스킬 (`myrpg-system-design`) 구축 (2026-08-28)**:
+  - `myrpg/README.md` 기반 전문 게임 시스템/경제 기획자 페르소나 및 4대 핵심 설계 철학(판타지 라이프, 결정적 규칙, 지속 가능한 경제, 모바일 UX) 정립.
+  - 5단계 파이프라인(현황 진단 → 3대 대안 제안 → 대화형 Q&A → 표준 GDD 작성 → SDD Spec 분해 이관) 구축.
+  - `skills/myrpg-system-design/SKILL.md` (SSOT), `.agents/`, `.cline/` Thin Wrapper 완비.
 
 ---
 

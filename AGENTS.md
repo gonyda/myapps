@@ -24,8 +24,10 @@ myapps/                                # Git 레포지토리 루트
 ├── skills/                            # [스킬 SSOT] 모든 워크플로우의 실제 실행 로직 원본
 │   ├── sdd/
 │   │   └── SKILL.md                   # SDD(Spec-Driven Development) 5단계 실행 프로세스 정의
-│   └── myrpg-data-balance/
-│       └── SKILL.md                   # MyRPG 게임 데이터 밸런싱 및 대화형 Q&A/파이썬 검증 프로토콜
+│   ├── myrpg-data-balance/
+│   │   └── SKILL.md                   # MyRPG 게임 데이터 밸런싱 및 대화형 Q&A/파이썬 검증 프로토콜
+│   └── myrpg-system-design/
+│       └── SKILL.md                   # MyRPG 전문 게임 시스템 기획 및 GDD/SDD 설계 프로토콜
 │
 ├── tools/                             # [도구 모음]
 │   └── balance/                       # 파이썬 밸런스 검증 엔진 (verify_equipment/monster/skill.py)
@@ -36,13 +38,15 @@ myapps/                                # Git 레포지토리 루트
 ├── .cline/                            # [Cline 전용 설정]
 │   └── skills/
 │       ├── sdd/SKILL.md               # Cline /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
-│       └── myrpg-data-balance/SKILL.md# Cline /myrpg-data-balance 명령용 Thin Wrapper
+│       ├── myrpg-data-balance/SKILL.md# Cline /myrpg-data-balance 명령용 Thin Wrapper
+│       └── myrpg-system-design/SKILL.md# Cline /myrpg-system-design 명령용 Thin Wrapper
 │
 ├── .agents/                           # [Antigravity 전용 설정]
 │   ├── mcp_config.json                # Antigravity 전용 MCP 서버 설정
 │   └── skills/
 │       ├── sdd/SKILL.md               # Antigravity /sdd 명령용 Thin Wrapper (skills/sdd/SKILL.md 참조)
-│       └── myrpg-data-balance/SKILL.md# Antigravity /myrpg-data-balance 명령용 Thin Wrapper
+│       ├── myrpg-data-balance/SKILL.md# Antigravity /myrpg-data-balance 명령용 Thin Wrapper
+│       └── myrpg-system-design/SKILL.md# Antigravity /myrpg-system-design 명령용 Thin Wrapper
 │
 └── {애플리케이션 모듈}/                # mystudy, mycalendar, myrpg 등
 ```
@@ -70,6 +74,7 @@ myapps/                                # Git 레포지토리 루트
 |---|---|
 | **기능 개발 / 리팩토링** | `skills/sdd/SKILL.md` (5단계 SDD 워크플로우) |
 | **게임 데이터/밸런스 추가·수정** | `skills/myrpg-data-balance/SKILL.md` (대화형 Q&A + 파이썬 검증) |
+| **MyRPG 신규 시스템 기획 / GDD 작성** | `skills/myrpg-system-design/SKILL.md` (전문 게임 기획자 관점 시스템 기획 & SDD 연계) |
 | **Spec 문서 작성/수정** | `rules/project/spec-conventions.md` |
 | **코드 구조 및 심볼 분석** | `rules/workflow/codegraph-first.md` |
 | **Java 소스 코드 작성/수정** | `rules/coding/code-style.md`, `rules/project/tech-stack.md` |
@@ -158,6 +163,7 @@ myapps/                                # Git 레포지토리 루트
 |---|---|---|
 | **sdd** | `skills/sdd/SKILL.md` | SDD 5단계 개발 및 5대 품질 가드레일 검증 워크플로우 |
 | **myrpg-data-balance** | `skills/myrpg-data-balance/SKILL.md` | 게임 데이터(아이템/몬스터/스킬/맵) Q&A 작성 및 `tools/balance/` 파이썬 자동 검증 워크플로우 |
+| **myrpg-system-design** | `skills/myrpg-system-design/SKILL.md` | 전문 게임 기획자 관점 MyRPG 신규 시스템(생활/전투/던전/경제) 기획 및 `docs/` 기획서(GDD) 산출 워크플로우 (SDD는 별도 지시 시 착수) |
 
 ---
 
@@ -166,8 +172,8 @@ myapps/                                # Git 레포지토리 루트
 | 도구 (Agent) | 진입 및 연동 방식 | 역할 및 동작 |
 |---|---|---|
 | **Kiro** | 시스템 프롬프트 / 워크스페이스 로드 | `.kiro/specs/` 내 Spec 문서를 관리하며 작업 수행 |
-| **Cline** | `.cline/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance` 명령 시 `skills/` 원본을 읽고 워크플로우 실행 |
-| **Antigravity** | `.agents/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance` 명령 또는 스킬 감지 시 `skills/` 원본을 읽고 워크플로우 실행 |
+| **Cline** | `.cline/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance`, `/myrpg-system-design` 명령 시 `skills/` 원본을 읽고 워크플로우 실행 |
+| **Antigravity** | `.agents/skills/{스킬명}/SKILL.md` | `/sdd`, `/myrpg-data-balance`, `/myrpg-system-design` 명령 또는 스킬 감지 시 `skills/` 원본을 읽고 워크플로우 실행 |
 
 > **에이전트 공통 행동 지침**:
 > 어떤 AI Agent이든 실행 즉시 이 파일(`AGENTS.md`)을 진입점으로 인식하고, **`memory-bank/memory-bank.md`(관리 원칙) 및 `memory-bank/activeContext.md`(현재 맥락)를 읽은 후 작업을 시작**해야 합니다. 모든 규칙과 스킬은 `rules/`와 `skills/`의 SSOT를 참조합니다.
