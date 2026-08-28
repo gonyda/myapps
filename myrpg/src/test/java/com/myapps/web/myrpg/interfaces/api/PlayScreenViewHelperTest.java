@@ -208,27 +208,25 @@ class PlayScreenViewHelperTest {
 
     @Test
     void should_populateAmbienceEmojiAndMonsterBoss_when_buildPlayScreen() {
-        final java.time.Instant fixedInstant = java.time.Instant.parse("2026-08-27T12:00:00Z");
-        final java.time.Clock fixedClock =
-                java.time.Clock.fixed(fixedInstant, java.time.ZoneId.of("UTC"));
         final SkillService skillService = mock(SkillService.class);
         final InventoryService inventoryService = mock(InventoryService.class);
-        final PlayScreenViewHelper clockHelper =
+        final PlayScreenViewHelper helper =
                 new PlayScreenViewHelper(
                         new ExperiencePolicy(),
                         new StatProgression(),
                         skillService,
-                        inventoryService,
-                        fixedClock);
+                        inventoryService);
 
         final CharacterProgress progress = CharacterProgress.createDefault();
+        progress.setInGameMinutes(720);
         final MinimapView minimap = mock(MinimapView.class);
         final FullMapView fullMap = mock(FullMapView.class);
 
         final PlayScreenView view =
-                clockHelper.buildPlayScreen(progress, minimap, fullMap, "테스트 상황", List.of());
+                helper.buildPlayScreen(progress, minimap, fullMap, "테스트 상황", List.of());
 
         assertThat(view.ambienceEmoji()).isEqualTo("☀️");
         assertThat(view.timeOfDayKey()).isEqualTo("afternoon");
+        assertThat(view.inGameTime()).isEqualTo("12:00");
     }
 }

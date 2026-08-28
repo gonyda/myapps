@@ -72,8 +72,20 @@ public class AmbienceService {
      */
     public String ambience(final MapNode node) {
         final LocalDateTime now = LocalDateTime.now(clock);
+        return ambience(node, now.getHour());
+    }
+
+    /**
+     * 지정된 시각(hour)과 노드 정보를 기반으로 상황 멘트를 반환합니다.
+     *
+     * @param node 현재 위치의 맵 노드
+     * @param hour 0 이상 24 미만의 시각
+     * @return 선택된 상황 멘트 문자열
+     */
+    public String ambience(final MapNode node, final int hour) {
+        final LocalDateTime now = LocalDateTime.now(clock);
         final String season = resolveSeason(now.getMonthValue());
-        final String timeOfDay = resolveTimeOfDay(now.getHour());
+        final String timeOfDay = resolveTimeOfDay(hour);
         final String theme = resolveTheme(node);
 
         final List<String> candidates = findCandidates(theme, season, timeOfDay);

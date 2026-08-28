@@ -21,6 +21,7 @@ public class MovementService {
 
     private static final String BLOCKED_MESSAGE = "그곳으로는 갈 수 없습니다.";
     private static final String DUNGEON_LOCKED_MESSAGE = "아직 준비 중입니다.";
+    private static final int WORLD_MOVE_MINUTES = 15;
 
     private final MapService mapService;
     private final ActionLog actionLog;
@@ -113,6 +114,7 @@ public class MovementService {
             return new MovementResult.Blocked(BLOCKED_MESSAGE);
         }
 
+        progress.advanceInGameTime(WORLD_MOVE_MINUTES);
         progress.updateCurrentNodeId(target.id());
 
         return new MovementResult.Moved(target, null);

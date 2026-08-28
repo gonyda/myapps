@@ -26,7 +26,6 @@ import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
 import com.myapps.web.myrpg.domain.model.VitalMax;
 import java.time.Clock;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -267,9 +266,10 @@ public class PlayScreenViewHelper {
             monsterActions = buildMonsterActions(talkTarget.monster());
         }
 
-        final TimeOfDay timeOfDay = TimeOfDay.fromHour(LocalDateTime.now(clock).getHour());
+        final TimeOfDay timeOfDay = TimeOfDay.fromHour(progress.getInGameHour());
         final String ambienceEmoji = timeOfDay.emoji();
         final String timeOfDayKey = timeOfDay.key();
+        final String inGameTime = progress.getInGameTimeFormatted();
         final boolean monsterBoss =
                 talkTarget.monster() != null && talkTarget.monster().type() == MonsterType.BOSS;
 
@@ -280,6 +280,7 @@ public class PlayScreenViewHelper {
                 ambience,
                 ambienceEmoji,
                 timeOfDayKey,
+                inGameTime,
                 npcName,
                 npcDialogue,
                 interactions,

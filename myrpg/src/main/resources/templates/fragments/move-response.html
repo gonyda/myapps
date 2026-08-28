@@ -5,6 +5,11 @@
     <header class="top-bar" id="topBar" th:replace="~{fragments/top-bar :: top-bar}"></header>
     <section class="center" id="center" th:replace="~{fragments/center :: center}"></section>
     <footer class="action-log" id="actionLog" th:replace="~{fragments/action-log :: action-log}"></footer>
+    <div class="sidebar-clock-group" id="sidebarClock" th:if="${view != null}">
+        <div class="sidebar-clock-badge" title="게임 내 시간 (24시간)">
+            <span class="sidebar-clock-time" id="sidebarClockTime" th:text="${view.inGameTime}">08:00</span>
+        </div>
+    </div>
     <div th:replace="~{fragments/full-map :: full-map}"></div>
     <div id="ambushSignal" th:if="${ambushMonsterName}"
          th:attr="data-monster=${ambushMonsterName}"

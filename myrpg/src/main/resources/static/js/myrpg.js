@@ -375,6 +375,14 @@ function swapMoveResponse(html) {
         }
     }
 
+    var newClock = container.querySelector("#sidebarClock");
+    if (newClock) {
+        var oldClock = document.getElementById("sidebarClock");
+        if (oldClock) {
+            oldClock.replaceWith(newClock);
+        }
+    }
+
     var newMap = container.querySelector(".map-overlay");
     if (newMap) {
         var oldGrid = document.getElementById("mapGrid");
@@ -1702,7 +1710,19 @@ function resolveTimeOfDayKey(hour) {
 function syncSkyAmbient() {
     var centerEl = document.querySelector(".center");
     if (!centerEl) return;
-    var currentHour = new Date().getHours();
+
+    var currentHour = 12;
+    var clockEl = document.getElementById("sidebarClockTime");
+    if (clockEl && clockEl.textContent) {
+        var parts = clockEl.textContent.trim().split(":");
+        if (parts.length >= 1) {
+            var parsedHour = parseInt(parts[0], 10);
+            if (!isNaN(parsedHour)) {
+                currentHour = parsedHour;
+            }
+        }
+    }
+
     var expectedKey = resolveTimeOfDayKey(currentHour);
     var expectedClass = "tod-" + expectedKey;
 
@@ -1726,8 +1746,7 @@ function syncSkyAmbient() {
     }
 }
 
-// 1분(60초)마다 시간대 변화 감지 및 동기화
-setInterval(syncSkyAmbient, 60000);
+// 시간대 동기화
 document.addEventListener("DOMContentLoaded", syncSkyAmbient);
 
 

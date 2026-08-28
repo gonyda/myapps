@@ -320,6 +320,36 @@
             transform: scale(0.94);
         }
 
+        .sidebar-clock-group {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 4px;
+        }
+
+        .sidebar-clock-badge {
+            background: linear-gradient(145deg, rgba(24, 30, 46, 0.95), rgba(14, 18, 28, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: calc(var(--radius) * 0.75);
+            padding: 4px 2px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-clock-time {
+            font-size: clamp(10px, 2.6vw, 11px);
+            font-weight: 800;
+            color: #f1f5f9;
+            font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+            line-height: 1;
+        }
+
         /* 가운데 영역 (인게임 시간대별 앰비언트 스카이 배경) */
         .center {
             flex: 1;
@@ -387,31 +417,31 @@
 
         /* [6대 시간대별 앰비언트 테마 & 천체 궤적] */
 
-        /* 1. 심야 (00~05시): 딥 미드나잇 퍼플 & 창백한 달 */
+        /* 1. 심야 (00~05시): 딥 미드나잇 퍼플 & 서쪽으로 기울어지는 창백한 달 */
         .center.tod-late-night {
-            background: linear-gradient(180deg, #050711 0%, #0d1326 55%, #070a14 100%);
+            background: linear-gradient(180deg, #050711 0%, #0c1224 50%, #060812 100%);
         }
         .center.tod-late-night .celestial-body {
-            left: 36%;
-            top: 26%;
-            background: radial-gradient(circle, #e0e7ff 18%, rgba(199, 210, 254, 0.6) 42%, rgba(99, 102, 241, 0.15) 70%, transparent 85%);
-            box-shadow: 0 0 35px rgba(165, 180, 252, 0.35);
-            opacity: 0.45;
+            left: 78%;
+            top: 20%;
+            background: radial-gradient(circle, #f1f5f9 20%, #cbd5e1 45%, rgba(148, 163, 184, 0.4) 65%, transparent 85%);
+            box-shadow: 0 0 25px rgba(224, 231, 255, 0.5), 0 0 50px rgba(99, 102, 241, 0.25);
+            opacity: 0.8;
         }
         .center.tod-late-night .stars-layer {
-            opacity: 0.55;
+            opacity: 0.6;
         }
 
-        /* 2. 새벽 (05~08시): 로즈 인디고 & 피어오르는 아침 해 */
+        /* 2. 새벽 (05~08시): 로즈 인디고 & 동쪽에서 피어오르는 아침 해 */
         .center.tod-dawn {
-            background: linear-gradient(180deg, #0e0f24 0%, #28142a 50%, #171529 100%);
+            background: linear-gradient(180deg, #0d0e20 0%, #1e1328 40%, #2f182c 70%, #1a1020 100%);
         }
         .center.tod-dawn .celestial-body {
-            left: 14%;
-            top: 65%;
-            background: radial-gradient(circle, #fda4af 18%, rgba(251, 113, 133, 0.6) 42%, rgba(225, 29, 72, 0.15) 70%, transparent 85%);
-            box-shadow: 0 0 45px rgba(244, 63, 94, 0.35);
-            opacity: 0.42;
+            left: 18%;
+            top: 24%;
+            background: radial-gradient(circle, #fff1f2 15%, #fda4af 40%, #f43f5e 65%, rgba(225, 29, 72, 0.2) 85%, transparent 100%);
+            box-shadow: 0 0 30px rgba(251, 113, 133, 0.7), 0 0 65px rgba(244, 63, 94, 0.35);
+            opacity: 0.85;
         }
         .center.tod-dawn .stars-layer {
             opacity: 0;
@@ -419,62 +449,62 @@
 
         /* 3. 오전 (08~12시): 맑은 청록 네이비 & 상승하는 골드 태양 */
         .center.tod-morning {
-            background: linear-gradient(180deg, #0f1c2e 0%, #182a3e 55%, #101a24 100%);
+            background: linear-gradient(180deg, #0b1524 0%, #132236 50%, #0c1724 100%);
         }
         .center.tod-morning .celestial-body {
-            left: 26%;
-            top: 24%;
-            background: radial-gradient(circle, #fef08a 18%, rgba(250, 204, 21, 0.6) 42%, rgba(234, 179, 8, 0.15) 70%, transparent 85%);
-            box-shadow: 0 0 40px rgba(250, 204, 21, 0.35);
-            opacity: 0.38;
+            left: 32%;
+            top: 16%;
+            background: radial-gradient(circle, #fef9c3 15%, #fde047 40%, #eab308 65%, rgba(202, 138, 4, 0.2) 85%, transparent 100%);
+            box-shadow: 0 0 30px rgba(250, 204, 21, 0.75), 0 0 65px rgba(234, 179, 8, 0.4);
+            opacity: 0.85;
         }
         .center.tod-morning .stars-layer {
             opacity: 0;
         }
 
-        /* 4. 오후 (12~16시): 로열 사파이어 딥 블루 & 정오의 태양 */
+        /* 4. 오후 (12~16시): 로열 사파이어 딥 블루 & 정오의 태양 (남중) */
         .center.tod-afternoon {
-            background: linear-gradient(180deg, #132238 0%, #1c324e 55%, #101c2b 100%);
+            background: linear-gradient(180deg, #0e1a2c 0%, #162a42 50%, #0f1c2c 100%);
         }
         .center.tod-afternoon .celestial-body {
             left: 50%;
             top: 12%;
-            background: radial-gradient(circle, #fffbeb 20%, rgba(253, 224, 71, 0.65) 45%, rgba(245, 158, 11, 0.2) 70%, transparent 85%);
-            box-shadow: 0 0 50px rgba(251, 191, 36, 0.4);
-            opacity: 0.4;
+            background: radial-gradient(circle, #ffffff 18%, #fef08a 42%, #fbbf24 68%, rgba(245, 158, 11, 0.2) 85%, transparent 100%);
+            box-shadow: 0 0 35px rgba(253, 224, 71, 0.8), 0 0 75px rgba(245, 158, 11, 0.45);
+            opacity: 0.9;
         }
         .center.tod-afternoon .stars-layer {
             opacity: 0;
         }
 
-        /* 5. 늦은 오후/황혼 (16~19시): 앰버 크림슨 & 지는 석양 */
+        /* 5. 늦은 오후/황혼 (16~19시): 황혼 인디고·노을 크림슨 & 서쪽으로 지는 붉은 석양 */
         .center.tod-late-afternoon {
-            background: linear-gradient(180deg, #1e111c 0%, #38181c 45%, #241416 100%);
+            background: linear-gradient(180deg, #0e0f1d 0%, #1e1329 30%, #351627 60%, #29121c 85%, #150d18 100%);
         }
         .center.tod-late-afternoon .celestial-body {
-            left: 84%;
-            top: 60%;
-            background: radial-gradient(circle, #fed7aa 18%, rgba(251, 146, 60, 0.6) 42%, rgba(234, 88, 12, 0.2) 70%, transparent 85%);
-            box-shadow: 0 0 45px rgba(249, 115, 22, 0.38);
-            opacity: 0.42;
+            left: 80%;
+            top: 22%;
+            background: radial-gradient(circle, #fff7ed 12%, #fed7aa 28%, #fb923c 50%, #ea580c 72%, rgba(194, 65, 12, 0.25) 88%, transparent 100%);
+            box-shadow: 0 0 35px rgba(251, 146, 60, 0.85), 0 0 75px rgba(234, 88, 12, 0.5);
+            opacity: 0.88;
         }
         .center.tod-late-afternoon .stars-layer {
             opacity: 0;
         }
 
-        /* 6. 밤 (19~24시): 옵시디언 나이트 & 은빛 보름달 */
+        /* 6. 밤 (19~24시): 옵시디언 나이트 & 동쪽에서 떠오르는 은빛 보름달 */
         .center.tod-night {
-            background: linear-gradient(180deg, #090c17 0%, #0e172a 55%, #060912 100%);
+            background: linear-gradient(180deg, #060912 0%, #0b1324 50%, #050810 100%);
         }
         .center.tod-night .celestial-body {
-            left: 76%;
+            left: 22%;
             top: 20%;
-            background: radial-gradient(circle, #f8fafc 18%, rgba(226, 232, 240, 0.65) 42%, rgba(148, 163, 184, 0.2) 70%, transparent 85%);
-            box-shadow: 0 0 40px rgba(186, 230, 253, 0.35);
-            opacity: 0.44;
+            background: radial-gradient(circle, #ffffff 15%, #f1f5f9 40%, #cbd5e1 65%, rgba(148, 163, 184, 0.3) 85%, transparent 100%);
+            box-shadow: 0 0 30px rgba(226, 232, 240, 0.65), 0 0 60px rgba(186, 230, 253, 0.35);
+            opacity: 0.85;
         }
         .center.tod-night .stars-layer {
-            opacity: 0.45;
+            opacity: 0.5;
         }
 
         /* [Tier 1] 상황 멘트 슬림 바 (고정 32px) */

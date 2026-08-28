@@ -39,6 +39,7 @@ public class DungeonService {
     private static final String LOG_TYPE_DUNGEON = "dungeon";
     private static final String BLOCKED_FORWARD_MESSAGE = "앞으로 나아가려면 이 방의 적들을 모두 처치해야 합니다.";
     private static final String UNLINKED_ROOM_MESSAGE = "연결되지 않은 방입니다.";
+    private static final int DUNGEON_MOVE_MINUTES = 5;
 
     private final DungeonSpecRepository dungeonSpecRepository;
     private final DungeonGenerator dungeonGenerator;
@@ -214,6 +215,7 @@ public class DungeonService {
         dungeonProgressRepository.save(entity);
 
         final CharacterProgress character = loadCharacterOrThrow(characterId);
+        character.advanceInGameTime(DUNGEON_MOVE_MINUTES);
         character.updateCurrentNodeId(targetRoomId);
         characterProgressRepository.save(character);
 

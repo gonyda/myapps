@@ -28,6 +28,8 @@ public class CharacterProgress {
     private static final long DEFAULT_EXPERIENCE = 0L;
     private static final int DEFAULT_VITAL_CURRENT = 100;
     private static final String DEFAULT_START_NODE = "tir-chonaill";
+    private static final int DEFAULT_IN_GAME_MINUTES = 480; // 08:00
+    private static final int MINUTES_PER_DAY = 1440;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,6 +71,9 @@ public class CharacterProgress {
 
     @Column(nullable = false)
     private long gold;
+
+    @Column(name = "in_game_minutes", nullable = false)
+    private int inGameMinutes = DEFAULT_IN_GAME_MINUTES;
 
     @Column(name = "active_weapon_set", nullable = false)
     private int activeWeaponSet = 1;
@@ -156,6 +161,47 @@ public class CharacterProgress {
             final Long weapon1OffId,
             final Long weapon2MainId,
             final Long weapon2OffId) {
+        this(
+                nickname,
+                currentLevel,
+                accumulatedLevel,
+                experience,
+                talent,
+                lastRebirthAt,
+                hpCurrent,
+                mpCurrent,
+                staminaCurrent,
+                currentNodeId,
+                abilityPoints,
+                gold,
+                DEFAULT_IN_GAME_MINUTES,
+                activeWeaponSet,
+                weapon1MainId,
+                weapon1OffId,
+                weapon2MainId,
+                weapon2OffId);
+    }
+
+    /** 인게임 시간을 포함한 모든 필드를 받아 캐릭터 진행상황을 생성한다. */
+    public CharacterProgress(
+            final String nickname,
+            final int currentLevel,
+            final int accumulatedLevel,
+            final long experience,
+            final TalentType talent,
+            final LocalDateTime lastRebirthAt,
+            final int hpCurrent,
+            final int mpCurrent,
+            final int staminaCurrent,
+            final String currentNodeId,
+            final int abilityPoints,
+            final long gold,
+            final int inGameMinutes,
+            final int activeWeaponSet,
+            final Long weapon1MainId,
+            final Long weapon1OffId,
+            final Long weapon2MainId,
+            final Long weapon2OffId) {
         this.nickname = nickname;
         this.currentLevel = currentLevel;
         this.accumulatedLevel = accumulatedLevel;
@@ -168,6 +214,8 @@ public class CharacterProgress {
         this.currentNodeId = currentNodeId;
         this.abilityPoints = abilityPoints;
         this.gold = gold;
+        this.inGameMinutes =
+                inGameMinutes >= 0 ? inGameMinutes % MINUTES_PER_DAY : DEFAULT_IN_GAME_MINUTES;
         this.activeWeaponSet = activeWeaponSet > 0 ? activeWeaponSet : 1;
         this.weapon1MainId = weapon1MainId;
         this.weapon1OffId = weapon1OffId;
@@ -621,6 +669,64 @@ public class CharacterProgress {
             this.weapon1OffId = id;
         } else {
             this.weapon2OffId = id;
+        }
+    }
+
+    /**
+     * 현재 인게임 누적 분(0~1439)을 반환한다.
+     *
+     * @return 0 이상 1440 미만의 인게임 분
+     */
+    public int getInGameMinutes() {
+        return inGameMinutes;
+    }
+
+    /**
+     * 현재 인게임 시간을 지정된 분(0~1439)으로 설정한다.
+     *
+     * @param inGameMinutes 설정할 분 (0~1439)
+     */
+    public void setInGameMinutes(final int inGameMinutes) {
+        this.inGameMinutes =
+                inGameMinutes >= 0 ? inGameMinutes % MINUTES_PER_DAY : DEFAULT_IN_GAME_MINUTES;
+    }
+
+    /**
+     * 현재 인게임 시간의 시(0~23)를 반환한다.
+     *
+     * @return 0 이상 24 미만의 시
+     */
+    public int getInGameHour() {
+        return inGameMinutes / 60;
+    }
+
+    /**
+     * 현재 인게임 시간의 분(0~59)을 반환한다.
+     *
+     * @return 0 이상 60 미만의 분
+     */
+    public int getInGameMinute() {
+        return inGameMinutes % 60;
+    }
+
+    /**
+     * 24시간 표기법("HH:mm") 형식의 인게임 시간 문자열을 반환한다.
+     *
+     * @return "08:00", "14:15" 등의 24시간 포맷 문자열
+     */
+    public String getInGameTimeFormatted() {
+        return String.format(
+                java.util.Locale.ROOT, "%02d:%02d", getInGameHour(), getInGameMinute());
+    }
+
+    /**
+     * 인게임 시간을 지정된 분만큼 경과시키며 24시간(1440분) 주기로 순환한다.
+     *
+     * @param minutes 경과시킬 분 수 (양수일 때만 증가)
+     */
+    public void advanceInGameTime(final int minutes) {
+        if (minutes > 0) {
+            this.inGameMinutes = (this.inGameMinutes + minutes) % MINUTES_PER_DAY;
         }
     }
 }

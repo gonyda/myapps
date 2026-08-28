@@ -25,6 +25,11 @@
         <button type="button" class="btn-cheat" onclick="cheatExp()" title="테스트용 1,000 EXP 획득">+EXP</button>
         <button type="button" class="btn-cheat" onclick="cheatGold()" title="테스트용 1,000 Gold 획득">+GOLD</button>
     </div>
+    <div class="sidebar-clock-group" id="sidebarClock">
+        <div class="sidebar-clock-badge" title="게임 내 시간 (24시간)">
+            <span class="sidebar-clock-time" id="sidebarClockTime" th:text="${view != null and view.inGameTime != null ? view.inGameTime : '08:00'}">08:00</span>
+        </div>
+    </div>
 </nav>
 </body>
 </html>
