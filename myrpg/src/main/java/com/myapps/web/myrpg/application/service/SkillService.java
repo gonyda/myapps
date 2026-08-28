@@ -251,7 +251,8 @@ public class SkillService {
      * @return 스킬 목록 뷰 모델
      */
     public SkillListView buildListView(final Long characterId, final String activeTab) {
-        ensureDefaultSlotsIfEmpty(characterId);
+        final String effectiveTab =
+                (activeTab == null || activeTab.isBlank()) ? TAB_ALL : activeTab;
         final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
         final CharacterProgress progress =
                 characterProgressRepository.findById(characterId).orElseThrow();
@@ -266,7 +267,7 @@ public class SkillService {
             }
             final Skill catalog = catalogOpt.get();
 
-            if (!matchesTab(catalog, activeTab)) {
+            if (!matchesTab(catalog, effectiveTab)) {
                 continue;
             }
 
@@ -275,7 +276,7 @@ public class SkillService {
         }
 
         final List<BattleSkillButton> slots = buildSkillSlots(characterId);
-        return new SkillListView(activeTab, List.copyOf(rows), slots);
+        return new SkillListView(effectiveTab, List.copyOf(rows), slots);
     }
 
     /**
@@ -406,20 +407,6 @@ public class SkillService {
                     break;
                 }
             }
-        }
-    }
-
-    /**
-     * 만약 모든 스킬의 슬롯이 비어있다면 기본 슬롯을 자동 배정한다 (하위호환성 보장).
-     *
-     * @param characterId 캐릭터 ID
-     */
-    @Transactional
-    public void ensureDefaultSlotsIfEmpty(final Long characterId) {
-        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
-        final boolean hasAnySlot = owned.stream().anyMatch(cs -> cs.getSlotIndex() != null);
-        if (!hasAnySlot && !owned.isEmpty()) {
-            autoAssignDefaultSlots(characterId);
         }
     }
 
@@ -625,6 +612,7 @@ public class SkillService {
         for (final String skillId : DEFAULT_SEED_SKILL_IDS) {
             learnSkill(characterId, skillId);
         }
+        autoAssignDefaultSlots(characterId);
     }
 
     /**
@@ -711,10 +699,11 @@ public class SkillService {
     }
 
     private boolean matchesTab(final Skill catalog, final String tab) {
+        final String effectiveTab = (tab == null || tab.isBlank()) ? TAB_ALL : tab;
         if (catalog instanceof PassiveSkill) {
-            return TAB_ALL.equals(tab) || TAB_COMMON.equals(tab);
+            return TAB_ALL.equals(effectiveTab) || TAB_COMMON.equals(effectiveTab);
         }
-        return switch (tab) {
+        return switch (effectiveTab) {
             case TAB_ALL -> true;
             case TAB_MELEE -> catalog.talent() == SkillTalent.MELEE;
             case TAB_ARCHERY -> catalog.talent() == SkillTalent.ARCHERY;

@@ -169,11 +169,24 @@ public class InventoryService {
 
         final CharacterProgress progress = findCharacterSafe(target.getCharacterId());
         if (progress != null) {
-            if (Long.valueOf(ownedItemId).equals(progress.getActiveMainWeaponId())) {
-                progress.setActiveMainWeaponId(null);
-                characterProgressRepository.save(progress);
-            } else if (Long.valueOf(ownedItemId).equals(progress.getActiveOffWeaponId())) {
-                progress.setActiveOffWeaponId(null);
+            boolean modified = false;
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon1MainId())) {
+                progress.setWeapon1MainId(null);
+                modified = true;
+            }
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon1OffId())) {
+                progress.setWeapon1OffId(null);
+                modified = true;
+            }
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon2MainId())) {
+                progress.setWeapon2MainId(null);
+                modified = true;
+            }
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon2OffId())) {
+                progress.setWeapon2OffId(null);
+                modified = true;
+            }
+            if (modified) {
                 characterProgressRepository.save(progress);
             }
         }
@@ -243,7 +256,8 @@ public class InventoryService {
     public void moveToBank(final long ownedItemId) {
         final OwnedItem target = findOwnedItemOrThrow(ownedItemId);
 
-        if (target.isEquipped()) {
+        final Set<Long> otherSetIds = resolveOtherSetAssignedItemIds(target.getCharacterId());
+        if (target.isEquipped() || otherSetIds.contains(target.getId())) {
             throw new EquipConflictException("장착을 해제한 후 맡길 수 있습니다.");
         }
 
@@ -382,8 +396,11 @@ public class InventoryService {
                         ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
                                 characterId, StorageKind.INVENTORY)
                         : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
+        final Set<Long> otherSetAssignedItemIds = resolveOtherSetAssignedItemIds(characterId);
         final List<OwnedItemView> views =
-                inventoryItems.stream().map(this::toOwnedItemView).toList();
+                inventoryItems.stream()
+                        .map(owned -> toOwnedItemView(owned, otherSetAssignedItemIds))
+                        .toList();
         return new InventoryView(gold, views);
     }
 
@@ -421,10 +438,13 @@ public class InventoryService {
                                 characterId, StorageKind.INVENTORY)
                         : ownedItemRepository.findByStorageOrderById(StorageKind.INVENTORY);
 
+        final Set<Long> otherSetAssignedItemIds = resolveOtherSetAssignedItemIds(characterId);
         final List<OwnedItemView> bankViews =
                 bankItems.stream().map(this::toOwnedItemView).toList();
         final List<OwnedItemView> inventoryViews =
-                inventoryItems.stream().map(this::toOwnedItemView).toList();
+                inventoryItems.stream()
+                        .map(owned -> toOwnedItemView(owned, otherSetAssignedItemIds))
+                        .toList();
 
         return new BankView(bankGold, gold, bankViews, inventoryViews);
     }
@@ -579,6 +599,7 @@ public class InventoryService {
 
         final CharacterProgress progress = findCharacterSafe(target.getCharacterId());
         if (progress != null) {
+            clearFromOtherWeaponSet(progress, target.getId());
             if (targetKind.primarySlot() == EquipSlot.MAIN_HAND) {
                 progress.setActiveMainWeaponId(target.getId());
                 if (targetKind.requiredSlots().contains(EquipSlot.OFF_HAND)) {
@@ -588,6 +609,28 @@ public class InventoryService {
             } else if (targetKind.primarySlot() == EquipSlot.OFF_HAND) {
                 progress.setActiveOffWeaponId(target.getId());
                 characterProgressRepository.save(progress);
+            }
+        }
+    }
+
+    private void clearFromOtherWeaponSet(final CharacterProgress progress, final Long ownedItemId) {
+        if (progress == null || ownedItemId == null) {
+            return;
+        }
+        final int activeSet = progress.getActiveWeaponSet();
+        if (activeSet == 1) {
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon2MainId())) {
+                progress.setWeapon2MainId(null);
+            }
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon2OffId())) {
+                progress.setWeapon2OffId(null);
+            }
+        } else {
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon1MainId())) {
+                progress.setWeapon1MainId(null);
+            }
+            if (Long.valueOf(ownedItemId).equals(progress.getWeapon1OffId())) {
+                progress.setWeapon1OffId(null);
             }
         }
     }
@@ -878,9 +921,6 @@ public class InventoryService {
      */
     public List<BattleSkillButton> combatSkills(final CharacterProgress progress) {
         final Long charId = progress != null ? progress.getId() : null;
-        if (charId != null) {
-            ensureDefaultSlotsIfEmpty(charId);
-        }
         final SkillTalent weaponTalent = resolveEquippedWeaponTalent(charId);
         final List<CharacterSkill> ownedSkills = resolveOwnedSkills(charId);
 
@@ -944,24 +984,6 @@ public class InventoryService {
                 disabledReason,
                 false,
                 icon);
-    }
-
-    private void ensureDefaultSlotsIfEmpty(final Long characterId) {
-        final List<CharacterSkill> owned = characterSkillRepository.findByCharacterId(characterId);
-        final boolean hasAnySlot = owned.stream().anyMatch(cs -> cs.getSlotIndex() != null);
-        if (!hasAnySlot && !owned.isEmpty()) {
-            int slot = 0;
-            for (final CharacterSkill cs : owned) {
-                final Optional<Skill> catalogOpt = skillCatalogService.byId(cs.getSkillId());
-                if (catalogOpt.isPresent() && !(catalogOpt.get() instanceof PassiveSkill)) {
-                    cs.setSlotIndex(slot++);
-                    characterSkillRepository.save(cs);
-                    if (slot >= 10) {
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -1174,6 +1196,11 @@ public class InventoryService {
     // ─── Private helpers ────────────────────────────────────────────────────
 
     private OwnedItemView toOwnedItemView(final OwnedItem owned) {
+        return toOwnedItemView(owned, java.util.Set.of());
+    }
+
+    private OwnedItemView toOwnedItemView(
+            final OwnedItem owned, final Set<Long> otherSetAssignedItemIds) {
         final Item catalogItem =
                 itemCatalogService
                         .byId(owned.getItemId())
@@ -1191,13 +1218,18 @@ public class InventoryService {
                         : null;
         final List<String> detailLines = describe(catalogItem, owned);
 
+        final boolean isEquipped =
+                owned.isEquipped()
+                        || (otherSetAssignedItemIds != null
+                                && otherSetAssignedItemIds.contains(owned.getId()));
+
         return new OwnedItemView(
                 owned.getId(),
                 catalogItem.name(),
                 catalogItem.type().label(),
                 catalogItem.type(),
                 owned.getQuantity(),
-                owned.isEquipped(),
+                isEquipped,
                 usable,
                 equippable,
                 currentDurability,

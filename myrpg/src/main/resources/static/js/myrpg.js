@@ -1474,6 +1474,7 @@ function openSkillPopup() {
 function closeSkillPopup() {
     document.getElementById('skillOverlay').classList.remove('open');
     closeRankUpModal();
+    refreshBattleSkills();
 }
 
 function loadSkillTab(tab) {
@@ -1566,6 +1567,7 @@ function assignSkillSlot(skillId, slotIndex) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('skillListArea').innerHTML = html;
+            refreshBattleSkills();
         });
 }
 
@@ -1575,6 +1577,7 @@ function clearSkillSlot(skillId) {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('skillListArea').innerHTML = html;
+            refreshBattleSkills();
         });
 }
 
@@ -1585,6 +1588,7 @@ function clearAllSkillSlots() {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('skillListArea').innerHTML = html;
+            refreshBattleSkills();
         });
 }
 
@@ -1594,6 +1598,7 @@ function autoAssignSkillSlots() {
         .then(function (r) { return r.text(); })
         .then(function (html) {
             document.getElementById('skillListArea').innerHTML = html;
+            refreshBattleSkills();
         });
 }
 

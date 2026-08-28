@@ -364,6 +364,28 @@ class ShopServiceTest {
         verify(repository, never()).delete(equippedSword);
     }
 
+    @Test
+    void should_rejectSell_when_assignedToInactiveWeaponSet() {
+        final ItemCatalogService catalog = mock(ItemCatalogService.class);
+        final OwnedItemRepository repository = mock(OwnedItemRepository.class);
+        final ActionLog actionLog = fixedActionLog();
+
+        final OwnedItem inactiveSetSword = createOwnedItem(15L, SHORT_SWORD_ID, 1, false);
+        when(repository.findById(15L)).thenReturn(Optional.of(inactiveSetSword));
+
+        final ShopService service =
+                serviceWith(catalog, repository, mock(InventoryService.class), actionLog);
+        final CharacterProgress progress = createProgress(500L);
+        progress.setActiveWeaponSet(2); // 2번 세트 활성
+        progress.setWeapon1MainId(15L); // 1번 세트에 15L 등록됨
+
+        assertThatThrownBy(() -> service.sell(progress, 15L))
+                .isInstanceOf(EquipConflictException.class)
+                .hasMessage("장착을 해제한 후 판매할 수 있습니다.");
+        assertThat(progress.getGold()).isEqualTo(500L);
+        verify(repository, never()).delete(inactiveSetSword);
+    }
+
     // ─── Helpers ───────────────────────────────────────────────────────────
 
     private ShopService serviceWith(

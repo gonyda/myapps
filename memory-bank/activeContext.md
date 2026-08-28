@@ -25,7 +25,17 @@
 - **MyRPG 전문 게임 시스템 기획 스킬 (`myrpg-system-design`) 구축 (2026-08-28)**:
   - `myrpg/README.md` 기반 전문 게임 시스템/경제 기획자 페르소나 및 4대 핵심 설계 철학(판타지 라이프, 결정적 규칙, 지속 가능한 경제, 모바일 UX) 정립.
   - 5단계 파이프라인(현황 진단 → 3대 대안 제안 → 대화형 Q&A → 표준 GDD 작성 → SDD Spec 분해 이관) 구축.
-  - `skills/myrpg-system-design/SKILL.md` (SSOT), `.agents/`, `.cline/` Thin Wrapper 완비.
+- **스킬 팝업 내 스킬 슬롯 해제/비우기 동작 수정 완료 (2026-08-28)**:
+  - `SkillService.matchesTab`의 `tab == null` NPE 방어 로직 적용.
+  - `buildListView` 및 `InventoryService.combatSkills`에서 비어있는 슬롯을 강제로 다시 채우던 `ensureDefaultSlotsIfEmpty` 제거.
+  - 신규 캐릭터 생성 시점(`seedDefault`) 1회 초기 자동 배정 유지.
+  - 프론트엔드 `myrpg.js`에서 슬롯 배정/비우기/초기화 및 팝업 닫기 시 전투 핫바(`refreshBattleSkills()`) 실시간 동기화.
+
+- **비활성 무기 세트 장비의 인벤토리 중복 장착 방지 & 장착중 상태 일관 표기 완료 (2026-08-28)**:
+  - `InventoryService`: `buildInventoryView` 및 `buildBankView`에서 비활성 세트 장비 ID 집합을 수집하여 `[장착중]` 배지 및 상태 일관 적용.
+  - `unequip`: 비활성 세트 장비 해제 시 `CharacterProgress`의 모든 세트 슬롯(`weapon1MainId` 등)에서도 null로 안전하게 초기화.
+  - `smartEquip`: 비활성 세트에 배정된 장비를 현재 세트에 장착 시 기존 세트에서 자동 해제(스왑 이동)하여 중복 장착 원천 차단.
+  - `moveToBank` & `ShopService.sell`: 비활성 세트 장비에 대한 은행 보관 및 상점 판매 시도시 `EquipConflictException`으로 안전하게 방어.
 
 ---
 
@@ -33,15 +43,17 @@
 
 - **현재 브랜치**: `main`
 - **배포 상태**: **Oracle Cloud 프로덕션 배포 완료 (`DEPLOY_SUCCESS`, port 8083)**
-- **5대 품질 가드레일 상태**: 1,225개 테스트 100% 통과, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
+- **5대 품질 가드레일 상태**: 1,230개 테스트 100% 통과, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
 ---
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
-1. **상점 장비 착용 비교 팝업 기능**:
+1. **[UI/UX 개선] 스킬 목록 팝업 내 스킬 유형(일반, 강, CC, 디버프, 버프 등) 뱃지 표기**:
+   - `SkillRowView` 및 `skill-popup.html`에 `SkillType` 라벨/유형 뱃지(일반, 강, CC, 디버프, 버프, 방어, 궁극기)를 이름/랭크 옆에 시각적으로 노출.
+2. **상점 장비 착용 비교 팝업 기능**:
    - 상점 물건 돋보기 클릭 시, 현재 착용 중인 동일 부위 장비(무기/방어구 등)를 위아래로 함께 띄워 스펙을 비교할 수 있도록 개선 (미착용 부위는 상점 장비만 단독 표시).
-2. **인게임 시간대별 웹 배경화면 색상 동적 전환**:
+3. **인게임 시간대별 웹 배경화면 색상 동적 전환**:
    - 현재 세팅된 인게임 시간대(`TimeOfDay`: 새벽, 아침, 낮, 노을, 밤, 심야)에 따라 웹 전체 배경화면 색상이 동적으로 변경되도록 연출.
-3. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.
+4. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.

@@ -109,6 +109,26 @@ class SkillServiceViewTest {
     }
 
     @Test
+    void should_buildListView_default_to_all_tab_when_tab_is_null() {
+        final CharacterSkill windmillSkill =
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill defenseSkill =
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+        final CharacterProgress progress = createProgressWithAp(10);
+
+        when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
+                .thenReturn(List.of(windmillSkill, defenseSkill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(WINDMILL_ID)).thenReturn(Optional.of(createWindmill()));
+        when(skillCatalogService.byId(DEFENSE_ID)).thenReturn(Optional.of(createDefense()));
+
+        final SkillListView view = skillService.buildListView(CHARACTER_ID, null);
+
+        assertThat(view.activeTab()).isEqualTo("all");
+        assertThat(view.rows()).hasSize(2);
+    }
+
+    @Test
     void should_buildListView_with_rankable_when_conditions_and_ap_met() {
         // F→E: usage 5, kill 1, AP 1
         final CharacterSkill skill =

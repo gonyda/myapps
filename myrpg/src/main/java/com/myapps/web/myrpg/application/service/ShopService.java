@@ -207,6 +207,8 @@ public class ShopService {
      * @return 판매 목록
      */
     public List<ShopSellItemView> buildSellList(final Long characterId) {
+        final CharacterProgress progress =
+                characterId != null ? characterService.loadByCharacterId(characterId) : null;
         final List<OwnedItem> inventoryItems =
                 characterId != null
                         ? ownedItemRepository.findByCharacterIdAndStorageOrderById(
@@ -222,6 +224,7 @@ public class ShopService {
                                     () ->
                                             new IllegalStateException(
                                                     "카탈로그에 아이템이 없습니다: " + owned.getItemId()));
+            final boolean isEquipped = isItemEquippedOrAssigned(progress, owned);
             result.add(
                     new ShopSellItemView(
                             owned.getId(),
@@ -229,7 +232,7 @@ public class ShopService {
                             catalogItem.type().label(),
                             owned.getQuantity(),
                             sellValueOf(owned),
-                            owned.isEquipped(),
+                            isEquipped,
                             inventoryService.describe(catalogItem, owned)));
         }
         return List.copyOf(result);
@@ -300,7 +303,7 @@ public class ShopService {
                                         new IllegalStateException(
                                                 "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
 
-        if (owned.isEquipped()) {
+        if (isItemEquippedOrAssigned(progress, owned)) {
             throw new EquipConflictException("장착을 해제한 후 판매할 수 있습니다.");
         }
 
@@ -321,5 +324,20 @@ public class ShopService {
 
         progress.gainGold(sellValue);
         actionLog.add("아이템을 판매했습니다: " + catalogItem.name(), LOG_TYPE_ITEM);
+    }
+
+    private boolean isItemEquippedOrAssigned(
+            final CharacterProgress progress, final OwnedItem owned) {
+        if (owned.isEquipped()) {
+            return true;
+        }
+        if (progress == null) {
+            return false;
+        }
+        final Long id = owned.getId();
+        return id.equals(progress.getWeapon1MainId())
+                || id.equals(progress.getWeapon1OffId())
+                || id.equals(progress.getWeapon2MainId())
+                || id.equals(progress.getWeapon2OffId());
     }
 }

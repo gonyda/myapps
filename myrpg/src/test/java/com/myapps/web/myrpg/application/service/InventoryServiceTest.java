@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.myapps.web.myrpg.application.dto.BankView;
@@ -427,8 +428,14 @@ class InventoryServiceTest {
      * @return 설정된 OwnedItem 인스턴스
      */
     private OwnedItem createOwnedItem(final long id, final String itemId, final boolean equipped) {
+        return createOwnedItem(1L, id, itemId, equipped);
+    }
+
+    private OwnedItem createOwnedItem(
+            final Long characterId, final long id, final String itemId, final boolean equipped) {
         final OwnedItem item =
-                new OwnedItem(itemId, 1, StorageKind.INVENTORY, equipped, MAX_DURABILITY);
+                new OwnedItem(
+                        characterId, itemId, 1, StorageKind.INVENTORY, equipped, MAX_DURABILITY);
         setId(item, id);
         return item;
     }
@@ -728,5 +735,124 @@ class InventoryServiceTest {
         // 1번 세트에 등록된 set1Sword(1L)는 제외되고, 여유 장비인 freeDagger(3L)만 나와야 함
         assertThat(candidates).hasSize(1);
         assertThat(candidates.get(0).ownedItemId()).isEqualTo(3L);
+    }
+
+    @Test
+    void should_mark_other_weapon_set_items_as_equipped_in_buildInventoryView() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setActiveWeaponSet(2); // 현재 2번 세트 활성화 (활 착용 중)
+        progress.setWeapon1MainId(1L); // 1번 세트에 1L 한손검 배정
+        progress.setWeapon1OffId(2L); // 1번 세트에 2L 방패 배정
+        progress.setWeapon2MainId(3L); // 2번 세트에 3L 활 배정
+
+        final OwnedItem set1Sword =
+                createOwnedItem(1L, "sword", false); // DB상 비활성이므로 isEquipped=false
+        final OwnedItem set1Shield = createOwnedItem(2L, "shield", false);
+        final OwnedItem set2Bow = createOwnedItem(3L, "bow", true); // 현재 활성이므로 isEquipped=true
+        final OwnedItem freePotion = createOwnedItem(4L, "hp_potion", false);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        20);
+        final EquipmentItem shieldCat =
+                new EquipmentItem(
+                        "shield", "방패", ItemType.ARMOR, EquipmentKind.SHIELD, List.of(), null, 20);
+        final EquipmentItem bowCat =
+                new EquipmentItem(
+                        "bow", "활", ItemType.WEAPON, EquipmentKind.BOW, List.of(), null, 20);
+        final PotionItem potionCat = new PotionItem("hp_potion", "포션", 30, 0, 0, 50);
+
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+        when(ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                        progress.getId(), StorageKind.INVENTORY))
+                .thenReturn(List.of(set1Sword, set1Shield, set2Bow, freePotion));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+        when(itemCatalogService.byId("shield")).thenReturn(Optional.of(shieldCat));
+        when(itemCatalogService.byId("bow")).thenReturn(Optional.of(bowCat));
+        when(itemCatalogService.byId("hp_potion")).thenReturn(Optional.of(potionCat));
+
+        final var inventoryView = inventoryService.buildInventoryView(progress.getId(), 500L);
+
+        // set1Sword(1L), set1Shield(2L), set2Bow(3L) 모두 equipped=true여야 함
+        assertThat(inventoryView.items().get(0).equipped()).isTrue();
+        assertThat(inventoryView.items().get(1).equipped()).isTrue();
+        assertThat(inventoryView.items().get(2).equipped()).isTrue();
+        assertThat(inventoryView.items().get(3).equipped()).isFalse();
+    }
+
+    @Test
+    void should_clear_inactive_weapon_set_slot_when_unequipped() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setActiveWeaponSet(2); // 2번 세트 활성
+        progress.setWeapon1MainId(10L); // 1번 세트에 10L 한손검 배정
+
+        final OwnedItem set1Sword = createOwnedItem(progress.getId(), 10L, "sword", false);
+
+        when(ownedItemRepository.findById(10L)).thenReturn(Optional.of(set1Sword));
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+
+        inventoryService.unequip(10L);
+
+        assertThat(progress.getWeapon1MainId()).isNull();
+        verify(characterProgressRepository).save(progress);
+    }
+
+    @Test
+    void should_prevent_moving_other_weapon_set_item_to_bank() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setActiveWeaponSet(2);
+        progress.setWeapon1MainId(10L); // 1번 세트에 10L 배정
+
+        final OwnedItem set1Sword = createOwnedItem(progress.getId(), 10L, "sword", false);
+
+        when(ownedItemRepository.findById(10L)).thenReturn(Optional.of(set1Sword));
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+
+        assertThatThrownBy(() -> inventoryService.moveToBank(10L))
+                .isInstanceOf(
+                        com.myapps.web.myrpg.application.exception.EquipConflictException.class)
+                .hasMessage("장착을 해제한 후 맡길 수 있습니다.");
+    }
+
+    @Test
+    void should_clear_from_other_weapon_set_when_smart_equipped() {
+        final CharacterProgress progress = createProgress(100, 100);
+        progress.setActiveWeaponSet(2); // 2번 세트 활성
+        progress.setWeapon1MainId(10L); // 1번 세트에 10L 배정
+
+        final OwnedItem sword = createOwnedItem(progress.getId(), 10L, "sword", false);
+
+        final EquipmentItem swordCat =
+                new EquipmentItem(
+                        "sword",
+                        "검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(),
+                        null,
+                        20);
+
+        when(ownedItemRepository.findById(10L)).thenReturn(Optional.of(sword));
+        when(itemCatalogService.byId("sword")).thenReturn(Optional.of(swordCat));
+        when(characterProgressRepository.findById(progress.getId()))
+                .thenReturn(Optional.of(progress));
+        when(ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                        progress.getId(), StorageKind.INVENTORY))
+                .thenReturn(List.of());
+
+        inventoryService.smartEquip(10L);
+
+        // 1번 세트에서는 해제되고 2번 세트의 주무기로 설정되어야 함
+        assertThat(progress.getWeapon1MainId()).isNull();
+        assertThat(progress.getWeapon2MainId()).isEqualTo(10L);
     }
 }
