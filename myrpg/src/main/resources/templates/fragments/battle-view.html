@@ -4,6 +4,12 @@
 
 <!-- 공용 전투 화면 본문(DRY): battle-view / battle-response 양쪽에서 재사용 -->
 <div th:fragment="battle-center">
+    <!-- 인게임 시간대별 앰비언트 스카이 & 천체(해/달) 궤적 레이어 -->
+    <div class="sky-ambient" aria-hidden="true">
+        <div class="celestial-body"></div>
+        <div class="stars-layer"></div>
+    </div>
+
     <!-- 몬스터 정보 -->
     <div class="battle-monster-info">
         <span class="monster-name" th:text="${battleView.monsterName}">몬스터</span>

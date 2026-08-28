@@ -35,6 +35,7 @@ public record PlayScreenView(
         FullMapView fullMap,
         String ambience,
         String ambienceEmoji,
+        String timeOfDayKey,
         String npcName,
         String npcDialogue,
         List<InteractionItem> interactions,
@@ -48,7 +49,47 @@ public record PlayScreenView(
         List<ActionLogEntry> logs,
         InfoPopupView info) {
 
-    /** 기존 15인자 보조 생성자 (하위 호환: ambienceEmoji="☀️", monsterBoss=false). */
+    /** 기존 17인자 보조 생성자 (하위 호환: timeOfDayKey="afternoon"). */
+    public PlayScreenView(
+            final TopBarView topBar,
+            final MinimapView minimap,
+            final FullMapView fullMap,
+            final String ambience,
+            final String ambienceEmoji,
+            final String npcName,
+            final String npcDialogue,
+            final List<InteractionItem> interactions,
+            final List<ActionButton> npcActions,
+            final String monsterName,
+            final String monsterDialogue,
+            final Integer monsterLevel,
+            final Integer monsterMaxHp,
+            final List<ActionButton> monsterActions,
+            final boolean monsterBoss,
+            final List<ActionLogEntry> logs,
+            final InfoPopupView info) {
+        this(
+                topBar,
+                minimap,
+                fullMap,
+                ambience,
+                ambienceEmoji,
+                "afternoon",
+                npcName,
+                npcDialogue,
+                interactions,
+                npcActions,
+                monsterName,
+                monsterDialogue,
+                monsterLevel,
+                monsterMaxHp,
+                monsterActions,
+                monsterBoss,
+                logs,
+                info);
+    }
+
+    /** 기존 15인자 보조 생성자 (하위 호환: ambienceEmoji="☀️", timeOfDayKey="afternoon", monsterBoss=false). */
     public PlayScreenView(
             final TopBarView topBar,
             final MinimapView minimap,
@@ -71,6 +112,7 @@ public record PlayScreenView(
                 fullMap,
                 ambience,
                 "☀️",
+                "afternoon",
                 npcName,
                 npcDialogue,
                 interactions,
@@ -116,6 +158,7 @@ public record PlayScreenView(
                 fullMap,
                 ambience,
                 "☀️",
+                "afternoon",
                 npcName,
                 npcDialogue,
                 interactions,

@@ -320,7 +320,7 @@
             transform: scale(0.94);
         }
 
-        /* 가운데 영역 */
+        /* 가운데 영역 (인게임 시간대별 앰비언트 스카이 배경) */
         .center {
             flex: 1;
             display: flex;
@@ -331,6 +331,150 @@
             overflow-x: hidden;
             min-width: 0;
             justify-content: flex-start;
+            position: relative;
+            background: #111622;
+            transition: background 1.5s ease;
+        }
+
+        .center > *:not(.sky-ambient) {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 앰비언트 스카이 컨테이너 */
+        .sky-ambient {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        /* 천체 (해/달) 오브젝트 */
+        .celestial-body {
+            position: absolute;
+            width: clamp(72px, 20vw, 96px);
+            height: clamp(72px, 20vw, 96px);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: left 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        top 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        background 1.5s ease,
+                        box-shadow 1.5s ease,
+                        opacity 1.5s ease;
+        }
+
+        /* 미세 별빛 레이어 */
+        .stars-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.8s ease;
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 140px 60px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 70px 110px, rgba(200,225,255,0.7), rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 220px 150px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 310px 40px, rgba(255,255,255,0.6), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 280px 190px, rgba(200,225,255,0.8), rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 90px 240px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 190px 280px, rgba(255,255,255,0.7), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 360px 320px;
+        }
+
+        /* [6대 시간대별 앰비언트 테마 & 천체 궤적] */
+
+        /* 1. 심야 (00~05시): 딥 미드나잇 퍼플 & 창백한 달 */
+        .center.tod-late-night {
+            background: linear-gradient(180deg, #050711 0%, #0d1326 55%, #070a14 100%);
+        }
+        .center.tod-late-night .celestial-body {
+            left: 36%;
+            top: 26%;
+            background: radial-gradient(circle, #e0e7ff 18%, rgba(199, 210, 254, 0.6) 42%, rgba(99, 102, 241, 0.15) 70%, transparent 85%);
+            box-shadow: 0 0 35px rgba(165, 180, 252, 0.35);
+            opacity: 0.45;
+        }
+        .center.tod-late-night .stars-layer {
+            opacity: 0.55;
+        }
+
+        /* 2. 새벽 (05~08시): 로즈 인디고 & 피어오르는 아침 해 */
+        .center.tod-dawn {
+            background: linear-gradient(180deg, #0e0f24 0%, #28142a 50%, #171529 100%);
+        }
+        .center.tod-dawn .celestial-body {
+            left: 14%;
+            top: 65%;
+            background: radial-gradient(circle, #fda4af 18%, rgba(251, 113, 133, 0.6) 42%, rgba(225, 29, 72, 0.15) 70%, transparent 85%);
+            box-shadow: 0 0 45px rgba(244, 63, 94, 0.35);
+            opacity: 0.42;
+        }
+        .center.tod-dawn .stars-layer {
+            opacity: 0;
+        }
+
+        /* 3. 오전 (08~12시): 맑은 청록 네이비 & 상승하는 골드 태양 */
+        .center.tod-morning {
+            background: linear-gradient(180deg, #0f1c2e 0%, #182a3e 55%, #101a24 100%);
+        }
+        .center.tod-morning .celestial-body {
+            left: 26%;
+            top: 24%;
+            background: radial-gradient(circle, #fef08a 18%, rgba(250, 204, 21, 0.6) 42%, rgba(234, 179, 8, 0.15) 70%, transparent 85%);
+            box-shadow: 0 0 40px rgba(250, 204, 21, 0.35);
+            opacity: 0.38;
+        }
+        .center.tod-morning .stars-layer {
+            opacity: 0;
+        }
+
+        /* 4. 오후 (12~16시): 로열 사파이어 딥 블루 & 정오의 태양 */
+        .center.tod-afternoon {
+            background: linear-gradient(180deg, #132238 0%, #1c324e 55%, #101c2b 100%);
+        }
+        .center.tod-afternoon .celestial-body {
+            left: 50%;
+            top: 12%;
+            background: radial-gradient(circle, #fffbeb 20%, rgba(253, 224, 71, 0.65) 45%, rgba(245, 158, 11, 0.2) 70%, transparent 85%);
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.4);
+            opacity: 0.4;
+        }
+        .center.tod-afternoon .stars-layer {
+            opacity: 0;
+        }
+
+        /* 5. 늦은 오후/황혼 (16~19시): 앰버 크림슨 & 지는 석양 */
+        .center.tod-late-afternoon {
+            background: linear-gradient(180deg, #1e111c 0%, #38181c 45%, #241416 100%);
+        }
+        .center.tod-late-afternoon .celestial-body {
+            left: 84%;
+            top: 60%;
+            background: radial-gradient(circle, #fed7aa 18%, rgba(251, 146, 60, 0.6) 42%, rgba(234, 88, 12, 0.2) 70%, transparent 85%);
+            box-shadow: 0 0 45px rgba(249, 115, 22, 0.38);
+            opacity: 0.42;
+        }
+        .center.tod-late-afternoon .stars-layer {
+            opacity: 0;
+        }
+
+        /* 6. 밤 (19~24시): 옵시디언 나이트 & 은빛 보름달 */
+        .center.tod-night {
+            background: linear-gradient(180deg, #090c17 0%, #0e172a 55%, #060912 100%);
+        }
+        .center.tod-night .celestial-body {
+            left: 76%;
+            top: 20%;
+            background: radial-gradient(circle, #f8fafc 18%, rgba(226, 232, 240, 0.65) 42%, rgba(148, 163, 184, 0.2) 70%, transparent 85%);
+            box-shadow: 0 0 40px rgba(186, 230, 253, 0.35);
+            opacity: 0.44;
+        }
+        .center.tod-night .stars-layer {
+            opacity: 0.45;
         }
 
         /* [Tier 1] 상황 멘트 슬림 바 (고정 32px) */

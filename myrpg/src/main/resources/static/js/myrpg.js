@@ -1689,3 +1689,45 @@ function quickLogin(username, password) {
     }
 }
 
+// ===== 인게임 시간대별 앰비언트 스카이 동적 전환 (6대 시간대) =====
+function resolveTimeOfDayKey(hour) {
+    if (hour >= 0 && hour < 5) return "late-night";
+    if (hour >= 5 && hour < 8) return "dawn";
+    if (hour >= 8 && hour < 12) return "morning";
+    if (hour >= 12 && hour < 16) return "afternoon";
+    if (hour >= 16 && hour < 19) return "late-afternoon";
+    return "night";
+}
+
+function syncSkyAmbient() {
+    var centerEl = document.querySelector(".center");
+    if (!centerEl) return;
+    var currentHour = new Date().getHours();
+    var expectedKey = resolveTimeOfDayKey(currentHour);
+    var expectedClass = "tod-" + expectedKey;
+
+    var allTodClasses = [
+        "tod-late-night",
+        "tod-dawn",
+        "tod-morning",
+        "tod-afternoon",
+        "tod-late-afternoon",
+        "tod-night"
+    ];
+    allTodClasses.forEach(function (cls) {
+        if (cls !== expectedClass && centerEl.classList.contains(cls)) {
+            centerEl.classList.remove(cls);
+        }
+    });
+
+    if (!centerEl.classList.contains(expectedClass)) {
+        centerEl.classList.add(expectedClass);
+        centerEl.setAttribute("data-time-of-day", expectedKey);
+    }
+}
+
+// 1분(60초)마다 시간대 변화 감지 및 동기화
+setInterval(syncSkyAmbient, 60000);
+document.addEventListener("DOMContentLoaded", syncSkyAmbient);
+
+

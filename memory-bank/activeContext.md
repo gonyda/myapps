@@ -38,7 +38,11 @@
 - **상점 장비 착용 비교 팝업 기능 구현 완료 (2026-08-28)**:
   - `ShopBuyItemView`: `equippedItemName`, `equippedDetailLines` 필드 추가 및 비교 대상 유무 판별 지원.
   - `ShopService`: `shopBuyList(Long characterId, String npcId)`로 확장하여 캐릭터가 착용 중인 동일 슬롯(`primarySlot`) 장비의 스펙 정보 자동 매핑.
-  - 프론트엔드(`shop-popup.html`, `item-detail.html`, `myrpg.js`, `myrpg.css`): 상단 `[🛍️ 상점 물품]` vs 하단 `[🛡️ 현재 착용 중]` 상하 2단 비교 레이아웃 및 앤틱 골드/사이언 글로우 스타일링 적용. 미착용 부위나 포션 등은 단독 모달 유지(100% 하위 호환).
+- **인게임 시간대별 웹 배경화면 색상 동적 전환 & 천체 궤적 앰비언스 구현 완료 (2026-08-28)**:
+  - `PlayScreenView` 및 `PlayScreenViewHelper`: `timeOfDayKey` 필드 추가 및 현재 시간 기반 6대 시간대 키 자동 바인딩.
+  - `center.html`, `battle-view.html`, `play.html`: `.center`에 `tod-*` 클래스 바인딩 및 `sky-ambient` (천체 `celestial-body`, 미세 별빛 `stars-layer`) 레이어 구성.
+  - `myrpg.css`: 6개 시간대(심야, 새벽, 오전, 오후, 황혼, 밤)별 딥 다크 스카이 그라디언트, 포물선 천체 궤적, 소프트 글로우 및 1.5초 부드러운 전환 스타일링 완비.
+  - `myrpg.js`: 1분 주기 실시간 시간대 동기화 스케줄러(`syncSkyAmbient`) 탑재.
 
 ---
 
@@ -55,6 +59,4 @@
 
 1. **[UI/UX 개선] 스킬 목록 팝업 내 스킬 유형(일반, 강, CC, 디버프, 버프 등) 뱃지 표기**:
    - `SkillRowView` 및 `skill-popup.html`에 `SkillType` 라벨/유형 뱃지(일반, 강, CC, 디버프, 버프, 방어, 궁극기)를 이름/랭크 옆에 시각적으로 노출.
-2. **인게임 시간대별 웹 배경화면 색상 동적 전환**:
-   - 현재 세팅된 인게임 시간대(`TimeOfDay`: 새벽, 아침, 낮, 노을, 밤, 심야)에 따라 웹 전체 배경화면 색상이 동적으로 변경되도록 연출.
-3. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.
+2. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.

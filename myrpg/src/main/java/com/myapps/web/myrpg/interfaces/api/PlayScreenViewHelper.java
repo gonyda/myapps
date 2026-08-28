@@ -267,7 +267,9 @@ public class PlayScreenViewHelper {
             monsterActions = buildMonsterActions(talkTarget.monster());
         }
 
-        final String ambienceEmoji = TimeOfDay.fromHour(LocalDateTime.now(clock).getHour()).emoji();
+        final TimeOfDay timeOfDay = TimeOfDay.fromHour(LocalDateTime.now(clock).getHour());
+        final String ambienceEmoji = timeOfDay.emoji();
+        final String timeOfDayKey = timeOfDay.key();
         final boolean monsterBoss =
                 talkTarget.monster() != null && talkTarget.monster().type() == MonsterType.BOSS;
 
@@ -277,6 +279,7 @@ public class PlayScreenViewHelper {
                 fullMap,
                 ambience,
                 ambienceEmoji,
+                timeOfDayKey,
                 npcName,
                 npcDialogue,
                 interactions,

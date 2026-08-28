@@ -229,5 +229,6 @@ class PlayScreenViewHelperTest {
                 clockHelper.buildPlayScreen(progress, minimap, fullMap, "테스트 상황", List.of());
 
         assertThat(view.ambienceEmoji()).isEqualTo("☀️");
+        assertThat(view.timeOfDayKey()).isEqualTo("afternoon");
     }
 }

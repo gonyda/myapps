@@ -17,7 +17,9 @@
 
             <!-- 가운데 영역 -->
             <th:block th:if="${battleView != null}">
-                <section class="center battle-view" id="center">
+                <section class="center battle-view" id="center"
+                         th:classappend="' tod-' + (${view != null and view.timeOfDayKey != null ? view.timeOfDayKey : 'afternoon'})"
+                         th:attr="data-time-of-day=${view != null ? view.timeOfDayKey : 'afternoon'}">
                     <div th:replace="~{fragments/battle-view :: battle-center}"></div>
                 </section>
             </th:block>
