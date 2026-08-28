@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-27 22:15 (Asia/Seoul)
+> 최종 업데이트: 2026-08-28 23:06 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
