@@ -73,8 +73,8 @@ class MapViewFactoryDungeonTest {
         // given
         final MapNode r0 = createNode("room-0-0", "시작방", 0, 0, List.of("room-1-0"));
         final MapNode r1 = createNode("room-1-0", "던전 방", 1, 0, List.of("room-0-0", "room-2-0"));
-        final MapNode r2 = createNode("room-2-0", "던전 방", 2, 0, List.of("room-1-0", "room-3-0"));
-        final MapNode r3 = createNode("room-3-0", "보스방", 3, 0, List.of("room-2-0"));
+        final MapNode r2 = createNode("room-2-0", "던전 방", 2, 0, List.of("room-1-0", "room-2-1"));
+        final MapNode r3 = createNode("room-2-1", "보스방", 2, 1, List.of("room-2-0"));
         final MapGraph graph = new MapGraph(List.of(r0, r1, r2, r3), List.of(), "room-0-0");
 
         final Map<String, DungeonRoomState> roomStates =
@@ -83,9 +83,9 @@ class MapViewFactoryDungeonTest {
                         "room-1-0", new DungeonRoomState("room-1-0", true, true, List.of()),
                         "room-2-0",
                                 new DungeonRoomState("room-2-0", false, true, List.of("spider")),
-                        "room-3-0",
+                        "room-2-1",
                                 new DungeonRoomState(
-                                        "room-3-0", false, true, List.of("giant-spider")));
+                                        "room-2-1", false, true, List.of("giant-spider")));
 
         final DungeonInstance dungeon =
                 new DungeonInstance(
@@ -93,7 +93,7 @@ class MapViewFactoryDungeonTest {
                         "alby",
                         "alby-entrance",
                         "room-0-0",
-                        "room-3-0",
+                        "room-2-1",
                         "room-0-0",
                         graph,
                         roomStates);
@@ -119,7 +119,7 @@ class MapViewFactoryDungeonTest {
                         .orElseThrow();
         final MinimapCell cell3 =
                 minimap.cells().stream()
-                        .filter(c -> c.nodeId().equals("room-3-0"))
+                        .filter(c -> c.nodeId().equals("room-2-1"))
                         .findFirst()
                         .orElseThrow();
 

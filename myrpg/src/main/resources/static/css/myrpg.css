@@ -874,25 +874,56 @@
         }
 
         /*
-         * 미니맵: 9x5 그리드 위에 노드를 '있는 곳에만' 배치.
+         * 미니맵: 5x5 그리드 위에 노드를 '있는 곳에만' 배치 + 하단 노드명 라벨 표시.
          * 노드는 grid-column/grid-row로 위치 지정(빈 칸은 비워둠).
          * 연결선은 노드의 link-* 클래스로 이웃 방향에만 그림.
          */
         .minimap .node-grid {
-            --nm-gap: calc(var(--gap) * 0.5);
+            --nm-col-gap: clamp(12px, 3.5vw, 18px);
+            --nm-row-gap: clamp(18px, 5vw, 24px);
+            --nm-node-size: clamp(32px, 8vw, 38px);
             display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            grid-template-rows: repeat(5, 1fr);
-            gap: var(--nm-gap);
-            aspect-ratio: 9 / 5;
-            /* 9x5, 가운데가 항상 내 위치 */
+            grid-template-columns: repeat(5, var(--nm-node-size));
+            grid-template-rows: repeat(5, var(--nm-node-size));
+            column-gap: var(--nm-col-gap);
+            row-gap: var(--nm-row-gap);
+            justify-content: center;
+            align-content: center;
+            padding: 6px 4px 18px 4px;
+            max-width: 320px;
+            margin: 0 auto;
         }
 
         .minimap .node-grid .node {
             position: relative;
+            width: var(--nm-node-size);
+            height: var(--nm-node-size);
             aspect-ratio: 1 / 1;
-            /* 각 노드 정사각형 */
             z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 미니맵 노드 하단 캡슐 라벨 (월드맵과 동일한 다크 배지 스타일) */
+        .minimap .node .node-label {
+            position: absolute;
+            top: calc(100% + 3px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(8px, 2.1vw, 9.5px);
+            font-weight: 800;
+            line-height: 1.1;
+            color: #f8fafc;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.88);
+            padding: 1px 5px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            z-index: 3;
         }
 
         /* 노드 사이 연결선 (이웃 노드 중심까지 이어지는 앤틱 골드 빛의 경로) */
@@ -900,8 +931,8 @@
         .minimap .node[class*="link-"]::after {
             content: "";
             position: absolute;
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.75), rgba(255, 215, 0, 0.9));
-            box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.85), rgba(255, 215, 0, 1));
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.6);
             z-index: -1;
             border-radius: 1px;
         }
@@ -910,8 +941,8 @@
         .minimap .node.link-right::after {
             top: 50%;
             left: 100%;
-            width: var(--nm-gap);
-            height: 2px;
+            width: var(--nm-col-gap);
+            height: 3px;
             transform: translateY(-50%);
         }
 
@@ -919,8 +950,8 @@
         .minimap .node.link-down::before {
             left: 50%;
             top: 100%;
-            width: 2px;
-            height: var(--nm-gap);
+            width: 3px;
+            height: var(--nm-row-gap);
             transform: translateX(-50%);
         }
 

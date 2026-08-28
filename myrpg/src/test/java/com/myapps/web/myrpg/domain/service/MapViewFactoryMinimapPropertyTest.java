@@ -33,18 +33,18 @@ class MapViewFactoryMinimapPropertyTest {
 
     private static final int GRID_SIZE_MIN = 1;
     private static final int GRID_SIZE_MAX = 5;
-    private static final int MINIMAP_CENTER_COLUMN = 5;
+    private static final int MINIMAP_CENTER_COLUMN = 3;
     private static final int MINIMAP_CENTER_ROW = 3;
-    private static final int MINIMAP_DX_MIN = -4;
-    private static final int MINIMAP_DX_MAX = 4;
+    private static final int MINIMAP_DX_MIN = -2;
+    private static final int MINIMAP_DX_MAX = 2;
     private static final int MINIMAP_DY_MIN = -2;
     private static final int MINIMAP_DY_MAX = 2;
-    private static final int MAX_MINIMAP_CELLS = 45;
+    private static final int MAX_MINIMAP_CELLS = 25;
 
     private final MapViewFactory mapViewFactory = new MapViewFactory();
 
     /**
-     * 미니맵 셀이 창 범위 내 노드와 정확히 일치하고(최대 45셀), 현재 노드가 항상 포함되며, 그리드 좌표·타입 문자열·current 플래그가 올바른지 검증한다.
+     * 미니맵 셀이 창 범위 내 노드와 정확히 일치하고(최대 25셀), 현재 노드가 항상 포함되며, 그리드 좌표·타입 문자열·노드명·current 플래그가 올바른지 검증한다.
      *
      * @param graphAndCurrent 임의 생성된 맵 그래프와 현재 노드 ID 튜플
      */
@@ -67,13 +67,13 @@ class MapViewFactoryMinimapPropertyTest {
                 cells.stream().map(MinimapCell::nodeId).collect(Collectors.toSet());
         assertThat(actualNodeIds).isEqualTo(expectedNodeIds);
 
-        // Then 2: 최대 45셀
+        // Then 2: 최대 25셀 (5x5)
         assertThat(cells).hasSizeLessThanOrEqualTo(MAX_MINIMAP_CELLS);
 
         // Then 3: 현재 노드 항상 포함
         assertThat(actualNodeIds).contains(currentNodeId);
 
-        // Then 4 & 5: 각 셀의 그리드 좌표 및 타입 문자열 검증
+        // Then 4, 5, 6: 각 셀의 그리드 좌표, 타입 문자열, 노드명 검증
         for (final MinimapCell cell : cells) {
             final MapNode node = graph.byId(cell.nodeId()).orElseThrow();
             final int expectedGridColumn = MINIMAP_CENTER_COLUMN + (node.x() - currentNode.x());
@@ -86,9 +86,10 @@ class MapViewFactoryMinimapPropertyTest {
                     .as("gridRow for node %s", cell.nodeId())
                     .isEqualTo(expectedGridRow);
             assertThat(cell.type()).as("type for node %s", cell.nodeId()).isEqualTo(node.type());
+            assertThat(cell.name()).as("name for node %s", cell.nodeId()).isEqualTo(node.name());
         }
 
-        // Then 6: 정확히 하나의 셀만 current=true이며, 그것이 현재 노드
+        // Then 7: 정확히 하나의 셀만 current=true이며, 그것이 현재 노드
         final List<MinimapCell> currentCells = cells.stream().filter(MinimapCell::current).toList();
         assertThat(currentCells).hasSize(1);
         assertThat(currentCells.getFirst().nodeId()).isEqualTo(currentNodeId);

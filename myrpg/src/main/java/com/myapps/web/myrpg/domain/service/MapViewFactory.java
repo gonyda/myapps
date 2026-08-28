@@ -39,16 +39,16 @@ public class MapViewFactory {
     private static final String DEFAULT_DUNGEON_ROOM_NAME = "던전 방";
 
     /** 미니맵 중심 노드의 grid-column 값. */
-    private static final int MINIMAP_CENTER_COLUMN = 5;
+    private static final int MINIMAP_CENTER_COLUMN = 3;
 
     /** 미니맵 중심 노드의 grid-row 값. */
     private static final int MINIMAP_CENTER_ROW = 3;
 
     /** 미니맵 X 오프셋 최소값 (왼쪽 방향). */
-    private static final int MINIMAP_DX_MIN = -4;
+    private static final int MINIMAP_DX_MIN = -2;
 
     /** 미니맵 X 오프셋 최대값 (오른쪽 방향). */
-    private static final int MINIMAP_DX_MAX = 4;
+    private static final int MINIMAP_DX_MAX = 2;
 
     /** 미니맵 Y 오프셋 최소값 (위쪽 방향). */
     private static final int MINIMAP_DY_MIN = -2;
@@ -59,8 +59,8 @@ public class MapViewFactory {
     /**
      * 월드맵 미니맵 뷰를 생성한다.
      *
-     * <p>현재 노드를 중심(grid-column=5, grid-row=3)으로 dx∈[-4,4], dy∈[-2,2] 범위의 노드를 격자에 배치한다. 간선은 두 노드가 모두
-     * 창 안에 있고 links로 실제 연결된 경우에만 linkRight/linkDown 플래그로 표현한다.
+     * <p>현재 노드를 중심(grid-column=3, grid-row=3)으로 dx∈[-2,2], dy∈[-2,2] 범위의 노드를 5x5 격자에 배치한다. 간선은 두
+     * 노드가 모두 창 안에 있고 links로 실제 연결된 경우에만 linkRight/linkDown 플래그로 표현한다.
      *
      * @param graph 맵 그래프
      * @param currentNodeId 현재 노드 ID
@@ -256,6 +256,7 @@ public class MapViewFactory {
                     cells.add(
                             new MinimapCell(
                                     node.id(),
+                                    node.name(),
                                     gridColumn,
                                     gridRow,
                                     node.type(),
@@ -298,10 +299,13 @@ public class MapViewFactory {
                             hasDungeonMinimapLink(graph, currentNode, node, 1, 0, roomStates);
                     final boolean linkDown =
                             hasDungeonMinimapLink(graph, currentNode, node, 0, 1, roomStates);
+                    final String displayName =
+                            resolveDungeonNodeDisplayName(node, isCurrent, isCleared, bossRoomId);
 
                     cells.add(
                             new MinimapCell(
                                     node.id(),
+                                    displayName,
                                     gridColumn,
                                     gridRow,
                                     type,

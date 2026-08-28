@@ -40,10 +40,10 @@ class MapViewFactoryEdgePropertyTest {
 
     private static final int GRID_SIZE_MIN = 2;
     private static final int GRID_SIZE_MAX = 6;
-    private static final int MINIMAP_CENTER_COLUMN = 5;
+    private static final int MINIMAP_CENTER_COLUMN = 3;
     private static final int MINIMAP_CENTER_ROW = 3;
-    private static final int MINIMAP_DX_MIN = -4;
-    private static final int MINIMAP_DX_MAX = 4;
+    private static final int MINIMAP_DX_MIN = -2;
+    private static final int MINIMAP_DX_MAX = 2;
     private static final int MINIMAP_DY_MIN = -2;
     private static final int MINIMAP_DY_MAX = 2;
 
