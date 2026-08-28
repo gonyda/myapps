@@ -2716,11 +2716,17 @@
 
         .item-detail-body {
             padding: 14px 16px;
-            max-height: 50dvh;
+            max-height: 58dvh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 6px;
+        }
+
+        .item-detail-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .item-detail-body p {
@@ -2751,6 +2757,102 @@
         .item-detail-body .detail-info-line {
             color: #e2e8f0;
             padding: 2px 4px;
+        }
+
+        /* ===== 장비 착용 비교 컨테이너 및 카드 ===== */
+        .item-compare-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .item-compare-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .item-compare-card.shop-target {
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            background: linear-gradient(145deg, rgba(32, 28, 18, 0.85), rgba(20, 18, 12, 0.95));
+            box-shadow: 0 0 14px rgba(212, 175, 55, 0.12);
+        }
+
+        .item-compare-card.current-equip {
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(12, 18, 30, 0.95));
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.08);
+        }
+
+        .compare-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .compare-badge {
+            font-size: var(--fs-xs);
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .compare-badge.shop-badge {
+            background: rgba(212, 175, 55, 0.2);
+            color: #ffd700;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+        }
+
+        .compare-badge.equipped-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .compare-card-name {
+            font-size: var(--fs-sm);
+            font-weight: 700;
+            color: #f8fafc;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .item-compare-vs-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 1px 0;
+        }
+
+        .item-compare-vs-divider .vs-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
+        }
+
+        .item-compare-vs-divider .vs-badge {
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffd700;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 10px;
+            padding: 1px 8px;
         }
 
         .item-detail-footer {

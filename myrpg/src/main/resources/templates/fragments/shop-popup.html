@@ -59,7 +59,7 @@
                             <span class="item-name" th:text="${item.name}">아이템명</span>
                         </div>
                         <button class="item-detail-btn"
-                                th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}"
+                                th:attr="data-detail=${#strings.listJoin(item.detailLines, '||')}, data-equipped-name=${item.equippedItemName}, data-equipped-detail=${item.equippedDetailLines != null ? #strings.listJoin(item.equippedDetailLines, '||') : ''}"
                                 th:data-name="${item.name}"
                                 onclick="openItemDetail(this)"
                                 aria-label="상세보기" title="아이템 상세정보">🔍</button>

@@ -1114,32 +1114,82 @@ function refreshBattleSkills() {
         });
 }
 
-// ===== 아이템 상세 모달 열기/닫기 (임베드 데이터 활용) =====
+// ===== 아이템 상세 모달 열기/닫기 (임베드 데이터 및 장비 비교 지원) =====
+function buildDetailParagraphs(detailData) {
+    var container = document.createElement('div');
+    container.className = 'item-detail-lines';
+    if (!detailData) { return container; }
+
+    var lines = detailData.split('||');
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (!line || line.trim() === '') { continue; }
+        var p = document.createElement('p');
+        p.textContent = line;
+        if (line.indexOf(':') !== -1) {
+            p.classList.add('detail-stat-line');
+        } else if (line.indexOf('“') === 0 || line.indexOf('"') === 0 || line.indexOf('\'') === 0 || line.indexOf('※') === 0) {
+            p.classList.add('detail-desc-line');
+        } else {
+            p.classList.add('detail-info-line');
+        }
+        container.appendChild(p);
+    }
+    return container;
+}
+
 function openItemDetail(element) {
     var detailData = element.getAttribute('data-detail');
     var nameEl = element.querySelector('.item-name');
     var itemName = nameEl ? nameEl.textContent : (element.getAttribute('data-name') || '아이템 상세');
+    var equippedDetailData = element.getAttribute('data-equipped-detail');
+    var equippedName = element.getAttribute('data-equipped-name');
 
-    document.getElementById('itemDetailTitle').textContent = itemName;
-
+    var badgeEl = document.getElementById('itemDetailBadge');
+    var titleEl = document.getElementById('itemDetailTitle');
     var body = document.getElementById('itemDetailBody');
     body.innerHTML = '';
 
-    if (detailData) {
-        var lines = detailData.split('||');
-        for (var i = 0; i < lines.length; i++) {
-            var p = document.createElement('p');
-            var line = lines[i];
-            p.textContent = line;
-            if (line.indexOf(':') !== -1) {
-                p.classList.add('detail-stat-line');
-            } else if (line.indexOf('“') === 0 || line.indexOf('"') === 0 || line.indexOf('\'') === 0 || line.indexOf('※') === 0) {
-                p.classList.add('detail-desc-line');
-            } else {
-                p.classList.add('detail-info-line');
-            }
-            body.appendChild(p);
-        }
+    if (equippedDetailData && equippedDetailData.trim() !== '') {
+        // [장비 비교 모드] 상단: 상점 물품 / 하단: 현재 착용 장비
+        if (badgeEl) { badgeEl.textContent = '장비 비교'; }
+        if (titleEl) { titleEl.textContent = itemName; }
+
+        var compareWrap = document.createElement('div');
+        compareWrap.className = 'item-compare-wrap';
+
+        // 1. 상단: 상점 물품 카드
+        var shopCard = document.createElement('div');
+        shopCard.className = 'item-compare-card shop-target';
+        shopCard.innerHTML = '<div class="compare-card-header">' +
+            '<span class="compare-badge shop-badge">🛍️ 상점 물품</span>' +
+            '<span class="compare-card-name">' + itemName + '</span>' +
+            '</div>';
+        shopCard.appendChild(buildDetailParagraphs(detailData));
+        compareWrap.appendChild(shopCard);
+
+        // 2. 중간: VS 디바이더
+        var vsDivider = document.createElement('div');
+        vsDivider.className = 'item-compare-vs-divider';
+        vsDivider.innerHTML = '<span class="vs-line"></span><span class="vs-badge">VS</span><span class="vs-line"></span>';
+        compareWrap.appendChild(vsDivider);
+
+        // 3. 하단: 현재 착용 중인 장비 카드
+        var equipCard = document.createElement('div');
+        equipCard.className = 'item-compare-card current-equip';
+        equipCard.innerHTML = '<div class="compare-card-header">' +
+            '<span class="compare-badge equipped-badge">🛡️ 현재 착용 중</span>' +
+            '<span class="compare-card-name">' + (equippedName || '착용 장비') + '</span>' +
+            '</div>';
+        equipCard.appendChild(buildDetailParagraphs(equippedDetailData));
+        compareWrap.appendChild(equipCard);
+
+        body.appendChild(compareWrap);
+    } else {
+        // [단독 상세 모드]
+        if (badgeEl) { badgeEl.textContent = 'ITEM INFO'; }
+        if (titleEl) { titleEl.textContent = itemName; }
+        body.appendChild(buildDetailParagraphs(detailData));
     }
 
     document.getElementById('itemDetailOverlay').classList.add('open');

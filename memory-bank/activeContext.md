@@ -35,7 +35,10 @@
   - `InventoryService`: `buildInventoryView` 및 `buildBankView`에서 비활성 세트 장비 ID 집합을 수집하여 `[장착중]` 배지 및 상태 일관 적용.
   - `unequip`: 비활성 세트 장비 해제 시 `CharacterProgress`의 모든 세트 슬롯(`weapon1MainId` 등)에서도 null로 안전하게 초기화.
   - `smartEquip`: 비활성 세트에 배정된 장비를 현재 세트에 장착 시 기존 세트에서 자동 해제(스왑 이동)하여 중복 장착 원천 차단.
-  - `moveToBank` & `ShopService.sell`: 비활성 세트 장비에 대한 은행 보관 및 상점 판매 시도시 `EquipConflictException`으로 안전하게 방어.
+- **상점 장비 착용 비교 팝업 기능 구현 완료 (2026-08-28)**:
+  - `ShopBuyItemView`: `equippedItemName`, `equippedDetailLines` 필드 추가 및 비교 대상 유무 판별 지원.
+  - `ShopService`: `shopBuyList(Long characterId, String npcId)`로 확장하여 캐릭터가 착용 중인 동일 슬롯(`primarySlot`) 장비의 스펙 정보 자동 매핑.
+  - 프론트엔드(`shop-popup.html`, `item-detail.html`, `myrpg.js`, `myrpg.css`): 상단 `[🛍️ 상점 물품]` vs 하단 `[🛡️ 현재 착용 중]` 상하 2단 비교 레이아웃 및 앤틱 골드/사이언 글로우 스타일링 적용. 미착용 부위나 포션 등은 단독 모달 유지(100% 하위 호환).
 
 ---
 
@@ -43,7 +46,7 @@
 
 - **현재 브랜치**: `main`
 - **배포 상태**: **Oracle Cloud 프로덕션 배포 완료 (`DEPLOY_SUCCESS`, port 8083)**
-- **5대 품질 가드레일 상태**: 1,230개 테스트 100% 통과, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
+- **5대 품질 가드레일 상태**: 1,231개 테스트 100% 통과, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
 ---
@@ -52,8 +55,6 @@
 
 1. **[UI/UX 개선] 스킬 목록 팝업 내 스킬 유형(일반, 강, CC, 디버프, 버프 등) 뱃지 표기**:
    - `SkillRowView` 및 `skill-popup.html`에 `SkillType` 라벨/유형 뱃지(일반, 강, CC, 디버프, 버프, 방어, 궁극기)를 이름/랭크 옆에 시각적으로 노출.
-2. **상점 장비 착용 비교 팝업 기능**:
-   - 상점 물건 돋보기 클릭 시, 현재 착용 중인 동일 부위 장비(무기/방어구 등)를 위아래로 함께 띄워 스펙을 비교할 수 있도록 개선 (미착용 부위는 상점 장비만 단독 표시).
-3. **인게임 시간대별 웹 배경화면 색상 동적 전환**:
+2. **인게임 시간대별 웹 배경화면 색상 동적 전환**:
    - 현재 세팅된 인게임 시간대(`TimeOfDay`: 새벽, 아침, 낮, 노을, 밤, 심야)에 따라 웹 전체 배경화면 색상이 동적으로 변경되도록 연출.
-4. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.
+3. **게임 내 가상 시간 시스템 (In-Game Time) & 야간 위험도 증대 / 캠프파이어 시스템 (백로그)**.

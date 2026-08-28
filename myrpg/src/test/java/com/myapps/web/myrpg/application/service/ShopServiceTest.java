@@ -457,6 +457,74 @@ class ShopServiceTest {
         assertThat(buyList).hasSize(1);
         assertThat(buyList.get(0).name()).isEqualTo("숏소드");
         assertThat(buyList.get(0).detailLines()).contains("내구도: 15/15");
+        assertThat(buyList.get(0).equippedItemName()).isNull();
+        assertThat(buyList.get(0).equippedDetailLines()).isEmpty();
+        assertThat(buyList.get(0).hasEquippedComparison()).isFalse();
+    }
+
+    /** 캐릭터가 주무기를 착용 중일 때 상점 무기 조회 시 착용 장비 비교 정보가 정상 바인딩되는지 검증한다. */
+    @Test
+    void should_bindEquippedItemComparison_when_characterHasEquippedItemInSameSlot() {
+        final ActionLog actionLog = fixedActionLog();
+        final ItemCatalogService catalog = mock(ItemCatalogService.class);
+        final NpcService npcService = mock(NpcService.class);
+        final OwnedItemRepository repository = mock(OwnedItemRepository.class);
+        final InventoryService inventoryService = mock(InventoryService.class);
+
+        final Npc ferghus =
+                new Npc(
+                        FERGHUS_ID,
+                        "퍼거스",
+                        NpcType.BLACKSMITH,
+                        "tir-chonaill",
+                        "호탕한 대장장이",
+                        new NpcLines(List.of("어서 오게."), null),
+                        List.of(SHORT_SWORD_ID));
+        when(npcService.byId(FERGHUS_ID)).thenReturn(Optional.of(ferghus));
+
+        final EquipmentItem shortSword =
+                new EquipmentItem(
+                        SHORT_SWORD_ID,
+                        "숏소드",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(new EquipBonus(BonusTarget.STR, 8)),
+                        300,
+                        15);
+        final EquipmentItem beginnerSword =
+                new EquipmentItem(
+                        "beginner_sword",
+                        "초보자용 한손검",
+                        ItemType.WEAPON,
+                        EquipmentKind.ONE_HANDED_SWORD,
+                        List.of(new EquipBonus(BonusTarget.STR, 3)),
+                        null,
+                        20);
+
+        when(catalog.byId(SHORT_SWORD_ID)).thenReturn(Optional.of(shortSword));
+        when(catalog.byId("beginner_sword")).thenReturn(Optional.of(beginnerSword));
+
+        final Long charId = 100L;
+        final OwnedItem equippedWeapon = createOwnedItem(10L, "beginner_sword", 1, true);
+        when(repository.findByCharacterIdAndStorageOrderById(charId, StorageKind.INVENTORY))
+                .thenReturn(List.of(equippedWeapon));
+
+        when(inventoryService.describe(eq(shortSword), any(OwnedItem.class)))
+                .thenReturn(List.of("한손검 (무기)", "힘 +8", "내구도: 15/15"));
+        when(inventoryService.describe(eq(beginnerSword), eq(equippedWeapon)))
+                .thenReturn(List.of("한손검 (무기)", "힘 +3", "내구도: 20/20"));
+
+        final ShopService service =
+                serviceWith(catalog, npcService, repository, inventoryService, actionLog);
+
+        final List<ShopBuyItemView> buyList = service.shopBuyList(charId, FERGHUS_ID);
+
+        assertThat(buyList).hasSize(1);
+        final ShopBuyItemView item = buyList.get(0);
+        assertThat(item.name()).isEqualTo("숏소드");
+        assertThat(item.equippedItemName()).isEqualTo("초보자용 한손검");
+        assertThat(item.equippedDetailLines()).containsExactly("한손검 (무기)", "힘 +3", "내구도: 20/20");
+        assertThat(item.hasEquippedComparison()).isTrue();
     }
 
     private ShopService serviceWith(

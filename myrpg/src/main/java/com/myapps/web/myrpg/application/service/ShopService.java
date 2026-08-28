@@ -8,6 +8,7 @@ import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.EquipBonus;
+import com.myapps.web.myrpg.domain.model.EquipSlot;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Npc;
@@ -15,7 +16,9 @@ import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,7 +141,7 @@ public class ShopService {
      */
     public ShopView buildShopView(
             final Long characterId, final String npcId, final long currentGold) {
-        final List<ShopBuyItemView> buyItems = shopBuyList(npcId);
+        final List<ShopBuyItemView> buyItems = shopBuyList(characterId, npcId);
         final List<ShopSellItemView> sellItems = buildSellList(characterId);
         return new ShopView(buyItems, sellItems, currentGold, npcId);
     }
@@ -157,10 +160,23 @@ public class ShopService {
      * @return 구매 목록 (정의 순서 보존)
      */
     public List<ShopBuyItemView> shopBuyList(final String npcId) {
+        return shopBuyList(null, npcId);
+    }
+
+    /**
+     * 특정 캐릭터의 착용 장비 비교 정보가 포함된 NPC 구매 목록을 조립한다.
+     *
+     * @param characterId 캐릭터 식별자 (미지정 시 null)
+     * @param npcId NPC id
+     * @return 구매 목록 (정의 순서 보존)
+     */
+    public List<ShopBuyItemView> shopBuyList(final Long characterId, final String npcId) {
         final Optional<Npc> npcOpt = npcService.byId(npcId);
         if (npcOpt.isEmpty()) {
             return List.of();
         }
+
+        final Map<EquipSlot, OwnedItem> equippedSlotMap = resolveEquippedSlotMap(characterId);
 
         final List<ShopBuyItemView> result = new ArrayList<>();
         for (final String itemId : npcOpt.get().shopItems()) {
@@ -171,22 +187,61 @@ public class ShopService {
             final Item item = itemOpt.get();
             final int initialDurability =
                     item instanceof EquipmentItem equipItem ? equipItem.maxDurability() : 0;
+            final List<String> detailLines =
+                    inventoryService.describe(
+                            item,
+                            new OwnedItem(
+                                    item.id(), 1, StorageKind.INVENTORY, false, initialDurability));
+
+            String equippedItemName = null;
+            List<String> equippedDetailLines = List.of();
+
+            if (item instanceof EquipmentItem equipItem) {
+                final EquipSlot primarySlot = equipItem.kind().primarySlot();
+                final OwnedItem currentEquipped = equippedSlotMap.get(primarySlot);
+                if (currentEquipped != null) {
+                    final Optional<Item> equippedCatalogOpt =
+                            itemCatalogService.byId(currentEquipped.getItemId());
+                    if (equippedCatalogOpt.isPresent()) {
+                        final Item equippedCatalog = equippedCatalogOpt.get();
+                        equippedItemName = equippedCatalog.name();
+                        equippedDetailLines =
+                                inventoryService.describe(equippedCatalog, currentEquipped);
+                    }
+                }
+            }
+
             result.add(
                     new ShopBuyItemView(
                             item.id(),
                             item.name(),
                             item.type().label(),
                             item.buyPrice(),
-                            inventoryService.describe(
-                                    item,
-                                    new OwnedItem(
-                                            item.id(),
-                                            1,
-                                            StorageKind.INVENTORY,
-                                            false,
-                                            initialDurability))));
+                            detailLines,
+                            equippedItemName,
+                            equippedDetailLines));
         }
         return List.copyOf(result);
+    }
+
+    private Map<EquipSlot, OwnedItem> resolveEquippedSlotMap(final Long characterId) {
+        final Map<EquipSlot, OwnedItem> slotMap = new EnumMap<>(EquipSlot.class);
+        if (characterId == null) {
+            return slotMap;
+        }
+
+        final List<OwnedItem> inventoryItems =
+                ownedItemRepository.findByCharacterIdAndStorageOrderById(
+                        characterId, StorageKind.INVENTORY);
+        for (final OwnedItem owned : inventoryItems) {
+            if (owned.isEquipped()) {
+                final Optional<Item> catalogOpt = itemCatalogService.byId(owned.getItemId());
+                if (catalogOpt.isPresent() && catalogOpt.get() instanceof EquipmentItem equip) {
+                    slotMap.put(equip.kind().primarySlot(), owned);
+                }
+            }
+        }
+        return slotMap;
     }
 
     /**
