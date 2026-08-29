@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-29 17:48 (Asia/Seoul)
+> 최종 업데이트: 2026-08-29 18:19 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -21,9 +21,13 @@
 - **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**:
   - **도메인 & 카탈로그**: `ItemType.MATERIAL` 추가 및 `isStackable()` 확장, `MaterialItem` 불변 레코드 생성, `item.json`에 `firewood`(구매가 20G/판매가 10G) 등록, 카탈로그 58종 로드 확장.
   - **애플리케이션 서비스**: `InventoryService` 재료 스택 적재 일원화, `GatheringService` 구현 (마을/자유필드 노드 이동 시 50% 나무 스폰 롤, 던전 격리, 5 SP 소모, 50% 채집 성공/실패 판정, 1회 채집 후 나무 소멸 및 로그 기록).
-  - **웹 계층 & 컨트롤러**: `GatheringController` (`POST /gathering/woodcut`), `PlayScreenController` 이동 시 `rollTreeSpawn` 호출, `NodeViewAssembler`에서 `🌲 나무 (장작 패기)` 상호작용 버튼 조립.
-  - **프론트엔드 UI/UX**: `gathering-modal.html` 앤틱 골드 모달 구축, `myrpg.css` 도끼 흔들림/나무 진동 키프레임 및 프로그레스 바 스타일, `myrpg.js` 5초 자동 완료형 채집 타이머 & 비동기 통신 & 상단바 SP 실시간 동기화.
-  - **테스트 & 품질**: 단위/슬라이스 및 jqwik PBT (스태미나 불변식, 재료 스택 불변식, 스폰/소멸 불변식) 포함 전체 1,258개 테스트 100% 그린 및 5대 가드레일 올클리어 (`BUILD SUCCESS`).
+  - **웹 계층 & 컨트롤러**: `GatheringController` (`POST /gathering/woodcut`), `PlayScreenController` 이동 시 `rollTreeSpawn` 호출, `NodeViewAssembler`에서 `나무` 상호작용 버튼 조립.
+  - **프론트엔드 UI/UX**: `gathering-modal.html` 앤틱 골드 모달 구축, `myrpg.css` 에메랄드 버튼 및 도끼 흔들림/나무 진동 키프레임, `myrpg.js` 5초 자동 완료형 채집 타이머 & 비동기 통신 & 상단바 SP 실시간 동기화.
+- **아이템 설명글(description) JSON 완전 이관 및 상세 팝업 일원화 (2026-08-29, 방안 A 심화)**:
+  - `Item` 인터페이스 및 구현체(`MaterialItem`, `PotionItem`, `EquipmentItem`)에 `String description()` 필드/메서드 추가.
+  - `item.json`에 포션 3종(생명력/마나/스태미나 30 포션) 및 장작의 `description` 정의 완료.
+  - `InventoryService.describe()`에서 `PotionItem` 분기를 완전히 제거하고 모든 설명글을 `item.description()`으로 일원화.
+  - 전체 1,260개 단위/통합/PBT 테스트 100% 그린 및 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 
 ---
 

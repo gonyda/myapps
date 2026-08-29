@@ -37,4 +37,11 @@ public sealed interface Item permits PotionItem, EquipmentItem, MaterialItem {
      * @return 구매 가격, 또는 상점 미판매이면 {@code null}
      */
     Integer buyPrice();
+
+    /**
+     * 아이템 기본 설명/플레이버 텍스트(optional).
+     *
+     * @return 설명글 문자열, 없으면 {@code null}
+     */
+    String description();
 }

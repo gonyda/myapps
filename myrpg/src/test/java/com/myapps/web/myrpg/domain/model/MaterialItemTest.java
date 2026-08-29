@@ -27,4 +27,13 @@ class MaterialItemTest {
     void should_findMaterialItemType_fromString() {
         assertThat(ItemType.fromString("material")).contains(ItemType.MATERIAL);
     }
+
+    @Test
+    @DisplayName("description이 포함된 MaterialItem이 올바르게 생성된다")
+    void should_createMaterialItem_withDescription() {
+        final MaterialItem item =
+                new MaterialItem("firewood", "장작", 20, "장작을 소모하여 캠프파이어를 할 수 있습니다.");
+
+        assertThat(item.description()).isEqualTo("장작을 소모하여 캠프파이어를 할 수 있습니다.");
+    }
 }

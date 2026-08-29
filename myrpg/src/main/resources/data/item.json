@@ -4,27 +4,31 @@
     "name": "생명력 30 포션",
     "type": "potion",
     "healHp": 30,
-    "buyPrice": 50
+    "buyPrice": 50,
+    "description": "생명력을 30 회복한다."
   },
   {
     "id": "mp_potion_30",
     "name": "마나 30 포션",
     "type": "potion",
     "healMp": 30,
-    "buyPrice": 50
+    "buyPrice": 50,
+    "description": "마나를 30 회복한다."
   },
   {
     "id": "stamina_potion_30",
     "name": "스태미나 30 포션",
     "type": "potion",
     "healStamina": 30,
-    "buyPrice": 50
+    "buyPrice": 50,
+    "description": "스태미나를 30 회복한다."
   },
   {
     "id": "firewood",
     "name": "장작",
     "type": "material",
-    "buyPrice": 20
+    "buyPrice": 20,
+    "description": "장작을 소모하여 캠프파이어를 할 수 있습니다."
   },
   {
     "id": "beginner_one_hand_sword",

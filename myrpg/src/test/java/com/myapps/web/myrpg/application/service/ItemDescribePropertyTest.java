@@ -73,32 +73,35 @@ class ItemDescribePropertyTest {
     @Property(tries = 100)
     void should_containHealHpDescription_when_potionItem(@ForAll("healHpValues") final int healHp) {
 
-        final PotionItem potion = new PotionItem("test_potion", "테스트 포션", healHp, null);
+        final String desc = "생명력을 " + healHp + " 회복한다.";
+        final PotionItem potion = new PotionItem("test_potion", "테스트 포션", healHp, 0, 0, null, desc);
         final OwnedItem owned = new OwnedItem("test_potion", 3, StorageKind.INVENTORY, false, 0);
 
         final List<String> lines = inventoryService.describe(potion, owned);
 
-        assertThat(lines).anyMatch(line -> line.contains("생명력을 " + healHp + " 회복한다."));
+        assertThat(lines).containsExactly(desc);
     }
 
     /**
-     * 마나 포션 아이템에 대해 상세 설명에 "마나를 {healMp} 회복한다." 문구가 포함됨을 검증한다.
+     * 마나 포션 아이템에 대해 상세 설명에 description 문구가 포함됨을 검증한다.
      *
      * @param healMp 임의 생성된 MP 회복량
      */
     @Property(tries = 100)
     void should_containHealMpDescription_when_potionItem(@ForAll("healHpValues") final int healMp) {
 
-        final PotionItem potion = new PotionItem("test_mp_potion", "테스트 마나 포션", 0, healMp, 0, null);
+        final String desc = "마나를 " + healMp + " 회복한다.";
+        final PotionItem potion =
+                new PotionItem("test_mp_potion", "테스트 마나 포션", 0, healMp, 0, null, desc);
         final OwnedItem owned = new OwnedItem("test_mp_potion", 3, StorageKind.INVENTORY, false, 0);
 
         final List<String> lines = inventoryService.describe(potion, owned);
 
-        assertThat(lines).anyMatch(line -> line.contains("마나를 " + healMp + " 회복한다."));
+        assertThat(lines).containsExactly(desc);
     }
 
     /**
-     * 스태미나 포션 아이템에 대해 상세 설명에 "스태미나를 {healStamina} 회복한다." 문구가 포함됨을 검증한다.
+     * 스태미나 포션 아이템에 대해 상세 설명에 description 문구가 포함됨을 검증한다.
      *
      * @param healStamina 임의 생성된 스태미나 회복량
      */
@@ -106,14 +109,15 @@ class ItemDescribePropertyTest {
     void should_containHealStaminaDescription_when_potionItem(
             @ForAll("healHpValues") final int healStamina) {
 
+        final String desc = "스태미나를 " + healStamina + " 회복한다.";
         final PotionItem potion =
-                new PotionItem("test_stamina_potion", "테스트 스태미나 포션", 0, 0, healStamina, null);
+                new PotionItem("test_stamina_potion", "테스트 스태미나 포션", 0, 0, healStamina, null, desc);
         final OwnedItem owned =
                 new OwnedItem("test_stamina_potion", 3, StorageKind.INVENTORY, false, 0);
 
         final List<String> lines = inventoryService.describe(potion, owned);
 
-        assertThat(lines).anyMatch(line -> line.contains("스태미나를 " + healStamina + " 회복한다."));
+        assertThat(lines).containsExactly(desc);
     }
 
     /**

@@ -17,6 +17,7 @@ import java.util.List;
  * @param bonuses 장비가 제공하는 보너스 목록
  * @param buyPrice 상점 구매가(nullable, 상점 미판매이면 null)
  * @param maxDurability 최대 내구도
+ * @param description 아이템 설명글(nullable)
  */
 public record EquipmentItem(
         String id,
@@ -25,5 +26,29 @@ public record EquipmentItem(
         EquipmentKind kind,
         List<EquipBonus> bonuses,
         Integer buyPrice,
-        int maxDurability)
-        implements Item {}
+        int maxDurability,
+        String description)
+        implements Item {
+
+    /**
+     * 설명글이 없는 장비 생성을 위한 편의 생성자.
+     *
+     * @param id 아이템 고유 식별자
+     * @param name 아이템 표시명
+     * @param type 아이템 유형
+     * @param kind 장비 세부 종류
+     * @param bonuses 장비가 제공하는 보너스 목록
+     * @param buyPrice 상점 구매가
+     * @param maxDurability 최대 내구도
+     */
+    public EquipmentItem(
+            final String id,
+            final String name,
+            final ItemType type,
+            final EquipmentKind kind,
+            final List<EquipBonus> bonuses,
+            final Integer buyPrice,
+            final int maxDurability) {
+        this(id, name, type, kind, bonuses, buyPrice, maxDurability, null);
+    }
+}

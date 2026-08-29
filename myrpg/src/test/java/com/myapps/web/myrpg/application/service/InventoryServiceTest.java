@@ -16,6 +16,7 @@ import com.myapps.web.myrpg.domain.model.EquipBonus;
 import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
 import com.myapps.web.myrpg.domain.model.ItemType;
+import com.myapps.web.myrpg.domain.model.MaterialItem;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.PotionItem;
 import com.myapps.web.myrpg.domain.model.StatProgression;
@@ -293,7 +294,8 @@ class InventoryServiceTest {
     /** 포션 아이템의 상세 설명에 "생명력을 50 회복한다."가 포함됨을 검증한다. */
     @Test
     void should_describePotion_when_potionItem() {
-        final PotionItem potionCatalog = new PotionItem("hp_potion_50", "생명력 50 포션", 50, 30);
+        final PotionItem potionCatalog =
+                new PotionItem("hp_potion_50", "생명력 50 포션", 50, 0, 0, 30, "생명력을 50 회복한다.");
         final OwnedItem potion = createOwnedItem(1L, "hp_potion_50", false);
 
         final List<String> lines = inventoryService.describe(potionCatalog, potion);
@@ -324,6 +326,18 @@ class InventoryServiceTest {
                 .anyMatch(line -> line.contains("18") && line.contains("/" + MAX_DURABILITY));
     }
 
+    /** 재료 아이템의 상세 설명에 description이 포함됨을 검증한다. */
+    @Test
+    void should_describeMaterial_when_materialItem() {
+        final MaterialItem woodCatalog =
+                new MaterialItem("firewood", "장작", 20, "장작을 소모하여 캠프파이어를 할 수 있습니다.");
+        final OwnedItem wood = new OwnedItem("firewood", 10, StorageKind.INVENTORY, false, 0.0);
+
+        final List<String> lines = inventoryService.describe(woodCatalog, wood);
+
+        assertThat(lines).containsExactly("장작을 소모하여 캠프파이어를 할 수 있습니다.");
+    }
+
     // ─── 뷰 조립 테스트 ────────────────────────────────────────────────────
 
     /**
@@ -336,7 +350,8 @@ class InventoryServiceTest {
         setQuantity(potion, 5);
         final OwnedItem sword = createOwnedItem(2L, "beginner_one_hand_sword", true);
 
-        final PotionItem potionCatalog = new PotionItem("hp_potion_50", "생명력 50 포션", 50, 30);
+        final PotionItem potionCatalog =
+                new PotionItem("hp_potion_50", "생명력 50 포션", 50, 0, 0, 30, "생명력을 50 회복한다.");
         final EquipmentItem swordCatalog =
                 new EquipmentItem(
                         "beginner_one_hand_sword",

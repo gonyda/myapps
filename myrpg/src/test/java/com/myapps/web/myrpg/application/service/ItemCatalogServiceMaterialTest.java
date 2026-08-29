@@ -62,5 +62,6 @@ class ItemCatalogServiceMaterialTest {
         assertThat(firewood.name()).isEqualTo("장작");
         assertThat(firewood.type()).isEqualTo(ItemType.MATERIAL);
         assertThat(firewood.buyPrice()).isEqualTo(20);
+        assertThat(firewood.description()).isEqualTo("장작을 소모하여 캠프파이어를 할 수 있습니다.");
     }
 }

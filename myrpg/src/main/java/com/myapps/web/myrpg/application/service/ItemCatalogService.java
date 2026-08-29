@@ -145,23 +145,28 @@ public class ItemCatalogService {
         }
 
         final Integer buyPrice = extractOptionalInt(itemNode, "buyPrice");
+        final String description = extractOptionalString(itemNode, "description");
 
         if (itemType == ItemType.POTION) {
-            return parsePotionItem(itemNode, id, name, buyPrice);
+            return parsePotionItem(itemNode, id, name, buyPrice, description);
         }
         if (itemType == ItemType.MATERIAL) {
-            return parseMaterialItem(id, name, buyPrice);
+            return parseMaterialItem(id, name, buyPrice, description);
         }
-        return parseEquipmentItem(itemNode, id, name, itemType, buyPrice);
+        return parseEquipmentItem(itemNode, id, name, itemType, buyPrice, description);
     }
 
     private MaterialItem parseMaterialItem(
-            final String id, final String name, final Integer buyPrice) {
-        return new MaterialItem(id, name, buyPrice);
+            final String id, final String name, final Integer buyPrice, final String description) {
+        return new MaterialItem(id, name, buyPrice, description);
     }
 
     private PotionItem parsePotionItem(
-            final JsonNode itemNode, final String id, final String name, final Integer buyPrice) {
+            final JsonNode itemNode,
+            final String id,
+            final String name,
+            final Integer buyPrice,
+            final String description) {
         final Integer healHpOpt = extractOptionalInt(itemNode, "healHp");
         final Integer healMpOpt = extractOptionalInt(itemNode, "healMp");
         final Integer healStaminaOpt = extractOptionalInt(itemNode, "healStamina");
@@ -175,7 +180,7 @@ public class ItemCatalogService {
                     "포션 아이템 '" + id + "'은(는) healHp, healMp, healStamina 중 적어도 하나가 양수여야 합니다.");
         }
 
-        return new PotionItem(id, name, healHp, healMp, healStamina, buyPrice);
+        return new PotionItem(id, name, healHp, healMp, healStamina, buyPrice, description);
     }
 
     private EquipmentItem parseEquipmentItem(
@@ -183,7 +188,8 @@ public class ItemCatalogService {
             final String id,
             final String name,
             final ItemType itemType,
-            final Integer buyPrice) {
+            final Integer buyPrice,
+            final String description) {
         final String kindString = extractRequiredField(itemNode, "kind");
         final EquipmentKind kind =
                 EquipmentKind.fromString(kindString)
@@ -203,7 +209,8 @@ public class ItemCatalogService {
 
         final List<EquipBonus> bonuses = parseBonuses(itemNode, id);
 
-        return new EquipmentItem(id, name, itemType, kind, bonuses, buyPrice, maxDurability);
+        return new EquipmentItem(
+                id, name, itemType, kind, bonuses, buyPrice, maxDurability, description);
     }
 
     private List<EquipBonus> parseBonuses(final JsonNode itemNode, final String itemId) {
@@ -261,5 +268,13 @@ public class ItemCatalogService {
             return null;
         }
         return fieldNode.asInt();
+    }
+
+    private String extractOptionalString(final JsonNode node, final String fieldName) {
+        final JsonNode fieldNode = node.get(fieldName);
+        if (fieldNode == null || fieldNode.isNull() || fieldNode.asText().isBlank()) {
+            return null;
+        }
+        return fieldNode.asText();
     }
 }

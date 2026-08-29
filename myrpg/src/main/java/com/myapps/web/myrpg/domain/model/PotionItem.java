@@ -12,10 +12,37 @@ package com.myapps.web.myrpg.domain.model;
  * @param healMp 사용 시 MP 회복량 (0 이상)
  * @param healStamina 사용 시 스태미나 회복량 (0 이상)
  * @param buyPrice 상점 구매가(nullable, 상점 미판매이면 null)
+ * @param description 아이템 설명글(nullable)
  */
 public record PotionItem(
-        String id, String name, int healHp, int healMp, int healStamina, Integer buyPrice)
+        String id,
+        String name,
+        int healHp,
+        int healMp,
+        int healStamina,
+        Integer buyPrice,
+        String description)
         implements Item {
+
+    /**
+     * 설명글이 없는 포션 생성을 위한 편의 생성자.
+     *
+     * @param id 아이템 고유 식별자
+     * @param name 아이템 표시명
+     * @param healHp 사용 시 HP 회복량
+     * @param healMp 사용 시 MP 회복량
+     * @param healStamina 사용 시 스태미나 회복량
+     * @param buyPrice 상점 구매가
+     */
+    public PotionItem(
+            final String id,
+            final String name,
+            final int healHp,
+            final int healMp,
+            final int healStamina,
+            final Integer buyPrice) {
+        this(id, name, healHp, healMp, healStamina, buyPrice, null);
+    }
 
     /**
      * HP 회복 전용 포션 생성을 위한 편의 생성자.
@@ -27,7 +54,7 @@ public record PotionItem(
      */
     public PotionItem(
             final String id, final String name, final int healHp, final Integer buyPrice) {
-        this(id, name, healHp, 0, 0, buyPrice);
+        this(id, name, healHp, 0, 0, buyPrice, null);
     }
 
     /**

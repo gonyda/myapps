@@ -1123,17 +1123,11 @@ public class InventoryService {
     public List<String> describe(final Item item, final OwnedItem owned) {
         final List<String> lines = new ArrayList<>();
 
-        if (item instanceof PotionItem potionItem) {
-            if (potionItem.healHp() > 0) {
-                lines.add("생명력을 " + potionItem.healHp() + " 회복한다.");
-            }
-            if (potionItem.healMp() > 0) {
-                lines.add("마나를 " + potionItem.healMp() + " 회복한다.");
-            }
-            if (potionItem.healStamina() > 0) {
-                lines.add("스태미나를 " + potionItem.healStamina() + " 회복한다.");
-            }
-        } else if (item instanceof EquipmentItem equipItem) {
+        if (item.description() != null && !item.description().isBlank()) {
+            lines.add(item.description());
+        }
+
+        if (item instanceof EquipmentItem equipItem) {
             lines.add(equipItem.kind().label() + " (" + equipItem.type().label() + ")");
 
             for (final EquipBonus bonus : equipItem.bonuses()) {
