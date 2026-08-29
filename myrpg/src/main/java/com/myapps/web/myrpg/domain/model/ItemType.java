@@ -17,7 +17,10 @@ public enum ItemType {
     WEAPON("weapon", "무기"),
 
     /** 방어구 장비 아이템. */
-    ARMOR("armor", "방어구");
+    ARMOR("armor", "방어구"),
+
+    /** 생활 채집 및 제작용 재료 아이템. */
+    MATERIAL("material", "재료");
 
     private final String code;
     private final String label;
@@ -54,6 +57,17 @@ public enum ItemType {
      */
     public boolean isEquipment() {
         return this == WEAPON || this == ARMOR;
+    }
+
+    /**
+     * 이 타입이 인벤토리/은행의 동일 슬롯에 수량 스택 누적이 가능한지 여부를 반환한다.
+     *
+     * <p>포션({@code POTION}) 또는 재료({@code MATERIAL})이면 {@code true}.
+     *
+     * @return 스택 누적 가능 여부
+     */
+    public boolean isStackable() {
+        return this == POTION || this == MATERIAL;
     }
 
     /**

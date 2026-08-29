@@ -9,6 +9,8 @@ import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
+import com.myapps.web.myrpg.application.service.DungeonService;
+import com.myapps.web.myrpg.application.service.GatheringService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
 import com.myapps.web.myrpg.application.service.MonsterEncounterService;
@@ -20,6 +22,7 @@ import com.myapps.web.myrpg.application.service.ProgressionService;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
+import com.myapps.web.myrpg.domain.model.MapNode;
 import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.TalentType;
@@ -34,11 +37,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 플레이 화면을 서버사이드 렌더링하는 컨트롤러.
+ * 메인 플레이 화면 렌더링 및 이동/상호작용 처리를 담당하는 컨트롤러.
  *
- * <p>GET / 요청에 대해 캐릭터 진행상황, 미니맵, 전체지도, 상황 멘트, 상호작용 목록, 행동 로그, 정보 팝업을 조합하여 {@code play} 뷰를 렌더링한다.
- * POST /move 요청으로 턴제 이동을 처리하고 갱신된 프래그먼트를 반환한다. POST /npc/talk 요청으로 NPC 대화를 처리하고 센터 프래그먼트를 반환한다.
- * POST /rebirth 요청으로 환생 진행을 처리한다.
+ * <p>방향키 이동, NPC 대화, 몬스터 대화, 환생 모달 등 플레이 화면 내 핵심 인터랙션을 처리하고 상황에 맞는 프래그먼트 또는 전체 뷰를 반환한다.
  */
 @Controller
 public class PlayScreenController {
@@ -61,26 +62,28 @@ public class PlayScreenController {
     private final ActionLog actionLog;
     private final PlayScreenViewHelper playScreenViewHelper;
     private final NodeViewAssembler nodeViewAssembler;
-    private final com.myapps.web.myrpg.application.service.DungeonService dungeonService;
+    private final DungeonService dungeonService;
+    private final GatheringService gatheringService;
 
     /**
      * PlayScreenController를 생성한다.
      *
-     * @param characterService 캐릭터 서비스
-     * @param mapService 맵 서비스
+     * @param characterService 캐릭터 진행상황 서비스
+     * @param mapService 맵 데이터 서비스
      * @param ambienceService 상황 멘트 서비스
-     * @param movementService 이동 처리 서비스
+     * @param movementService 좌표 이동 서비스
      * @param npcService NPC 데이터 서비스
-     * @param npcDialogueService NPC 대사 선택 서비스
-     * @param progressionService 경험치/레벨업/사망/환생 서비스
-     * @param monsterService 몬스터 카탈로그 조회 서비스
-     * @param monsterDialogueService 몬스터 조우 대사 선택 서비스
-     * @param monsterEncounterService 필드 진입 선공 판정 서비스
-     * @param battleService 전투 오케스트레이션 서비스
+     * @param npcDialogueService NPC 대사 서비스
+     * @param progressionService 레벨/환생 진행 서비스
+     * @param monsterService 몬스터 데이터 서비스
+     * @param monsterDialogueService 몬스터 대사 서비스
+     * @param monsterEncounterService 몬스터 조우 서비스
+     * @param battleService 전투 관리 서비스
      * @param actionLog 세션 보관 행동 로그
-     * @param playScreenViewHelper 뷰 모델 조립 헬퍼
+     * @param playScreenViewHelper 뷰 조립 헬퍼
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
      * @param dungeonService 던전 서비스
+     * @param gatheringService 채집 관리 서비스
      */
     public PlayScreenController(
             final CharacterService characterService,
@@ -97,7 +100,8 @@ public class PlayScreenController {
             final ActionLog actionLog,
             final PlayScreenViewHelper playScreenViewHelper,
             final NodeViewAssembler nodeViewAssembler,
-            final com.myapps.web.myrpg.application.service.DungeonService dungeonService) {
+            final DungeonService dungeonService,
+            final GatheringService gatheringService) {
         this.characterService = characterService;
         this.mapService = mapService;
         this.ambienceService = ambienceService;
@@ -113,17 +117,9 @@ public class PlayScreenController {
         this.playScreenViewHelper = playScreenViewHelper;
         this.nodeViewAssembler = nodeViewAssembler;
         this.dungeonService = dungeonService;
+        this.gatheringService = gatheringService;
     }
 
-    /**
-     * 플레이 화면을 렌더링한다.
-     *
-     * <p>캐릭터 진행상황을 로드(또는 기본 생성)하고, 활성 전투가 있으면 전투 뷰를 복원하여 {@code battleActive=true}로 진입시킨다. 없으면 현재
-     * 노드 기준의 미니맵/전체지도/상황 멘트/행동 로그를 조합하여 모델에 추가한 뒤 {@code play} 뷰를 반환한다.
-     *
-     * @param model Spring MVC 모델
-     * @return 뷰 이름 {@code "play"}
-     */
     /**
      * 플레이 화면을 렌더링한다.
      *
@@ -230,6 +226,12 @@ public class PlayScreenController {
 
             if (!isInDungeon) {
                 characterService.saveTurn(progress);
+
+                final MapNode currentNode = mapService.node(progress.getCurrentNodeId());
+                gatheringService.rollTreeSpawn(
+                        progress.getId(),
+                        progress.getCurrentNodeId(),
+                        currentNode != null ? currentNode.type() : null);
 
                 final List<Monster> monstersOnNode =
                         monsterService.byNode(progress.getCurrentNodeId());

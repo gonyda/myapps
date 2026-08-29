@@ -258,7 +258,7 @@ public class InventoryService {
                                         new IllegalStateException(
                                                 "카탈로그에 아이템이 없습니다: " + target.getItemId()));
 
-        if (catalogItem.type() == ItemType.POTION) {
+        if (catalogItem.type().isStackable()) {
             movePotionToStorage(target, StorageKind.BANK);
         } else {
             checkCapacity(target.getCharacterId(), StorageKind.BANK);
@@ -269,7 +269,8 @@ public class InventoryService {
     /**
      * 은행에서 인벤토리로 아이템을 찾는다.
      *
-     * <p>소비형(POTION)은 인벤토리의 동일 itemId 행에 스택 누적하며, 장비는 저장위치를 전환한다. 인벤토리 용량(30)을 초과하면 거부한다.
+     * <p>스택형 아이템(POTION, MATERIAL)은 인벤토리의 동일 itemId 행에 스택 누적하며, 장비는 저장위치를 전환한다. 인벤토리 용량(30)을 초과하면
+     * 거부한다.
      *
      * @param ownedItemId 찾을 보유 아이템 PK
      * @throws InventoryFullException 인벤토리 용량 초과 시
@@ -286,7 +287,7 @@ public class InventoryService {
                                         new IllegalStateException(
                                                 "카탈로그에 아이템이 없습니다: " + target.getItemId()));
 
-        if (catalogItem.type() == ItemType.POTION) {
+        if (catalogItem.type().isStackable()) {
             movePotionToStorage(target, StorageKind.INVENTORY);
         } else {
             checkCapacity(target.getCharacterId(), StorageKind.INVENTORY);
@@ -848,7 +849,7 @@ public class InventoryService {
         final Item catalogItem = catalogOpt.get();
         final Long targetCharId = characterId != null ? characterId : 1L;
 
-        if (catalogItem.type() == ItemType.POTION) {
+        if (catalogItem.type().isStackable()) {
             acquirePotionItem(targetCharId, itemId, quantity);
         } else {
             checkCapacity(targetCharId, StorageKind.INVENTORY);
@@ -1413,7 +1414,7 @@ public class InventoryService {
         final String itemName = catalogItem.name();
         final Long charId = progress != null && progress.getId() != null ? progress.getId() : 1L;
 
-        if (catalogItem.type() == ItemType.POTION) {
+        if (catalogItem.type().isStackable()) {
             acquirePotion(charId, droppedItem);
         } else {
             acquireEquipment(charId, droppedItem, itemName);

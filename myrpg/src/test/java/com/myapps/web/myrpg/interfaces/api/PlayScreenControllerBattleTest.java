@@ -104,6 +104,8 @@ class PlayScreenControllerBattleTest {
 
     @MockitoBean private com.myapps.web.myrpg.domain.service.MapViewFactory mapViewFactory;
 
+    @MockitoBean private com.myapps.web.myrpg.application.service.GatheringService gatheringService;
+
     @BeforeEach
     void setUpDefaults() {
         when(battleService.resumeIfActive(any(CharacterProgress.class)))

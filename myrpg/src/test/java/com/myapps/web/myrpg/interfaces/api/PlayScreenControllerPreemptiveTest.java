@@ -91,6 +91,8 @@ class PlayScreenControllerPreemptiveTest {
 
     @MockitoBean private com.myapps.web.myrpg.domain.service.MapViewFactory mapViewFactory;
 
+    @MockitoBean private com.myapps.web.myrpg.application.service.GatheringService gatheringService;
+
     @org.junit.jupiter.api.BeforeEach
     void setUpBattleServiceDefault() {
         when(battleService.resumeIfActive(any(CharacterProgress.class)))

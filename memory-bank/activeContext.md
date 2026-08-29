@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-29 17:05 (Asia/Seoul)
+> 최종 업데이트: 2026-08-29 17:48 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -17,17 +17,13 @@
 
 - **핵심 시스템 & UI/UX 완비**: 알비 던전/전투 턴/데이터 격리, 모바일(360~480px) 최적화 팝업군, 무기 세트 I/II 스왑, 스킬 슬롯 해제 방어, 상점 장비 착용 비교 팝업 구축 완료.
 - **인게임 시간대별 앰비언트 스카이 & 천체 궤적 (2026-08-28)**: 6대 시간대(`TimeOfDay`) 딥 다크 스카이 그라디언트, 천체(해/달) 궤적 및 소프트 글로우 동적 연출 완비.
-- **다중 계정/캐릭터 간 장비 공유 및 장착 해제 간섭 버그 해결 (2026-08-29)**: `InventoryService` 격리 조회 일원화 및 격리 테스트 5종 완료.
-- **상황 멘트 및 NPC 대사의 게임 내 시간(InGameTime) 불일치 버그 해결 (2026-08-29)**: `CharacterProgress.getInGameHour()` 전달로 인게임 시간대 100% 동기화.
-- **6대 시간대 구간 최적화 조정 (2026-08-29)**: 오후/황혼/밤/심야/새벽/오전 6구간 통일.
-- **스킬 승급 조건 단순화 (막타 처치 항목 전면 제거 & 사용 횟수 단일화) (2026-08-29)**:
-  - `RankUpRequirement(requiredUsage)` 단일화, `killCount` 및 막타 수련 로직 완전 제거.
-- **스킬 목록 팝업 내 스킬 유형(Type) 뱃지 표기 (2026-08-29)**:
-  - `SkillRowView` 및 `SkillRankUpView`에 `typeName`, `typeLabel` 필드 추가 및 하위호환 생성자 제공.
-  - `SkillService.buildRow` / `buildRankUpView`에서 `catalog.type().name()` 및 `catalog.type().label()` 바인딩.
-  - `skill-popup.html`의 스킬 행 헤더(`skill-title-group`) 및 승급 모달(`rankup-name-row`)에 10대 스킬 유형별 다크 판타지 컬러 뱃지(`<span class="skill-type-badge">`) 적용 및 우측 중복 텍스트 정돈.
-  - `myrpg.css`에 10대 스킬 유형별(.type-normal, .type-heavy, .type-defense, .type-recovery, .type-ultimate, .type-passive, .type-buff, .type-debuff, .type-cc, .type-dot) 테마 스타일 구축.
-  - `SkillServiceViewTest` 등 전체 1242개 단위/통합 테스트 100% 성공 및 5대 품질 가드레일 올클리어.
+- **스킬 승급 조건 단순화 & 유형 뱃지 표기 (2026-08-29)**: `RankUpRequirement(requiredUsage)` 단일화, 10대 스킬 유형별 다크 판타지 컬러 뱃지 구축.
+- **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**:
+  - **도메인 & 카탈로그**: `ItemType.MATERIAL` 추가 및 `isStackable()` 확장, `MaterialItem` 불변 레코드 생성, `item.json`에 `firewood`(구매가 20G/판매가 10G) 등록, 카탈로그 58종 로드 확장.
+  - **애플리케이션 서비스**: `InventoryService` 재료 스택 적재 일원화, `GatheringService` 구현 (마을/자유필드 노드 이동 시 50% 나무 스폰 롤, 던전 격리, 5 SP 소모, 50% 채집 성공/실패 판정, 1회 채집 후 나무 소멸 및 로그 기록).
+  - **웹 계층 & 컨트롤러**: `GatheringController` (`POST /gathering/woodcut`), `PlayScreenController` 이동 시 `rollTreeSpawn` 호출, `NodeViewAssembler`에서 `🌲 나무 (장작 패기)` 상호작용 버튼 조립.
+  - **프론트엔드 UI/UX**: `gathering-modal.html` 앤틱 골드 모달 구축, `myrpg.css` 도끼 흔들림/나무 진동 키프레임 및 프로그레스 바 스타일, `myrpg.js` 5초 자동 완료형 채집 타이머 & 비동기 통신 & 상단바 SP 실시간 동기화.
+  - **테스트 & 품질**: 단위/슬라이스 및 jqwik PBT (스태미나 불변식, 재료 스택 불변식, 스폰/소멸 불변식) 포함 전체 1,258개 테스트 100% 그린 및 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 
 ---
 
@@ -42,7 +38,7 @@
 ## 3. 다음 단계 (Next Steps / 백로그)
 
 1. **[기획 1] 캠프파이어 & 야간 위험도 시스템 (표준형)**:
-   - 야간(20~05시) 기습 50% & 장작 소비형 모닥불 야영(아침 08:00 스킵, 바이탈 완충, 음식 굽기 버프).
+   - 획득한 장작을 소비하여 모닥불 야영(야간 20~05시 위험 완화, 아침 08:00 스킵, 바이탈 완충, 음식 굽기 버프).
 2. **[기획 2] 마을 아르바이트 & 축복의 포션 시스템**:
    - 시간대별 NPC 일일 의뢰 및 축복의 포션(내구도 보호) 보상 (추후 상세설계).
 3. **[기획 3] 타이틀(칭호) & 업적 도감 시스템**:

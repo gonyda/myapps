@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 채집(장작 패기) 모달 오버레이 -->
+<div class="overlay gathering-overlay" id="gatheringOverlay" th:fragment="gathering-modal">
+    <div class="panel gathering-panel">
+        <header class="panel-header gathering-panel-header">
+            <div class="panel-header-title">
+                <span class="panel-header-icon">🪓</span>
+                <h3>장작 패기</h3>
+            </div>
+        </header>
+
+        <div class="panel-body gathering-panel-body">
+            <!-- 채집 애니메이션 무대 -->
+            <div class="gathering-stage">
+                <div class="gathering-visual">
+                    <span class="tree-icon" id="gatheringTreeIcon">🌲</span>
+                    <span class="axe-icon" id="gatheringAxeIcon">🪓</span>
+                    <div class="wood-chips" id="woodChips"></div>
+                </div>
+                <p class="gathering-status-text" id="gatheringStatusText">도끼질을 시작합니다...</p>
+            </div>
+
+            <!-- 프로그레스 게이지 -->
+            <div class="gathering-progress-wrap">
+                <div class="gathering-progress-track">
+                    <div class="gathering-progress-fill" id="gatheringProgressFill"></div>
+                </div>
+                <div class="gathering-progress-meta">
+                    <span class="sp-cost-badge">⚡ -5 SP</span>
+                    <span class="gathering-timer" id="gatheringTimer">5.0초</span>
+                </div>
+            </div>
+
+            <!-- 채집 결과 표시 영역 -->
+            <div class="gathering-result-area" id="gatheringResultArea" style="display: none;">
+                <div class="result-message-badge" id="gatheringResultMessage"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -9,6 +9,7 @@ import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.DungeonService;
+import com.myapps.web.myrpg.application.service.GatheringService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
 import com.myapps.web.myrpg.application.service.NpcService;
@@ -45,6 +46,7 @@ public class NodeViewAssembler {
     private final ActionLog actionLog;
     private final DungeonService dungeonService;
     private final MapViewFactory mapViewFactory;
+    private final GatheringService gatheringService;
 
     /**
      * NodeViewAssembler를 생성한다.
@@ -58,6 +60,7 @@ public class NodeViewAssembler {
      * @param actionLog 세션 보관 행동 로그
      * @param dungeonService 던전 관리 서비스
      * @param mapViewFactory 맵 뷰 생성 팩토리
+     * @param gatheringService 채집 관리 서비스
      */
     public NodeViewAssembler(
             final MapService mapService,
@@ -68,7 +71,8 @@ public class NodeViewAssembler {
             final PlayScreenViewHelper playScreenViewHelper,
             final ActionLog actionLog,
             final DungeonService dungeonService,
-            final MapViewFactory mapViewFactory) {
+            final MapViewFactory mapViewFactory,
+            final GatheringService gatheringService) {
         this.mapService = mapService;
         this.ambienceService = ambienceService;
         this.npcService = npcService;
@@ -78,6 +82,7 @@ public class NodeViewAssembler {
         this.actionLog = actionLog;
         this.dungeonService = dungeonService;
         this.mapViewFactory = mapViewFactory;
+        this.gatheringService = gatheringService;
     }
 
     /**
@@ -181,6 +186,10 @@ public class NodeViewAssembler {
                             false,
                             "dungeon-enter",
                             currentNode.dungeonId()));
+        }
+
+        if (gatheringService.isTreeAvailable(progress.getId(), currentNodeId)) {
+            interactions.add(new InteractionItem("gather-wood", "나무", false, "gathering", "wood"));
         }
 
         final RebirthStatus status = progressionService.rebirthStatus(progress);

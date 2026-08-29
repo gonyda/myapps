@@ -7,6 +7,7 @@ import com.myapps.web.myrpg.domain.model.EquipmentItem;
 import com.myapps.web.myrpg.domain.model.EquipmentKind;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.ItemType;
+import com.myapps.web.myrpg.domain.model.MaterialItem;
 import com.myapps.web.myrpg.domain.model.PotionItem;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -148,7 +149,15 @@ public class ItemCatalogService {
         if (itemType == ItemType.POTION) {
             return parsePotionItem(itemNode, id, name, buyPrice);
         }
+        if (itemType == ItemType.MATERIAL) {
+            return parseMaterialItem(id, name, buyPrice);
+        }
         return parseEquipmentItem(itemNode, id, name, itemType, buyPrice);
+    }
+
+    private MaterialItem parseMaterialItem(
+            final String id, final String name, final Integer buyPrice) {
+        return new MaterialItem(id, name, buyPrice);
     }
 
     private PotionItem parsePotionItem(

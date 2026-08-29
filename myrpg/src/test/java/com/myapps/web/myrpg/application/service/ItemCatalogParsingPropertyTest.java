@@ -297,7 +297,7 @@ class ItemCatalogParsingPropertyTest {
      */
     @Provide
     Arbitrary<String> invalidTypeString() {
-        return Arbitraries.of("invalid", "UNKNOWN", "shield", "food", "material");
+        return Arbitraries.of("invalid", "UNKNOWN", "shield", "food", "unknown_type");
     }
 
     /**

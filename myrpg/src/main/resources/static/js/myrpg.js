@@ -433,14 +433,18 @@ function swapCenter(html) {
     }
 }
 
-// ===== 상호작용 버튼 클릭 분기 (NPC/몬스터/던전) =====
+// ===== 상호작용 버튼 클릭 분기 (NPC/몬스터/던전/채집) =====
 function onInteractionClick(el) {
     var actionType = el.getAttribute("data-action-type");
     var targetParam = el.getAttribute("data-target-param");
     var npcId = el.getAttribute("data-npc-id");
     var monsterId = el.getAttribute("data-monster-id");
 
-    if (actionType === "dungeon-enter") {
+    if (actionType === "gathering") {
+        if (targetParam === "wood") {
+            startWoodcutting();
+        }
+    } else if (actionType === "dungeon-enter") {
         enterDungeon(targetParam || "alby");
     } else if (actionType === "dungeon-leave") {
         leaveDungeon();
@@ -1748,5 +1752,183 @@ function syncSkyAmbient() {
 
 // 시간대 동기화
 document.addEventListener("DOMContentLoaded", syncSkyAmbient);
+
+// ============================================================
+// 생활 채집 (장작 패기) 시스템
+// ============================================================
+var woodcuttingInProgress = false;
+var woodcuttingInterval = null;
+var woodcuttingAutoCloseTimer = null;
+
+function openGatheringModal() {
+    var overlay = document.getElementById("gatheringOverlay");
+    if (!overlay) { return; }
+    overlay.classList.add("open");
+
+    var treeIcon = document.getElementById("gatheringTreeIcon");
+    var axeIcon = document.getElementById("gatheringAxeIcon");
+    var statusText = document.getElementById("gatheringStatusText");
+    var progressFill = document.getElementById("gatheringProgressFill");
+    var timerEl = document.getElementById("gatheringTimer");
+    var resultArea = document.getElementById("gatheringResultArea");
+    var resultMessage = document.getElementById("gatheringResultMessage");
+
+    if (treeIcon) { treeIcon.className = "tree-icon tree-shaking"; }
+    if (axeIcon) { axeIcon.className = "axe-icon axe-swinging"; }
+    if (statusText) { statusText.textContent = "도끼로 나무를 베어내는 중..."; }
+    if (progressFill) { progressFill.style.width = "0%"; }
+    if (timerEl) { timerEl.textContent = "5.0초"; }
+    if (resultArea) { resultArea.style.display = "none"; }
+    if (resultMessage) {
+        resultMessage.className = "result-message-badge";
+        resultMessage.textContent = "";
+    }
+}
+
+function closeGatheringModal() {
+    var overlay = document.getElementById("gatheringOverlay");
+    if (overlay) {
+        overlay.classList.remove("open");
+    }
+    if (woodcuttingInterval) {
+        clearInterval(woodcuttingInterval);
+        woodcuttingInterval = null;
+    }
+    if (woodcuttingAutoCloseTimer) {
+        clearTimeout(woodcuttingAutoCloseTimer);
+        woodcuttingAutoCloseTimer = null;
+    }
+    woodcuttingInProgress = false;
+}
+
+function startWoodcutting() {
+    if (woodcuttingInProgress) {
+        return;
+    }
+
+    var currentSp = getPlayerCurrentResource("STAMINA");
+    if (currentSp < 5) {
+        showEquipmentToast("스태미나가 부족합니다 (필요: 5 SP)");
+        return;
+    }
+
+    woodcuttingInProgress = true;
+    openGatheringModal();
+
+    var durationMs = 5000;
+    var intervalMs = 100;
+    var elapsedMs = 0;
+
+    var progressFill = document.getElementById("gatheringProgressFill");
+    var timerEl = document.getElementById("gatheringTimer");
+
+    woodcuttingInterval = setInterval(function () {
+        elapsedMs += intervalMs;
+        var pct = Math.min(100, Math.round((elapsedMs / durationMs) * 100));
+        var remainingSec = Math.max(0, (durationMs - elapsedMs) / 1000).toFixed(1);
+
+        if (progressFill) {
+            progressFill.style.width = pct + "%";
+        }
+        if (timerEl) {
+            timerEl.textContent = remainingSec + "초";
+        }
+
+        if (elapsedMs >= durationMs) {
+            clearInterval(woodcuttingInterval);
+            woodcuttingInterval = null;
+        }
+    }, intervalMs);
+
+    fetch("/gathering/woodcut", { method: "POST" })
+        .then(function (res) {
+            if (!res.ok) {
+                throw new Error("채집 실패");
+            }
+            return res.json();
+        })
+        .then(function (result) {
+            var remainingDelay = Math.max(0, durationMs - elapsedMs);
+            setTimeout(function () {
+                finishWoodcutting(result);
+            }, remainingDelay);
+        })
+        .catch(function () {
+            finishWoodcutting({
+                success: false,
+                message: "채집 중 오류가 발생했습니다.",
+                currentStamina: currentSp,
+                maxStamina: 100
+            });
+        });
+}
+
+function finishWoodcutting(result) {
+    if (woodcuttingInterval) {
+        clearInterval(woodcuttingInterval);
+        woodcuttingInterval = null;
+    }
+
+    var treeIcon = document.getElementById("gatheringTreeIcon");
+    var axeIcon = document.getElementById("gatheringAxeIcon");
+    var statusText = document.getElementById("gatheringStatusText");
+    var progressFill = document.getElementById("gatheringProgressFill");
+    var timerEl = document.getElementById("gatheringTimer");
+    var resultArea = document.getElementById("gatheringResultArea");
+    var resultMessage = document.getElementById("gatheringResultMessage");
+
+    if (treeIcon) { treeIcon.className = "tree-icon"; }
+    if (axeIcon) { axeIcon.className = "axe-icon"; }
+    if (progressFill) { progressFill.style.width = "100%"; }
+    if (timerEl) { timerEl.textContent = "완료"; }
+
+    if (statusText) {
+        statusText.textContent = result.success ? "채집에 성공했습니다!" : "채집에 실패했습니다.";
+    }
+
+    if (resultArea && resultMessage) {
+        resultArea.style.display = "block";
+        resultMessage.textContent = result.message || (result.success ? "🪵 장작을 획득했습니다!" : "💨 채집 실패");
+        resultMessage.className = "result-message-badge " + (result.success ? "result-success" : "result-failure");
+    }
+
+    if (result.currentStamina !== undefined && result.maxStamina !== undefined) {
+        updateTopBarStamina(result.currentStamina, result.maxStamina);
+    }
+
+    woodcuttingAutoCloseTimer = setTimeout(function () {
+        closeGatheringModal();
+        refreshCurrentNodeView();
+    }, 1200);
+}
+
+function updateTopBarStamina(current, max) {
+    var barEl = document.querySelector(".stat .bar.stamina");
+    if (barEl) {
+        var fillEl = barEl.querySelector(".fill");
+        var textEl = barEl.querySelector(".bar-text");
+        var pct = max > 0 ? Math.min(100, Math.max(0, Math.round((current / max) * 100))) : 0;
+        if (fillEl) {
+            fillEl.style.width = pct + "%";
+        }
+        if (textEl) {
+            textEl.textContent = current + " / " + max;
+        }
+    }
+}
+
+function refreshCurrentNodeView() {
+    fetch("/move?dx=0&dy=0", { method: "POST" })
+        .then(function (res) {
+            if (!res.ok) { return; }
+            return res.text();
+        })
+        .then(function (html) {
+            if (html) {
+                swapMoveResponse(html);
+            }
+        })
+        .catch(function () {});
+}
 
 

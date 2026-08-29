@@ -82,7 +82,7 @@
     <div class="interactions" id="interactions">
         <th:block th:if="${view.interactions != null and !view.interactions.isEmpty()}">
             <button th:each="item : ${view.interactions}"
-                    th:classappend="(${item.npc} ? 'npc' : (${item.actionType == 'dungeon-enter' or item.actionType == 'dungeon-leave'} ? 'dungeon-btn' : 'monster-btn'))
+                    th:classappend="(${item.npc} ? 'npc' : (${item.actionType == 'dungeon-enter' or item.actionType == 'dungeon-leave'} ? 'dungeon-btn' : (${item.actionType == 'gathering'} ? 'gathering-btn' : 'monster-btn')))
                         + (${item.npc and item.id == talkingNpcId} ? ' active-target' : '')
                         + (${item.actionType == 'monster' and item.id == encounteredMonsterId} ? ' active-target' : '')"
                     th:text="${item.name}"

@@ -21,6 +21,12 @@
     "buyPrice": 50
   },
   {
+    "id": "firewood",
+    "name": "장작",
+    "type": "material",
+    "buyPrice": 20
+  },
+  {
     "id": "beginner_one_hand_sword",
     "name": "초보자용 한손검",
     "type": "weapon",

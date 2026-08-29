@@ -63,6 +63,7 @@ class NodeViewAssemblerDungeonTest {
     @Mock private PlayScreenViewHelper playScreenViewHelper;
     @Mock private DungeonService dungeonService;
     @Mock private MapViewFactory mapViewFactory;
+    @Mock private com.myapps.web.myrpg.application.service.GatheringService gatheringService;
 
     private ActionLog actionLog;
     private NodeViewAssembler nodeViewAssembler;
@@ -84,7 +85,8 @@ class NodeViewAssemblerDungeonTest {
                         playScreenViewHelper,
                         actionLog,
                         dungeonService,
-                        mapViewFactory);
+                        mapViewFactory,
+                        gatheringService);
 
         character = CharacterProgress.createDefault();
         setId(character, CHARACTER_ID);

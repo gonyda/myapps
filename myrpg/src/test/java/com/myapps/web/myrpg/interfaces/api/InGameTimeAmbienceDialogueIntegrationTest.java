@@ -19,6 +19,7 @@ import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.DungeonService;
+import com.myapps.web.myrpg.application.service.GatheringService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterDialogueService;
 import com.myapps.web.myrpg.application.service.MonsterEncounterService;
@@ -73,6 +74,7 @@ class InGameTimeAmbienceDialogueIntegrationTest {
     @MockitoBean private PlayScreenViewHelper playScreenViewHelper;
     @MockitoBean private ActionLog actionLog;
     @MockitoBean private MapViewFactory mapViewFactory;
+    @MockitoBean private GatheringService gatheringService;
 
     private CharacterProgress progress;
     private MapNode townNode;

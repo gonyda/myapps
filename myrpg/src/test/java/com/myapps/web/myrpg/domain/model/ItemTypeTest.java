@@ -86,9 +86,9 @@ class ItemTypeTest {
         assertThat(ItemType.fromString("")).isEmpty();
     }
 
-    /** ItemType 상수가 정확히 3개임을 검증한다. */
+    /** ItemType 상수가 정확히 4개(POTION, WEAPON, ARMOR, MATERIAL)임을 검증한다. */
     @Test
-    void should_haveExactlyThreeConstants() {
-        assertThat(ItemType.values()).hasSize(3);
+    void should_haveExactlyFourConstants() {
+        assertThat(ItemType.values()).hasSize(4);
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class GoldItemContextLoadSmokeTest {
 
-    private static final int EXPECTED_ITEM_COUNT = 57;
+    private static final int EXPECTED_ITEM_COUNT = 58;
 
     private final ItemCatalogService itemCatalogService;
     private final InventoryService inventoryService;

@@ -1,0 +1,30 @@
+package com.myapps.web.myrpg.domain.model;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+class MaterialItemTest {
+
+    @Test
+    @DisplayName("MaterialItem 생성 시 id, name, buyPrice가 올바르게 설정되고 type은 MATERIAL이어야 한다")
+    void should_createMaterialItem_correctly() {
+        final MaterialItem item = new MaterialItem("firewood", "장작", 20);
+
+        assertThat(item.id()).isEqualTo("firewood");
+        assertThat(item.name()).isEqualTo("장작");
+        assertThat(item.buyPrice()).isEqualTo(20);
+        assertThat(item.type()).isEqualTo(ItemType.MATERIAL);
+        assertThat(item.type().code()).isEqualTo("material");
+        assertThat(item.type().label()).isEqualTo("재료");
+        assertThat(item.type().isStackable()).isTrue();
+        assertThat(item.type().isEquipment()).isFalse();
+    }
+
+    @Test
+    @DisplayName("ItemType.fromString으로 material 코드를 조회하면 ItemType.MATERIAL이 반환된다")
+    void should_findMaterialItemType_fromString() {
+        assertThat(ItemType.fromString("material")).contains(ItemType.MATERIAL);
+    }
+}
