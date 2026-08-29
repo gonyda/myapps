@@ -227,26 +227,26 @@ $$\text{F} \rightarrow \text{E} \rightarrow \text{D} \rightarrow \text{C} \right
 ---
 
 ### 4.2. 랭크업 요구치 및 AP 비용 테이블 (`SkillRankPolicy`)
-다음 랭크로 승급하려면 **사용 횟수**, **막타 처치 횟수**, **소모 AP**를 만족해야 합니다.  
-*(단, DEFENSE, RECOVERY, ULTIMATE, BUFF, CC, DOT, PASSIVE 스킬은 처치 횟수 조건이 영구 면제됩니다.)*
+다음 랭크로 승급하려면 **스킬 사용 횟수(Usage Count)**와 **소모 AP**를 만족해야 합니다.  
+*(패시브 스킬 6종은 사용 횟수 조건 없이 AP 소모만으로 즉시 승급 가능합니다.)*
 
-| 승급 구간 | 필요 사용 횟수 | 필요 처치 횟수 (직접 타격기) | 소모 AP | 누적 소모 AP |
-|---|---|---|---|---|
-| **F $\rightarrow$ E** | 5회 | 1회 | **1 AP** | 1 AP |
-| **E $\rightarrow$ D** | 10회 | 3회 | **2 AP** | 3 AP |
-| **D $\rightarrow$ C** | 20회 | 6회 | **3 AP** | 6 AP |
-| **C $\rightarrow$ B** | 35회 | 10회 | **4 AP** | 10 AP |
-| **B $\rightarrow$ A** | 60회 | 18회 | **5 AP** | 15 AP |
-| **A $\rightarrow$ 9** | 100회 | 30회 | **7 AP** | 22 AP |
-| **9 $\rightarrow$ 8** | 160회 | 48회 | **9 AP** | 31 AP |
-| **8 $\rightarrow$ 7** | 240회 | 72회 | **11 AP** | 42 AP |
-| **7 $\rightarrow$ 6** | 350회 | 105회 | **13 AP** | 55 AP |
-| **6 $\rightarrow$ 5** | 520회 | 155회 | **15 AP** | 70 AP |
-| **5 $\rightarrow$ 4** | 760회 | 230회 | **18 AP** | 88 AP |
-| **4 $\rightarrow$ 3** | 1,100회 | 340회 | **22 AP** | 110 AP |
-| **3 $\rightarrow$ 2** | 1,600회 | 500회 | **26 AP** | 136 AP |
-| **2 $\rightarrow$ 1** | 2,500회 | 750회 | **30 AP** | 166 AP |
-| **1 $\rightarrow$ MASTER** | 5,000회 | 1,500회 | **34 AP** | **200 AP** |
+| 승급 구간 | 필요 사용 횟수 | 소모 AP | 누적 소모 AP |
+|---|---|---|---|
+| **F $\rightarrow$ E** | 5회 | **1 AP** | 1 AP |
+| **E $\rightarrow$ D** | 10회 | **2 AP** | 3 AP |
+| **D $\rightarrow$ C** | 20회 | **3 AP** | 6 AP |
+| **C $\rightarrow$ B** | 35회 | **4 AP** | 10 AP |
+| **B $\rightarrow$ A** | 60회 | **5 AP** | 15 AP |
+| **A $\rightarrow$ 9** | 100회 | **7 AP** | 22 AP |
+| **9 $\rightarrow$ 8** | 160회 | **9 AP** | 31 AP |
+| **8 $\rightarrow$ 7** | 240회 | **11 AP** | 42 AP |
+| **7 $\rightarrow$ 6** | 350회 | **13 AP** | 55 AP |
+| **6 $\rightarrow$ 5** | 520회 | **15 AP** | 70 AP |
+| **5 $\rightarrow$ 4** | 760회 | **18 AP** | 88 AP |
+| **4 $\rightarrow$ 3** | 1,100회 | **22 AP** | 110 AP |
+| **3 $\rightarrow$ 2** | 1,600회 | **26 AP** | 136 AP |
+| **2 $\rightarrow$ 1** | 2,500회 | **30 AP** | 166 AP |
+| **1 $\rightarrow$ MASTER** | 5,000회 | **34 AP** | **200 AP** |
 
 ---
 
@@ -297,8 +297,8 @@ $$\text{F} \rightarrow \text{E} \rightarrow \text{D} \rightarrow \text{C} \right
 | **아이스 스피어** (`ice_spear`) | HEAVY | 2타 | MP 20 | 타당 80% (총160%) | 타당 140% (**총280%**) | **1턴간 적 완전 빙결 (행동불능)** |
 | **헤일스톰** (`hailstorm`) | HEAVY | 8타 | MP 30 | 타당 35% (총280%) | 타당 55% (**총440%**) | 거대 우박 8발 기관총 난사 |
 | **라이트닝 로드** (`lightning_rod`) | HEAVY | 1타 | MP 30 | 220% | **400%** | **적 방어력 100% 관통 (DEF 무시)** |
-| **힐링** (`healing`) | RECOVERY | - | MP 12$\rightarrow$6 | HP +30 회복 | **HP +240 회복** | 생명력 즉시 회복 (처치수련 면제) |
-| **마나 실드** (`mana_shield`) | BUFF | - | MP 15 | 피해 50% MP 흡수 | **피해 85% MP 흡수** | 5턴간 피격 피해 마나 전환 (처치수련 면제) |
+| **힐링** (`healing`) | RECOVERY | - | MP 12$\rightarrow$6 | HP +30 회복 | **HP +240 회복** | 생명력 즉시 회복 |
+| **마나 실드** (`mana_shield`) | BUFF | - | MP 15 | 피해 50% MP 흡수 | **피해 85% MP 흡수** | 5턴간 피격 피해 마나 전환 |
 | **메테오 스트라이크** (`meteor_strike`) | ULTIMATE | 1타 | MP 40 | 300% | **550%** | **결전 궁극기**, 쿨다운 승리 30$\rightarrow$10회, 크리 +10.0%p |
 
 #### 4. 공용 및 방어 스킬 (2종)
