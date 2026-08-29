@@ -80,6 +80,9 @@
                 <div class="skill-title-group">
                     <span class="skill-icon" th:text="${row.icon()}">⚔️</span>
                     <span class="skill-name" th:text="${row.label()}">스매시</span>
+                    <span class="skill-type-badge"
+                          th:classappend="' type-' + ${row.typeName().toLowerCase()}"
+                          th:text="${row.typeLabel()}">강</span>
                     <span class="skill-rank"
                           th:classappend="${row.maxed()} ? ' rank-master' : (' rank-' + ${row.rankLabel().toLowerCase()})"
                           th:text="${row.rankLabel()}">F</span>
@@ -98,9 +101,6 @@
                             th:if="${row.slotIndex() == null and !row.isPassive()}"
                             onclick="event.stopPropagation(); openSlotAssignPicker(this.getAttribute('data-skill-id'), this.getAttribute('data-skill-name'))"
                             th:attr="data-skill-id=${row.id()}, data-skill-name=${row.label()}">➕ 슬롯</button>
-
-                    <span class="badge-passive"
-                          th:if="${row.isPassive()}">패시브</span>
 
                     <!-- 궁극기 쿨타임 뱃지 -->
                     <span class="badge-cooldown"
@@ -163,6 +163,9 @@
                 <span class="rankup-badge">SKILL RANK UP</span>
                 <div class="rankup-name-row">
                     <span class="rankup-skill-name" th:text="${rankUp.label()}">윈드밀</span>
+                    <span class="skill-type-badge"
+                          th:classappend="' type-' + ${rankUp.typeName().toLowerCase()}"
+                          th:text="${rankUp.typeLabel()}">일반</span>
                     <span class="rankup-rank-transition" th:if="${!rankUp.maxed()}">
                         <span class="rankup-cur-rank" th:text="${rankUp.currentRankLabel()}">F</span>
                         <span class="rankup-arrow">➔</span>

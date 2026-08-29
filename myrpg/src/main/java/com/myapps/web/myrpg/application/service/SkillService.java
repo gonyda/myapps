@@ -469,6 +469,9 @@ public class SkillService {
                         usageCurrent,
                         reqInfo.usageRequired());
 
+        final String typeName = catalog.type().name();
+        final String typeLabel = catalog.type().label();
+
         return new SkillRankUpView(
                 catalog.id(),
                 catalog.label(),
@@ -494,7 +497,9 @@ public class SkillService {
                 maxed,
                 effectRows,
                 isPassive,
-                !maxed && !isPassive);
+                !maxed && !isPassive,
+                typeName,
+                typeLabel);
     }
 
     private record RankUpRequirementInfo(int usageRequired, int apCost) {}
@@ -690,8 +695,9 @@ public class SkillService {
         final boolean fieldUsable = catalog instanceof RecoverySkill;
         final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
         final boolean isPassive = catalog instanceof PassiveSkill;
-
         final String icon = resolveSkillIcon(catalog);
+        final String typeName = catalog.type().name();
+        final String typeLabel = catalog.type().label();
 
         return new SkillRowView(
                 catalog.id(),
@@ -705,7 +711,9 @@ public class SkillService {
                 cooldownBadgeText,
                 characterSkill.getSlotIndex(),
                 isPassive,
-                icon);
+                icon,
+                typeName,
+                typeLabel);
     }
 
     public String resolveSkillIcon(final Skill catalog) {

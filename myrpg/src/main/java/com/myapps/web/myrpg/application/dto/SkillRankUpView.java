@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 스킬 승급 모달의 뷰 모델.
  *
- * <p>현재 랭크와 다음 랭크의 수치, 다형적 효과 목록, 사용 횟수 진행상황, AP 비용 및 보유량, 승급 가능 여부, 최고 랭크 여부를 포함한다.
+ * <p>현재 랭크와 다음 랭크의 수치, 다형적 효과 목록, 사용 횟수 진행상황, AP 비용 및 보유량, 승급 가능 여부, 최고 랭크 여부, 스킬 유형 식별자/라벨을 포함한다.
  *
  * @param id 스킬 카탈로그 ID
  * @param label 스킬 표시명
@@ -33,6 +33,9 @@ import java.util.List;
  * @param effectRows 스킬별 다형적 효과 상세 행 목록
  * @param passive 패시브 스킬 여부
  * @param hasUsageRequirement 사용 횟수 수련 조건 존재 여부
+ * @param typeName 스킬 유형 식별자 (예: "NORMAL", "HEAVY", "CC", "BUFF", "DEBUFF", "DEFENSE", "ULTIMATE",
+ *     "RECOVERY", "PASSIVE", "DOT")
+ * @param typeLabel 스킬 유형 한글 라벨 (예: "일반", "강", "제어", "버프", "디버프", "방어", "궁극기", "회복", "패시브", "지속피해")
  */
 public record SkillRankUpView(
         String id,
@@ -59,4 +62,64 @@ public record SkillRankUpView(
         boolean maxed,
         List<SkillEffectRowView> effectRows,
         boolean passive,
-        boolean hasUsageRequirement) {}
+        boolean hasUsageRequirement,
+        String typeName,
+        String typeLabel) {
+
+    /** 25인자 하위호환 생성자. */
+    public SkillRankUpView(
+            final String id,
+            final String label,
+            final String description,
+            final String currentRankLabel,
+            final String nextRankLabel,
+            final String primaryStatLabel,
+            final int currentValue,
+            final int nextValue,
+            final Integer currentCounterValue,
+            final Integer nextCounterValue,
+            final String resourceKindLabel,
+            final int resourceCost,
+            final Integer nextResourceCost,
+            final Integer currentCritBonus,
+            final Integer nextCritBonus,
+            final String rankupBonusText,
+            final int usageCurrent,
+            final int usageRequired,
+            final int apCost,
+            final int apOwned,
+            final boolean rankable,
+            final boolean maxed,
+            final List<SkillEffectRowView> effectRows,
+            final boolean passive,
+            final boolean hasUsageRequirement) {
+        this(
+                id,
+                label,
+                description,
+                currentRankLabel,
+                nextRankLabel,
+                primaryStatLabel,
+                currentValue,
+                nextValue,
+                currentCounterValue,
+                nextCounterValue,
+                resourceKindLabel,
+                resourceCost,
+                nextResourceCost,
+                currentCritBonus,
+                nextCritBonus,
+                rankupBonusText,
+                usageCurrent,
+                usageRequired,
+                apCost,
+                apOwned,
+                rankable,
+                maxed,
+                effectRows,
+                passive,
+                hasUsageRequirement,
+                passive ? "PASSIVE" : "NORMAL",
+                passive ? "패시브" : "일반");
+    }
+}

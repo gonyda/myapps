@@ -79,6 +79,8 @@ class SkillServiceViewTest {
         final SkillRowView windmillRow = view.rows().get(0);
         assertThat(windmillRow.id()).isEqualTo(WINDMILL_ID);
         assertThat(windmillRow.label()).isEqualTo("윈드밀");
+        assertThat(windmillRow.typeName()).isEqualTo("NORMAL");
+        assertThat(windmillRow.typeLabel()).isEqualTo("일반");
         assertThat(windmillRow.talentLabel()).isEqualTo("근접전투");
         assertThat(windmillRow.rankLabel()).isEqualTo("F");
         assertThat(windmillRow.maxed()).isFalse();
@@ -210,6 +212,8 @@ class SkillServiceViewTest {
 
         assertThat(view.id()).isEqualTo(WINDMILL_ID);
         assertThat(view.label()).isEqualTo("윈드밀");
+        assertThat(view.typeName()).isEqualTo("NORMAL");
+        assertThat(view.typeLabel()).isEqualTo("일반");
         assertThat(view.currentRankLabel()).isEqualTo("F");
         assertThat(view.nextRankLabel()).isEqualTo("E");
         assertThat(view.primaryStatLabel()).isEqualTo("보너스 데미지");
