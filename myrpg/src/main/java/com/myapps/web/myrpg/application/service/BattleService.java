@@ -452,9 +452,6 @@ public class BattleService {
         final boolean monsterKilled = state.getMonsterCurrentHp() <= 0;
         if (currentPreemptive != PreemptiveParty.MONSTER) {
             skillService.onSkillUsed(progress.getId(), skillId);
-            if (monsterKilled && skill.type() != SkillType.DEFENSE) {
-                skillService.onSkillKill(progress.getId(), skillId);
-            }
 
             if (skill.type() != SkillType.DEFENSE && !castFailure) {
                 inventoryService.reduceDurabilityAndAutoUnequip(progress, DURABILITY_PER_ATTACK);

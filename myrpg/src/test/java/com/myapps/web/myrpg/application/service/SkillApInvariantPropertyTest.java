@@ -124,10 +124,9 @@ class SkillApInvariantPropertyTest {
                 break;
             }
 
-            // 사용 횟수·막타 처치 조건을 충족시킴
+            // 사용 횟수 조건을 충족시킴
             final var requirement = skillRankPolicy.requirement(currentRank).orElseThrow();
             skill.setUsageCount(requirement.requiredUsage());
-            skill.setKillCount(requirement.requiredKills());
 
             // 랭크업 실행
             final boolean result = skillService.rankUp(progress, SKILL_ID);
@@ -192,8 +191,8 @@ class SkillApInvariantPropertyTest {
         // 두 스킬: 각각 F 랭크에서 시작
         final String skillId1 = "windmill";
         final String skillId2 = "smash";
-        final CharacterSkill skill1 = new CharacterSkill(CHARACTER_ID, skillId1, SkillRank.F, 0, 0);
-        final CharacterSkill skill2 = new CharacterSkill(CHARACTER_ID, skillId2, SkillRank.F, 0, 0);
+        final CharacterSkill skill1 = new CharacterSkill(CHARACTER_ID, skillId1, SkillRank.F, 0);
+        final CharacterSkill skill2 = new CharacterSkill(CHARACTER_ID, skillId2, SkillRank.F, 0);
 
         // Mock: 리포지토리
         final CharacterSkillRepository mockRepository = mock(CharacterSkillRepository.class);
@@ -266,7 +265,6 @@ class SkillApInvariantPropertyTest {
         // 조건 충족
         final var requirement = skillRankPolicy.requirement(skill.getRank()).orElseThrow();
         skill.setUsageCount(requirement.requiredUsage());
-        skill.setKillCount(requirement.requiredKills());
 
         final boolean result = skillService.rankUp(progress, skillId);
         if (result) {

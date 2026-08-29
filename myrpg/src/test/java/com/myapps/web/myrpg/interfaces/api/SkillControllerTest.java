@@ -260,11 +260,12 @@ class SkillControllerTest {
                 "STR +1",
                 0,
                 5,
-                0,
-                1,
                 1,
                 0,
                 false,
-                false);
+                false,
+                List.of(),
+                false,
+                true);
     }
 }

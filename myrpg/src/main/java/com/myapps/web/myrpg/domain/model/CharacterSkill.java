@@ -38,9 +38,6 @@ public class CharacterSkill {
     @Column(name = "usage_count", nullable = false)
     private int usageCount;
 
-    @Column(name = "kill_count", nullable = false)
-    private int killCount;
-
     @Column(name = "ultimate_cooldown", nullable = false)
     private int ultimateCooldown;
 
@@ -57,7 +54,6 @@ public class CharacterSkill {
      * @param skillId 스킬 카탈로그 ID (skill.json 참조)
      * @param rank 현재 스킬 랭크
      * @param usageCount 현재 랭크 사용 횟수
-     * @param killCount 현재 랭크 막타 처치 수
      * @param ultimateCooldown 궁극기 쿨타임(남은 승리 횟수)
      * @param slotIndex 핫바 슬롯 번호 (0~9, 미등록 시 null)
      */
@@ -66,54 +62,48 @@ public class CharacterSkill {
             final String skillId,
             final SkillRank rank,
             final int usageCount,
-            final int killCount,
             final int ultimateCooldown,
             final Integer slotIndex) {
         this.characterId = characterId;
         this.skillId = skillId;
         this.rank = rank;
         this.usageCount = usageCount;
-        this.killCount = killCount;
         this.ultimateCooldown = ultimateCooldown;
         this.slotIndex = slotIndex;
     }
 
     /**
-     * 하위호환 생성자 (slotIndex = null).
+     * 기본 생성자 (ultimateCooldown = 0, slotIndex = null).
      *
      * @param characterId 소유 캐릭터 ID
      * @param skillId 스킬 카탈로그 ID (skill.json 참조)
      * @param rank 현재 스킬 랭크
      * @param usageCount 현재 랭크 사용 횟수
-     * @param killCount 현재 랭크 막타 처치 수
-     * @param ultimateCooldown 궁극기 쿨타임(남은 승리 횟수)
      */
     public CharacterSkill(
             final Long characterId,
             final String skillId,
             final SkillRank rank,
-            final int usageCount,
-            final int killCount,
-            final int ultimateCooldown) {
-        this(characterId, skillId, rank, usageCount, killCount, ultimateCooldown, null);
+            final int usageCount) {
+        this(characterId, skillId, rank, usageCount, 0, null);
     }
 
     /**
-     * 하위호환 생성자 (ultimateCooldown = 0, slotIndex = null).
+     * 슬롯 인덱스 지정 편의 생성자 (ultimateCooldown = 0).
      *
      * @param characterId 소유 캐릭터 ID
-     * @param skillId 스킬 카탈로그 ID (skill.json 참조)
+     * @param skillId 스킬 카탈로그 ID
      * @param rank 현재 스킬 랭크
      * @param usageCount 현재 랭크 사용 횟수
-     * @param killCount 현재 랭크 막타 처치 수
+     * @param slotIndex 핫바 슬롯 번호
      */
     public CharacterSkill(
             final Long characterId,
             final String skillId,
             final SkillRank rank,
             final int usageCount,
-            final int killCount) {
-        this(characterId, skillId, rank, usageCount, killCount, 0, null);
+            final Integer slotIndex) {
+        this(characterId, skillId, rank, usageCount, 0, slotIndex);
     }
 
     /**
@@ -124,7 +114,7 @@ public class CharacterSkill {
      * @return 초기 상태의 CharacterSkill
      */
     public static CharacterSkill newSkill(final Long characterId, final String skillId) {
-        return new CharacterSkill(characterId, skillId, SkillRank.first(), 0, 0);
+        return new CharacterSkill(characterId, skillId, SkillRank.first(), 0);
     }
 
     /**
@@ -172,30 +162,13 @@ public class CharacterSkill {
         return usageCount;
     }
 
-    /**
-     * 현재 랭크에서의 막타 처치 수를 반환한다.
-     *
-     * @return 막타 처치 수
-     */
-    public int getKillCount() {
-        return killCount;
-    }
-
     /** 사용 횟수를 1 증가시킨다. */
     public void increaseUsage() {
         this.usageCount++;
     }
 
-    /** 막타 처치 수를 1 증가시킨다. */
-    public void increaseKill() {
-        this.killCount++;
-    }
-
     /**
      * 사용 횟수를 지정 값으로 설정한다 (임시 드라이버용).
-     *
-     * <p>전투(7순위)의 실제 사용 이벤트({@code onSkillUsed})가 구현되면 이 메서드를 호출하는 임시 드라이버({@code dev/fill-usage})는
-     * 제거된다.
      *
      * @param usageCount 설정할 사용 횟수
      */
@@ -204,28 +177,13 @@ public class CharacterSkill {
     }
 
     /**
-     * 막타 처치 수를 지정 값으로 설정한다 (임시 드라이버용).
-     *
-     * <p>전투(7순위)의 실제 막타 이벤트({@code onSkillKill})가 구현되면 이 메서드를 호출하는 임시 드라이버({@code dev/fill-kill})는
-     * 제거된다.
-     *
-     * @param killCount 설정할 막타 처치 수
-     */
-    public void setKillCount(final int killCount) {
-        this.killCount = killCount;
-    }
-
-    /**
-     * 지정 랭크로 승급하고 카운트를 0으로 리셋한다.
-     *
-     * <p>랭크업 트랜잭션의 (b)+(c) 단계에 해당한다(Req 7).
+     * 지정 랭크로 승급하고 사용 횟수를 0으로 리셋한다.
      *
      * @param next 승급 대상 랭크 (현재 랭크의 next())
      */
     public void rankUpTo(final SkillRank next) {
         this.rank = next;
         this.usageCount = 0;
-        this.killCount = 0;
     }
 
     /**

@@ -299,8 +299,7 @@ class BattleServiceResourcePropertyTest {
 
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
-                .thenReturn(
-                        Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0, 0)));
+                .thenReturn(Optional.of(new CharacterSkill(CHARACTER_ID, skillId, SkillRank.F, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 

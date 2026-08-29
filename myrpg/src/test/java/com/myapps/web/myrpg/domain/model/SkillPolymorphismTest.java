@@ -64,7 +64,6 @@ class SkillPolymorphismTest {
         assertThat(delta.hpDelta()).isEqualTo(5);
         assertThat(delta.toDisplayText()).isEqualTo("방어력(DEF) +1, 최대 HP +5");
 
-        assertThat(defense.isKillExempt()).isTrue();
         assertThat(defense.isPassive()).isFalse();
     }
 
@@ -121,7 +120,6 @@ class SkillPolymorphismTest {
         assertThat(dToCDelta.toDisplayText()).isEqualTo("최대 MP +2, 턴당 MP 회복 +1");
 
         assertThat(meditation.isPassive()).isTrue();
-        assertThat(meditation.isKillExempt()).isTrue();
     }
 
     @Test

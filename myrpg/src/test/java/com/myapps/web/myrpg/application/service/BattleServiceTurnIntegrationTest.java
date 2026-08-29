@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,9 +46,9 @@ import org.junit.jupiter.api.Test;
 /**
  * 전투 턴 오케스트레이션 통합 테스트.
  *
- * <p>협력자 호출을 Mockito verify로 검증한다: {@code onSkillUsed}/{@code onSkillKill}, {@code
- * reduceDurability(0.05)}, {@code saveTurn} + {@code BattleState} 저장, 처치 시 {@code rollDrop} →
- * {@code acquire} → {@code gainExperience}.
+ * <p>협력자 호출을 Mockito verify로 검증한다: {@code onSkillUsed}, {@code reduceDurability(0.05)}, {@code
+ * saveTurn} + {@code BattleState} 저장, 처치 시 {@code rollDrop} → {@code acquire} → {@code
+ * gainExperience}.
  *
  * <p><b>Validates: Requirements 10.2, 10.3, 10.5, 13.1, 14.1, 14.2</b>
  */
@@ -156,25 +155,6 @@ class BattleServiceTurnIntegrationTest {
         verify(skillService).onSkillUsed(any(), eq(SKILL_ID));
     }
 
-    /** 몬스터 처치 시 onSkillKill이 호출되는지 검증한다. */
-    @Test
-    @DisplayName("몬스터 처치 시 onSkillKill이 호출된다")
-    void should_callOnSkillKill_when_monsterKilled() {
-        when(resolver.resolve(any(TurnInput.class)))
-                .thenReturn(new ResolvedTurn(999, 0, false, false, false, false, List.of()));
-
-        final DropResult drop = new DropResult(50L, List.of(new DroppedItem("potion", 1)));
-        when(rewardService.rollDrop(any(Monster.class))).thenReturn(drop);
-
-        final CharacterProgress progress = createProgress(HIGH_HP);
-        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, 1, false);
-        state.setTurnCount(2);
-
-        battleService.takeTurn(progress, state, SKILL_ID);
-
-        verify(skillService).onSkillKill(any(), eq(SKILL_ID));
-    }
-
     /** 비방어 스킬 사용 시 reduceDurabilityAndAutoUnequip(0.05)가 호출되는지 검증한다. */
     @Test
     @DisplayName("공격 스킬 사용 시 내구도 감소가 호출된다")
@@ -249,19 +229,6 @@ class BattleServiceTurnIntegrationTest {
                         .map(com.myapps.web.myrpg.domain.model.ActionLogEntry::message)
                         .toList();
         assertThat(logMessages).contains("승리! EXP +30 | Gold +100 | 숏소드 x1, 생명력 포션 30 x3");
-    }
-
-    /** 비처치 턴에서는 onSkillKill이 호출되지 않는지 검증한다. */
-    @Test
-    @DisplayName("비처치 턴에서 onSkillKill은 호출되지 않는다")
-    void should_notCallOnSkillKill_when_monsterNotKilled() {
-        final CharacterProgress progress = createProgress(HIGH_HP);
-        final BattleState state = new BattleState(CHARACTER_ID, MONSTER_ID, MONSTER_MAX_HP, false);
-        state.setTurnCount(2);
-
-        battleService.takeTurn(progress, state, SKILL_ID);
-
-        verify(skillService, never()).onSkillKill(any(), anyString());
     }
 
     /** DoT 스킬 사용 시 첫 턴에는 직격만 적용되고 다음 턴부터 지속 피해(DoT)가 적용되는지 검증한다. */

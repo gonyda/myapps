@@ -110,7 +110,7 @@ class BattleServiceDeathTest {
         final CharacterSkillRepository characterSkillRepo = mock(CharacterSkillRepository.class);
         when(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
                 .thenReturn(
-                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
+                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0)));
 
         final ItemCatalogService itemCatalogService = mock(ItemCatalogService.class);
 

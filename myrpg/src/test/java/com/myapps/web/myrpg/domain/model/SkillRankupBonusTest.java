@@ -18,7 +18,7 @@ class SkillRankupBonusTest {
     @Test
     @DisplayName("windmill A(order 5, MELEE) → STR += 5")
     void should_addStrBonus_when_meleeSkillAtRankA() {
-        final CharacterSkill windmill = new CharacterSkill(1L, "windmill", SkillRank.A, 0, 0);
+        final CharacterSkill windmill = new CharacterSkill(1L, "windmill", SkillRank.A, 0);
         final Function<String, Optional<Skill>> lookup =
                 createLookup("windmill", SkillTalent.MELEE);
 
@@ -34,7 +34,7 @@ class SkillRankupBonusTest {
     @Test
     @DisplayName("F 랭크(order 0) 스킬은 보너스 0")
     void should_addZeroBonus_when_rankIsF() {
-        final CharacterSkill skill = new CharacterSkill(1L, "firebolt", SkillRank.F, 0, 0);
+        final CharacterSkill skill = new CharacterSkill(1L, "firebolt", SkillRank.F, 0);
         final Function<String, Optional<Skill>> lookup =
                 createLookup("firebolt", SkillTalent.MAGIC);
 
@@ -49,13 +49,13 @@ class SkillRankupBonusTest {
     void should_sumAllBonuses_when_allSkillsAtMaster() {
         final List<CharacterSkill> owned =
                 List.of(
-                        new CharacterSkill(1L, "smash", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "windmill", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "magnum_shot", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "arrow_revolver", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "firebolt", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "icebolt", SkillRank.MASTER, 0, 0),
-                        new CharacterSkill(1L, "defense", SkillRank.MASTER, 0, 0));
+                        new CharacterSkill(1L, "smash", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "windmill", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "magnum_shot", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "arrow_revolver", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "firebolt", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "icebolt", SkillRank.MASTER, 0),
+                        new CharacterSkill(1L, "defense", SkillRank.MASTER, 0));
 
         final Function<String, Optional<Skill>> lookup =
                 id -> {
@@ -90,7 +90,7 @@ class SkillRankupBonusTest {
     @Test
     @DisplayName("defense 랭크업 시 DEF +1/rank, HP +5/rank 누적")
     void should_addDefAndHpBonus_when_defenseSkillRankedUp() {
-        final CharacterSkill defense = new CharacterSkill(1L, "defense", SkillRank.R9, 0, 0);
+        final CharacterSkill defense = new CharacterSkill(1L, "defense", SkillRank.R9, 0);
         final Function<String, Optional<Skill>> lookup =
                 createLookup("defense", SkillTalent.COMMON);
 
@@ -106,7 +106,7 @@ class SkillRankupBonusTest {
     @DisplayName("counter_attack은 랭크업해도 영구 스탯 및 HP 보너스가 0이다")
     void should_returnZeroBonus_when_counterAttackSkillRankedUp() {
         final CharacterSkill counter =
-                new CharacterSkill(1L, "counter_attack", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(1L, "counter_attack", SkillRank.MASTER, 0);
         final Function<String, Optional<Skill>> lookup =
                 createLookup("counter_attack", SkillTalent.COMMON);
 
@@ -120,7 +120,7 @@ class SkillRankupBonusTest {
     @Test
     @DisplayName("카탈로그에 없는 스킬은 보너스 계산에서 제외된다")
     void should_skipUnknownSkill_when_catalogLookupReturnsEmpty() {
-        final CharacterSkill unknown = new CharacterSkill(1L, "unknown", SkillRank.MASTER, 0, 0);
+        final CharacterSkill unknown = new CharacterSkill(1L, "unknown", SkillRank.MASTER, 0);
         final Function<String, Optional<Skill>> lookup = id -> Optional.empty();
 
         final Stats result = bonus.sum(List.of(unknown), lookup);
@@ -144,11 +144,11 @@ class SkillRankupBonusTest {
         // given
         // combat_mastery (STR +20, HP +50), R9 (order 6) -> STR: round(20*6/15)=8, HP:
         // round(50*6/15)=20
-        final CharacterSkill combat = new CharacterSkill(1L, "combat_mastery", SkillRank.R9, 0, 0);
+        final CharacterSkill combat = new CharacterSkill(1L, "combat_mastery", SkillRank.R9, 0);
         // critical_hit (CRITICAL +100), MASTER (order 15) -> CRITICAL: 100
-        final CharacterSkill crit = new CharacterSkill(1L, "critical_hit", SkillRank.MASTER, 0, 0);
+        final CharacterSkill crit = new CharacterSkill(1L, "critical_hit", SkillRank.MASTER, 0);
         // meditation (MP +30), R1 (order 14) -> MP: round(30*14/15)=28
-        final CharacterSkill medi = new CharacterSkill(1L, "meditation", SkillRank.R1, 0, 0);
+        final CharacterSkill medi = new CharacterSkill(1L, "meditation", SkillRank.R1, 0);
 
         final PassiveSkill combatSkill =
                 new PassiveSkill(

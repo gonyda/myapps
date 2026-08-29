@@ -107,7 +107,6 @@ class AdminPresetPropertyTest {
         for (final CharacterSkill cs : savedSkills) {
             assertThat(cs.getRank()).isEqualTo(SkillRank.F);
             assertThat(cs.getUsageCount()).isEqualTo(0);
-            assertThat(cs.getKillCount()).isEqualTo(0);
         }
     }
 

@@ -12,8 +12,8 @@ import net.jqwik.api.Provide;
 /**
  * {@link SkillRankPolicy}의 랭크업 요구치가 양수이고 단조 증가하는지 검증하는 프로퍼티 테스트.
  *
- * <p>모든 비-MASTER 랭크에 대해 {@code requirement(rank)}가 존재하며 {@code requiredUsage > 0}, {@code
- * requiredKills > 0}이고, 랭크 순서가 증가하면 두 요구치가 단조 증가한다. MASTER는 빈 값을 반환한다.
+ * <p>모든 비-MASTER 랭크에 대해 {@code requirement(rank)}가 존재하며 {@code requiredUsage > 0}이고, 랭크 순서가 증가하면 사용
+ * 요구치가 단조 증가한다. MASTER는 빈 값을 반환한다.
  *
  * <p><b>Validates: Requirements 5.1, 5.2</b>
  */
@@ -35,7 +35,6 @@ class SkillRankRequirementPropertyTest {
 
         assertThat(requirement).isPresent();
         assertThat(requirement.get().requiredUsage()).isGreaterThan(0);
-        assertThat(requirement.get().requiredKills()).isGreaterThan(0);
     }
 
     /** MASTER 랭크는 요구치가 빈 값인지 검증한다. */
@@ -47,7 +46,7 @@ class SkillRankRequirementPropertyTest {
     }
 
     /**
-     * 랭크 순서가 증가하면 요구치(사용/막타)가 단조 증가하는지 검증한다.
+     * 랭크 순서가 증가하면 요구치(사용 횟수)가 단조 증가하는지 검증한다.
      *
      * @param rank next()가 존재하고 next()도 MASTER가 아닌 랭크
      */
@@ -59,7 +58,6 @@ class SkillRankRequirementPropertyTest {
         final RankUpRequirement nextReq = policy.requirement(next).orElseThrow();
 
         assertThat(nextReq.requiredUsage()).isGreaterThan(current.requiredUsage());
-        assertThat(nextReq.requiredKills()).isGreaterThan(current.requiredKills());
     }
 
     /**

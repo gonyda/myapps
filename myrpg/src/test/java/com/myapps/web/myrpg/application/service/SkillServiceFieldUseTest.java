@@ -225,14 +225,11 @@ class SkillServiceFieldUseTest {
         }
 
         @Test
-        @DisplayName("4) 직접 공격 스킬(slash): 사용 횟수 충족했으나 막타 처치 미충족 시 승급 불가")
-        void should_failRankUp_when_damageSkillHasUsageButInsufficientKills() {
+        @DisplayName("4) 직접 공격 스킬(slash): 사용 횟수 미충족 시 승급 불가")
+        void should_failRankUp_when_damageSkillHasInsufficientUsage() {
             final CharacterProgress progress = createProgress(100, 100, 50);
             final CharacterSkill slashSkill = CharacterSkill.newSkill(CHARACTER_ID, "slash");
-            for (int i = 0; i < 10; i++) {
-                slashSkill.increaseUsage();
-            }
-            // 막타 killCount = 0 (요구치 2 미충족)
+            slashSkill.setUsageCount(2); // F->E는 5 필요
 
             when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "slash"))
                     .thenReturn(Optional.of(slashSkill));

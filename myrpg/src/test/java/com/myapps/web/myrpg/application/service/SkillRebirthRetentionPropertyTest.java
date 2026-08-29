@@ -50,8 +50,7 @@ class SkillRebirthRetentionPropertyTest {
                                                 CHARACTER_ID,
                                                 snapshot.skillId(),
                                                 snapshot.rank(),
-                                                snapshot.usageCount(),
-                                                snapshot.killCount()))
+                                                snapshot.usageCount()))
                         .toList();
 
         // 스냅샷 저장 (환생 전 상태)
@@ -60,8 +59,9 @@ class SkillRebirthRetentionPropertyTest {
                         .map(
                                 skill ->
                                         new SkillSnapshot(
-                                                skill.getSkillId(), skill.getRank(),
-                                                skill.getUsageCount(), skill.getKillCount()))
+                                                skill.getSkillId(),
+                                                skill.getRank(),
+                                                skill.getUsageCount()))
                         .toList();
 
         // When: 환생 수행 (CharacterService.rebirth는 CharacterSkill을 건드리지 않음)
@@ -81,9 +81,6 @@ class SkillRebirthRetentionPropertyTest {
             assertThat(current.getUsageCount())
                     .as("환생 후 사용 횟수 보존 (index %d)", i)
                     .isEqualTo(snapshot.usageCount());
-            assertThat(current.getKillCount())
-                    .as("환생 후 막타 처치 수 보존 (index %d)", i)
-                    .isEqualTo(snapshot.killCount());
         }
     }
 
@@ -114,9 +111,8 @@ class SkillRebirthRetentionPropertyTest {
                         "defense");
         final Arbitrary<SkillRank> ranks = Arbitraries.of(SkillRank.values());
         final Arbitrary<Integer> usages = Arbitraries.integers().between(0, 5000);
-        final Arbitrary<Integer> kills = Arbitraries.integers().between(0, 1500);
 
-        return Combinators.combine(skillIds, ranks, usages, kills).as(SkillSnapshot::new);
+        return Combinators.combine(skillIds, ranks, usages).as(SkillSnapshot::new);
     }
 
     /**
@@ -125,7 +121,6 @@ class SkillRebirthRetentionPropertyTest {
      * @param skillId 스킬 ID
      * @param rank 스킬 랭크
      * @param usageCount 사용 횟수
-     * @param killCount 막타 처치 수
      */
-    record SkillSnapshot(String skillId, SkillRank rank, int usageCount, int killCount) {}
+    record SkillSnapshot(String skillId, SkillRank rank, int usageCount) {}
 }

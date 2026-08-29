@@ -27,7 +27,7 @@ import org.mockito.ArgumentCaptor;
  * 신규 캐릭터 시드 프로퍼티 테스트.
  *
  * <p>임의의 캐릭터 ID에 대해 {@code seedDefault(characterId)} 호출 시, 기본 스킬 4종(베기·조준 사격·마나 볼트·디펜스)이 각각 F
- * 랭크·usageCount 0·killCount 0으로 정확히 한 번씩 저장되는지 검증한다.
+ * 랭크·usageCount 0으로 정확히 한 번씩 저장되는지 검증한다.
  *
  * <p>Feature: 005-skill-system, Property 14: 신규 캐릭터 시드
  *
@@ -79,7 +79,6 @@ class SkillSeedPropertyTest {
                                     .as("시드 스킬의 랭크는 F이어야 한다")
                                     .isEqualTo(SkillRank.F);
                             assertThat(skill.getUsageCount()).as("시드 스킬의 사용 횟수는 0이어야 한다").isZero();
-                            assertThat(skill.getKillCount()).as("시드 스킬의 막타 처치 수는 0이어야 한다").isZero();
                         });
     }
 

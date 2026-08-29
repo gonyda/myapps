@@ -42,7 +42,7 @@ class SkillRankupBonusPropertyTest {
 
         final List<CharacterSkill> owned =
                 entries.stream()
-                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0))
                         .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
@@ -81,7 +81,7 @@ class SkillRankupBonusPropertyTest {
 
         final List<CharacterSkill> owned =
                 entries.stream()
-                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0))
                         .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
@@ -107,7 +107,7 @@ class SkillRankupBonusPropertyTest {
 
         final List<CharacterSkill> owned =
                 entries.stream()
-                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0))
+                        .map(entry -> new CharacterSkill(1L, entry.skillId(), entry.rank(), 0))
                         .toList();
 
         final Function<String, Optional<Skill>> lookup = buildLookup(entries);
@@ -126,7 +126,7 @@ class SkillRankupBonusPropertyTest {
     void should_contribute15_when_rankIsMaster(@ForAll("anyTalent") final SkillTalent talent) {
         final SkillEntry entry = new SkillEntry("master_skill", talent, SkillRank.MASTER);
         final List<CharacterSkill> owned =
-                List.of(new CharacterSkill(1L, entry.skillId(), entry.rank(), 0, 0));
+                List.of(new CharacterSkill(1L, entry.skillId(), entry.rank(), 0));
 
         final Function<String, Optional<Skill>> lookup = buildLookup(List.of(entry));
 
@@ -148,7 +148,7 @@ class SkillRankupBonusPropertyTest {
      */
     @Property(tries = 50)
     void should_contributeDefAndHp_when_defenseSkill(@ForAll("anyRank") final SkillRank rank) {
-        final CharacterSkill defense = new CharacterSkill(1L, "defense", rank, 0, 0);
+        final CharacterSkill defense = new CharacterSkill(1L, "defense", rank, 0);
         final Function<String, Optional<Skill>> lookup =
                 id ->
                         "defense".equals(id)
@@ -176,7 +176,7 @@ class SkillRankupBonusPropertyTest {
      */
     @Property(tries = 50)
     void should_contributeZero_when_counterAttackSkill(@ForAll("anyRank") final SkillRank rank) {
-        final CharacterSkill counter = new CharacterSkill(1L, "counter_attack", rank, 0, 0);
+        final CharacterSkill counter = new CharacterSkill(1L, "counter_attack", rank, 0);
         final Function<String, Optional<Skill>> lookup =
                 id ->
                         "counter_attack".equals(id)
@@ -202,7 +202,7 @@ class SkillRankupBonusPropertyTest {
     @Property(tries = 100)
     void property6_should_accumulateLinearBonus_for_passiveSkill(
             @ForAll("positiveMaxStat") final int maxStat, @ForAll("anyRank") final SkillRank rank) {
-        final CharacterSkill passiveOwned = new CharacterSkill(1L, "test_passive", rank, 0, 0);
+        final CharacterSkill passiveOwned = new CharacterSkill(1L, "test_passive", rank, 0);
         final PassiveSkill passiveSkill =
                 new PassiveSkill(
                         "test_passive",

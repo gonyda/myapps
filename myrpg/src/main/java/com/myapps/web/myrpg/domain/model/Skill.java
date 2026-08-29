@@ -101,13 +101,4 @@ public sealed interface Skill
     default boolean isPassive() {
         return type() == SkillType.PASSIVE;
     }
-
-    /**
-     * 막타 처치 수련 조건이 면제되는 스킬인지 여부를 반환한다.
-     *
-     * @return 막타 면제 여부
-     */
-    default boolean isKillExempt() {
-        return isPassive() || type().isKillExempt();
-    }
 }

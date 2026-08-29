@@ -65,7 +65,6 @@ class LearnSkillPropertyTest {
 
         skillService.learnSkill(CHARACTER_ID, skillId);
 
-        verify(mockRepo).save(any(CharacterSkill.class));
         verify(mockRepo)
                 .save(
                         org.mockito.ArgumentMatchers.argThat(
@@ -73,8 +72,7 @@ class LearnSkillPropertyTest {
                                         saved.getCharacterId().equals(CHARACTER_ID)
                                                 && saved.getSkillId().equals(skillId)
                                                 && saved.getRank() == SkillRank.F
-                                                && saved.getUsageCount() == 0
-                                                && saved.getKillCount() == 0));
+                                                && saved.getUsageCount() == 0));
     }
 
     /**
@@ -94,7 +92,7 @@ class LearnSkillPropertyTest {
         when(mockCatalog.byId(skillId)).thenReturn(Optional.of(catalogSkill));
 
         final CharacterSkill existingSkill =
-                new CharacterSkill(CHARACTER_ID, skillId, SkillRank.D, 50, 20);
+                new CharacterSkill(CHARACTER_ID, skillId, SkillRank.D, 50);
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, skillId))
                 .thenReturn(Optional.of(existingSkill));
 

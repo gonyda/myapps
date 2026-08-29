@@ -72,9 +72,8 @@ class SkillServiceTest {
 
     @Test
     void should_rankUp_successfully_when_conditions_and_ap_are_met() {
-        // F→E: 사용 5, 막타 1, AP 1
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        // F→E: 사용 5, AP 1
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -87,15 +86,13 @@ class SkillServiceTest {
         assertThat(result).isTrue();
         assertThat(skill.getRank()).isEqualTo(SkillRank.E);
         assertThat(skill.getUsageCount()).isZero();
-        assertThat(skill.getKillCount()).isZero();
         assertThat(progress.getAbilityPoints()).isEqualTo(9);
     }
 
     @Test
     void should_throw_InsufficientAbilityPointsException_when_ap_is_insufficient() {
         // F→E: 조건 충족이나 AP 0
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -108,15 +105,13 @@ class SkillServiceTest {
         // 상태 불변 확인
         assertThat(skill.getRank()).isEqualTo(SkillRank.F);
         assertThat(skill.getUsageCount()).isEqualTo(5);
-        assertThat(skill.getKillCount()).isEqualTo(1);
         assertThat(progress.getAbilityPoints()).isZero();
     }
 
     @Test
     void should_return_false_when_conditions_not_met() {
         // 사용 횟수 부족 (F→E: 5 필요, 3만 있음)
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 1);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -132,7 +127,7 @@ class SkillServiceTest {
     @Test
     void should_return_false_when_rank_is_master() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 9999, 9999);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 9999);
         final CharacterProgress progress = createProgressWithAp(200);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -149,7 +144,7 @@ class SkillServiceTest {
     void should_calculate_rankupBonus_from_owned_skills() {
         // windmill(MELEE, rank A=order 5) → STR +5
         final CharacterSkill windmillA =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.A, 0, 0);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.A, 0);
         final DamageSkill windmillCatalog =
                 new DamageSkill(
                         WINDMILL_ID,
@@ -177,19 +172,19 @@ class SkillServiceTest {
     void should_calculate_all_masters_bonus_as_STR30_DEX30_INT30_DEF15() {
         // 7종 스킬 전부 MASTER(order=15): MELEE×2 + ARCHERY×2 + MAGIC×2 + COMMON×1
         final CharacterSkill smashMaster =
-                new CharacterSkill(CHARACTER_ID, "smash", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "smash", SkillRank.MASTER, 0);
         final CharacterSkill windmillMaster =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0);
         final CharacterSkill magnumMaster =
-                new CharacterSkill(CHARACTER_ID, "magnum_shot", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "magnum_shot", SkillRank.MASTER, 0);
         final CharacterSkill arrowMaster =
-                new CharacterSkill(CHARACTER_ID, "arrow_revolver", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "arrow_revolver", SkillRank.MASTER, 0);
         final CharacterSkill fireboltMaster =
-                new CharacterSkill(CHARACTER_ID, "firebolt", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "firebolt", SkillRank.MASTER, 0);
         final CharacterSkill iceboltMaster =
-                new CharacterSkill(CHARACTER_ID, "icebolt", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "icebolt", SkillRank.MASTER, 0);
         final CharacterSkill defenseMaster =
-                new CharacterSkill(CHARACTER_ID, "defense", SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, "defense", SkillRank.MASTER, 0);
 
         final DamageSkill smashCatalog =
                 new DamageSkill(
@@ -306,7 +301,6 @@ class SkillServiceTest {
         assertThat(saved.getSkillId()).isEqualTo(WINDMILL_ID);
         assertThat(saved.getRank()).isEqualTo(SkillRank.F);
         assertThat(saved.getUsageCount()).isZero();
-        assertThat(saved.getKillCount()).isZero();
     }
 
     @Test
@@ -315,8 +309,7 @@ class SkillServiceTest {
                 .thenReturn(Optional.of(createDummySkill(WINDMILL_ID)));
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
                 .thenReturn(
-                        Optional.of(
-                                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0)));
+                        Optional.of(new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0)));
 
         skillService.learnSkill(CHARACTER_ID, WINDMILL_ID);
 
@@ -355,8 +348,7 @@ class SkillServiceTest {
 
     @Test
     void should_onSkillUsed_increment_usage() {
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3);
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
                 .thenReturn(Optional.of(skill));
         when(characterSkillRepository.save(any(CharacterSkill.class)))
@@ -365,20 +357,6 @@ class SkillServiceTest {
         skillService.onSkillUsed(CHARACTER_ID, WINDMILL_ID);
 
         assertThat(skill.getUsageCount()).isEqualTo(4);
-    }
-
-    @Test
-    void should_onSkillKill_increment_kill() {
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 2);
-        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
-                .thenReturn(Optional.of(skill));
-        when(characterSkillRepository.save(any(CharacterSkill.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        skillService.onSkillKill(CHARACTER_ID, WINDMILL_ID);
-
-        assertThat(skill.getKillCount()).isEqualTo(3);
     }
 
     @Test
@@ -399,7 +377,7 @@ class SkillServiceTest {
     @Test
     void should_assign_to_empty_slot_without_swapping() {
         final CharacterSkill skillA =
-                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, null);
+                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, null);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skillA));
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "skillA"))
@@ -415,10 +393,8 @@ class SkillServiceTest {
 
     @Test
     void should_assignSkillSlot_and_swap_existing_slot_occupant() {
-        final CharacterSkill skillA =
-                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, 0);
-        final CharacterSkill skillB =
-                new CharacterSkill(CHARACTER_ID, "skillB", SkillRank.F, 0, 0, 0, 1);
+        final CharacterSkill skillA = new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0);
+        final CharacterSkill skillB = new CharacterSkill(CHARACTER_ID, "skillB", SkillRank.F, 0, 1);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
                 .thenReturn(List.of(skillA, skillB));
@@ -458,8 +434,7 @@ class SkillServiceTest {
 
     @Test
     void should_clearSkillSlot_successfully() {
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 0, 0, 3);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, "skillA", SkillRank.F, 0, 3);
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, "skillA"))
                 .thenReturn(Optional.of(skill));
 
@@ -471,10 +446,8 @@ class SkillServiceTest {
 
     @Test
     void should_clearAllSkillSlots_successfully() {
-        final CharacterSkill skill1 =
-                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, 0);
-        final CharacterSkill skill2 =
-                new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, 0, 0, 1);
+        final CharacterSkill skill1 = new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0);
+        final CharacterSkill skill2 = new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, 1);
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
                 .thenReturn(List.of(skill1, skill2));
 
@@ -489,11 +462,11 @@ class SkillServiceTest {
     @Test
     void should_autoAssignDefaultSlots_for_active_skills_only() {
         final CharacterSkill skill1 =
-                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, null);
+                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, null);
         final CharacterSkill passive =
-                new CharacterSkill(CHARACTER_ID, "passive", SkillRank.F, 0, 0, 0, null);
+                new CharacterSkill(CHARACTER_ID, "passive", SkillRank.F, 0, null);
         final CharacterSkill skill2 =
-                new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, 0, 0, null);
+                new CharacterSkill(CHARACTER_ID, "skill2", SkillRank.F, 0, null);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
                 .thenReturn(List.of(skill1, passive, skill2));
@@ -522,8 +495,7 @@ class SkillServiceTest {
 
     @Test
     void should_buildSkillSlots_returning_exactly_10_slots() {
-        final CharacterSkill skill1 =
-                new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0, 0, 0);
+        final CharacterSkill skill1 = new CharacterSkill(CHARACTER_ID, "skill1", SkillRank.F, 0, 0);
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill1));
         when(skillCatalogService.byId("skill1"))
                 .thenReturn(Optional.of(createDummySkill("skill1")));

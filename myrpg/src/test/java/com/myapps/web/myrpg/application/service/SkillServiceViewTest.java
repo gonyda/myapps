@@ -60,9 +60,9 @@ class SkillServiceViewTest {
     @Test
     void should_buildListView_with_all_tab_returning_all_skills() {
         final CharacterSkill windmillSkill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3);
         final CharacterSkill defenseSkill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.A, 50, 15);
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.A, 50);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -82,17 +82,17 @@ class SkillServiceViewTest {
         assertThat(windmillRow.talentLabel()).isEqualTo("근접전투");
         assertThat(windmillRow.rankLabel()).isEqualTo("F");
         assertThat(windmillRow.maxed()).isFalse();
-        // usage 3/5 = 0.6, kill 0/1 = 0 → (0.6+0)/2*100 = 30
-        assertThat(windmillRow.progressPercent()).isEqualTo(30);
+        // usage 3/5 = 60%
+        assertThat(windmillRow.progressPercent()).isEqualTo(60);
         assertThat(windmillRow.rankable()).isFalse();
     }
 
     @Test
     void should_buildListView_filtering_by_melee_tab() {
         final CharacterSkill windmillSkill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterSkill defenseSkill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -111,9 +111,9 @@ class SkillServiceViewTest {
     @Test
     void should_buildListView_default_to_all_tab_when_tab_is_null() {
         final CharacterSkill windmillSkill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterSkill defenseSkill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))
@@ -130,9 +130,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildListView_with_rankable_when_conditions_and_ap_met() {
-        // F→E: usage 5, kill 1, AP 1
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        // F→E: usage 5, AP 1
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -148,9 +147,8 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildListView_with_active_skill_rankable_false_when_usage_fulfilled_but_ap_zero() {
-        // F→E: usage 5, kill 1, but AP 0 (needed: 1)
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5, 1);
+        // F→E: usage 5, but AP 0 (needed: 1)
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -167,7 +165,7 @@ class SkillServiceViewTest {
     @Test
     void should_buildListView_with_passive_skill_rankable_false_when_ap_insufficient() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -184,7 +182,7 @@ class SkillServiceViewTest {
     @Test
     void should_buildListView_with_passive_skill_rankable_true_when_ap_sufficient() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0);
         final CharacterProgress progress = createProgressWithAp(1);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID)).thenReturn(List.of(skill));
@@ -200,8 +198,7 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildRankUpView_for_damage_skill_at_rank_F() {
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3, 0);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 3);
         final CharacterProgress progress = createProgressWithAp(10);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -226,8 +223,6 @@ class SkillServiceViewTest {
         assertThat(view.rankupBonusText()).isEqualTo("체력(STR) +1");
         assertThat(view.usageCurrent()).isEqualTo(3);
         assertThat(view.usageRequired()).isEqualTo(5);
-        assertThat(view.killCurrent()).isZero();
-        assertThat(view.killRequired()).isEqualTo(1);
         assertThat(view.apCost()).isEqualTo(1);
         assertThat(view.apOwned()).isEqualTo(10);
         assertThat(view.rankable()).isFalse();
@@ -236,8 +231,7 @@ class SkillServiceViewTest {
 
     @Test
     void should_buildRankUpView_for_defense_skill_without_counter_value_and_with_hp_def_bonus() {
-        final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5, 0);
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(5);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_ID))
@@ -259,7 +253,6 @@ class SkillServiceViewTest {
         assertThat(view.currentCritBonus()).isNull();
         assertThat(view.nextCritBonus()).isNull();
         assertThat(view.rankupBonusText()).isEqualTo("방어력(DEF) +1, 최대 HP +5");
-        assertThat(view.hasKillRequirement()).isFalse();
         assertThat(view.hasUsageRequirement()).isTrue();
         assertThat(view.rankable()).isTrue();
         assertThat(view.maxed()).isFalse();
@@ -268,7 +261,7 @@ class SkillServiceViewTest {
     @Test
     void should_buildRankUpView_for_counter_attack_skill_with_counter_and_crit_values() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, COUNTER_ATTACK_ID, SkillRank.F, 5, 0);
+                new CharacterSkill(CHARACTER_ID, COUNTER_ATTACK_ID, SkillRank.F, 5);
         final CharacterProgress progress = createProgressWithAp(5);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, COUNTER_ATTACK_ID))
@@ -297,7 +290,7 @@ class SkillServiceViewTest {
     @Test
     void should_buildRankUpView_for_master_skill_with_null_nextRankLabel() {
         final CharacterSkill skill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0, 0);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.MASTER, 0);
         final CharacterProgress progress = createProgressWithAp(100);
 
         when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, WINDMILL_ID))
@@ -314,16 +307,15 @@ class SkillServiceViewTest {
         assertThat(view.nextResourceCost()).isNull();
         assertThat(view.nextCritBonus()).isNull();
         assertThat(view.usageRequired()).isZero();
-        assertThat(view.killRequired()).isZero();
         assertThat(view.apCost()).isZero();
     }
 
     @Test
     void should_buildListView_filtering_by_common_tab_showing_defense_only() {
         final CharacterSkill windmillSkill =
-                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, WINDMILL_ID, SkillRank.F, 0);
         final CharacterSkill defenseSkill =
-                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0, 0);
+                new CharacterSkill(CHARACTER_ID, DEFENSE_ID, SkillRank.F, 0);
         final CharacterProgress progress = createProgressWithAp(0);
 
         when(characterSkillRepository.findByCharacterId(CHARACTER_ID))

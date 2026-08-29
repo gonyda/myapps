@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 스킬 승급 모달의 뷰 모델.
  *
- * <p>현재 랭크와 다음 랭크의 수치, 다형적 효과 목록, 사용/막타 진행상황, AP 비용 및 보유량, 승급 가능 여부, 최고 랭크 여부를 포함한다.
+ * <p>현재 랭크와 다음 랭크의 수치, 다형적 효과 목록, 사용 횟수 진행상황, AP 비용 및 보유량, 승급 가능 여부, 최고 랭크 여부를 포함한다.
  *
  * @param id 스킬 카탈로그 ID
  * @param label 스킬 표시명
@@ -26,8 +26,6 @@ import java.util.List;
  * @param rankupBonusText 승급 시 얻는 영구 패시브 스탯 문자열 (없으면 null)
  * @param usageCurrent 현재 사용 횟수
  * @param usageRequired 승급 요구 사용 횟수 (MASTER면 0)
- * @param killCurrent 현재 막타 처치 수
- * @param killRequired 승급 요구 막타 처치 수 (MASTER면 0)
  * @param apCost 승급 AP 비용 (MASTER면 0)
  * @param apOwned 현재 보유 AP
  * @param rankable 승급 가능 여부
@@ -35,7 +33,6 @@ import java.util.List;
  * @param effectRows 스킬별 다형적 효과 상세 행 목록
  * @param passive 패시브 스킬 여부
  * @param hasUsageRequirement 사용 횟수 수련 조건 존재 여부
- * @param hasKillRequirement 막타 처치 수련 조건 존재 여부
  */
 public record SkillRankUpView(
         String id,
@@ -56,71 +53,10 @@ public record SkillRankUpView(
         String rankupBonusText,
         int usageCurrent,
         int usageRequired,
-        int killCurrent,
-        int killRequired,
         int apCost,
         int apOwned,
         boolean rankable,
         boolean maxed,
         List<SkillEffectRowView> effectRows,
         boolean passive,
-        boolean hasUsageRequirement,
-        boolean hasKillRequirement) {
-
-    /** 기존 24-arg 호환 생성자. */
-    public SkillRankUpView(
-            final String id,
-            final String label,
-            final String description,
-            final String currentRankLabel,
-            final String nextRankLabel,
-            final String primaryStatLabel,
-            final int currentValue,
-            final int nextValue,
-            final Integer currentCounterValue,
-            final Integer nextCounterValue,
-            final String resourceKindLabel,
-            final int resourceCost,
-            final Integer nextResourceCost,
-            final Integer currentCritBonus,
-            final Integer nextCritBonus,
-            final String rankupBonusText,
-            final int usageCurrent,
-            final int usageRequired,
-            final int killCurrent,
-            final int killRequired,
-            final int apCost,
-            final int apOwned,
-            final boolean rankable,
-            final boolean maxed) {
-        this(
-                id,
-                label,
-                description,
-                currentRankLabel,
-                nextRankLabel,
-                primaryStatLabel,
-                currentValue,
-                nextValue,
-                currentCounterValue,
-                nextCounterValue,
-                resourceKindLabel,
-                resourceCost,
-                nextResourceCost,
-                currentCritBonus,
-                nextCritBonus,
-                rankupBonusText,
-                usageCurrent,
-                usageRequired,
-                killCurrent,
-                killRequired,
-                apCost,
-                apOwned,
-                rankable,
-                maxed,
-                List.of(),
-                false,
-                usageRequired > 0,
-                killRequired > 0);
-    }
-}
+        boolean hasUsageRequirement) {}

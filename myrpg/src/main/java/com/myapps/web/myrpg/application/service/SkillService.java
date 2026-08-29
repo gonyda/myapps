@@ -53,7 +53,7 @@ public class SkillService {
     private static final List<String> DEFAULT_SEED_SKILL_IDS =
             List.of("slash", "aimed_shot", "mana_bolt", "defense");
     private static final int FULL_PROGRESS_PERCENT = 100;
-    private static final int PROGRESS_DIVISOR = 2;
+    private static final int ACTIVE_COOLDOWN_PERCENT = 0;
     private static final String TAB_ALL = "all";
     private static final String TAB_MELEE = "melee";
     private static final String TAB_ARCHERY = "archery";
@@ -133,16 +133,11 @@ public class SkillService {
                     "AP 부족: 필요 " + apCost + ", 보유 " + progress.getAbilityPoints());
         }
 
-        if (!(catalog instanceof PassiveSkill)) {
+        if (!catalog.isPassive()) {
             final RankUpRequirement requirement =
                     skillRankPolicy.requirementFor(skill.getRank(), catalog.type()).orElseThrow();
-            final boolean killExempt = isKillExempt(catalog);
 
             if (skill.getUsageCount() < requirement.requiredUsage()) {
-                return false;
-            }
-
-            if (!killExempt && skill.getKillCount() < requirement.requiredKills()) {
                 return false;
             }
         }
@@ -459,13 +454,10 @@ public class SkillService {
                 catalog.effectRowsAt(currentRank, nextRank);
 
         final int usageCurrent = characterSkill.getUsageCount();
-        final int killCurrent = characterSkill.getKillCount();
-
-        final boolean killExempt = catalog.isKillExempt();
         final boolean isPassive = catalog.isPassive();
 
         final RankUpRequirementInfo reqInfo =
-                resolveRankUpRequirementInfo(catalog, currentRank, maxed, isPassive, killExempt);
+                resolveRankUpRequirementInfo(catalog, currentRank, maxed, isPassive);
 
         final int apOwned = progress.getAbilityPoints();
         final boolean rankable =
@@ -475,10 +467,7 @@ public class SkillService {
                         reqInfo.apCost(),
                         isPassive,
                         usageCurrent,
-                        reqInfo.usageRequired(),
-                        killExempt,
-                        reqInfo.killRequired(),
-                        killCurrent);
+                        reqInfo.usageRequired());
 
         return new SkillRankUpView(
                 catalog.id(),
@@ -499,35 +488,30 @@ public class SkillService {
                 rankupBonusText,
                 usageCurrent,
                 reqInfo.usageRequired(),
-                killCurrent,
-                reqInfo.killRequired(),
                 reqInfo.apCost(),
                 apOwned,
                 rankable,
                 maxed,
                 effectRows,
                 isPassive,
-                !maxed && !isPassive,
-                !maxed && !killExempt);
+                !maxed && !isPassive);
     }
 
-    private record RankUpRequirementInfo(int usageRequired, int killRequired, int apCost) {}
+    private record RankUpRequirementInfo(int usageRequired, int apCost) {}
 
     private RankUpRequirementInfo resolveRankUpRequirementInfo(
             final Skill catalog,
             final SkillRank currentRank,
             final boolean maxed,
-            final boolean isPassive,
-            final boolean killExempt) {
+            final boolean isPassive) {
         if (maxed || isPassive) {
             final int apCost = maxed ? 0 : skillRankPolicy.apCost(currentRank).orElseThrow();
-            return new RankUpRequirementInfo(0, 0, apCost);
+            return new RankUpRequirementInfo(0, apCost);
         }
         final RankUpRequirement requirement =
                 skillRankPolicy.requirementFor(currentRank, catalog.type()).orElseThrow();
-        final int killReq = killExempt ? 0 : requirement.requiredKills();
         final int apCost = skillRankPolicy.apCost(currentRank).orElseThrow();
-        return new RankUpRequirementInfo(requirement.requiredUsage(), killReq, apCost);
+        return new RankUpRequirementInfo(requirement.requiredUsage(), apCost);
     }
 
     private boolean isRankableNow(
@@ -536,17 +520,14 @@ public class SkillService {
             final int apCost,
             final boolean isPassive,
             final int usageCurrent,
-            final int usageRequired,
-            final boolean killExempt,
-            final int killRequired,
-            final int killCurrent) {
+            final int usageRequired) {
         if (maxed || apOwned < apCost) {
             return false;
         }
         if (isPassive) {
             return true;
         }
-        return usageCurrent >= usageRequired && (killExempt || killCurrent >= killRequired);
+        return usageCurrent >= usageRequired;
     }
 
     /**
@@ -631,21 +612,6 @@ public class SkillService {
     }
 
     /**
-     * 스킬 막타 처치 이벤트를 처리한다 (막타 처치 수 +1).
-     *
-     * <p>전투에서 스킬로 몬스터를 처치할 때 호출되며, 막타 처치 수를 1 증가시킨다. 승급 조건의 막타 처치 요구치 달성에 기여한다.
-     *
-     * @param characterId 캐릭터 ID
-     * @param skillId 막타 처치된 스킬 ID
-     */
-    @Transactional
-    public void onSkillKill(final Long characterId, final String skillId) {
-        final CharacterSkill skill = findSkill(characterId, skillId);
-        skill.increaseKill();
-        characterSkillRepository.save(skill);
-    }
-
-    /**
      * 전투 승리 시 보유한 모든 궁극기 스킬의 남은 쿨다운(필요 승리 횟수)을 1 감소시킨다.
      *
      * @param characterId 캐릭터 ID
@@ -717,11 +683,9 @@ public class SkillService {
             final CharacterSkill characterSkill, final Skill catalog, final int abilityPoints) {
         final SkillRank rank = characterSkill.getRank();
         final boolean maxed = rank.isMax();
-        final boolean killExempt = isKillExempt(catalog);
-        final int progressPercent =
-                calculateProgressPercent(characterSkill, catalog, rank, maxed, killExempt);
+        final int progressPercent = calculateProgressPercent(characterSkill, catalog, rank, maxed);
         final boolean rankable =
-                calculateRankable(characterSkill, catalog, rank, maxed, abilityPoints, killExempt);
+                calculateRankable(characterSkill, catalog, rank, maxed, abilityPoints);
         final String talentLabel = talentLabel(catalog.talent());
         final boolean fieldUsable = catalog instanceof RecoverySkill;
         final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
@@ -775,8 +739,7 @@ public class SkillService {
             final CharacterSkill characterSkill,
             final Skill catalog,
             final SkillRank rank,
-            final boolean maxed,
-            final boolean killExempt) {
+            final boolean maxed) {
         if (maxed || catalog instanceof PassiveSkill) {
             return FULL_PROGRESS_PERCENT;
         }
@@ -785,12 +748,7 @@ public class SkillService {
         final double usageRatio =
                 Math.min(
                         (double) characterSkill.getUsageCount() / requirement.requiredUsage(), 1.0);
-        if (killExempt) {
-            return (int) (usageRatio * FULL_PROGRESS_PERCENT);
-        }
-        final double killRatio =
-                Math.min((double) characterSkill.getKillCount() / requirement.requiredKills(), 1.0);
-        return (int) ((usageRatio + killRatio) / PROGRESS_DIVISOR * FULL_PROGRESS_PERCENT);
+        return (int) (usageRatio * FULL_PROGRESS_PERCENT);
     }
 
     private boolean calculateRankable(
@@ -798,8 +756,7 @@ public class SkillService {
             final Skill catalog,
             final SkillRank rank,
             final boolean maxed,
-            final int abilityPoints,
-            final boolean killExempt) {
+            final int abilityPoints) {
         if (maxed) {
             return false;
         }
@@ -812,12 +769,7 @@ public class SkillService {
         }
         final RankUpRequirement requirement =
                 skillRankPolicy.requirementFor(rank, catalog.type()).orElseThrow();
-        return characterSkill.getUsageCount() >= requirement.requiredUsage()
-                && (killExempt || characterSkill.getKillCount() >= requirement.requiredKills());
-    }
-
-    private boolean isKillExempt(final Skill catalog) {
-        return catalog instanceof PassiveSkill || catalog.type().isKillExempt();
+        return characterSkill.getUsageCount() >= requirement.requiredUsage();
     }
 
     private String talentLabel(final SkillTalent talent) {

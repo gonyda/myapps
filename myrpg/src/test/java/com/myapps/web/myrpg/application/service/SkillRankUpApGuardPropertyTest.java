@@ -61,12 +61,7 @@ class SkillRankUpApGuardPropertyTest {
         final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
 
         final CharacterSkill skill =
-                new CharacterSkill(
-                        CHARACTER_ID,
-                        SKILL_ID,
-                        state.rank(),
-                        state.usageCount(),
-                        state.killCount());
+                new CharacterSkill(CHARACTER_ID, SKILL_ID, state.rank(), state.usageCount());
         when(mockRepository.findByCharacterIdAndSkillId(CHARACTER_ID, SKILL_ID))
                 .thenReturn(Optional.of(skill));
         when(mockCatalog.byId(SKILL_ID))
@@ -90,7 +85,6 @@ class SkillRankUpApGuardPropertyTest {
         // 상태 스냅샷
         final SkillRank originalRank = skill.getRank();
         final int originalUsage = skill.getUsageCount();
-        final int originalKill = skill.getKillCount();
         final int originalAp = progress.getAbilityPoints();
 
         // When & Then: 예외 발생
@@ -100,7 +94,6 @@ class SkillRankUpApGuardPropertyTest {
         // Then: 상태 불변
         assertThat(skill.getRank()).as("랭크가 변경되지 않아야 한다").isEqualTo(originalRank);
         assertThat(skill.getUsageCount()).as("사용 횟수가 변경되지 않아야 한다").isEqualTo(originalUsage);
-        assertThat(skill.getKillCount()).as("막타 처치 수가 변경되지 않아야 한다").isEqualTo(originalKill);
         assertThat(progress.getAbilityPoints()).as("AP가 변경되지 않아야 한다").isEqualTo(originalAp);
 
         // Then: AP가 음수가 되지 않음
@@ -113,7 +106,7 @@ class SkillRankUpApGuardPropertyTest {
     /**
      * 조건 충족 + AP 부족 상태를 생성한다.
      *
-     * <p>MASTER를 제외한 모든 랭크에 대해, 사용 횟수·막타 처치는 요구치 이상이되 AP는 해당 랭크의 소모 비용 미만(0 ~ apCost-1)으로 생성한다.
+     * <p>MASTER를 제외한 모든 랭크에 대해, 사용 횟수는 요구치 이상이되 AP는 해당 랭크의 소모 비용 미만(0 ~ apCost-1)으로 생성한다.
      *
      * @return AP 부족 상태 Arbitrary
      */
@@ -143,8 +136,6 @@ class SkillRankUpApGuardPropertyTest {
                     final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
                     final int reqUsage =
                             skillRankPolicy.requirement(rank).orElseThrow().requiredUsage();
-                    final int reqKills =
-                            skillRankPolicy.requirement(rank).orElseThrow().requiredKills();
 
                     // AP: 0 ~ apCost - 1 (부족 보장)
                     final Arbitrary<Integer> ap = Arbitraries.integers().between(0, apCost - 1);
@@ -153,15 +144,10 @@ class SkillRankUpApGuardPropertyTest {
                     final Arbitrary<Integer> usage =
                             Arbitraries.integers().between(reqUsage, reqUsage * 2);
 
-                    // 막타 처치: 요구치 이상 (요구치 ~ 요구치 * 2)
-                    final Arbitrary<Integer> kills =
-                            Arbitraries.integers().between(reqKills, reqKills * 2);
-
-                    return Combinators.combine(ap, usage, kills)
+                    return Combinators.combine(ap, usage)
                             .as(
-                                    (apVal, usageVal, killVal) ->
-                                            new ApInsufficientState(
-                                                    rank, usageVal, killVal, apVal));
+                                    (apVal, usageVal) ->
+                                            new ApInsufficientState(rank, usageVal, apVal));
                 });
     }
 
@@ -196,8 +182,7 @@ class SkillRankUpApGuardPropertyTest {
      *
      * @param rank 현재 스킬 랭크 (MASTER 제외)
      * @param usageCount 사용 횟수 (요구치 이상)
-     * @param killCount 막타 처치 수 (요구치 이상)
      * @param abilityPoints 보유 AP (소모 비용 미만)
      */
-    record ApInsufficientState(SkillRank rank, int usageCount, int killCount, int abilityPoints) {}
+    record ApInsufficientState(SkillRank rank, int usageCount, int abilityPoints) {}
 }

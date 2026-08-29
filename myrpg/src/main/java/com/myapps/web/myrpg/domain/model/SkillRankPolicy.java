@@ -16,39 +16,39 @@ import java.util.OptionalInt;
 public class SkillRankPolicy {
 
     private static final RankUpRequirement[] REQUIREMENTS = {
-        new RankUpRequirement(5, 1), // F → E
-        new RankUpRequirement(10, 3), // E → D
-        new RankUpRequirement(20, 6), // D → C
-        new RankUpRequirement(35, 10), // C → B
-        new RankUpRequirement(60, 18), // B → A
-        new RankUpRequirement(100, 30), // A → 9
-        new RankUpRequirement(160, 48), // 9 → 8
-        new RankUpRequirement(240, 72), // 8 → 7
-        new RankUpRequirement(350, 105), // 7 → 6
-        new RankUpRequirement(520, 155), // 6 → 5
-        new RankUpRequirement(760, 230), // 5 → 4
-        new RankUpRequirement(1100, 340), // 4 → 3
-        new RankUpRequirement(1600, 500), // 3 → 2
-        new RankUpRequirement(2500, 750), // 2 → 1
-        new RankUpRequirement(5000, 1500) // 1 → Master
+        new RankUpRequirement(5), // F → E
+        new RankUpRequirement(10), // E → D
+        new RankUpRequirement(20), // D → C
+        new RankUpRequirement(35), // C → B
+        new RankUpRequirement(60), // B → A
+        new RankUpRequirement(100), // A → 9
+        new RankUpRequirement(160), // 9 → 8
+        new RankUpRequirement(240), // 8 → 7
+        new RankUpRequirement(350), // 7 → 6
+        new RankUpRequirement(520), // 6 → 5
+        new RankUpRequirement(760), // 5 → 4
+        new RankUpRequirement(1100), // 4 → 3
+        new RankUpRequirement(1600), // 3 → 2
+        new RankUpRequirement(2500), // 2 → 1
+        new RankUpRequirement(5000) // 1 → Master
     };
 
     private static final RankUpRequirement[] ULTIMATE_REQUIREMENTS = {
-        new RankUpRequirement(1, 0), // F → E
-        new RankUpRequirement(2, 0), // E → D
-        new RankUpRequirement(3, 0), // D → C
-        new RankUpRequirement(4, 0), // C → B
-        new RankUpRequirement(5, 0), // B → A
-        new RankUpRequirement(6, 0), // A → 9
-        new RankUpRequirement(7, 0), // 9 → 8
-        new RankUpRequirement(8, 0), // 8 → 7
-        new RankUpRequirement(9, 0), // 7 → 6
-        new RankUpRequirement(10, 0), // 6 → 5
-        new RankUpRequirement(12, 0), // 5 → 4
-        new RankUpRequirement(14, 0), // 4 → 3
-        new RankUpRequirement(16, 0), // 3 → 2
-        new RankUpRequirement(18, 0), // 2 → 1
-        new RankUpRequirement(20, 0) // 1 → Master
+        new RankUpRequirement(1), // F → E
+        new RankUpRequirement(2), // E → D
+        new RankUpRequirement(3), // D → C
+        new RankUpRequirement(4), // C → B
+        new RankUpRequirement(5), // B → A
+        new RankUpRequirement(6), // A → 9
+        new RankUpRequirement(7), // 9 → 8
+        new RankUpRequirement(8), // 8 → 7
+        new RankUpRequirement(9), // 7 → 6
+        new RankUpRequirement(10), // 6 → 5
+        new RankUpRequirement(12), // 5 → 4
+        new RankUpRequirement(14), // 4 → 3
+        new RankUpRequirement(16), // 3 → 2
+        new RankUpRequirement(18), // 2 → 1
+        new RankUpRequirement(20) // 1 → Master
     };
 
     private static final int[] AP_COSTS = {
@@ -85,7 +85,7 @@ public class SkillRankPolicy {
     }
 
     /**
-     * 지정된 랭크에서 궁극기(ULTIMATE) 승급을 위한 전용 요구 조건(1~20회 사용, 막타 0)을 반환한다.
+     * 지정된 랭크에서 궁극기(ULTIMATE) 승급을 위한 전용 요구 조건(1~20회 사용)을 반환한다.
      *
      * @param current 현재 스킬 랭크
      * @return 궁극기 승급 조건의 {@link Optional}, {@code MASTER}이면 {@link Optional#empty()}
@@ -113,7 +113,7 @@ public class SkillRankPolicy {
             return ultimateRequirement(current);
         }
         if (type == SkillType.PASSIVE) {
-            return Optional.of(new RankUpRequirement(0, 0));
+            return Optional.of(new RankUpRequirement(0));
         }
         return requirement(current);
     }

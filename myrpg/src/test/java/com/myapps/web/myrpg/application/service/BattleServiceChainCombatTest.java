@@ -142,7 +142,7 @@ class BattleServiceChainCombatTest {
         given(skillCatalogService.byId(SKILL_ID)).willReturn(Optional.of(createDamageSkill()));
         given(characterSkillRepo.findByCharacterIdAndSkillId(any(), anyString()))
                 .willReturn(
-                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0, 0)));
+                        Optional.of(new CharacterSkill(CHARACTER_ID, SKILL_ID, SkillRank.F, 0)));
         given(inventoryService.equippedBonus())
                 .willReturn(new EquippedBonusResult(Stats.ZERO, new VitalMax(0, 0, 0)));
         given(skillService.rankupBonus(any())).willReturn(Stats.ZERO);

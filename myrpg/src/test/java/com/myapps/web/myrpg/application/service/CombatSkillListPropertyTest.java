@@ -102,10 +102,10 @@ class CombatSkillListPropertyTest {
         // 첫 번째 테스트
         final List<CharacterSkill> allSkills1 =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 3));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills1);
 
@@ -208,10 +208,10 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 3));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 
@@ -292,9 +292,9 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 2));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 2));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 
@@ -384,10 +384,10 @@ class CombatSkillListPropertyTest {
 
         final List<CharacterSkill> allSkills =
                 List.of(
-                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0, 0, 0),
-                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 0, 0, 1),
-                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 0, 0, 2),
-                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 0, 0, 3));
+                        new CharacterSkill(CHARACTER_ID, "melee_normal", SkillRank.F, 0, 0),
+                        new CharacterSkill(CHARACTER_ID, "archery_normal", SkillRank.F, 0, 1),
+                        new CharacterSkill(CHARACTER_ID, "magic_normal", SkillRank.F, 0, 2),
+                        new CharacterSkill(CHARACTER_ID, "defense", SkillRank.F, 0, 3));
 
         when(characterSkillRepository.findByCharacterId(null)).thenReturn(allSkills);
 

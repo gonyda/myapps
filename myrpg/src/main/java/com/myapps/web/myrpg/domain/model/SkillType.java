@@ -56,18 +56,6 @@ public enum SkillType {
     }
 
     /**
-     * 막타 처치 수련 조건이 면제되는 타입인지 여부를 반환한다.
-     *
-     * <p>DEFENSE, RECOVERY, ULTIMATE, BUFF, CC, DOT, PASSIVE는 막타 처치 조건이 0(면제)이다. NORMAL, HEAVY,
-     * DEBUFF 직접 타격 스킬만 막타 처치 조건을 요구한다.
-     *
-     * @return 막타 처치 조건 면제 여부
-     */
-    public boolean isKillExempt() {
-        return this != NORMAL && this != HEAVY && this != DEBUFF;
-    }
-
-    /**
      * 문자열로부터 {@code SkillType}을 안전하게 조회한다.
      *
      * @param value 조회할 문자열 (null 허용)

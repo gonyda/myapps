@@ -46,24 +46,21 @@ class CharacterSkillPersistencePropertyTest {
     // Feature: 005-skill-system, Property 16: 영속 라운드트립
 
     /**
-     * 임의의 유효한 CharacterSkill을 저장 후 findById로 조회하면 skillId·rank·usageCount·killCount가 모두 보존되는지 검증한다.
+     * 임의의 유효한 CharacterSkill을 저장 후 findById로 조회하면 skillId·rank·usageCount가 모두 보존되는지 검증한다.
      *
      * @param characterId 임의 캐릭터 ID
      * @param skillId 임의 스킬 카탈로그 ID
      * @param rank 임의 스킬 랭크 (16종)
      * @param usageCount 임의 사용 횟수
-     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_preserveAllFields_when_savedAndFoundById(
             @ForAll("characterIds") final long characterId,
             @ForAll("skillIds") final String skillId,
             @ForAll("ranks") final SkillRank rank,
-            @ForAll("usageCounts") final int usageCount,
-            @ForAll("killCounts") final int killCount) {
+            @ForAll("usageCounts") final int usageCount) {
 
-        final CharacterSkill skill =
-                new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
+        final CharacterSkill skill = new CharacterSkill(characterId, skillId, rank, usageCount);
 
         entityManager.persistAndFlush(skill);
         final Long savedId = skill.getId();
@@ -76,7 +73,6 @@ class CharacterSkillPersistencePropertyTest {
         assertThat(found.get().getSkillId()).isEqualTo(skillId);
         assertThat(found.get().getRank()).isEqualTo(rank);
         assertThat(found.get().getUsageCount()).isEqualTo(usageCount);
-        assertThat(found.get().getKillCount()).isEqualTo(killCount);
     }
 
     /**
@@ -85,22 +81,18 @@ class CharacterSkillPersistencePropertyTest {
      * @param characterId 임의 캐릭터 ID
      * @param rank 임의 스킬 랭크
      * @param usageCount 임의 사용 횟수
-     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_returnCorrectEntries_when_findByCharacterId(
             @ForAll("characterIds") final long characterId,
             @ForAll("ranks") final SkillRank rank,
-            @ForAll("usageCounts") final int usageCount,
-            @ForAll("killCounts") final int killCount) {
+            @ForAll("usageCounts") final int usageCount) {
 
         final long otherCharacterId = characterId + 1;
-        final CharacterSkill skill1 =
-                new CharacterSkill(characterId, "smash", rank, usageCount, killCount);
-        final CharacterSkill skill2 =
-                new CharacterSkill(characterId, "windmill", rank, usageCount, killCount);
+        final CharacterSkill skill1 = new CharacterSkill(characterId, "smash", rank, usageCount);
+        final CharacterSkill skill2 = new CharacterSkill(characterId, "windmill", rank, usageCount);
         final CharacterSkill otherSkill =
-                new CharacterSkill(otherCharacterId, "firebolt", rank, usageCount, killCount);
+                new CharacterSkill(otherCharacterId, "firebolt", rank, usageCount);
 
         entityManager.persistAndFlush(skill1);
         entityManager.persistAndFlush(skill2);
@@ -123,18 +115,15 @@ class CharacterSkillPersistencePropertyTest {
      * @param skillId 임의 스킬 카탈로그 ID
      * @param rank 임의 스킬 랭크
      * @param usageCount 임의 사용 횟수
-     * @param killCount 임의 막타 처치 수
      */
     @Property(tries = 100)
     void should_returnCorrectEntry_when_findByCharacterIdAndSkillId(
             @ForAll("characterIds") final long characterId,
             @ForAll("skillIds") final String skillId,
             @ForAll("ranks") final SkillRank rank,
-            @ForAll("usageCounts") final int usageCount,
-            @ForAll("killCounts") final int killCount) {
+            @ForAll("usageCounts") final int usageCount) {
 
-        final CharacterSkill skill =
-                new CharacterSkill(characterId, skillId, rank, usageCount, killCount);
+        final CharacterSkill skill = new CharacterSkill(characterId, skillId, rank, usageCount);
 
         entityManager.persistAndFlush(skill);
         entityManager.clear();
@@ -146,7 +135,6 @@ class CharacterSkillPersistencePropertyTest {
         assertThat(found.get().getSkillId()).isEqualTo(skillId);
         assertThat(found.get().getRank()).isEqualTo(rank);
         assertThat(found.get().getUsageCount()).isEqualTo(usageCount);
-        assertThat(found.get().getKillCount()).isEqualTo(killCount);
     }
 
     // ─── Providers ──────────────────────────────────────────────────────────
@@ -192,15 +180,5 @@ class CharacterSkillPersistencePropertyTest {
     @Provide
     Arbitrary<Integer> usageCounts() {
         return Arbitraries.integers().between(0, USAGE_COUNT_MAX);
-    }
-
-    /**
-     * 막타 처치 수 Arbitrary를 제공한다 (0~1,500).
-     *
-     * @return 막타 처치 수 Arbitrary
-     */
-    @Provide
-    Arbitrary<Integer> killCounts() {
-        return Arbitraries.integers().between(0, KILL_COUNT_MAX);
     }
 }

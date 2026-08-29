@@ -26,14 +26,7 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 
-/**
- * DEFENSE 타입 스킬의 승급 시 kills 조건 면제를 검증하는 프로퍼티 테스트.
- *
- * <p>디펜스·카운터 어택 등 방어 스킬은 반격 피해가 낮아 막타를 달성하기 어려우므로 kills 조건을 면제한다. 이 테스트는 killCount가 0이어도 usage와 AP만
- * 충족하면 승급이 성공하는 것을 검증한다.
- *
- * <p>반대로, killCount가 부족해도 DEFENSE 스킬이면 승급이 차단되지 않아야 한다.
- */
+/** DEFENSE 타입 스킬의 승급이 사용 횟수 및 AP만으로 정상 동작함을 검증하는 프로퍼티 테스트. */
 class SkillRankUpDefenseKillExemptPropertyTest {
 
     private static final Long CHARACTER_ID = 1L;
@@ -44,12 +37,12 @@ class SkillRankUpDefenseKillExemptPropertyTest {
     private final SkillRankPolicy skillRankPolicy = new SkillRankPolicy();
 
     /**
-     * DEFENSE 스킬은 killCount가 0이어도 usage와 AP만 충족하면 랭크업이 성공한다.
+     * DEFENSE 스킬은 usage와 AP만 충족하면 랭크업이 성공한다.
      *
-     * @param state usage·AP 충족 상태 (killCount = 0)
+     * @param state usage·AP 충족 상태
      */
     @Property(tries = 100)
-    void should_succeedRankUp_when_defenseSkillAndKillCountIsZero(
+    void should_succeedRankUp_when_defenseSkillAndConditionsMet(
             @ForAll("defenseRankableState") final DefenseRankUpState state) {
 
         final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
@@ -59,7 +52,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
 
         final CharacterSkill skill =
                 new CharacterSkill(
-                        CHARACTER_ID, DEFENSE_SKILL_ID, state.rank(), state.usageCount(), 0);
+                        CHARACTER_ID, DEFENSE_SKILL_ID, state.rank(), state.usageCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_SKILL_ID))
@@ -71,7 +64,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
 
         final boolean result = skillService.rankUp(progress, DEFENSE_SKILL_ID);
 
-        assertThat(result).as("DEFENSE 스킬은 killCount=0이어도 usage+AP 충족 시 랭크업 성공").isTrue();
+        assertThat(result).as("DEFENSE 스킬은 usage+AP 충족 시 랭크업 성공").isTrue();
     }
 
     /**
@@ -90,7 +83,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
 
         final CharacterSkill skill =
                 new CharacterSkill(
-                        CHARACTER_ID, DEFENSE_SKILL_ID, state.rank(), state.usageCount(), 0);
+                        CHARACTER_ID, DEFENSE_SKILL_ID, state.rank(), state.usageCount());
         final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
 
         when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_SKILL_ID))
@@ -103,45 +96,10 @@ class SkillRankUpDefenseKillExemptPropertyTest {
         assertThat(result).as("DEFENSE 스킬이라도 usage 부족 시 랭크업 실패").isFalse();
     }
 
-    /**
-     * DEFENSE 스킬은 killCount가 어떤 값이든 상관없이(kills 면제) usage+AP만 충족하면 성공한다.
-     *
-     * @param state 임의의 killCount를 가진 상태
-     */
-    @Property(tries = 100)
-    void should_succeedRankUp_when_defenseSkillRegardlessOfKillCount(
-            @ForAll("defenseAnyKillState") final DefenseRankUpState state) {
-
-        final CharacterSkillRepository mockRepo = mock(CharacterSkillRepository.class);
-        final SkillCatalogService mockCatalog = mock(SkillCatalogService.class);
-        final SkillService skillService =
-                new SkillService(mockRepo, mock(CharacterProgressRepository.class), mockCatalog);
-
-        final CharacterSkill skill =
-                new CharacterSkill(
-                        CHARACTER_ID,
-                        DEFENSE_SKILL_ID,
-                        state.rank(),
-                        state.usageCount(),
-                        state.killCount());
-        final CharacterProgress progress = createProgressWithAp(state.abilityPoints());
-
-        when(mockRepo.findByCharacterIdAndSkillId(CHARACTER_ID, DEFENSE_SKILL_ID))
-                .thenReturn(Optional.of(skill));
-        when(mockRepo.save(any(CharacterSkill.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(mockCatalog.byId(DEFENSE_SKILL_ID))
-                .thenReturn(Optional.of(createDefenseSkillCatalog()));
-
-        final boolean result = skillService.rankUp(progress, DEFENSE_SKILL_ID);
-
-        assertThat(result).as("DEFENSE 스킬은 killCount와 무관하게 usage+AP 충족 시 랭크업 성공").isTrue();
-    }
-
     // ── Providers ──
 
     /**
-     * DEFENSE 스킬 승급 가능 상태: ≠MASTER, usage ≥ 요구치, AP ≥ apCost, killCount = 0.
+     * DEFENSE 스킬 승급 가능 상태: ≠MASTER, usage ≥ 요구치, AP ≥ apCost.
      *
      * @return Rankable 상태 Arbitrary
      */
@@ -164,7 +122,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
                                     Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
 
                             return Combinators.combine(usages, aps)
-                                    .as((usage, ap) -> new DefenseRankUpState(rank, usage, 0, ap));
+                                    .as((usage, ap) -> new DefenseRankUpState(rank, usage, ap));
                         });
     }
 
@@ -189,39 +147,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
                                     Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
 
                             return Combinators.combine(usages, aps)
-                                    .as((usage, ap) -> new DefenseRankUpState(rank, usage, 0, ap));
-                        });
-    }
-
-    /**
-     * DEFENSE 스킬 임의 killCount 상태: ≠MASTER, usage ≥ 요구치, AP ≥ apCost, killCount 임의.
-     *
-     * @return 임의 killCount 상태 Arbitrary
-     */
-    @Provide
-    Arbitrary<DefenseRankUpState> defenseAnyKillState() {
-        return nonMasterRank()
-                .flatMap(
-                        rank -> {
-                            final RankUpRequirement requirement =
-                                    skillRankPolicy.requirement(rank).orElseThrow();
-                            final int apCost = skillRankPolicy.apCost(rank).orElseThrow();
-
-                            final Arbitrary<Integer> usages =
-                                    Arbitraries.integers()
-                                            .between(
-                                                    requirement.requiredUsage(),
-                                                    requirement.requiredUsage()
-                                                            + MAX_USAGE_SURPLUS);
-                            final Arbitrary<Integer> kills =
-                                    Arbitraries.integers().between(0, 5000);
-                            final Arbitrary<Integer> aps =
-                                    Arbitraries.integers().between(apCost, apCost + MAX_AP_SURPLUS);
-
-                            return Combinators.combine(usages, kills, aps)
-                                    .as(
-                                            (usage, kill, ap) ->
-                                                    new DefenseRankUpState(rank, usage, kill, ap));
+                                    .as((usage, ap) -> new DefenseRankUpState(rank, usage, ap));
                         });
     }
 
@@ -281,8 +207,7 @@ class SkillRankUpDefenseKillExemptPropertyTest {
      *
      * @param rank 스킬 랭크
      * @param usageCount 사용 횟수
-     * @param killCount 막타 처치 수
      * @param abilityPoints 보유 AP
      */
-    record DefenseRankUpState(SkillRank rank, int usageCount, int killCount, int abilityPoints) {}
+    record DefenseRankUpState(SkillRank rank, int usageCount, int abilityPoints) {}
 }

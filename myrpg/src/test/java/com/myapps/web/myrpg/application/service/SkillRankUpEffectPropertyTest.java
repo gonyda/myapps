@@ -31,7 +31,7 @@ import net.jqwik.api.Provide;
  * 랭크업 트랜잭션 효과를 검증하는 프로퍼티 테스트.
  *
  * <p>Rankable 상태(조건 충족 + AP 충족 + 랭크 ≠ MASTER)에서 랭크업 수행 후: (a) rank == 이전.next(), (b) usageCount ==
- * 0, (c) killCount == 0, (d) abilityPoints == 이전 AP - apCost(이전 랭크)임을 검증한다.
+ * 0, (c) abilityPoints == 이전 AP - apCost(이전 랭크)임을 검증한다.
  *
  * <p>Feature: 005-skill-system, Property 9: 랭크업 트랜잭션 효과
  *
@@ -45,9 +45,9 @@ class SkillRankUpEffectPropertyTest {
     private final SkillRankPolicy skillRankPolicy = new SkillRankPolicy();
 
     /**
-     * Rankable 상태에서 랭크업을 수행하면 rank=next, usage=0, kill=0, ap=이전-cost가 된다.
+     * Rankable 상태에서 랭크업을 수행하면 rank=next, usage=0, ap=이전-cost가 된다.
      *
-     * @param rankableState 랭크업 가능한 상태(랭크, 사용 횟수, 막타 처치 수, AP)
+     * @param rankableState 랭크업 가능한 상태(랭크, 사용 횟수, AP)
      */
     @Property(tries = 100)
     void should_applyTransactionEffects_when_rankUpSucceeds(
@@ -64,11 +64,7 @@ class SkillRankUpEffectPropertyTest {
 
         final CharacterSkill skill =
                 new CharacterSkill(
-                        CHARACTER_ID,
-                        SKILL_ID,
-                        rankableState.rank(),
-                        rankableState.usageCount(),
-                        rankableState.killCount());
+                        CHARACTER_ID, SKILL_ID, rankableState.rank(), rankableState.usageCount());
 
         final CharacterProgress progress = createProgressWithAp(rankableState.abilityPoints());
 
@@ -103,8 +99,6 @@ class SkillRankUpEffectPropertyTest {
 
         assertThat(skill.getUsageCount()).as("사용 횟수는 0으로 리셋되어야 한다").isZero();
 
-        assertThat(skill.getKillCount()).as("막타 처치 수는 0으로 리셋되어야 한다").isZero();
-
         assertThat(progress.getAbilityPoints())
                 .as("AP는 이전 AP - apCost여야 한다")
                 .isEqualTo(previousAp - apCost);
@@ -113,7 +107,7 @@ class SkillRankUpEffectPropertyTest {
     /**
      * Rankable 상태 생성기.
      *
-     * <p>MASTER가 아닌 모든 랭크에 대해, 해당 랭크의 요구치 이상의 사용/막타와 apCost 이상의 AP를 가진 상태를 생성한다.
+     * <p>MASTER가 아닌 모든 랭크에 대해, 해당 랭크의 요구치 이상의 사용과 apCost 이상의 AP를 가진 상태를 생성한다.
      *
      * @return RankableState Arbitrary
      */
@@ -136,18 +130,11 @@ class SkillRankUpEffectPropertyTest {
                                             .between(
                                                     requirement.requiredUsage(),
                                                     requirement.requiredUsage() + 100);
-                            final Arbitrary<Integer> killArbitrary =
-                                    Arbitraries.integers()
-                                            .between(
-                                                    requirement.requiredKills(),
-                                                    requirement.requiredKills() + 100);
                             final Arbitrary<Integer> apArbitrary =
                                     Arbitraries.integers().between(apCost, apCost + 200);
 
-                            return Combinators.combine(usageArbitrary, killArbitrary, apArbitrary)
-                                    .as(
-                                            (usage, kill, ap) ->
-                                                    new RankableState(rank, usage, kill, ap));
+                            return Combinators.combine(usageArbitrary, apArbitrary)
+                                    .as((usage, ap) -> new RankableState(rank, usage, ap));
                         });
     }
 
@@ -185,8 +172,7 @@ class SkillRankUpEffectPropertyTest {
      *
      * @param rank 현재 랭크 (MASTER 아님)
      * @param usageCount 사용 횟수 (요구치 이상)
-     * @param killCount 막타 처치 수 (요구치 이상)
      * @param abilityPoints 보유 AP (apCost 이상)
      */
-    record RankableState(SkillRank rank, int usageCount, int killCount, int abilityPoints) {}
+    record RankableState(SkillRank rank, int usageCount, int abilityPoints) {}
 }

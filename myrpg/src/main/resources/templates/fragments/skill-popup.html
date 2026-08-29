@@ -274,12 +274,6 @@
                               th:classappend="${rankUp.usageCurrent() >= rankUp.usageRequired()} ? ' fulfilled' : ''"
                               th:text="${rankUp.usageCurrent()} + ' / ' + ${rankUp.usageRequired()}">0 / 5</span>
                     </div>
-                    <div class="rankup-stat-row" th:if="${rankUp.hasKillRequirement()}">
-                        <span class="rankup-stat-label">막타 처치</span>
-                        <span class="rankup-stat-value"
-                              th:classappend="${rankUp.killCurrent() >= rankUp.killRequired()} ? ' fulfilled' : ''"
-                              th:text="${rankUp.killCurrent()} + ' / ' + ${rankUp.killRequired()}">0 / 1</span>
-                    </div>
                 </div>
             </div>
 
