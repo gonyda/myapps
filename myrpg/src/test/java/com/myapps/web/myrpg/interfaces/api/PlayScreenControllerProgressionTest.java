@@ -3,6 +3,7 @@ package com.myapps.web.myrpg.interfaces.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -388,7 +389,7 @@ class PlayScreenControllerProgressionTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(dummyMinimap());
         when(mapService.fullMap(anyString())).thenReturn(dummyFullMap());
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -416,7 +417,7 @@ class PlayScreenControllerProgressionTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(dummyMinimap());
         when(mapService.fullMap(anyString())).thenReturn(dummyFullMap());
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());

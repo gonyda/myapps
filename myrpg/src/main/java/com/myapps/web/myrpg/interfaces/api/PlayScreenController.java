@@ -267,7 +267,9 @@ public class PlayScreenController {
 
         final Optional<Npc> targetNpc = npcService.byId(npcId);
         final String dialogue =
-                targetNpc.isPresent() ? npcDialogueService.selectLine(targetNpc.get()) : null;
+                targetNpc.isPresent()
+                        ? npcDialogueService.selectLine(targetNpc.get(), progress.getInGameHour())
+                        : null;
         final TalkTarget talkTarget =
                 targetNpc.map(npc -> TalkTarget.ofNpc(npc, dialogue)).orElse(TalkTarget.EMPTY);
 

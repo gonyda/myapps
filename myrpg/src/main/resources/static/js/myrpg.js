@@ -1702,8 +1702,8 @@ function resolveTimeOfDayKey(hour) {
     if (hour >= 0 && hour < 5) return "late-night";
     if (hour >= 5 && hour < 8) return "dawn";
     if (hour >= 8 && hour < 12) return "morning";
-    if (hour >= 12 && hour < 16) return "afternoon";
-    if (hour >= 16 && hour < 19) return "late-afternoon";
+    if (hour >= 12 && hour < 18) return "afternoon";
+    if (hour >= 18 && hour < 20) return "late-afternoon";
     return "night";
 }
 

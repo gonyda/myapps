@@ -20,10 +20,10 @@ class TimeOfDayTest {
         "8, MORNING",
         "11, MORNING",
         "12, AFTERNOON",
-        "15, AFTERNOON",
-        "16, LATE_AFTERNOON",
+        "17, AFTERNOON",
         "18, LATE_AFTERNOON",
-        "19, NIGHT",
+        "19, LATE_AFTERNOON",
+        "20, NIGHT",
         "23, NIGHT"
     })
     void should_returnCorrectTimeOfDay_when_fromHourCalled(final int hour, final String expected) {
@@ -37,9 +37,9 @@ class TimeOfDayTest {
         "LATE_NIGHT, late-night, 0, 5",
         "DAWN, dawn, 5, 8",
         "MORNING, morning, 8, 12",
-        "AFTERNOON, afternoon, 12, 16",
-        "LATE_AFTERNOON, late-afternoon, 16, 19",
-        "NIGHT, night, 19, 24"
+        "AFTERNOON, afternoon, 12, 18",
+        "LATE_AFTERNOON, late-afternoon, 18, 20",
+        "NIGHT, night, 20, 24"
     })
     void should_haveCorrectKeyAndBounds_when_enumConstantAccessed(
             final String name,

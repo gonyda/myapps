@@ -12,9 +12,12 @@
     3. `CharacterService.createAndSaveDefault()`에서 `inventoryService.seedDefault(saved.getId())`로 정확한 캐릭터 ID를 전달하도록 수정.
     4. `ShopService.buy()`의 불필요한 `1L` 특수 분기 정리.
     5. `MultiCharacterEquipmentIsolationTest` 단위/통합 테스트 5종을 구축하여 다중 캐릭터 간 장착/해제/스왑/내구도/용량 독립성 100% 검증 완료.
-- **상황 멘트 및 NPC 대사의 게임 내 시간(InGameTime) 불일치 버그**:
+- **[완료] 상황 멘트 및 NPC 대사의 게임 내 시간(InGameTime) 불일치 버그 (2026-08-29 완료)**:
   - **현상**: 화면 상단바/배경 앰비언트는 인게임 시간(예: 심야 02:00, 노을 17:30 등)으로 표시되나, 필드 상황 멘트(`AmbienceService`) 및 NPC 대화(`NpcDialogueService`)가 서버의 현실 시각(`LocalDateTime.now().getHour()`)을 기준으로 멘트를 출력하여 인게임 시간과 멘트가 맞지 않는 문제.
-  - **원인 및 개선**: `AmbienceService.ambience()` 및 `NpcDialogueService.selectLine()` 호출 시 `CharacterProgress.getInGameHour()`(인게임 시각)를 전달하도록 수정하여 인게임 시간대(`TimeOfDay`)와 상황 멘트를 100% 일치시킴.
+  - **해결 내용**:
+    1. `NodeViewAssembler.buildFieldView()`에서 `ambienceService.ambience(currentNode, progress.getInGameHour())`로 인게임 시각(Hour)을 전달하도록 수정 (계절은 실제 서버 월(Month) 유지).
+    2. `PlayScreenController.talkToNpc()`에서 `npcDialogueService.selectLine(targetNpc.get(), progress.getInGameHour())`로 인게임 시각(Hour)을 전달하도록 수정.
+    3. `InGameTimeAmbienceDialogueIntegrationTest` 통합 테스트를 구축하여 인게임 시간대별(심야/아침/오후/밤) 멘트 및 NPC 대사 연동 100% 검증 완료.
 
 ---
 

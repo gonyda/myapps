@@ -34,14 +34,14 @@
     },
     "afternoon": {
       "from": 12,
-      "to": 16
+      "to": 18
     },
     "late-afternoon": {
-      "from": 16,
-      "to": 19
+      "from": 18,
+      "to": 20
     },
     "night": {
-      "from": 19,
+      "from": 20,
       "to": 24
     },
     "late-night": {

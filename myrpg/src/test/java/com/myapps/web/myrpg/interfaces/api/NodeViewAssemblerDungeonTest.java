@@ -291,7 +291,11 @@ class NodeViewAssemblerDungeonTest {
         given(mapService.minimap("alby-entrance"))
                 .willReturn(new MinimapView("알비 던전 입구", List.of()));
         given(mapService.fullMap("alby-entrance")).willReturn(new FullMapView(List.of(), 5, 5));
-        given(ambienceService.ambience(entranceNode)).willReturn("던전 입구다.");
+        given(
+                        ambienceService.ambience(
+                                org.mockito.ArgumentMatchers.eq(entranceNode),
+                                org.mockito.ArgumentMatchers.anyInt()))
+                .willReturn("던전 입구다.");
         given(npcService.byNode("alby-entrance")).willReturn(List.of());
         given(monsterService.byNode("alby-entrance")).willReturn(List.of());
         given(playScreenViewHelper.buildInteractions(List.of(), List.of())).willReturn(List.of());

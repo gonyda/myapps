@@ -165,7 +165,7 @@ public class NodeViewAssembler {
         final MapNode currentNode = mapService.node(currentNodeId);
         final MinimapView minimap = mapService.minimap(currentNodeId);
         final FullMapView fullMap = mapService.fullMap(currentNodeId);
-        final String ambience = ambienceService.ambience(currentNode);
+        final String ambience = ambienceService.ambience(currentNode, progress.getInGameHour());
         final List<ActionLogEntry> logs = actionLog.getEntries();
 
         final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);

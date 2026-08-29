@@ -18,13 +18,13 @@ public enum TimeOfDay {
     MORNING("morning", 8, 12, "🌄"),
 
     /** 오후 시간대. */
-    AFTERNOON("afternoon", 12, 16, "☀️"),
+    AFTERNOON("afternoon", 12, 18, "☀️"),
 
     /** 늦은 오후 시간대. */
-    LATE_AFTERNOON("late-afternoon", 16, 19, "🌇"),
+    LATE_AFTERNOON("late-afternoon", 18, 20, "🌇"),
 
     /** 밤 시간대. */
-    NIGHT("night", 19, 24, "🌙");
+    NIGHT("night", 20, 24, "🌙");
 
     private final String key;
     private final int from;

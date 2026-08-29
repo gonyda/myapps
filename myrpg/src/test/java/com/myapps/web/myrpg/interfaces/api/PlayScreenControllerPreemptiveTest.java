@@ -131,7 +131,7 @@ class PlayScreenControllerPreemptiveTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("두갈드 아일", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("위험한 들판");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("위험한 들판");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of(raccoon));
@@ -201,7 +201,7 @@ class PlayScreenControllerPreemptiveTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("두갈드 아일", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("위험한 들판");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("위험한 들판");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of(raccoon));
@@ -255,7 +255,7 @@ class PlayScreenControllerPreemptiveTest {
         when(mapService.node(anyString())).thenReturn(dummyNode("test-node"));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());

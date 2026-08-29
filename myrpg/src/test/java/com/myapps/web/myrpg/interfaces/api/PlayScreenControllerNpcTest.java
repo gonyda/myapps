@@ -134,7 +134,7 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(npcs);
         when(monsterService.byNode(nodeId)).thenReturn(List.of());
@@ -210,11 +210,11 @@ class PlayScreenControllerNpcTest {
         when(monsterService.byNode(nodeId)).thenReturn(List.of());
         when(playScreenViewHelper.buildInteractions(npcs, List.of())).thenReturn(interactions);
         when(npcService.byId("neris")).thenReturn(Optional.of(neris));
-        when(npcDialogueService.selectLine(neris)).thenReturn("좋은 물건이 많아요!");
+        when(npcDialogueService.selectLine(eq(neris), anyInt())).thenReturn("좋은 물건이 많아요!");
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(nodeId)).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(nodeId)).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(playScreenViewHelper.buildPlayScreen(
                         any(),
@@ -276,7 +276,7 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("던바튼", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("활기찬 도시");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("활기찬 도시");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(newNodeNpcs);
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -339,7 +339,7 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(List.of());
         when(monsterService.byNode(nodeId)).thenReturn(List.of());

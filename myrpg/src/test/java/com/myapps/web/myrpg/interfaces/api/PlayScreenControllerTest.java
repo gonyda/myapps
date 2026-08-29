@@ -104,7 +104,7 @@ class PlayScreenControllerTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -148,7 +148,7 @@ class PlayScreenControllerTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("새로운 장소");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("새로운 장소");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -192,7 +192,7 @@ class PlayScreenControllerTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -236,7 +236,7 @@ class PlayScreenControllerTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class))).thenReturn("평화로운 마을");
+        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
