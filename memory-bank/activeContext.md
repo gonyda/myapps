@@ -23,17 +23,18 @@
   - **애플리케이션 서비스**: `InventoryService` 재료 스택 적재 일원화, `GatheringService` 구현 (마을/자유필드 노드 이동 시 50% 나무 스폰 롤, 던전 격리, 5 SP 소모, 50% 채집 성공/실패 판정, 1회 채집 후 나무 소멸 및 로그 기록).
   - **웹 계층 & 컨트롤러**: `GatheringController` (`POST /gathering/woodcut`), `PlayScreenController` 이동 시 `rollTreeSpawn` 호출, `NodeViewAssembler`에서 `나무` 상호작용 버튼 조립.
   - **프론트엔드 UI/UX**: `gathering-modal.html` 앤틱 골드 모달 구축, `myrpg.css` 에메랄드 버튼 및 도끼 흔들림/나무 진동 키프레임, `myrpg.js` 5초 자동 완료형 채집 타이머 & 비동기 통신 & 상단바 SP 실시간 동기화.
-- **아이템 설명글(description) JSON 완전 이관 및 상세 팝업 일원화 (2026-08-29, 방안 A 심화)**:
-  - `Item` 인터페이스 및 구현체(`MaterialItem`, `PotionItem`, `EquipmentItem`)에 `String description()` 필드/메서드 추가.
-  - `item.json`에 포션 3종(생명력/마나/스태미나 30 포션) 및 장작의 `description` 정의 완료.
-  - `InventoryService.describe()`에서 `PotionItem` 분기를 완전히 제거하고 모든 설명글을 `item.description()`으로 일원화.
-  - 전체 1,260개 단위/통합/PBT 테스트 100% 그린 및 5대 가드레일 올클리어 (`BUILD SUCCESS`).
+- **하드코딩 전수 분석 및 메시지·로그 외부화 리팩토링 계획서 수립 (2026-08-29)**:
+  - `docs/hardcoding-analysis-and-refactoring-plan.md` 작성 및 전체 소스 정합성 검증 완료.
+  - 활동 로그(26건), 전투 인라인 로그(15건), 전투 턴 로그(~40건), 도메인 예외, JS 메시지(23건), 게임 밸런스 수치(60건+) 전수 식별.
+  - 채집 로그의 경우 향후 버섯·약초 등 확장을 고려하여 아이템/도구 비종속 범용 멘트(`[채집] {아이템명} 획득!`, `[채집] 채집에 실패했습니다.`)로 통일 설계.
+  - `messages.properties` 및 `@ConfigurationProperties(prefix = "game")` 기반 6단계 점진적 마이그레이션 로드맵 확정.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
+- **산출물**: `docs/hardcoding-analysis-and-refactoring-plan.md`
 - **5대 품질 가드레일 상태**: 전체 멀티모듈 (`mystudy`, `mycalendar`, `myrpg`) 100% 그린, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
