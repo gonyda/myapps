@@ -53,6 +53,31 @@ class InventoryServiceTest {
     @BeforeEach
     void setUp() {
         final StatProgression statProgression = new StatProgression();
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        inv ->
+                                ownedItemRepository.findByStorageAndEquippedTrue(
+                                        inv.getArgument(1)));
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.countByCharacterIdAndStorage(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> ownedItemRepository.countByStorage(inv.getArgument(1)));
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        inv ->
+                                ownedItemRepository.findByStorageAndItemId(
+                                        inv.getArgument(1), inv.getArgument(2)));
         inventoryService =
                 new InventoryService(
                         ownedItemRepository,

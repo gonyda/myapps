@@ -60,16 +60,11 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        statProgression,
-                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                        mock(
-                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
-                                        .class));
+                        statProgression);
 
         // 장비를 인벤토리→은행 이동 시 은행이 가득 참
         final EquipmentItem equipCatalog =
@@ -113,16 +108,11 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        statProgression,
-                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                        mock(
-                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
-                                        .class));
+                        statProgression);
 
         final PotionItem potionCatalog = new PotionItem(POTION_ITEM_ID, "HP 포션", 50, 30);
 
@@ -167,16 +157,11 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        statProgression,
-                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                        mock(
-                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
-                                        .class));
+                        statProgression);
 
         final EquipmentItem equipCatalog =
                 new EquipmentItem(
@@ -218,16 +203,11 @@ class InventoryCapacityPropertyTest {
         final StatProgression statProgression = mock(StatProgression.class);
 
         final InventoryService inventoryService =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        statProgression,
-                        mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
-                        mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
-                        mock(
-                                com.myapps.web.myrpg.domain.repository.CharacterSkillRepository
-                                        .class));
+                        statProgression);
 
         final EquipmentItem equipCatalog =
                 new EquipmentItem(
@@ -276,6 +256,37 @@ class InventoryCapacityPropertyTest {
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
+
+    private InventoryService createService(
+            final OwnedItemRepository ownedItemRepository,
+            final ItemCatalogService itemCatalogService,
+            final CharacterProgressRepository characterProgressRepository,
+            final StatProgression statProgression) {
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.countByCharacterIdAndStorage(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> ownedItemRepository.countByStorage(inv.getArgument(1)));
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        inv ->
+                                ownedItemRepository.findByStorageAndItemId(
+                                        inv.getArgument(1), inv.getArgument(2)));
+        return new InventoryService(
+                ownedItemRepository,
+                itemCatalogService,
+                characterProgressRepository,
+                statProgression,
+                mock(com.myapps.web.myrpg.domain.model.ActionLog.class),
+                mock(com.myapps.web.myrpg.application.service.SkillCatalogService.class),
+                mock(com.myapps.web.myrpg.domain.repository.CharacterSkillRepository.class));
+    }
 
     /**
      * 리플렉션으로 OwnedItem의 id 필드를 설정한다.

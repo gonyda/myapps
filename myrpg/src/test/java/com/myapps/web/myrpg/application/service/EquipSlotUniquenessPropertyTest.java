@@ -280,6 +280,12 @@ class EquipSlotUniquenessPropertyTest {
             final OwnedItemRepository repo,
             final ItemCatalogService catalog,
             final CharacterProgressRepository progressRepo) {
+        org.mockito.Mockito.lenient()
+                .when(
+                        repo.findByCharacterIdAndStorageAndEquippedTrue(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> repo.findByStorageAndEquippedTrue(inv.getArgument(1)));
         return new InventoryService(
                 repo,
                 catalog,

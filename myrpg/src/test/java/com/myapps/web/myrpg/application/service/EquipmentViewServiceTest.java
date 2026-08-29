@@ -45,6 +45,15 @@ class EquipmentViewServiceTest {
         final StatProgression statProgression = new StatProgression();
         final ActionLog actionLog = new ActionLog(Clock.systemDefaultZone());
         final SkillCatalogService skillCatalogService = mock(SkillCatalogService.class);
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        inv ->
+                                ownedItemRepository.findByStorageAndEquippedTrue(
+                                        inv.getArgument(1)));
         inventoryService =
                 new InventoryService(
                         ownedItemRepository,

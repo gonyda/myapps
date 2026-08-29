@@ -330,7 +330,7 @@ public class ShopService {
             progress.spendGold(item.buyPrice());
         }
 
-        if (progress == null || progress.getId() == null || progress.getId().equals(1L)) {
+        if (progress == null || progress.getId() == null) {
             inventoryService.acquireItem(itemId, 1);
         } else {
             inventoryService.acquireItem(progress.getId(), itemId, 1);

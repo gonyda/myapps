@@ -94,7 +94,7 @@ public class CharacterService {
         try {
             final CharacterProgress saved = characterProgressRepository.save(defaultCharacter);
             skillService.seedDefault(saved.getId());
-            inventoryService.seedDefault();
+            inventoryService.seedDefault(saved.getId());
             return saved;
         } catch (final Exception exception) {
             LOG.error("기본 캐릭터 저장 실패: {}", exception.getMessage(), exception);

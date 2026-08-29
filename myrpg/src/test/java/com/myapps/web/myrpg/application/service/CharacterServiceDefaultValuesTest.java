@@ -196,7 +196,7 @@ class CharacterServiceDefaultValuesTest {
         characterService.loadOrCreateDefault();
 
         // Then
-        verify(mockInventoryService).seedDefault();
+        verify(mockInventoryService).seedDefault(SAVED_CHARACTER_ID);
     }
 
     /** 기존 캐릭터가 이미 존재할 때에는 seedDefault가 호출되지 않는지 검증한다. */
@@ -228,7 +228,7 @@ class CharacterServiceDefaultValuesTest {
         characterService.loadOrCreateDefault();
 
         // Then
-        verify(mockInventoryService, never()).seedDefault();
+        verify(mockInventoryService, never()).seedDefault(any());
     }
 
     /**

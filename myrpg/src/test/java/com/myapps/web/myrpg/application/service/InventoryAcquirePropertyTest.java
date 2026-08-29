@@ -73,11 +73,10 @@ class InventoryAcquirePropertyTest {
                 mock(CharacterSkillRepository.class);
 
         final InventoryService service =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        new StatProgression(),
                         actionLog,
                         skillCatalogService,
                         characterSkillRepository);
@@ -110,11 +109,10 @@ class InventoryAcquirePropertyTest {
                 mock(CharacterSkillRepository.class);
 
         final InventoryService service =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        new StatProgression(),
                         actionLog,
                         skillCatalogService,
                         characterSkillRepository);
@@ -161,11 +159,10 @@ class InventoryAcquirePropertyTest {
                 mock(CharacterSkillRepository.class);
 
         final InventoryService service =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        new StatProgression(),
                         actionLog,
                         skillCatalogService,
                         characterSkillRepository);
@@ -217,11 +214,10 @@ class InventoryAcquirePropertyTest {
                 mock(CharacterSkillRepository.class);
 
         final InventoryService service =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        new StatProgression(),
                         actionLog,
                         skillCatalogService,
                         characterSkillRepository);
@@ -268,11 +264,10 @@ class InventoryAcquirePropertyTest {
                 mock(CharacterSkillRepository.class);
 
         final InventoryService service =
-                new InventoryService(
+                createService(
                         ownedItemRepository,
                         itemCatalogService,
                         characterProgressRepository,
-                        new StatProgression(),
                         actionLog,
                         skillCatalogService,
                         characterSkillRepository);
@@ -343,7 +338,38 @@ class InventoryAcquirePropertyTest {
                                         .map(count -> Tuple.of(gold, count)));
     }
 
-    // ─── Helper ─────────────────────────────────────────────────────────────
+    private InventoryService createService(
+            final OwnedItemRepository ownedItemRepository,
+            final ItemCatalogService itemCatalogService,
+            final CharacterProgressRepository characterProgressRepository,
+            final ActionLog actionLog,
+            final SkillCatalogService skillCatalogService,
+            final CharacterSkillRepository characterSkillRepository) {
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.countByCharacterIdAndStorage(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(inv -> ownedItemRepository.countByStorage(inv.getArgument(1)));
+        org.mockito.Mockito.lenient()
+                .when(
+                        ownedItemRepository.findByCharacterIdAndStorageAndItemId(
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        inv ->
+                                ownedItemRepository.findByStorageAndItemId(
+                                        inv.getArgument(1), inv.getArgument(2)));
+        return new InventoryService(
+                ownedItemRepository,
+                itemCatalogService,
+                characterProgressRepository,
+                new StatProgression(),
+                actionLog,
+                skillCatalogService,
+                characterSkillRepository);
+    }
 
     /**
      * 지정 골드를 가진 테스트용 CharacterProgress를 생성한다.

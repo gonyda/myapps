@@ -130,18 +130,7 @@ public class InventoryService {
         final EquipmentKind targetKind = equipmentItem.kind();
         final Set<EquipSlot> requiredSlots = targetKind.requiredSlots();
 
-        List<OwnedItem> equippedItems = null;
-        if (target.getCharacterId() == null || target.getCharacterId().equals(1L)) {
-            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
-        }
-        if ((equippedItems == null || equippedItems.isEmpty()) && target.getCharacterId() != null) {
-            equippedItems =
-                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
-                            target.getCharacterId(), StorageKind.INVENTORY);
-        }
-        if (equippedItems == null) {
-            equippedItems = List.of();
-        }
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(target.getCharacterId());
 
         for (final EquipSlot slot : requiredSlots) {
             final Optional<OwnedItem> occupier = findSlotOccupier(equippedItems, slot, target);
@@ -333,18 +322,7 @@ public class InventoryService {
      * @return 장비 STAT 보너스와 VITAL 보너스를 담은 결과
      */
     public EquippedBonusResult equippedBonus(final Long characterId) {
-        List<OwnedItem> equippedItems = null;
-        if (characterId == null || characterId.equals(1L)) {
-            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
-        }
-        if ((equippedItems == null || equippedItems.isEmpty()) && characterId != null) {
-            equippedItems =
-                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
-                            characterId, StorageKind.INVENTORY);
-        }
-        if (equippedItems == null) {
-            equippedItems = List.of();
-        }
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(characterId);
 
         Stats statBonus = Stats.ZERO;
         VitalMax vitalBonus = new VitalMax(0, 0, 0);
@@ -491,13 +469,13 @@ public class InventoryService {
 
     private List<OwnedItem> findEquippedInventoryItems(final Long characterId) {
         List<OwnedItem> items = null;
-        if (characterId == null || characterId.equals(1L)) {
-            items = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
-        }
-        if ((items == null || items.isEmpty()) && characterId != null) {
+        if (characterId != null) {
             items =
                     ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
                             characterId, StorageKind.INVENTORY);
+        }
+        if (items == null) {
+            items = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
         }
         return items != null ? items : List.of();
     }
@@ -1117,18 +1095,8 @@ public class InventoryService {
     @Transactional
     public void reduceDurabilityAndAutoUnequip(
             final CharacterProgress progress, final double amount) {
-        List<OwnedItem> equippedItems = List.of();
-        if (progress != null && progress.getId() != null) {
-            equippedItems =
-                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
-                            progress.getId(), StorageKind.INVENTORY);
-        }
-        if (equippedItems == null || equippedItems.isEmpty()) {
-            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
-        }
-        if (equippedItems == null) {
-            equippedItems = List.of();
-        }
+        final Long charId = progress != null ? progress.getId() : null;
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(charId);
 
         for (final OwnedItem equipped : equippedItems) {
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
@@ -1327,7 +1295,7 @@ public class InventoryService {
             final Optional<OwnedItem> item =
                     ownedItemRepository.findByCharacterIdAndStorageAndItemId(
                             characterId, storage, itemId);
-            if (item != null && item.isPresent()) {
+            if (item != null) {
                 return item;
             }
         }
@@ -1338,11 +1306,7 @@ public class InventoryService {
 
     private long countStorage(final Long characterId, final StorageKind storage) {
         if (characterId != null) {
-            final long count =
-                    ownedItemRepository.countByCharacterIdAndStorage(characterId, storage);
-            if (count > 0) {
-                return count;
-            }
+            return ownedItemRepository.countByCharacterIdAndStorage(characterId, storage);
         }
         return ownedItemRepository.countByStorage(storage);
     }
@@ -1568,18 +1532,7 @@ public class InventoryService {
     }
 
     private SkillTalent resolveEquippedWeaponTalent(final Long characterId) {
-        List<OwnedItem> equippedItems = List.of();
-        if (characterId != null) {
-            equippedItems =
-                    ownedItemRepository.findByCharacterIdAndStorageAndEquippedTrue(
-                            characterId, StorageKind.INVENTORY);
-        }
-        if (equippedItems == null || equippedItems.isEmpty()) {
-            equippedItems = ownedItemRepository.findByStorageAndEquippedTrue(StorageKind.INVENTORY);
-        }
-        if (equippedItems == null) {
-            equippedItems = List.of();
-        }
+        final List<OwnedItem> equippedItems = findEquippedInventoryItems(characterId);
 
         for (final OwnedItem equipped : equippedItems) {
             final Optional<Item> catalogOpt = itemCatalogService.byId(equipped.getItemId());
