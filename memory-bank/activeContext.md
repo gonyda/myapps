@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-30 11:00 (Asia/Seoul)
+> 최종 업데이트: 2026-08-30 11:25 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -25,13 +25,14 @@
   - **SSOT 일원화 & 중복 로직/매직넘버 제거**: 각 서비스/컨트롤러 내 `DEFAULT_*` 상수 전수 제거 및 `gameProperties` 단일 참조 일원화, `gameProperties != null` / `gameMessageService != null` 불필요 삼항 분기 15곳 이상 전면 단순화, `GatheringService` 내 카탈로그 아이템명 동적 조회, `BattleService` 뱃지 라벨 전수 외부화.
   - **프론트엔드**: `game-messages.js` 키 네이밍 및 포맷 인자를 `messages.properties`와 1:1 일원화, `myrpg.js` 알림/Confirm/토스트 전수 연동.
   - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1,267개 전체 단위/통합 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
+  - **프로덕션 배포**: Oracle Cloud VM (134.185.116.35:8083) 배포 및 Health Check 정상 확인.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **Spec & Task 상태**: 메시지 리팩토링 전수 보완 완료 (SSOT 정리, null 가드 15곳 제거, 하드코딩 외부화)
+- **Spec & Task 상태**: 메시지 리팩토링 전수 보완 완료 및 프로덕션 배포 완료
 - **5대 품질 가드레일 상태**: 전체 멀티모듈 (`mystudy`, `mycalendar`, `myrpg`) 100% 그린, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
