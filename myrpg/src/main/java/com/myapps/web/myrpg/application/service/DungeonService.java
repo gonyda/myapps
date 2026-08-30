@@ -39,9 +39,6 @@ import tools.jackson.databind.ObjectMapper;
 public class DungeonService {
 
     private static final String LOG_TYPE_DUNGEON = "dungeon";
-    private static final String BLOCKED_FORWARD_MESSAGE = "앞으로 나아가려면 이 방의 적들을 모두 처치해야 합니다.";
-    private static final String UNLINKED_ROOM_MESSAGE = "연결되지 않은 방입니다.";
-    private static final int DUNGEON_MOVE_MINUTES = 5;
 
     private final DungeonSpecRepository dungeonSpecRepository;
     private final DungeonGenerator dungeonGenerator;
@@ -112,8 +109,8 @@ public class DungeonService {
                 itemCatalogService,
                 actionLog,
                 objectMapper,
-                null,
-                null);
+                new GameMessageService(null),
+                new GameProperties(null, null, null, null, null, null));
     }
 
     /**
@@ -226,14 +223,15 @@ public class DungeonService {
                                                 "현재 방을 그래프에서 찾을 수 없습니다: " + currentRoomId));
 
         if (!currentNode.links().contains(targetRoomId)) {
-            throw new BlockedMovementException(UNLINKED_ROOM_MESSAGE);
+            throw new BlockedMovementException(gameMessageService.get("dungeon.unlinked_room"));
         }
 
         final boolean currentCleared = instance.isRoomCleared(currentRoomId);
         if (!currentCleared) {
             final boolean targetCleared = instance.isRoomCleared(targetRoomId);
             if (!targetCleared) {
-                throw new BlockedMovementException(BLOCKED_FORWARD_MESSAGE);
+                throw new BlockedMovementException(
+                        gameMessageService.get("dungeon.blocked_forward"));
             }
         }
 
@@ -244,10 +242,7 @@ public class DungeonService {
         dungeonProgressRepository.save(entity);
 
         final CharacterProgress character = loadCharacterOrThrow(characterId);
-        final int moveMinutes =
-                gameProperties != null && gameProperties.movement() != null
-                        ? gameProperties.movement().dungeonMoveMinutes()
-                        : DUNGEON_MOVE_MINUTES;
+        final int moveMinutes = gameProperties.movement().dungeonMoveMinutes();
         character.advanceInGameTime(moveMinutes);
         character.updateCurrentNodeId(targetRoomId);
         characterProgressRepository.save(character);

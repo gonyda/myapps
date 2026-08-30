@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
 
     /** 이전 호환용 기본 생성자. */
     public GlobalExceptionHandler() {
-        this(null);
+        this(new com.myapps.web.myrpg.support.GameMessageService(null));
     }
 
     /**

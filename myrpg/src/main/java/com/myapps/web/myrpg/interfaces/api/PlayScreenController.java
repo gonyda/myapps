@@ -164,7 +164,7 @@ public class PlayScreenController {
                 nodeViewAssembler,
                 dungeonService,
                 gatheringService,
-                null);
+                new com.myapps.web.myrpg.support.GameMessageService(null));
     }
 
     /**

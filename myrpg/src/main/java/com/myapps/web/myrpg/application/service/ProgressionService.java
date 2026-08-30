@@ -22,9 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProgressionService {
 
-    private static final int DEFAULT_MAX_LEVEL = 100;
     private static final Duration REBIRTH_COOLDOWN = Duration.ofHours(24);
-    private static final double DEFAULT_DEATH_PENALTY_RATE = 0.10;
     private static final String RESPAWN_NODE_ID = "tir-chonaill";
 
     private final ExperiencePolicy experiencePolicy;
@@ -50,19 +48,19 @@ public class ProgressionService {
             final ExperiencePolicy experiencePolicy,
             final StatProgression statProgression,
             final Clock clock) {
-        this(experiencePolicy, statProgression, clock, null);
+        this(
+                experiencePolicy,
+                statProgression,
+                clock,
+                new GameProperties(null, null, null, null, null, null));
     }
 
     private int maxLevel() {
-        return gameProperties != null && gameProperties.progression() != null
-                ? gameProperties.progression().maxLevel()
-                : DEFAULT_MAX_LEVEL;
+        return gameProperties.progression().maxLevel();
     }
 
     private double deathPenaltyRate() {
-        return gameProperties != null && gameProperties.progression() != null
-                ? gameProperties.progression().deathPenaltyRate()
-                : DEFAULT_DEATH_PENALTY_RATE;
+        return gameProperties.progression().deathPenaltyRate();
     }
 
     /**

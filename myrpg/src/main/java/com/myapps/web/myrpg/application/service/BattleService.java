@@ -77,12 +77,7 @@ public class BattleService {
     private static final String LOG_TYPE_GROWTH = "growth";
     private static final int NORMAL_CLASH_DURATION_MS = 1000;
     private static final int DEFAULT_CLASH_DURATION_MS = 1500;
-    private static final String BADGE_LABEL_NORMAL = "⚡ 일반공격 태세";
-    private static final String BADGE_LABEL_HEAVY = "💥 강공격 차징 중!";
-    private static final String BADGE_LABEL_DEFENSE = "🛡️ 방어 태세";
-    private static final String BADGE_LABEL_BOW_FIRST_STRIKE = "🏹 선제 사격 기회!";
-    private static final String BADGE_LABEL_PREEMPTIVE_PLAYER = "⚡ 선제 공격 찬스!";
-    private static final String BADGE_LABEL_PREEMPTIVE_MONSTER = "⚠️ 몬스터의 확정 선제 일반공격!";
+
     private static final String BADGE_CLASS_NORMAL = "badge-stance-normal";
     private static final String BADGE_CLASS_HEAVY = "badge-stance-heavy";
     private static final String BADGE_CLASS_DEFENSE = "badge-stance-defense";
@@ -192,8 +187,8 @@ public class BattleService {
                 characterSkillRepository,
                 itemCatalogService,
                 dungeonService,
-                null,
-                null);
+                new GameMessageService(null),
+                new GameProperties(null, null, null, null, null, null));
     }
 
     /**
@@ -1578,22 +1573,22 @@ public class BattleService {
             final boolean bowFirstStrike,
             final PreemptiveParty preemptiveParty) {
         if (bowFirstStrike) {
-            return BADGE_LABEL_BOW_FIRST_STRIKE;
+            return gameMessageService.get("badge.stance.bow_first_strike");
         }
         if (preemptiveParty == PreemptiveParty.PLAYER) {
-            return BADGE_LABEL_PREEMPTIVE_PLAYER;
+            return gameMessageService.get("badge.stance.preemptive_player");
         }
         if (preemptiveParty == PreemptiveParty.MONSTER) {
-            return BADGE_LABEL_PREEMPTIVE_MONSTER;
+            return gameMessageService.get("badge.stance.preemptive_monster");
         }
         if (intent == null) {
             return null;
         }
         return switch (intent) {
-            case NORMAL -> BADGE_LABEL_NORMAL;
-            case HEAVY -> BADGE_LABEL_HEAVY;
-            case DEFENSE -> BADGE_LABEL_DEFENSE;
-            default -> BADGE_LABEL_NORMAL;
+            case NORMAL -> gameMessageService.get("badge.stance.normal");
+            case HEAVY -> gameMessageService.get("badge.stance.heavy");
+            case DEFENSE -> gameMessageService.get("badge.stance.defense");
+            default -> gameMessageService.get("badge.stance.normal");
         };
     }
 

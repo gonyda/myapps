@@ -38,8 +38,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RepairController {
 
     private static final String FRAGMENT_REPAIR_POPUP = "fragments/repair-popup :: repair-content";
-    private static final int DEFAULT_REPAIR_SUCCESS_RATE_PERCENT = 95;
-    private static final int DEFAULT_REPAIR_AMOUNT = 1;
 
     private final CharacterService characterService;
     private final ShopService shopService;
@@ -66,7 +64,11 @@ public class RepairController {
         this.itemCatalogService = itemCatalogService;
         this.ownedItemRepository = ownedItemRepository;
         this.random = random;
-        this.gameProperties = gameProperties;
+        this.gameProperties =
+                gameProperties != null
+                        ? gameProperties
+                        : new com.myapps.web.myrpg.config.GameProperties(
+                                null, null, null, null, null, null);
     }
 
     /** 이전 호환용 생성자. */
@@ -84,7 +86,7 @@ public class RepairController {
                 itemCatalogService,
                 ownedItemRepository,
                 random,
-                null);
+                new com.myapps.web.myrpg.config.GameProperties(null, null, null, null, null, null));
     }
 
     /**
@@ -172,14 +174,8 @@ public class RepairController {
         final long repairCost = shopService.sellValueOf(target);
         progress.spendGold(repairCost);
 
-        final int successRate =
-                gameProperties != null && gameProperties.town() != null
-                        ? gameProperties.town().repairSuccessRate()
-                        : DEFAULT_REPAIR_SUCCESS_RATE_PERCENT;
-        final int repairAmt =
-                gameProperties != null && gameProperties.town() != null
-                        ? gameProperties.town().repairAmount()
-                        : DEFAULT_REPAIR_AMOUNT;
+        final int successRate = gameProperties.town().repairSuccessRate();
+        final int repairAmt = gameProperties.town().repairAmount();
 
         final boolean success = random.nextInt(100) < successRate;
         if (success) {

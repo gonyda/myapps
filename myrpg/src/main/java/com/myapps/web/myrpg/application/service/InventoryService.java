@@ -58,10 +58,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public class InventoryService {
 
-    private static final int MAX_CAPACITY = 30;
-    private static final int DEFAULT_POTION_QUANTITY = 5;
-    private static final int EQUIPMENT_MAX_DURABILITY = 20;
-
     private static final String SEED_HP_POTION_ID = "hp_potion_30";
     private static final String SEED_MP_POTION_ID = "mp_potion_30";
     private static final String SEED_STAMINA_POTION_ID = "stamina_potion_30";
@@ -134,8 +130,8 @@ public class InventoryService {
                 actionLog,
                 skillCatalogService,
                 characterSkillRepository,
-                null,
-                null);
+                new GameMessageService(null),
+                new GameProperties(null, null, null, null, null, null));
     }
 
     /**
@@ -820,7 +816,7 @@ public class InventoryService {
                         1,
                         StorageKind.INVENTORY,
                         equipped,
-                        EQUIPMENT_MAX_DURABILITY));
+                        resolveMaxDurability(itemId)));
     }
 
     /**
@@ -1349,8 +1345,9 @@ public class InventoryService {
 
     private void checkCapacity(final Long characterId, final StorageKind storage) {
         final long currentCount = countStorage(characterId, storage);
-        if (currentCount >= MAX_CAPACITY) {
-            throw new InventoryFullException(storage.name() + " 용량(30)을 초과했습니다.");
+        if (currentCount >= maxCapacity()) {
+            throw new InventoryFullException(
+                    storage.name() + " 용량(" + maxCapacity() + ")을 초과했습니다.");
         }
     }
 
@@ -1359,7 +1356,7 @@ public class InventoryService {
     }
 
     private boolean hasCapacity(final Long characterId, final StorageKind storage) {
-        return countStorage(characterId, storage) < MAX_CAPACITY;
+        return countStorage(characterId, storage) < maxCapacity();
     }
 
     private CharacterProgress findCharacterSafe(final Long characterId) {
@@ -1476,15 +1473,11 @@ public class InventoryService {
     }
 
     private int maxCapacity() {
-        return gameProperties != null && gameProperties.inventory() != null
-                ? gameProperties.inventory().maxSlots()
-                : MAX_CAPACITY;
+        return gameProperties.inventory().maxSlots();
     }
 
     private int defaultPotionQuantity() {
-        return gameProperties != null && gameProperties.inventory() != null
-                ? gameProperties.inventory().defaultPotionQty()
-                : DEFAULT_POTION_QUANTITY;
+        return gameProperties.inventory().defaultPotionQty();
     }
 
     private void acquireEquipment(
@@ -1525,9 +1518,7 @@ public class InventoryService {
         if (catalogOpt.isPresent() && catalogOpt.get() instanceof EquipmentItem equipItem) {
             return equipItem.maxDurability();
         }
-        return gameProperties != null && gameProperties.inventory() != null
-                ? gameProperties.inventory().equipmentMaxDurability()
-                : EQUIPMENT_MAX_DURABILITY;
+        return gameProperties.inventory().equipmentMaxDurability();
     }
 
     // ─── combatSkills helpers ───────────────────────────────────────────────

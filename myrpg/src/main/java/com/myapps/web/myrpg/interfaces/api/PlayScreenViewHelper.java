@@ -25,6 +25,7 @@ import com.myapps.web.myrpg.domain.model.Stats;
 import com.myapps.web.myrpg.domain.model.TalentType;
 import com.myapps.web.myrpg.domain.model.TimeOfDay;
 import com.myapps.web.myrpg.domain.model.VitalMax;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class PlayScreenViewHelper {
     private final SkillService skillService;
     private final InventoryService inventoryService;
     private final Clock clock;
+    private final GameMessageService gameMessageService;
 
     /**
      * PlayScreenViewHelper를 생성한다.
@@ -64,6 +66,7 @@ public class PlayScreenViewHelper {
      * @param skillService 스킬 서비스 (랭크업 영구 보너스 합산용)
      * @param inventoryService 인벤토리 서비스 (장비 보너스 합산용)
      * @param clock 시간 산출용 Clock
+     * @param gameMessageService 메시지 서비스
      */
     @org.springframework.beans.factory.annotation.Autowired
     public PlayScreenViewHelper(
@@ -71,12 +74,31 @@ public class PlayScreenViewHelper {
             final StatProgression statProgression,
             final SkillService skillService,
             final InventoryService inventoryService,
-            final Clock clock) {
+            final Clock clock,
+            @org.springframework.lang.Nullable final GameMessageService gameMessageService) {
         this.experiencePolicy = experiencePolicy;
         this.statProgression = statProgression;
         this.skillService = skillService;
         this.inventoryService = inventoryService;
         this.clock = clock;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
+    }
+
+    /** 5인자 하위 호환 생성자. */
+    public PlayScreenViewHelper(
+            final ExperiencePolicy experiencePolicy,
+            final StatProgression statProgression,
+            final SkillService skillService,
+            final InventoryService inventoryService,
+            final Clock clock) {
+        this(
+                experiencePolicy,
+                statProgression,
+                skillService,
+                inventoryService,
+                clock,
+                new GameMessageService(null));
     }
 
     /** 4인자 하위 호환 생성자 (기본 Clock 사용). */
@@ -90,7 +112,8 @@ public class PlayScreenViewHelper {
                 statProgression,
                 skillService,
                 inventoryService,
-                Clock.system(ZoneId.of("Asia/Seoul")));
+                Clock.system(ZoneId.of("Asia/Seoul")),
+                new GameMessageService(null));
     }
 
     /**
@@ -414,12 +437,12 @@ public class PlayScreenViewHelper {
      */
     public String rebirthElapsedText(final RebirthStatus rebirthStatus) {
         if (!rebirthStatus.everRebirthed()) {
-            return "환생 기록 없음";
+            return gameMessageService.get("rebirth.no_record");
         }
         final long totalMinutes = rebirthStatus.elapsed().toMinutes();
         final long hours = totalMinutes / MINUTES_PER_HOUR;
         final long minutes = totalMinutes % MINUTES_PER_HOUR;
-        return "환생 후 " + hours + "시간 " + minutes + "분 경과";
+        return gameMessageService.get("rebirth.elapsed", hours, minutes);
     }
 
     private record VitalGauges(GaugeView hp, GaugeView mp, GaugeView stamina) {}

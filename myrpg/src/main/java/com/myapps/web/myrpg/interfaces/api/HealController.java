@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/heal")
 public class HealController {
 
-    private static final int DEFAULT_HEAL_COST = 100;
     private static final String LOG_TYPE_ITEM = "item";
 
     private final CharacterService characterService;
@@ -52,7 +51,11 @@ public class HealController {
         this.statProgression = statProgression;
         this.inventoryService = inventoryService;
         this.skillService = skillService;
-        this.gameProperties = gameProperties;
+        this.gameProperties =
+                gameProperties != null
+                        ? gameProperties
+                        : new com.myapps.web.myrpg.config.GameProperties(
+                                null, null, null, null, null, null);
     }
 
     /** 이전 호환용 생성자. */
@@ -61,7 +64,12 @@ public class HealController {
             final StatProgression statProgression,
             final InventoryService inventoryService,
             final SkillService skillService) {
-        this(characterService, statProgression, inventoryService, skillService, null);
+        this(
+                characterService,
+                statProgression,
+                inventoryService,
+                skillService,
+                new com.myapps.web.myrpg.config.GameProperties(null, null, null, null, null, null));
     }
 
     /**
@@ -74,10 +82,7 @@ public class HealController {
     @ResponseBody
     public ResponseEntity<Void> heal(final HttpSession session) {
         final CharacterProgress progress = resolveCurrentCharacter(session);
-        final int cost =
-                gameProperties != null && gameProperties.town() != null
-                        ? gameProperties.town().healCost()
-                        : DEFAULT_HEAL_COST;
+        final int cost = gameProperties.town().healCost();
         progress.spendGold(cost);
 
         final VitalMax maxVitals = calculateEffectiveVitalMax(progress);

@@ -32,7 +32,7 @@
         'exception.equip.shield_conflict': '방패와 함께 착용할 수 없습니다.',
         'exception.equip.unequip_before_sell': '장착을 해제한 후 판매할 수 있습니다.',
         'exception.equip.cannot_equip': '착용할 수 없습니다.',
-        'exception.economy.insufficient_gold': '골드가 부족합니다.',
+        'exception.economy.insufficient_gold': '골드가 부족합니다 (필요: {0}G)',
         'exception.vital.insufficient_stamina': '스태미나가 부족합니다 (필요: {0} SP)',
         'bank.invalid_amount': '1 이상의 금액을 입력해주세요.',
         'skill.invalid_slot': '1부터 10 사이의 슬롯 번호를 입력해 주세요.',
@@ -42,7 +42,18 @@
         'confirm.rebirth': '환생을 진행하시겠습니까?',
         'confirm.rankup': '승급하시겠습니까?',
         'confirm.clear_all_slots': '모든 스킬 슬롯 배정을 비우시겠습니까?',
-        'confirm.clear_slot': '{0}번 슬롯을 비우시겠습니까?'
+        'confirm.clear_slot': '{0}번 슬롯을 비우시겠습니까?',
+
+        // Dungeon & Movement
+        'dungeon.blocked_forward': '앞으로 나아가려면 이 방의 적들을 모두 처치해야 합니다.',
+        'dungeon.unlinked_room': '연결되지 않은 방입니다.',
+        'movement.blocked': '그곳으로는 갈 수 없습니다.',
+        'movement.dungeon_locked': '아직 준비 중입니다.',
+
+        // UI & Battle Badges
+        'battle.fallback_monster_name': '몬스터',
+        'rebirth.no_record': '환생 기록 없음',
+        'rebirth.elapsed': '환생 후 {0}시간 {1}분 경과'
     };
 
     function format(template, args) {

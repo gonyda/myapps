@@ -20,10 +20,10 @@
 - **스킬 승급 조건 단순화 & 유형 뱃지 표기 (2026-08-29)**: `RankUpRequirement(requiredUsage)` 단일화, 10대 스킬 유형별 다크 판타지 컬러 뱃지 구축.
 - **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**: `ItemType.MATERIAL`, `firewood` 아이템 등록, `GatheringService` (5 SP 소모, 50% 채집 성공/실패 롤), 5초 자동 완료형 채집 타이머 완비.
 - **메시지 및 게임 프로퍼티 외부화 리팩토링 및 코드리뷰 보완 완료 (2026-08-30, 018-message-and-properties-externalization)**:
-  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외 110여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` (MessageSource 자동 fallback 내장) 구현.
-  - **서비스 & 컨트롤러**: `BattleController`, `InventoryController`, `PlayScreenController`, `SkillController`, `GlobalExceptionHandler` 등 컨트롤러 계층 잔존 하드코딩 8건 전수 외부화 및 Nullable 자동 주입 지원.
-  - **중복 로직 및 매직넘버 제거**: `BattleLogFormatter` 중복 switch 문 제거 및 `GameMessageService` 위임, `BattleService` 내 `static final` 상수 8종 제거 및 `gameProperties.battle()` 전용화, 서비스 계층 `gameMessageService != null` 삼항 연산자 분기 전수 정리.
-  - **프론트엔드**: `game-messages.js` 키 네이밍을 `messages.properties`와 1:1 일원화, `myrpg.js` 알림/Confirm/토스트 전수 연동.
+  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외, 던전, 이동, 뱃지 등 120여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` (MessageSource 자동 fallback 내장) 구현.
+  - **서비스 & 컨트롤러**: `BattleController`, `InventoryController`, `PlayScreenController`, `SkillController`, `GlobalExceptionHandler`, `HealController`, `RepairController` 등 컨트롤러 계층 하드코딩 전수 외부화 및 Nullable 자동 주입 지원.
+  - **SSOT 일원화 & 중복 로직/매직넘버 제거**: 각 서비스/컨트롤러 내 `DEFAULT_*` 상수 전수 제거 및 `gameProperties` 단일 참조 일원화, `gameProperties != null` / `gameMessageService != null` 불필요 삼항 분기 15곳 이상 전면 단순화, `GatheringService` 내 카탈로그 아이템명 동적 조회, `BattleService` 뱃지 라벨 전수 외부화.
+  - **프론트엔드**: `game-messages.js` 키 네이밍 및 포맷 인자를 `messages.properties`와 1:1 일원화, `myrpg.js` 알림/Confirm/토스트 전수 연동.
   - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1,267개 전체 단위/통합 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
 
 ---
@@ -31,7 +31,7 @@
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **Spec & Task 상태**: `.kiro/specs/myrpg/018-message-and-properties-externalization/tasks.md` 전 태스크(1~18) 100% 완료
+- **Spec & Task 상태**: 메시지 리팩토링 전수 보완 완료 (SSOT 정리, null 가드 15곳 제거, 하드코딩 외부화)
 - **5대 품질 가드레일 상태**: 전체 멀티모듈 (`mystudy`, `mycalendar`, `myrpg`) 100% 그린, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 

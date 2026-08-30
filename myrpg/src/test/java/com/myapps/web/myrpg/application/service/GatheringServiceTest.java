@@ -127,7 +127,7 @@ class GatheringServiceTest {
         assertThat(progress.getStaminaCurrent()).isEqualTo(45);
         assertThat(gatheringService.isTreeAvailable(1L, "tir-chonaill")).isFalse();
         verify(inventoryService).acquireItem(1L, "firewood", 1);
-        verify(actionLog).add(eq("[채집] 단단한 장작 획득!"), eq("item"));
+        verify(actionLog).add(eq("[채집] 장작 획득!"), eq("item"));
     }
 
     @Test

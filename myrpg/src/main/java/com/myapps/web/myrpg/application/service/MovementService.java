@@ -8,6 +8,7 @@ import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.DungeonInstance;
 import com.myapps.web.myrpg.domain.model.MapGraph;
 import com.myapps.web.myrpg.domain.model.MapNode;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +21,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class MovementService {
 
-    private static final String BLOCKED_MESSAGE = "그곳으로는 갈 수 없습니다.";
-    private static final String DUNGEON_LOCKED_MESSAGE = "아직 준비 중입니다.";
-    private static final int DEFAULT_WORLD_MOVE_MINUTES = 15;
-
     private final MapService mapService;
     private final ActionLog actionLog;
     private final DungeonService dungeonService;
     private final GameProperties gameProperties;
+    private final GameMessageService gameMessageService;
 
     /**
      * MovementService를 생성한다 (Spring 주입용).
@@ -36,17 +34,21 @@ public class MovementService {
      * @param actionLog 행동 로그 (세션 보관)
      * @param dungeonService 던전 인스턴스 및 이동 관리 서비스
      * @param gameProperties 게임 밸런스 설정 프로퍼티
+     * @param gameMessageService 메시지 서비스
      */
     @org.springframework.beans.factory.annotation.Autowired
     public MovementService(
             final MapService mapService,
             final ActionLog actionLog,
             final DungeonService dungeonService,
-            final GameProperties gameProperties) {
+            final GameProperties gameProperties,
+            final GameMessageService gameMessageService) {
         this.mapService = mapService;
         this.actionLog = actionLog;
         this.dungeonService = dungeonService;
         this.gameProperties = gameProperties;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
     }
 
     /** 이전 호환용 생성자. */
@@ -54,7 +56,12 @@ public class MovementService {
             final MapService mapService,
             final ActionLog actionLog,
             final DungeonService dungeonService) {
-        this(mapService, actionLog, dungeonService, null);
+        this(
+                mapService,
+                actionLog,
+                dungeonService,
+                new GameProperties(null, null, null, null, null, null),
+                new GameMessageService(null));
     }
 
     /**
@@ -88,19 +95,19 @@ public class MovementService {
         final Optional<MapNode> currentRoomOpt = dungeonGraph.byId(currentRoomId);
 
         if (currentRoomOpt.isEmpty()) {
-            return new MovementResult.Blocked(BLOCKED_MESSAGE);
+            return new MovementResult.Blocked(gameMessageService.get("movement.blocked"));
         }
 
         final MapNode currentRoom = currentRoomOpt.get();
         final Optional<MapNode> neighborOpt = dungeonGraph.neighborByOffset(currentRoom, dx, dy);
 
         if (neighborOpt.isEmpty()) {
-            return new MovementResult.Blocked(BLOCKED_MESSAGE);
+            return new MovementResult.Blocked(gameMessageService.get("movement.blocked"));
         }
 
         final MapNode targetRoom = neighborOpt.get();
         if (!currentRoom.links().contains(targetRoom.id())) {
-            return new MovementResult.Blocked(BLOCKED_MESSAGE);
+            return new MovementResult.Blocked(gameMessageService.get("movement.blocked"));
         }
 
         try {
@@ -119,19 +126,16 @@ public class MovementService {
         final Optional<MapNode> neighborOpt = graph.neighborByOffset(currentNode, dx, dy);
 
         if (neighborOpt.isEmpty()) {
-            return new MovementResult.Blocked(BLOCKED_MESSAGE);
+            return new MovementResult.Blocked(gameMessageService.get("movement.blocked"));
         }
 
         final MapNode target = neighborOpt.get();
 
         if (!currentNode.links().contains(target.id())) {
-            return new MovementResult.Blocked(BLOCKED_MESSAGE);
+            return new MovementResult.Blocked(gameMessageService.get("movement.blocked"));
         }
 
-        final int moveMinutes =
-                gameProperties != null && gameProperties.movement() != null
-                        ? gameProperties.movement().worldMoveMinutes()
-                        : DEFAULT_WORLD_MOVE_MINUTES;
+        final int moveMinutes = gameProperties.movement().worldMoveMinutes();
         progress.advanceInGameTime(moveMinutes);
         progress.updateCurrentNodeId(target.id());
 
@@ -149,6 +153,6 @@ public class MovementService {
      * @return 항상 {@link MovementResult.DungeonLocked}
      */
     public MovementResult enterDungeon(final CharacterProgress progress, final String dungeonId) {
-        return new MovementResult.DungeonLocked(DUNGEON_LOCKED_MESSAGE);
+        return new MovementResult.DungeonLocked(gameMessageService.get("movement.dungeon_locked"));
     }
 }

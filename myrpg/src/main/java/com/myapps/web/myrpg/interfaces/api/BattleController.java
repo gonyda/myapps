@@ -108,7 +108,7 @@ public class BattleController {
                 actionLog,
                 nodeViewAssembler,
                 itemCatalogService,
-                null);
+                new com.myapps.web.myrpg.support.GameMessageService(null));
     }
 
     /**
@@ -409,7 +409,10 @@ public class BattleController {
     // ─── Private: view shell ────────────────────────────────────────────────
 
     private String resolveMonsterName(final String monsterId) {
-        return monsterService.byId(monsterId).map(Monster::name).orElse("몬스터");
+        return monsterService
+                .byId(monsterId)
+                .map(Monster::name)
+                .orElseGet(() -> gameMessageService.get("battle.fallback_monster_name"));
     }
 
     private PlayScreenView buildViewShell(

@@ -23,9 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GatheringService {
 
-    public static final int DEFAULT_STAMINA_COST = 5;
-    public static final double DEFAULT_SPAWN_RATE = 0.50;
-    public static final double DEFAULT_SUCCESS_RATE = 0.50;
     public static final String FIREWOOD_ITEM_ID = "firewood";
     private static final String LOG_TYPE_ITEM = "item";
     private static final String LOG_TYPE_SYSTEM = "system";
@@ -34,6 +31,7 @@ public class GatheringService {
     private final CharacterProgressRepository characterProgressRepository;
     private final StatProgression statProgression;
     private final ActionLog actionLog;
+    private final ItemCatalogService itemCatalogService;
     private final GameMessageService gameMessageService;
     private final GameProperties gameProperties;
     private final Random random;
@@ -47,6 +45,7 @@ public class GatheringService {
      * @param characterProgressRepository 캐릭터 진행상황 리포지토리
      * @param statProgression 스탯 계산기
      * @param actionLog 행동 로그
+     * @param itemCatalogService 아이템 카탈로그 서비스
      * @param gameMessageService 메시지 서비스
      * @param gameProperties 게임 설정 프로퍼티
      */
@@ -56,6 +55,7 @@ public class GatheringService {
             final CharacterProgressRepository characterProgressRepository,
             final StatProgression statProgression,
             final ActionLog actionLog,
+            final ItemCatalogService itemCatalogService,
             final GameMessageService gameMessageService,
             final GameProperties gameProperties) {
         this(
@@ -63,6 +63,7 @@ public class GatheringService {
                 characterProgressRepository,
                 statProgression,
                 actionLog,
+                itemCatalogService,
                 gameMessageService,
                 gameProperties,
                 new Random());
@@ -75,6 +76,7 @@ public class GatheringService {
      * @param characterProgressRepository 캐릭터 진행상황 리포지토리
      * @param statProgression 스탯 계산기
      * @param actionLog 행동 로그
+     * @param itemCatalogService 아이템 카탈로그 서비스
      * @param gameMessageService 메시지 서비스
      * @param gameProperties 게임 설정 프로퍼티
      * @param random 난수 발생기
@@ -84,6 +86,7 @@ public class GatheringService {
             final CharacterProgressRepository characterProgressRepository,
             final StatProgression statProgression,
             final ActionLog actionLog,
+            final ItemCatalogService itemCatalogService,
             final GameMessageService gameMessageService,
             final GameProperties gameProperties,
             final Random random) {
@@ -91,6 +94,7 @@ public class GatheringService {
         this.characterProgressRepository = characterProgressRepository;
         this.statProgression = statProgression;
         this.actionLog = actionLog;
+        this.itemCatalogService = itemCatalogService;
         this.gameMessageService =
                 gameMessageService != null ? gameMessageService : new GameMessageService(null);
         this.gameProperties =
@@ -98,6 +102,26 @@ public class GatheringService {
                         ? gameProperties
                         : new GameProperties(null, null, null, null, null, null);
         this.random = random;
+    }
+
+    /** 이전 호환용 생성자 (ItemCatalogService 제외). */
+    public GatheringService(
+            final InventoryService inventoryService,
+            final CharacterProgressRepository characterProgressRepository,
+            final StatProgression statProgression,
+            final ActionLog actionLog,
+            final GameMessageService gameMessageService,
+            final GameProperties gameProperties,
+            final Random random) {
+        this(
+                inventoryService,
+                characterProgressRepository,
+                statProgression,
+                actionLog,
+                null,
+                gameMessageService,
+                gameProperties,
+                random);
     }
 
     /** 이전 호환용 생성자. */
@@ -113,7 +137,8 @@ public class GatheringService {
                 statProgression,
                 actionLog,
                 null,
-                null,
+                new GameMessageService(null),
+                new GameProperties(null, null, null, null, null, null),
                 random);
     }
 
@@ -151,10 +176,7 @@ public class GatheringService {
             return false;
         }
 
-        final double spawnRate =
-                gameProperties != null && gameProperties.gathering() != null
-                        ? gameProperties.gathering().woodcutSpawnRate() / 100.0
-                        : DEFAULT_SPAWN_RATE;
+        final double spawnRate = gameProperties.gathering().woodcutSpawnRate() / 100.0;
 
         final boolean spawned = random.nextDouble() < spawnRate;
         if (spawned) {
@@ -231,7 +253,14 @@ public class GatheringService {
 
         if (success) {
             inventoryService.acquireItem(charId, FIREWOOD_ITEM_ID, 1);
-            final String logMsg = gameMessageService.get("log.gathering.success", "단단한 장작");
+            final String itemName =
+                    itemCatalogService != null
+                            ? itemCatalogService
+                                    .byId(FIREWOOD_ITEM_ID)
+                                    .map(com.myapps.web.myrpg.domain.model.Item::name)
+                                    .orElse("장작")
+                            : "장작";
+            final String logMsg = gameMessageService.get("log.gathering.success", itemName);
             actionLog.add(logMsg, LOG_TYPE_ITEM);
             message = logMsg;
             itemId = FIREWOOD_ITEM_ID;

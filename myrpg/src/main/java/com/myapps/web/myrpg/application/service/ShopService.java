@@ -87,7 +87,7 @@ public class ShopService {
                 inventoryService,
                 characterService,
                 actionLog,
-                null);
+                new GameMessageService(null));
     }
 
     /**

@@ -72,7 +72,11 @@ public class InventoryController {
             final InventoryService inventoryService,
             final CharacterService characterService,
             final ActionLog actionLog) {
-        this(inventoryService, characterService, actionLog, null);
+        this(
+                inventoryService,
+                characterService,
+                actionLog,
+                new com.myapps.web.myrpg.support.GameMessageService(null));
     }
 
     /**

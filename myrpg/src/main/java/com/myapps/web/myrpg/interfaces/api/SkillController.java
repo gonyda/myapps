@@ -68,7 +68,11 @@ public class SkillController {
             final SkillService skillService,
             final CharacterService characterService,
             final ActionLog actionLog) {
-        this(skillService, characterService, actionLog, null);
+        this(
+                skillService,
+                characterService,
+                actionLog,
+                new com.myapps.web.myrpg.support.GameMessageService(null));
     }
 
     /**
