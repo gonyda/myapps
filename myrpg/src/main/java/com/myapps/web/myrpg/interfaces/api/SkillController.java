@@ -44,21 +44,28 @@ public class SkillController {
     private final SkillService skillService;
     private final CharacterService characterService;
     private final ActionLog actionLog;
+    private final com.myapps.web.myrpg.support.GameMessageService gameMessageService;
 
-    /**
-     * SkillController를 생성한다.
-     *
-     * @param skillService 스킬 시스템 서비스
-     * @param characterService 캐릭터 진행상황 서비스
-     * @param actionLog 행동 로그
-     */
+    /** SkillController를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public SkillController(
+            final SkillService skillService,
+            final CharacterService characterService,
+            final ActionLog actionLog,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
+        this.skillService = skillService;
+        this.characterService = characterService;
+        this.actionLog = actionLog;
+        this.gameMessageService = gameMessageService;
+    }
+
+    /** 이전 호환용 생성자. */
     public SkillController(
             final SkillService skillService,
             final CharacterService characterService,
             final ActionLog actionLog) {
-        this.skillService = skillService;
-        this.characterService = characterService;
-        this.actionLog = actionLog;
+        this(skillService, characterService, actionLog, null);
     }
 
     /**
@@ -131,13 +138,18 @@ public class SkillController {
         }
         final SkillRankUpView rankUpView = skillService.buildRankUpView(progress.getId(), id);
         if (success) {
-            actionLog.add(
-                    "✨ ["
-                            + rankUpView.label()
-                            + "] "
-                            + rankUpView.currentRankLabel()
-                            + "랭크로 승급되었습니다!",
-                    LOG_TYPE_GROWTH);
+            final String rankUpMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get(
+                                    "skill.rankup",
+                                    rankUpView.label(),
+                                    rankUpView.currentRankLabel())
+                            : "✨ ["
+                                    + rankUpView.label()
+                                    + "] "
+                                    + rankUpView.currentRankLabel()
+                                    + "랭크로 승급되었습니다!";
+            actionLog.add(rankUpMsg, LOG_TYPE_GROWTH);
         }
         model.addAttribute("rankUp", rankUpView);
         return FRAGMENT_RANKUP_MODAL;

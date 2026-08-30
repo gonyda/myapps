@@ -2,6 +2,7 @@ package com.myapps.web.myrpg.application.service;
 
 import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.exception.BlockedMovementException;
+import com.myapps.web.myrpg.config.GameProperties;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.DungeonInstance;
@@ -21,26 +22,39 @@ public class MovementService {
 
     private static final String BLOCKED_MESSAGE = "그곳으로는 갈 수 없습니다.";
     private static final String DUNGEON_LOCKED_MESSAGE = "아직 준비 중입니다.";
-    private static final int WORLD_MOVE_MINUTES = 15;
+    private static final int DEFAULT_WORLD_MOVE_MINUTES = 15;
 
     private final MapService mapService;
     private final ActionLog actionLog;
     private final DungeonService dungeonService;
+    private final GameProperties gameProperties;
 
     /**
-     * MovementService를 생성한다.
+     * MovementService를 생성한다 (Spring 주입용).
      *
      * @param mapService 맵 노드 조회 및 그래프 제공 서비스
      * @param actionLog 행동 로그 (세션 보관)
      * @param dungeonService 던전 인스턴스 및 이동 관리 서비스
+     * @param gameProperties 게임 밸런스 설정 프로퍼티
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    public MovementService(
+            final MapService mapService,
+            final ActionLog actionLog,
+            final DungeonService dungeonService,
+            final GameProperties gameProperties) {
+        this.mapService = mapService;
+        this.actionLog = actionLog;
+        this.dungeonService = dungeonService;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public MovementService(
             final MapService mapService,
             final ActionLog actionLog,
             final DungeonService dungeonService) {
-        this.mapService = mapService;
-        this.actionLog = actionLog;
-        this.dungeonService = dungeonService;
+        this(mapService, actionLog, dungeonService, null);
     }
 
     /**
@@ -114,7 +128,11 @@ public class MovementService {
             return new MovementResult.Blocked(BLOCKED_MESSAGE);
         }
 
-        progress.advanceInGameTime(WORLD_MOVE_MINUTES);
+        final int moveMinutes =
+                gameProperties != null && gameProperties.movement() != null
+                        ? gameProperties.movement().worldMoveMinutes()
+                        : DEFAULT_WORLD_MOVE_MINUTES;
+        progress.advanceInGameTime(moveMinutes);
         progress.updateCurrentNodeId(target.id());
 
         return new MovementResult.Moved(target, null);

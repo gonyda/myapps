@@ -89,6 +89,7 @@
     <!-- 채집(장작 패기) 팝업 -->
     <div th:replace="~{fragments/gathering-modal :: gathering-modal}"></div>
 
+    <script th:src="@{/js/game-messages.js}"></script>
     <script th:src="@{/js/myrpg.js}"></script>
     <div id="battleActiveSignal" th:if="${battleActive}" style="display:none"></div>
 </body>

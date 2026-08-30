@@ -7,6 +7,7 @@ import com.myapps.web.myrpg.application.dto.DungeonSpec;
 import com.myapps.web.myrpg.application.exception.BlockedMovementException;
 import com.myapps.web.myrpg.application.exception.DungeonDataException;
 import com.myapps.web.myrpg.application.exception.DungeonNotImplementedException;
+import com.myapps.web.myrpg.config.GameProperties;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.DungeonInstance;
@@ -18,6 +19,7 @@ import com.myapps.web.myrpg.domain.model.NodeType;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.DungeonProgressRepository;
 import com.myapps.web.myrpg.domain.service.DungeonGenerator;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,21 +53,39 @@ public class DungeonService {
     private final ItemCatalogService itemCatalogService;
     private final ActionLog actionLog;
     private final ObjectMapper objectMapper;
+    private final GameMessageService gameMessageService;
+    private final GameProperties gameProperties;
 
-    /**
-     * DungeonService를 생성합니다.
-     *
-     * @param dungeonSpecRepository 던전 스펙 저장소
-     * @param dungeonGenerator 프로시저럴 던전 생성 엔진
-     * @param dungeonProgressRepository 던전 진행상황 JPA 리포지토리
-     * @param characterProgressRepository 캐릭터 진행상황 리포지토리
-     * @param progressionService 경험치/사망 처리 서비스
-     * @param inventoryService 인벤토리 서비스
-     * @param monsterRewardService 몬스터/던전 보상 추첨 서비스
-     * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param actionLog 활동 로그
-     * @param objectMapper Jackson ObjectMapper
-     */
+    /** DungeonService를 생성합니다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public DungeonService(
+            final DungeonSpecRepository dungeonSpecRepository,
+            final DungeonGenerator dungeonGenerator,
+            final DungeonProgressRepository dungeonProgressRepository,
+            final CharacterProgressRepository characterProgressRepository,
+            final ProgressionService progressionService,
+            final InventoryService inventoryService,
+            final MonsterRewardService monsterRewardService,
+            final ItemCatalogService itemCatalogService,
+            final ActionLog actionLog,
+            final ObjectMapper objectMapper,
+            final GameMessageService gameMessageService,
+            final GameProperties gameProperties) {
+        this.dungeonSpecRepository = dungeonSpecRepository;
+        this.dungeonGenerator = dungeonGenerator;
+        this.dungeonProgressRepository = dungeonProgressRepository;
+        this.characterProgressRepository = characterProgressRepository;
+        this.progressionService = progressionService;
+        this.inventoryService = inventoryService;
+        this.monsterRewardService = monsterRewardService;
+        this.itemCatalogService = itemCatalogService;
+        this.actionLog = actionLog;
+        this.objectMapper = objectMapper;
+        this.gameMessageService = gameMessageService;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public DungeonService(
             final DungeonSpecRepository dungeonSpecRepository,
             final DungeonGenerator dungeonGenerator,
@@ -77,16 +97,19 @@ public class DungeonService {
             final ItemCatalogService itemCatalogService,
             final ActionLog actionLog,
             final ObjectMapper objectMapper) {
-        this.dungeonSpecRepository = dungeonSpecRepository;
-        this.dungeonGenerator = dungeonGenerator;
-        this.dungeonProgressRepository = dungeonProgressRepository;
-        this.characterProgressRepository = characterProgressRepository;
-        this.progressionService = progressionService;
-        this.inventoryService = inventoryService;
-        this.monsterRewardService = monsterRewardService;
-        this.itemCatalogService = itemCatalogService;
-        this.actionLog = actionLog;
-        this.objectMapper = objectMapper;
+        this(
+                dungeonSpecRepository,
+                dungeonGenerator,
+                dungeonProgressRepository,
+                characterProgressRepository,
+                progressionService,
+                inventoryService,
+                monsterRewardService,
+                itemCatalogService,
+                actionLog,
+                objectMapper,
+                null,
+                null);
     }
 
     /**
@@ -134,7 +157,11 @@ public class DungeonService {
         character.updateCurrentNodeId(instance.startRoomId());
         characterProgressRepository.save(character);
 
-        actionLog.add(spec.name() + "에 입장했습니다.", LOG_TYPE_DUNGEON);
+        final String enterMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.dungeon.enter", spec.name())
+                        : spec.name() + "에 입장했습니다.";
+        actionLog.add(enterMsg, LOG_TYPE_DUNGEON);
         return instance;
     }
 
@@ -163,7 +190,11 @@ public class DungeonService {
             characterProgressRepository.save(character);
         }
 
-        actionLog.add("던전에서 나왔습니다.", LOG_TYPE_DUNGEON);
+        final String exitMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.dungeon.exit")
+                        : "던전에서 나왔습니다.";
+        actionLog.add(exitMsg, LOG_TYPE_DUNGEON);
     }
 
     /**
@@ -215,7 +246,11 @@ public class DungeonService {
         dungeonProgressRepository.save(entity);
 
         final CharacterProgress character = loadCharacterOrThrow(characterId);
-        character.advanceInGameTime(DUNGEON_MOVE_MINUTES);
+        final int moveMinutes =
+                gameProperties != null && gameProperties.movement() != null
+                        ? gameProperties.movement().dungeonMoveMinutes()
+                        : DUNGEON_MOVE_MINUTES;
+        character.advanceInGameTime(moveMinutes);
         character.updateCurrentNodeId(targetRoomId);
         characterProgressRepository.save(character);
 
@@ -285,10 +320,18 @@ public class DungeonService {
             }
         }
 
-        actionLog.add(spec.name() + "을(를) 완전히 정복했습니다!", LOG_TYPE_DUNGEON);
-        actionLog.add(
-                "던전 클리어 보상: EXP +" + reward.exp() + ", Gold +" + reward.gold() + "G",
-                LOG_TYPE_DUNGEON);
+        final String clearMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.dungeon.clear", spec.name())
+                        : spec.name() + "을(를) 완전히 정복했습니다!";
+        actionLog.add(clearMsg, LOG_TYPE_DUNGEON);
+
+        final String clearRewardMsg =
+                gameMessageService != null
+                        ? gameMessageService.get(
+                                "log.dungeon.clear_reward", reward.exp(), reward.gold())
+                        : "던전 클리어 보상: EXP +" + reward.exp() + ", Gold +" + reward.gold() + "G";
+        actionLog.add(clearRewardMsg, LOG_TYPE_DUNGEON);
 
         for (final DroppedItem item : droppedItems) {
             final String itemName =
@@ -298,7 +341,12 @@ public class DungeonService {
                                     .map(com.myapps.web.myrpg.domain.model.Item::name)
                                     .orElse(item.itemId())
                             : item.itemId();
-            actionLog.add("보상 획득: " + itemName + " x" + item.quantity(), LOG_TYPE_DUNGEON);
+            final String itemRewardMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get(
+                                    "log.dungeon.item_reward", itemName, item.quantity())
+                            : "보상 획득: " + itemName + " x" + item.quantity();
+            actionLog.add(itemRewardMsg, LOG_TYPE_DUNGEON);
         }
 
         dungeonProgressRepository.delete(entity);

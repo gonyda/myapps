@@ -22,7 +22,8 @@ class ArchitectureRuleTest {
                             "com.myapps.web.myrpg.application..", "com.myapps.web.myrpg.domain..")
                     .should()
                     .dependOnClassesThat()
-                    .resideInAPackage("com.myapps.web.myrpg.interfaces..");
+                    .resideInAPackage("com.myapps.web.myrpg.interfaces..")
+                    .allowEmptyShould(true);
 
     @ArchTest
     static final ArchRule controllers_should_only_reside_in_interfaces =

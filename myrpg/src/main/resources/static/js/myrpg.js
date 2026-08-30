@@ -329,7 +329,7 @@ function showEquipmentToast(message) {
 // ===== 이동 패드: POST /move 호출 + DOM fragment swap =====
 function move(dx, dy) {
     if (battleActive) {
-        alert("전투 중에는 이동할 수 없습니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.cannot_move_in_combat') : "전투 중에는 이동할 수 없습니다.");
         return;
     }
     fetch("/move?dx=" + dx + "&dy=" + dy, { method: "POST" })
@@ -397,7 +397,7 @@ function swapMoveResponse(html) {
     var ambushEl = container.querySelector("#ambushSignal");
     if (ambushEl) {
         var monsterName = ambushEl.getAttribute("data-monster");
-        alert("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.ambush_alert', monsterName) : ("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!"));
         battleActive = true;
         fetchBattleView();
     }
@@ -475,7 +475,7 @@ function enterDungeon(dungeonId) {
 
 // ===== 던전 퇴장: POST /dungeon/leave =====
 function leaveDungeon() {
-    if (!confirm("던전을 나가시겠습니까?")) {
+    if (!confirm(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('confirm.dungeon_leave') : "던전을 나가시겠습니까?")) {
         return;
     }
     fetch("/dungeon/leave", { method: "POST" })
@@ -838,13 +838,13 @@ function handleTurnResultSignal(container) {
         battleActive = false;
         if (!dungeonCleared) {
             var monsterName = signal.getAttribute("data-monster-name") || "몬스터";
-            alert(monsterName + "이(가) 쓰러졌습니다!");
+            alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.monster_defeated', monsterName) : (monsterName + "이(가) 쓰러졌습니다!"));
         }
     } else if (outcome === "LOSE") {
-        alert("정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.player_defeated') : "정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
         battleActive = false;
     } else if (outcome === "FLED") {
-        alert("도망 성공!");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.flee_success') : "도망 성공!");
         battleActive = false;
     }
 }
@@ -885,9 +885,9 @@ function npcAction(label, npcId) {
     } else if (label === '치료받기') {
         heal();
     } else if (label === '인챈트') {
-        alert("추후 설계 예정입니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.feature_planned') : "추후 설계 예정입니다.");
     } else {
-        alert("구현 예정입니다");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.feature_not_implemented') : "구현 예정입니다");
     }
 }
 
@@ -900,7 +900,7 @@ function heal() {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '골드가 부족합니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('economy.insufficient_gold') : '골드가 부족합니다.'));
                     return null;
                 });
             }
@@ -909,7 +909,7 @@ function heal() {
         .then(function (response) {
             if (!response) { return; }
             refreshTopBar();
-            alert("치료되었습니다!");
+            alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('town.heal.success') : "치료되었습니다!");
         });
 }
 
@@ -963,7 +963,7 @@ function buyShopItem(npcId, itemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '구매할 수 없습니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('shop.cannot_buy') : '구매할 수 없습니다.'));
                     return null;
                 });
             }
@@ -986,7 +986,7 @@ function sellShopItem(npcId, ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '판매할 수 없습니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('shop.cannot_sell') : '판매할 수 없습니다.'));
                     return null;
                 });
             }
@@ -1022,7 +1022,7 @@ function repairItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '수리할 수 없습니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('town.repair.cannot_repair') : '수리할 수 없습니다.'));
                     return null;
                 });
             }
@@ -1036,9 +1036,9 @@ function repairItem(ownedItemId) {
             document.getElementById('repairContent').innerHTML = data.html;
             refreshTopBar();
             if (data.result === 'SUCCESS') {
-                alert('🔨 수리 성공!');
+                alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('town.repair.success') : '🔨 수리 성공!');
             } else if (data.result === 'FAIL') {
-                alert('💥 수리 실패 (최대 내구도 1 감소)');
+                alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('town.repair.failure') : '💥 수리 실패 (최대 내구도 1 감소)');
             }
         });
 }
@@ -1078,7 +1078,7 @@ function equipItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-container p');
-                    alert(msg ? msg.textContent : '착용 할 수 없습니다');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('exception.equip.cannot_equip') : '착용 할 수 없습니다'));
                     return null;
                 });
             }
@@ -1343,7 +1343,7 @@ function confirmBankModal() {
     var amountInput = document.getElementById('bankModalAmount');
     var amount = parseInt(amountInput.value, 10);
     if (!amount || amount < 1) {
-        alert('1 이상의 금액을 입력해주세요.');
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('bank.invalid_amount') : '1 이상의 금액을 입력해주세요.');
         return;
     }
     var url = bankModalMode === 'deposit'
@@ -1357,7 +1357,7 @@ function confirmBankModal() {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '골드가 부족합니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('economy.insufficient_gold') : '골드가 부족합니다.'));
                     return null;
                 });
             }
@@ -1380,7 +1380,7 @@ function depositItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '요청을 처리할 수 없습니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.generic_error') : '요청을 처리할 수 없습니다.'));
                     return null;
                 });
             }
@@ -1400,7 +1400,7 @@ function withdrawItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : '요청을 처리할 수 없습니다.');
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.generic_error') : '요청을 처리할 수 없습니다.'));
                     return null;
                 });
             }
@@ -1445,7 +1445,7 @@ function closeInfo() {
 
 // ===== 환생 2단계: 1단계 confirm → 재능 선택 팝업, 2단계 재능 선택 → POST =====
 function rebirth() {
-    if (!confirm("환생을 진행하시겠습니까?")) {
+    if (!confirm(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('confirm.rebirth') : "환생을 진행하시겠습니까?")) {
         return;
     }
     openTalentSelect();
@@ -1561,7 +1561,7 @@ function closeRankUpModal() {
 }
 
 function confirmRankUp(skillId) {
-    if (!confirm('승급하시겠습니까?')) return;
+    if (!confirm(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('confirm.rankup') : '승급하시겠습니까?')) return;
     fetch('/skills/' + skillId + '/rankup', { method: 'POST' })
         .then(function (r) { return r.text(); })
         .then(function (html) {
@@ -1644,7 +1644,7 @@ function clearSkillSlot(skillId) {
 }
 
 function clearAllSkillSlots() {
-    if (!confirm('모든 스킬 슬롯 배정을 비우시겠습니까?')) return;
+    if (!confirm(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('confirm.clear_all_slots') : '모든 스킬 슬롯 배정을 비우시겠습니까?')) return;
     var currentTab = getCurrentSkillTab();
     fetch('/skills/slots/clear-all?tab=' + encodeURIComponent(currentTab), { method: 'POST' })
         .then(function (r) { return r.text(); })
@@ -1668,7 +1668,8 @@ function onDockSlotClick(slotIndex, skillId) {
     if (!skillId) {
         return;
     }
-    if (confirm((parseInt(slotIndex, 10) + 1) + '번 슬롯을 비우시겠습니까?')) {
+    var slotNum = parseInt(slotIndex, 10) + 1;
+    if (confirm(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('confirm.clear_slot', slotNum) : (slotNum + '번 슬롯을 비우시겠습니까?'))) {
         clearSkillSlot(skillId);
     }
 }
@@ -1678,7 +1679,7 @@ function openSlotAssignPicker(skillId, skillName) {
     if (!slotNumStr) return;
     var slotNum = parseInt(slotNumStr, 10);
     if (isNaN(slotNum) || slotNum < 1 || slotNum > 10) {
-        alert('1부터 10 사이의 슬롯 번호를 입력해 주세요.');
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('skill.invalid_slot') : '1부터 10 사이의 슬롯 번호를 입력해 주세요.');
         return;
     }
     assignSkillSlot(skillId, slotNum - 1);

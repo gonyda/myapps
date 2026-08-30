@@ -38,8 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RepairController {
 
     private static final String FRAGMENT_REPAIR_POPUP = "fragments/repair-popup :: repair-content";
-    private static final int REPAIR_SUCCESS_RATE_PERCENT = 95;
-    private static final int REPAIR_AMOUNT = 1;
+    private static final int DEFAULT_REPAIR_SUCCESS_RATE_PERCENT = 95;
+    private static final int DEFAULT_REPAIR_AMOUNT = 1;
 
     private final CharacterService characterService;
     private final ShopService shopService;
@@ -47,17 +47,29 @@ public class RepairController {
     private final ItemCatalogService itemCatalogService;
     private final OwnedItemRepository ownedItemRepository;
     private final Random random;
+    private final com.myapps.web.myrpg.config.GameProperties gameProperties;
 
-    /**
-     * RepairController를 생성한다.
-     *
-     * @param characterService 캐릭터 진행상황 서비스
-     * @param shopService 상점 서비스 (판매가 산출 = 수리비)
-     * @param inventoryService 인벤토리 서비스 (설명문 생성)
-     * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param ownedItemRepository 보유 아이템 저장소
-     * @param random 난수 발생기 (성공률 판정용)
-     */
+    /** RepairController를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public RepairController(
+            final CharacterService characterService,
+            final ShopService shopService,
+            final InventoryService inventoryService,
+            final ItemCatalogService itemCatalogService,
+            final OwnedItemRepository ownedItemRepository,
+            final Random random,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.config.GameProperties gameProperties) {
+        this.characterService = characterService;
+        this.shopService = shopService;
+        this.inventoryService = inventoryService;
+        this.itemCatalogService = itemCatalogService;
+        this.ownedItemRepository = ownedItemRepository;
+        this.random = random;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public RepairController(
             final CharacterService characterService,
             final ShopService shopService,
@@ -65,12 +77,14 @@ public class RepairController {
             final ItemCatalogService itemCatalogService,
             final OwnedItemRepository ownedItemRepository,
             final Random random) {
-        this.characterService = characterService;
-        this.shopService = shopService;
-        this.inventoryService = inventoryService;
-        this.itemCatalogService = itemCatalogService;
-        this.ownedItemRepository = ownedItemRepository;
-        this.random = random;
+        this(
+                characterService,
+                shopService,
+                inventoryService,
+                itemCatalogService,
+                ownedItemRepository,
+                random,
+                null);
     }
 
     /**
@@ -137,28 +151,47 @@ public class RepairController {
                                                 "카탈로그에 아이템이 없습니다: " + target.getItemId()));
 
         if (catalogItem instanceof EquipmentItem equipItem) {
-            final int effectiveMax = target.effectiveMaxDurability(equipItem.maxDurability());
-            if (Math.ceil(target.getCurrentDurability()) < effectiveMax) {
-                final long repairCost = shopService.sellValueOf(target);
-                progress.spendGold(repairCost);
-
-                final boolean success = random.nextInt(100) < REPAIR_SUCCESS_RATE_PERCENT;
-                if (success) {
-                    target.repairBy(REPAIR_AMOUNT, effectiveMax);
-                } else {
-                    target.reduceMaxDurability(1, equipItem.maxDurability());
-                }
-                ownedItemRepository.save(target);
-                if (response != null) {
-                    response.setHeader("X-Repair-Result", success ? "SUCCESS" : "FAIL");
-                }
-                characterService.saveTurn(progress);
-            }
+            executeRepair(progress, target, equipItem, response);
         }
 
         final RepairView view = buildRepairView(progress.getId(), progress.getGold());
         model.addAttribute("repair", view);
         return FRAGMENT_REPAIR_POPUP;
+    }
+
+    private void executeRepair(
+            final CharacterProgress progress,
+            final OwnedItem target,
+            final EquipmentItem equipItem,
+            final HttpServletResponse response) {
+        final int effectiveMax = target.effectiveMaxDurability(equipItem.maxDurability());
+        if (Math.ceil(target.getCurrentDurability()) >= effectiveMax) {
+            return;
+        }
+
+        final long repairCost = shopService.sellValueOf(target);
+        progress.spendGold(repairCost);
+
+        final int successRate =
+                gameProperties != null && gameProperties.town() != null
+                        ? gameProperties.town().repairSuccessRate()
+                        : DEFAULT_REPAIR_SUCCESS_RATE_PERCENT;
+        final int repairAmt =
+                gameProperties != null && gameProperties.town() != null
+                        ? gameProperties.town().repairAmount()
+                        : DEFAULT_REPAIR_AMOUNT;
+
+        final boolean success = random.nextInt(100) < successRate;
+        if (success) {
+            target.repairBy(repairAmt, effectiveMax);
+        } else {
+            target.reduceMaxDurability(1, equipItem.maxDurability());
+        }
+        ownedItemRepository.save(target);
+        if (response != null) {
+            response.setHeader("X-Repair-Result", success ? "SUCCESS" : "FAIL");
+        }
+        characterService.saveTurn(progress);
     }
 
     /**

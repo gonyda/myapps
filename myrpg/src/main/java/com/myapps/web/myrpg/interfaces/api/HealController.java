@@ -30,31 +30,38 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/heal")
 public class HealController {
 
-    private static final int HEAL_COST = 100;
+    private static final int DEFAULT_HEAL_COST = 100;
     private static final String LOG_TYPE_ITEM = "item";
 
     private final CharacterService characterService;
     private final StatProgression statProgression;
     private final InventoryService inventoryService;
     private final SkillService skillService;
+    private final com.myapps.web.myrpg.config.GameProperties gameProperties;
 
-    /**
-     * HealController를 생성한다.
-     *
-     * @param characterService 캐릭터 진행상황 서비스
-     * @param statProgression 스탯/바이탈 계산 정책
-     * @param inventoryService 인벤토리 서비스 (장비 바이탈 보너스)
-     * @param skillService 스킬 서비스 (스킬 바이탈 보너스)
-     */
+    /** HealController를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public HealController(
+            final CharacterService characterService,
+            final StatProgression statProgression,
+            final InventoryService inventoryService,
+            final SkillService skillService,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.config.GameProperties gameProperties) {
+        this.characterService = characterService;
+        this.statProgression = statProgression;
+        this.inventoryService = inventoryService;
+        this.skillService = skillService;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public HealController(
             final CharacterService characterService,
             final StatProgression statProgression,
             final InventoryService inventoryService,
             final SkillService skillService) {
-        this.characterService = characterService;
-        this.statProgression = statProgression;
-        this.inventoryService = inventoryService;
-        this.skillService = skillService;
+        this(characterService, statProgression, inventoryService, skillService, null);
     }
 
     /**
@@ -67,7 +74,11 @@ public class HealController {
     @ResponseBody
     public ResponseEntity<Void> heal(final HttpSession session) {
         final CharacterProgress progress = resolveCurrentCharacter(session);
-        progress.spendGold(HEAL_COST);
+        final int cost =
+                gameProperties != null && gameProperties.town() != null
+                        ? gameProperties.town().healCost()
+                        : DEFAULT_HEAL_COST;
+        progress.spendGold(cost);
 
         final VitalMax maxVitals = calculateEffectiveVitalMax(progress);
         progress.fullRecover(maxVitals);

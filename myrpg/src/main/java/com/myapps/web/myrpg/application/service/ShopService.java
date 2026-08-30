@@ -15,6 +15,7 @@ import com.myapps.web.myrpg.domain.model.Npc;
 import com.myapps.web.myrpg.domain.model.OwnedItem;
 import com.myapps.web.myrpg.domain.model.StorageKind;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -49,17 +50,28 @@ public class ShopService {
     private final InventoryService inventoryService;
     private final CharacterService characterService;
     private final ActionLog actionLog;
+    private final GameMessageService gameMessageService;
 
-    /**
-     * ShopService를 생성한다.
-     *
-     * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param npcService NPC 카탈로그 서비스
-     * @param ownedItemRepository 보유 아이템 리포지토리
-     * @param inventoryService 인벤토리 서비스 (아이템 획득)
-     * @param characterService 캐릭터 진행상황 서비스 (턴 저장)
-     * @param actionLog 활동 로그 (세션 스코프)
-     */
+    /** ShopService를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public ShopService(
+            final ItemCatalogService itemCatalogService,
+            final NpcService npcService,
+            final OwnedItemRepository ownedItemRepository,
+            final InventoryService inventoryService,
+            final CharacterService characterService,
+            final ActionLog actionLog,
+            final GameMessageService gameMessageService) {
+        this.itemCatalogService = itemCatalogService;
+        this.npcService = npcService;
+        this.ownedItemRepository = ownedItemRepository;
+        this.inventoryService = inventoryService;
+        this.characterService = characterService;
+        this.actionLog = actionLog;
+        this.gameMessageService = gameMessageService;
+    }
+
+    /** 이전 호환용 생성자. */
     public ShopService(
             final ItemCatalogService itemCatalogService,
             final NpcService npcService,
@@ -67,12 +79,14 @@ public class ShopService {
             final InventoryService inventoryService,
             final CharacterService characterService,
             final ActionLog actionLog) {
-        this.itemCatalogService = itemCatalogService;
-        this.npcService = npcService;
-        this.ownedItemRepository = ownedItemRepository;
-        this.inventoryService = inventoryService;
-        this.characterService = characterService;
-        this.actionLog = actionLog;
+        this(
+                itemCatalogService,
+                npcService,
+                ownedItemRepository,
+                inventoryService,
+                characterService,
+                actionLog,
+                null);
     }
 
     /**
@@ -335,7 +349,11 @@ public class ShopService {
         } else {
             inventoryService.acquireItem(progress.getId(), itemId, 1);
         }
-        actionLog.add("아이템을 구매했습니다: " + item.name(), LOG_TYPE_ITEM);
+        final String buyMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.shop.buy", item.name())
+                        : "아이템을 구매했습니다: " + item.name();
+        actionLog.add(buyMsg, LOG_TYPE_ITEM);
     }
 
     /**
@@ -359,7 +377,11 @@ public class ShopService {
                                                 "보유 아이템을 찾을 수 없습니다: " + ownedItemId));
 
         if (isItemEquippedOrAssigned(progress, owned)) {
-            throw new EquipConflictException("장착을 해제한 후 판매할 수 있습니다.");
+            final String conflictMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("exception.equip.unequip_before_sell")
+                            : "장착을 해제한 후 판매할 수 있습니다.";
+            throw new EquipConflictException(conflictMsg);
         }
 
         final Item catalogItem =
@@ -378,7 +400,11 @@ public class ShopService {
         }
 
         progress.gainGold(sellValue);
-        actionLog.add("아이템을 판매했습니다: " + catalogItem.name(), LOG_TYPE_ITEM);
+        final String sellMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.shop.sell", catalogItem.name())
+                        : "아이템을 판매했습니다: " + catalogItem.name();
+        actionLog.add(sellMsg, LOG_TYPE_ITEM);
     }
 
     private boolean isItemEquippedOrAssigned(

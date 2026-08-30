@@ -25,6 +25,21 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private final com.myapps.web.myrpg.support.GameMessageService gameMessageService;
+
+    /** GlobalExceptionHandler를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public GlobalExceptionHandler(
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
+        this.gameMessageService = gameMessageService;
+    }
+
+    /** 이전 호환용 기본 생성자. */
+    public GlobalExceptionHandler() {
+        this(null);
+    }
+
     /**
      * {@link NodeNotFoundException} 발생 시 404 에러 뷰를 반환한다.
      *
@@ -85,7 +100,11 @@ public class GlobalExceptionHandler {
     public String handleInsufficientAbilityPoints(
             final InsufficientAbilityPointsException exception, final Model model) {
         LOG.warn("AP 부족으로 승급 거부: {}", exception.getMessage());
-        model.addAttribute("message", "AP가 부족하여 승급할 수 없습니다.");
+        final String msg =
+                gameMessageService != null
+                        ? gameMessageService.get("exception.skill.insufficient_ap")
+                        : "AP가 부족하여 승급할 수 없습니다.";
+        model.addAttribute("message", msg);
         return "error";
     }
 

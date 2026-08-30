@@ -9,6 +9,7 @@ import com.myapps.web.myrpg.application.dto.DroppedItem;
 import com.myapps.web.myrpg.application.dto.DungeonClearResult;
 import com.myapps.web.myrpg.application.dto.EquippedBonusResult;
 import com.myapps.web.myrpg.application.dto.LevelUpResult;
+import com.myapps.web.myrpg.config.GameProperties;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BattleState;
 import com.myapps.web.myrpg.domain.model.BattleTurnResult;
@@ -42,6 +43,7 @@ import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
 import com.myapps.web.myrpg.domain.service.RockPaperScissors;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -114,27 +116,53 @@ public class BattleService {
     private final CharacterSkillRepository characterSkillRepository;
     private final ItemCatalogService itemCatalogService;
     private final DungeonService dungeonService;
+    private final GameMessageService gameMessageService;
+    private final GameProperties gameProperties;
 
-    /**
-     * BattleService를 생성한다.
-     *
-     * @param battleStateRepository 전투 상태 리포지토리
-     * @param resolver 순수 데미지 계산 서비스
-     * @param monsterService 몬스터 카탈로그 서비스
-     * @param monsterAiService 몬스터 AI 서비스
-     * @param monsterRewardService 몬스터 보상 서비스
-     * @param skillService 스킬 시스템 서비스
-     * @param inventoryService 인벤토리 서비스
-     * @param progressionService 경험치/사망 서비스
-     * @param characterService 캐릭터 저장 서비스
-     * @param statProgression 레벨 스탯 계산 정책
-     * @param actionLog 활동 로그
-     * @param random 난수 생성기
-     * @param skillCatalogService 스킬 카탈로그 서비스
-     * @param characterSkillRepository 캐릭터 보유 스킬 리포지토리
-     * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param dungeonService 던전 관리 서비스
-     */
+    /** BattleService를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public BattleService(
+            final BattleStateRepository battleStateRepository,
+            final BattleResolver resolver,
+            final MonsterService monsterService,
+            final MonsterAiService monsterAiService,
+            final MonsterRewardService monsterRewardService,
+            final SkillService skillService,
+            final InventoryService inventoryService,
+            final ProgressionService progressionService,
+            final CharacterService characterService,
+            final StatProgression statProgression,
+            final ActionLog actionLog,
+            final Random random,
+            final SkillCatalogService skillCatalogService,
+            final CharacterSkillRepository characterSkillRepository,
+            final ItemCatalogService itemCatalogService,
+            final DungeonService dungeonService,
+            final GameMessageService gameMessageService,
+            final GameProperties gameProperties) {
+        this.battleStateRepository = battleStateRepository;
+        this.resolver = resolver;
+        this.monsterService = monsterService;
+        this.monsterAiService = monsterAiService;
+        this.monsterRewardService = monsterRewardService;
+        this.skillService = skillService;
+        this.skillDamagePolicy = new SkillDamagePolicy();
+        this.logFormatter = new BattleLogFormatter(gameMessageService);
+        this.inventoryService = inventoryService;
+        this.progressionService = progressionService;
+        this.characterService = characterService;
+        this.statProgression = statProgression;
+        this.actionLog = actionLog;
+        this.random = random;
+        this.skillCatalogService = skillCatalogService;
+        this.characterSkillRepository = characterSkillRepository;
+        this.itemCatalogService = itemCatalogService;
+        this.dungeonService = dungeonService;
+        this.gameMessageService = gameMessageService;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public BattleService(
             final BattleStateRepository battleStateRepository,
             final BattleResolver resolver,
@@ -152,24 +180,25 @@ public class BattleService {
             final CharacterSkillRepository characterSkillRepository,
             final ItemCatalogService itemCatalogService,
             final DungeonService dungeonService) {
-        this.battleStateRepository = battleStateRepository;
-        this.resolver = resolver;
-        this.monsterService = monsterService;
-        this.monsterAiService = monsterAiService;
-        this.monsterRewardService = monsterRewardService;
-        this.skillService = skillService;
-        this.skillDamagePolicy = new SkillDamagePolicy();
-        this.logFormatter = new BattleLogFormatter();
-        this.inventoryService = inventoryService;
-        this.progressionService = progressionService;
-        this.characterService = characterService;
-        this.statProgression = statProgression;
-        this.actionLog = actionLog;
-        this.random = random;
-        this.skillCatalogService = skillCatalogService;
-        this.characterSkillRepository = characterSkillRepository;
-        this.itemCatalogService = itemCatalogService;
-        this.dungeonService = dungeonService;
+        this(
+                battleStateRepository,
+                resolver,
+                monsterService,
+                monsterAiService,
+                monsterRewardService,
+                skillService,
+                inventoryService,
+                progressionService,
+                characterService,
+                statProgression,
+                actionLog,
+                random,
+                skillCatalogService,
+                characterSkillRepository,
+                itemCatalogService,
+                dungeonService,
+                null,
+                null);
     }
 
     /**
@@ -278,9 +307,15 @@ public class BattleService {
         if (skill instanceof UltimateSkill
                 && ownedSkillOpt.isPresent()
                 && ownedSkillOpt.get().getUltimateCooldown() > 0) {
-            actionLog.add(
-                    "궁극기 쿨타임 대기 중입니다. (" + ownedSkillOpt.get().getUltimateCooldown() + "승 남음)",
-                    LOG_TYPE_COMBAT);
+            final String cdMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get(
+                                    "log.combat.ultimate_cooldown",
+                                    ownedSkillOpt.get().getUltimateCooldown())
+                            : "궁극기 쿨타임 대기 중입니다. ("
+                                    + ownedSkillOpt.get().getUltimateCooldown()
+                                    + "승 남음)";
+            actionLog.add(cdMsg, LOG_TYPE_COMBAT);
             return buildNoOpResult();
         }
 
@@ -311,7 +346,12 @@ public class BattleService {
             final int resourceCost = resolveResourceCost(skill, progress);
 
             if (!hasEnoughResource(progress, resourceKind, resourceCost)) {
-                actionLog.add(resourceKind.label() + "이(가) 부족합니다.", LOG_TYPE_COMBAT);
+                final String lackMsg =
+                        gameMessageService != null
+                                ? gameMessageService.get(
+                                        "system.resource_lack", resourceKind.label())
+                                : resourceKind.label() + "이(가) 부족합니다.";
+                actionLog.add(lackMsg, LOG_TYPE_COMBAT);
                 return buildInsufficientResult(skill, resourceKind);
             }
 
@@ -527,7 +567,11 @@ public class BattleService {
             return safeTerminateAndReturn(state);
         }
         final Monster monster = monsterOpt.get();
-        final boolean success = random.nextInt(PERCENT_DIVISOR) < FLEE_SUCCESS_PERCENT;
+        final int fleeRate =
+                gameProperties != null && gameProperties.battle() != null
+                        ? gameProperties.battle().fleeSuccessRate()
+                        : FLEE_SUCCESS_PERCENT;
+        final boolean success = random.nextInt(PERCENT_DIVISOR) < fleeRate;
         final List<String> combatLines = new ArrayList<>();
 
         if (success) {
@@ -654,9 +698,17 @@ public class BattleService {
         if (skill.type() == SkillType.DEFENSE) {
             return false;
         }
-        final boolean failed = random.nextInt(PERCENT_DIVISOR) < MAGIC_FAIL_PERCENT;
+        final int failRate =
+                gameProperties != null && gameProperties.battle() != null
+                        ? gameProperties.battle().magicFailRate()
+                        : MAGIC_FAIL_PERCENT;
+        final boolean failed = random.nextInt(PERCENT_DIVISOR) < failRate;
         if (failed) {
-            logLines.add("🔮 [" + skill.label() + "] 캐스팅 실패! (집중이 흐트러짐)");
+            final String failMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.cast_fail", skill.label())
+                            : "🔮 [" + skill.label() + "] 캐스팅 실패! (집중이 흐트러짐)";
+            logLines.add(failMsg);
         }
         return failed;
     }
@@ -961,7 +1013,12 @@ public class BattleService {
         final int beforeHp = progress.getHpCurrent();
         progress.healHp(healAmount, maxHp);
         final int actualHealed = progress.getHpCurrent() - beforeHp;
-        combatLines.add("💖 [" + recoverySkill.label() + "] HP +" + actualHealed + " 회복");
+        final String healMsg =
+                gameMessageService != null
+                        ? gameMessageService.get(
+                                "battle.recovery", recoverySkill.label(), actualHealed)
+                        : "💖 [" + recoverySkill.label() + "] HP +" + actualHealed + " 회복";
+        combatLines.add(healMsg);
 
         final int monsterDamage =
                 resolveMonsterDamageForSupportTurn(
@@ -1004,9 +1061,18 @@ public class BattleService {
         final boolean success = random.nextInt(PERCENT_DIVISOR) < rate;
         if (success) {
             state.setMonsterStunnedTurns(1);
-            combatLines.add("⛓️ [" + ccSkill.label() + "] " + monster.name() + " 기절 성공! (1턴)");
+            final String ccSuccessMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get(
+                                    "battle.cc.success", ccSkill.label(), monster.name())
+                            : "⛓️ [" + ccSkill.label() + "] " + monster.name() + " 기절 성공! (1턴)";
+            combatLines.add(ccSuccessMsg);
         } else {
-            combatLines.add("⛓️ [" + ccSkill.label() + "] 저항으로 제어 효과 실패");
+            final String ccResistMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.cc.resist", ccSkill.label())
+                            : "⛓️ [" + ccSkill.label() + "] 저항으로 제어 효과 실패";
+            combatLines.add(ccResistMsg);
         }
 
         final int monsterDamage =
@@ -1025,7 +1091,11 @@ public class BattleService {
             return 0;
         }
         if (state.getMonsterStunnedTurns() > 0) {
-            combatLines.add("❄️ [" + monster.name() + "] 빙결/기절 상태로 행동 불가");
+            final String stunMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.stun_frozen", monster.name())
+                            : "❄️ [" + monster.name() + "] 빙결/기절 상태로 행동 불가";
+            combatLines.add(stunMsg);
             state.setMonsterStunnedTurns(state.getMonsterStunnedTurns() - 1);
             return 0;
         }
@@ -1049,7 +1119,11 @@ public class BattleService {
             final int freezeRate = damageSkill.freezeRateAt(charSkill.getRank());
             if (freezeRate > 0 && random.nextInt(PERCENT_DIVISOR) < freezeRate) {
                 state.setMonsterStunnedTurns(1);
-                combatLines.add("❄️ [빙결] " + monster.name() + " 꽁꽁 얼어붙음! (1턴 행동 불가)");
+                final String freezeMsg =
+                        gameMessageService != null
+                                ? gameMessageService.get("battle.freeze", monster.name())
+                                : "❄️ [빙결] " + monster.name() + " 꽁꽁 얼어붙음! (1턴 행동 불가)";
+                combatLines.add(freezeMsg);
             }
         }
 
@@ -1072,7 +1146,11 @@ public class BattleService {
 
         if (skill.type() == SkillType.DEBUFF) {
             state.setNextAttackAmpPercent(30);
-            combatLines.add("💢 [레이지 임팩트] 다음 물리 피해 +30% 증폭");
+            final String rageMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.rage")
+                            : "💢 [레이지 임팩트] 다음 물리 피해 +30% 증폭";
+            combatLines.add(rageMsg);
         }
     }
 
@@ -1138,7 +1216,11 @@ public class BattleService {
             final int dotDmg = state.getDotDamagePerTurn();
             state.setMonsterCurrentHp(Math.max(0, state.getMonsterCurrentHp() - dotDmg));
             state.setDotTurnsLeft(state.getDotTurnsLeft() - 1);
-            combatLines.add("🩸 [지속 피해] " + monster.name() + " " + dotDmg + " 도트 피해");
+            final String dotMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.dot", monster.name(), dotDmg)
+                            : "🩸 [지속 피해] " + monster.name() + " " + dotDmg + " 도트 피해";
+            combatLines.add(dotMsg);
         }
     }
 
@@ -1156,7 +1238,11 @@ public class BattleService {
                 progress.recoverMp(regen, maxMp);
                 final int actualRegened = progress.getMpCurrent() - beforeMp;
                 if (actualRegened > 0) {
-                    combatLines.add("🧘 [메디테이션] MP +" + actualRegened + " 회복");
+                    final String medMsg =
+                            gameMessageService != null
+                                    ? gameMessageService.get("battle.meditation", actualRegened)
+                                    : "🧘 [메디테이션] MP +" + actualRegened + " 회복";
+                    combatLines.add(medMsg);
                 }
             }
         }
@@ -1171,8 +1257,12 @@ public class BattleService {
         final LevelUpResult levelUpResult =
                 progressionService.gainExperience(progress, monster.experience());
 
-        final StringBuilder sb = new StringBuilder();
-        sb.append("승리! EXP +").append(monster.experience()).append(" | Gold +").append(drop.gold());
+        final String victoryRewardMsg =
+                gameMessageService != null
+                        ? gameMessageService.get(
+                                "battle.victory_reward", monster.experience(), drop.gold())
+                        : "승리! EXP +" + monster.experience() + " | Gold +" + drop.gold();
+        final StringBuilder sb = new StringBuilder(victoryRewardMsg);
 
         if (!drop.items().isEmpty()) {
             final List<String> itemSummaries = new ArrayList<>();
@@ -1185,13 +1275,18 @@ public class BattleService {
         logLines.add(sb.toString());
 
         if (levelUpResult != null && levelUpResult.levelsGained() > 0) {
-            actionLog.add(
-                    "🎉 레벨업! Lv."
-                            + levelUpResult.newLevel()
-                            + " 달성! (AP +"
-                            + levelUpResult.levelsGained()
-                            + ")",
-                    LOG_TYPE_GROWTH);
+            final String levelUpMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get(
+                                    "log.growth.levelup",
+                                    levelUpResult.newLevel(),
+                                    levelUpResult.levelsGained())
+                            : "🎉 레벨업! Lv."
+                                    + levelUpResult.newLevel()
+                                    + " 달성! (AP +"
+                                    + levelUpResult.levelsGained()
+                                    + ")";
+            actionLog.add(levelUpMsg, LOG_TYPE_GROWTH);
         }
 
         return drop;
@@ -1264,7 +1359,11 @@ public class BattleService {
         }
         final DeathResult deathResult = progressionService.die(progress);
         state.setActive(false);
-        logLines.add("쓰러졌다… 티르코네일에서 부활 (경험치 -" + deathResult.experienceLost() + ")");
+        final String deathMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("battle.death", deathResult.experienceLost())
+                        : "쓰러졌다… 티르코네일에서 부활 (경험치 -" + deathResult.experienceLost() + ")";
+        logLines.add(deathMsg);
         return Outcome.LOSE;
     }
 
@@ -1278,12 +1377,20 @@ public class BattleService {
         final SkillType monsterAction;
 
         if (monsterIntent == null) {
-            combatLines.add("⏳ [시간 초과] 선제 공격 기회 상실");
+            final String timeoutPreemptiveMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.timeout.preemptive")
+                            : "⏳ [시간 초과] 선제 공격 기회 상실";
+            combatLines.add(timeoutPreemptiveMsg);
             monsterDamage = 0;
             monsterAction = null;
         } else {
             monsterAction = monsterIntent;
-            combatLines.add("⏳ [시간 초과] 무방비 피격");
+            final String timeoutHitMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("battle.timeout.hit")
+                            : "⏳ [시간 초과] 무방비 피격";
+            combatLines.add(timeoutHitMsg);
             monsterDamage = resolveMonsterOnlyDamage(progress, monster, monsterAction);
             applyManaShieldAndDamage(progress, state, 0, monsterDamage, combatLines);
 
@@ -1298,7 +1405,12 @@ public class BattleService {
                                 + monsterDamage
                                 + " 피해 피격");
             } else {
-                combatLines.add("[" + monster.name() + "] 🛡️ 방어 태세 유지");
+                final String defHoldMsg =
+                        gameMessageService != null
+                                ? gameMessageService.get(
+                                        "battle.monster.defense_hold", monster.name())
+                                : "[" + monster.name() + "] 🛡️ 방어 태세 유지";
+                combatLines.add(defHoldMsg);
             }
         }
 
@@ -1344,7 +1456,11 @@ public class BattleService {
             final BattleState state, final List<String> combatLines) {
         state.setActive(false);
         battleStateRepository.save(state);
-        actionLog.add("도망쳤다!", LOG_TYPE_COMBAT);
+        final String fleeSuccessMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("battle.flee.success")
+                        : "도망쳤다!";
+        actionLog.add(fleeSuccessMsg, LOG_TYPE_COMBAT);
         return new BattleTurnResult(
                 null,
                 0,
@@ -1381,7 +1497,11 @@ public class BattleService {
             deathLines.forEach(line -> actionLog.add(line, LOG_TYPE_COMBAT));
         }
 
-        combatLines.add("⚠️ [도망 실패] " + monster.name() + "에게 저지당해 " + monsterDmg + " 피해");
+        final String fleeFailMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("battle.flee.fail", monster.name(), monsterDmg)
+                        : "⚠️ [도망 실패] " + monster.name() + "에게 저지당해 " + monsterDmg + " 피해";
+        combatLines.add(fleeFailMsg);
 
         state.setPreemptiveParty(PreemptiveParty.NONE);
         state.setCurrentMonsterIntent(null);

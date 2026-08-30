@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-29 18:19 (Asia/Seoul)
+> 최종 업데이트: 2026-08-30 10:37 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -18,23 +18,19 @@
 - **핵심 시스템 & UI/UX 완비**: 알비 던전/전투 턴/데이터 격리, 모바일(360~480px) 최적화 팝업군, 무기 세트 I/II 스왑, 스킬 슬롯 해제 방어, 상점 장비 착용 비교 팝업 구축 완료.
 - **인게임 시간대별 앰비언트 스카이 & 천체 궤적 (2026-08-28)**: 6대 시간대(`TimeOfDay`) 딥 다크 스카이 그라디언트, 천체(해/달) 궤적 및 소프트 글로우 동적 연출 완비.
 - **스킬 승급 조건 단순화 & 유형 뱃지 표기 (2026-08-29)**: `RankUpRequirement(requiredUsage)` 단일화, 10대 스킬 유형별 다크 판타지 컬러 뱃지 구축.
-- **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**:
-  - **도메인 & 카탈로그**: `ItemType.MATERIAL` 추가 및 `isStackable()` 확장, `MaterialItem` 불변 레코드 생성, `item.json`에 `firewood`(구매가 20G/판매가 10G) 등록, 카탈로그 58종 로드 확장.
-  - **애플리케이션 서비스**: `InventoryService` 재료 스택 적재 일원화, `GatheringService` 구현 (마을/자유필드 노드 이동 시 50% 나무 스폰 롤, 던전 격리, 5 SP 소모, 50% 채집 성공/실패 판정, 1회 채집 후 나무 소멸 및 로그 기록).
-  - **웹 계층 & 컨트롤러**: `GatheringController` (`POST /gathering/woodcut`), `PlayScreenController` 이동 시 `rollTreeSpawn` 호출, `NodeViewAssembler`에서 `나무` 상호작용 버튼 조립.
-  - **프론트엔드 UI/UX**: `gathering-modal.html` 앤틱 골드 모달 구축, `myrpg.css` 에메랄드 버튼 및 도끼 흔들림/나무 진동 키프레임, `myrpg.js` 5초 자동 완료형 채집 타이머 & 비동기 통신 & 상단바 SP 실시간 동기화.
-- **하드코딩 전수 분석 및 메시지·로그 외부화 리팩토링 계획서 수립 (2026-08-29)**:
-  - `docs/hardcoding-analysis-and-refactoring-plan.md` 작성 및 전체 소스 정합성 검증 완료.
-  - 활동 로그(26건), 전투 인라인 로그(15건), 전투 턴 로그(~40건), 도메인 예외, JS 메시지(23건), 게임 밸런스 수치(60건+) 전수 식별.
-  - 채집 로그의 경우 향후 버섯·약초 등 확장을 고려하여 아이템/도구 비종속 범용 멘트(`[채집] {아이템명} 획득!`, `[채집] 채집에 실패했습니다.`)로 통일 설계.
-  - `messages.properties` 및 `@ConfigurationProperties(prefix = "game")` 기반 6단계 점진적 마이그레이션 로드맵 확정.
+- **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**: `ItemType.MATERIAL`, `firewood` 아이템 등록, `GatheringService` (5 SP 소모, 50% 채집 성공/실패 롤), 5초 자동 완료형 채집 타이머 완비.
+- **메시지 및 게임 프로퍼티 외부화 리팩토링 (2026-08-30, 018-message-and-properties-externalization)**:
+  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외 110여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` 구현.
+  - **서비스 & 컨트롤러**: `GatheringService`, `ShopService`, `InventoryService`, `DungeonService`, `ProgressionService`, `BattleService`, `BattleLogFormatter`, `SkillController`, `HealController`, `RepairController`, `MovementService`, `GlobalExceptionHandler` 전수 연동 (Strict Invariance 완벽 보장).
+  - **프론트엔드**: `game-messages.js` 클라이언트 메시지 번들 및 `window.GAME_MESSAGES.get()` 연동, `myrpg.js` 내 하드코딩 알림/Confirm/토스트 23건 치환.
+  - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1267개 전체 단위 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **산출물**: `docs/hardcoding-analysis-and-refactoring-plan.md`
+- **Spec & Task 상태**: `.kiro/specs/myrpg/018-message-and-properties-externalization/tasks.md` 전 태스크(1~18) 100% 완료
 - **5대 품질 가드레일 상태**: 전체 멀티모듈 (`mystudy`, `mycalendar`, `myrpg`) 100% 그린, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 

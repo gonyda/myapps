@@ -11,6 +11,7 @@ import com.myapps.web.myrpg.application.dto.InventoryView;
 import com.myapps.web.myrpg.application.dto.OwnedItemView;
 import com.myapps.web.myrpg.application.exception.EquipConflictException;
 import com.myapps.web.myrpg.application.exception.InventoryFullException;
+import com.myapps.web.myrpg.config.GameProperties;
 import com.myapps.web.myrpg.domain.model.ActionLog;
 import com.myapps.web.myrpg.domain.model.BonusKind;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
@@ -36,6 +37,7 @@ import com.myapps.web.myrpg.domain.model.VitalMax;
 import com.myapps.web.myrpg.domain.repository.CharacterProgressRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.repository.OwnedItemRepository;
+import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -84,18 +86,11 @@ public class InventoryService {
     private final SkillCatalogService skillCatalogService;
     private final CharacterSkillRepository characterSkillRepository;
     private final SkillRankupBonus skillRankupBonus;
+    private final GameMessageService gameMessageService;
+    private final GameProperties gameProperties;
 
-    /**
-     * InventoryService를 생성한다.
-     *
-     * @param ownedItemRepository 보유 아이템 리포지토리
-     * @param itemCatalogService 아이템 카탈로그 서비스
-     * @param characterProgressRepository 캐릭터 진행상황 리포지토리
-     * @param statProgression 스탯/바이탈 계산 정책
-     * @param actionLog 활동 로그 (세션 스코프)
-     * @param skillCatalogService 스킬 카탈로그 서비스
-     * @param characterSkillRepository 캐릭터 보유 스킬 리포지토리
-     */
+    /** InventoryService를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
     public InventoryService(
             final OwnedItemRepository ownedItemRepository,
             final ItemCatalogService itemCatalogService,
@@ -103,7 +98,9 @@ public class InventoryService {
             final StatProgression statProgression,
             final ActionLog actionLog,
             final SkillCatalogService skillCatalogService,
-            final CharacterSkillRepository characterSkillRepository) {
+            final CharacterSkillRepository characterSkillRepository,
+            final GameMessageService gameMessageService,
+            final GameProperties gameProperties) {
         this.ownedItemRepository = ownedItemRepository;
         this.itemCatalogService = itemCatalogService;
         this.characterProgressRepository = characterProgressRepository;
@@ -112,6 +109,29 @@ public class InventoryService {
         this.skillCatalogService = skillCatalogService;
         this.characterSkillRepository = characterSkillRepository;
         this.skillRankupBonus = new SkillRankupBonus();
+        this.gameMessageService = gameMessageService;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
+    public InventoryService(
+            final OwnedItemRepository ownedItemRepository,
+            final ItemCatalogService itemCatalogService,
+            final CharacterProgressRepository characterProgressRepository,
+            final StatProgression statProgression,
+            final ActionLog actionLog,
+            final SkillCatalogService skillCatalogService,
+            final CharacterSkillRepository characterSkillRepository) {
+        this(
+                ownedItemRepository,
+                itemCatalogService,
+                characterProgressRepository,
+                statProgression,
+                actionLog,
+                skillCatalogService,
+                characterSkillRepository,
+                null,
+                null);
     }
 
     /**
@@ -739,11 +759,12 @@ public class InventoryService {
     @Transactional
     public void seedDefault(final Long characterId) {
         final Long targetCharId = characterId != null ? characterId : 1L;
+        final int potionQty = defaultPotionQuantity();
         ownedItemRepository.save(
                 new OwnedItem(
                         targetCharId,
                         SEED_HP_POTION_ID,
-                        DEFAULT_POTION_QUANTITY,
+                        potionQty,
                         StorageKind.INVENTORY,
                         false,
                         0));
@@ -751,7 +772,7 @@ public class InventoryService {
                 new OwnedItem(
                         targetCharId,
                         SEED_MP_POTION_ID,
-                        DEFAULT_POTION_QUANTITY,
+                        potionQty,
                         StorageKind.INVENTORY,
                         false,
                         0));
@@ -759,7 +780,7 @@ public class InventoryService {
                 new OwnedItem(
                         targetCharId,
                         SEED_STAMINA_POTION_ID,
-                        DEFAULT_POTION_QUANTITY,
+                        potionQty,
                         StorageKind.INVENTORY,
                         false,
                         0));
@@ -1128,32 +1149,51 @@ public class InventoryService {
         }
 
         if (item instanceof EquipmentItem equipItem) {
-            lines.add(equipItem.kind().label() + " (" + equipItem.type().label() + ")");
-
-            for (final EquipBonus bonus : equipItem.bonuses()) {
-                lines.add(formatBonus(bonus));
-            }
-
-            if (equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
-                    && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
-                lines.add("방패와 함께 착용할 수 없습니다.");
-            }
-
-            final int maxDura =
-                    owned != null
-                            ? owned.effectiveMaxDurability(equipItem.maxDurability())
-                            : equipItem.maxDurability();
-            lines.add(
-                    "내구도: "
-                            + formatDurability(
-                                    owned != null
-                                            ? owned.getCurrentDurability()
-                                            : equipItem.maxDurability())
-                            + "/"
-                            + maxDura);
+            appendEquipmentDescription(equipItem, owned, lines);
         }
 
         return List.copyOf(lines);
+    }
+
+    private void appendEquipmentDescription(
+            final EquipmentItem equipItem, final OwnedItem owned, final List<String> lines) {
+        final String kindType =
+                gameMessageService != null
+                        ? gameMessageService.get(
+                                "describe.equip.kind_type",
+                                equipItem.kind().label(),
+                                equipItem.type().label())
+                        : equipItem.kind().label() + " (" + equipItem.type().label() + ")";
+        lines.add(kindType);
+
+        for (final EquipBonus bonus : equipItem.bonuses()) {
+            lines.add(formatBonus(bonus));
+        }
+
+        if (equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
+                && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
+            final String shieldConflict =
+                    gameMessageService != null
+                            ? gameMessageService.get("exception.equip.shield_conflict")
+                            : "방패와 함께 착용할 수 없습니다.";
+            lines.add(shieldConflict);
+        }
+
+        lines.add(buildDurabilityText(equipItem, owned));
+    }
+
+    private String buildDurabilityText(final EquipmentItem equipItem, final OwnedItem owned) {
+        final int maxDura =
+                owned != null
+                        ? owned.effectiveMaxDurability(equipItem.maxDurability())
+                        : equipItem.maxDurability();
+        final double currentDura =
+                owned != null ? owned.getCurrentDurability() : equipItem.maxDurability();
+        final String currentDuraStr = formatDurability(currentDura);
+
+        return gameMessageService != null
+                ? gameMessageService.get("describe.equip.durability", currentDuraStr, maxDura)
+                : "내구도: " + currentDuraStr + "/" + maxDura;
     }
 
     // ─── Private helpers ────────────────────────────────────────────────────
@@ -1438,11 +1478,27 @@ public class InventoryService {
         }
     }
 
+    private int maxCapacity() {
+        return gameProperties != null && gameProperties.inventory() != null
+                ? gameProperties.inventory().maxSlots()
+                : MAX_CAPACITY;
+    }
+
+    private int defaultPotionQuantity() {
+        return gameProperties != null && gameProperties.inventory() != null
+                ? gameProperties.inventory().defaultPotionQty()
+                : DEFAULT_POTION_QUANTITY;
+    }
+
     private void acquireEquipment(
             final Long characterId, final DroppedItem droppedItem, final String itemName) {
         final Long targetCharId = characterId != null ? characterId : 1L;
         if (isInventoryFull(targetCharId)) {
-            actionLog.add(itemName + " 획득 실패!", LOG_TYPE_ITEM);
+            final String failMsg =
+                    gameMessageService != null
+                            ? gameMessageService.get("log.item.acquire_fail", itemName)
+                            : itemName + " 획득 실패!";
+            actionLog.add(failMsg, LOG_TYPE_ITEM);
             return;
         }
         final int maxDurability = resolveMaxDurability(droppedItem.itemId());
@@ -1457,7 +1513,7 @@ public class InventoryService {
     }
 
     private boolean isInventoryFull(final Long characterId) {
-        return countStorage(characterId, StorageKind.INVENTORY) >= MAX_CAPACITY;
+        return countStorage(characterId, StorageKind.INVENTORY) >= maxCapacity();
     }
 
     private boolean isInventoryFull() {
@@ -1466,7 +1522,11 @@ public class InventoryService {
 
     private void logItemAcquireFailure(final String itemId) {
         final String itemName = itemCatalogService.byId(itemId).map(Item::name).orElse(itemId);
-        actionLog.add(itemName + " 획득 실패!", LOG_TYPE_ITEM);
+        final String failMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.item.acquire_fail", itemName)
+                        : itemName + " 획득 실패!";
+        actionLog.add(failMsg, LOG_TYPE_ITEM);
     }
 
     private int resolveMaxDurability(final String itemId) {
@@ -1474,7 +1534,9 @@ public class InventoryService {
         if (catalogOpt.isPresent() && catalogOpt.get() instanceof EquipmentItem equipItem) {
             return equipItem.maxDurability();
         }
-        return EQUIPMENT_MAX_DURABILITY;
+        return gameProperties != null && gameProperties.inventory() != null
+                ? gameProperties.inventory().equipmentMaxDurability()
+                : EQUIPMENT_MAX_DURABILITY;
     }
 
     // ─── combatSkills helpers ───────────────────────────────────────────────
@@ -1571,7 +1633,11 @@ public class InventoryService {
 
     private void autoUnequipBroken(final OwnedItem equipped, final String itemName) {
         equipped.unequip();
-        actionLog.add(itemName + " 내구도 0 — 장착 해제됨", LOG_TYPE_ITEM);
+        final String brokenMsg =
+                gameMessageService != null
+                        ? gameMessageService.get("log.item.durability_broken", itemName)
+                        : itemName + " 내구도 0 — 장착 해제됨";
+        actionLog.add(brokenMsg, LOG_TYPE_ITEM);
     }
 
     private static int skillTypePriority(final SkillType type) {

@@ -4,6 +4,7 @@ import com.myapps.web.myrpg.application.dto.DeathResult;
 import com.myapps.web.myrpg.application.dto.LevelUpResult;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
+import com.myapps.web.myrpg.config.GameProperties;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.ExperiencePolicy;
 import com.myapps.web.myrpg.domain.model.StatProgression;
@@ -21,29 +22,47 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProgressionService {
 
-    private static final int MAX_LEVEL = 100;
+    private static final int DEFAULT_MAX_LEVEL = 100;
     private static final Duration REBIRTH_COOLDOWN = Duration.ofHours(24);
-    private static final double DEATH_PENALTY_RATE = 0.10;
+    private static final double DEFAULT_DEATH_PENALTY_RATE = 0.10;
     private static final String RESPAWN_NODE_ID = "tir-chonaill";
 
     private final ExperiencePolicy experiencePolicy;
     private final StatProgression statProgression;
     private final Clock clock;
+    private final GameProperties gameProperties;
 
-    /**
-     * ProgressionService를 생성한다.
-     *
-     * @param experiencePolicy 경험치 곡선 정책
-     * @param statProgression 레벨 기반 스탯·바이탈 계산 정책
-     * @param clock 시간 산출용 Clock (테스트 시 고정 시각 주입 가능)
-     */
+    /** ProgressionService를 생성한다 (Spring 주입용). */
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProgressionService(
+            final ExperiencePolicy experiencePolicy,
+            final StatProgression statProgression,
+            final Clock clock,
+            final GameProperties gameProperties) {
+        this.experiencePolicy = experiencePolicy;
+        this.statProgression = statProgression;
+        this.clock = clock;
+        this.gameProperties = gameProperties;
+    }
+
+    /** 이전 호환용 생성자. */
     public ProgressionService(
             final ExperiencePolicy experiencePolicy,
             final StatProgression statProgression,
             final Clock clock) {
-        this.experiencePolicy = experiencePolicy;
-        this.statProgression = statProgression;
-        this.clock = clock;
+        this(experiencePolicy, statProgression, clock, null);
+    }
+
+    private int maxLevel() {
+        return gameProperties != null && gameProperties.progression() != null
+                ? gameProperties.progression().maxLevel()
+                : DEFAULT_MAX_LEVEL;
+    }
+
+    private double deathPenaltyRate() {
+        return gameProperties != null && gameProperties.progression() != null
+                ? gameProperties.progression().deathPenaltyRate()
+                : DEFAULT_DEATH_PENALTY_RATE;
     }
 
     /**
@@ -57,8 +76,9 @@ public class ProgressionService {
      * @return 레벨업 결과 (획득 레벨 수, 최종 레벨)
      */
     public LevelUpResult gainExperience(final CharacterProgress p, final long amount) {
-        if (p.getCurrentLevel() == MAX_LEVEL) {
-            return new LevelUpResult(0, MAX_LEVEL);
+        final int maxLv = maxLevel();
+        if (p.getCurrentLevel() == maxLv) {
+            return new LevelUpResult(0, maxLv);
         }
 
         final long effectiveAmount = Math.max(0L, amount);
@@ -66,13 +86,13 @@ public class ProgressionService {
         int level = p.getCurrentLevel();
         int gained = 0;
 
-        while (level < MAX_LEVEL && exp >= experiencePolicy.requiredForNext(level)) {
+        while (level < maxLv && exp >= experiencePolicy.requiredForNext(level)) {
             exp -= experiencePolicy.requiredForNext(level);
             level++;
             gained++;
         }
 
-        if (level == MAX_LEVEL) {
+        if (level == maxLv) {
             exp = 0;
         }
 
@@ -97,12 +117,13 @@ public class ProgressionService {
      * @return 사망 결과 (실제 차감된 경험치량)
      */
     public DeathResult applyDeathPenalty(final CharacterProgress p) {
-        if (p.getCurrentLevel() == MAX_LEVEL) {
+        final int maxLv = maxLevel();
+        if (p.getCurrentLevel() == maxLv) {
             return new DeathResult(0);
         }
 
         final long required = experiencePolicy.requiredForNext(p.getCurrentLevel());
-        final long loss = (long) Math.floor(required * DEATH_PENALTY_RATE);
+        final long loss = (long) Math.floor(required * deathPenaltyRate());
         final long prevExp = p.getExperience();
         final long newExp = Math.max(0L, prevExp - loss);
         p.setExperience(newExp);
