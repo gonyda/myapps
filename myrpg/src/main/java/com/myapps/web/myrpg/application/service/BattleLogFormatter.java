@@ -31,7 +31,15 @@ public class BattleLogFormatter {
      */
     @org.springframework.beans.factory.annotation.Autowired
     public BattleLogFormatter(final GameMessageService msg) {
-        this.msg = msg;
+        if (msg != null) {
+            this.msg = msg;
+        } else {
+            final org.springframework.context.support.ResourceBundleMessageSource source =
+                    new org.springframework.context.support.ResourceBundleMessageSource();
+            source.setBasename("messages");
+            source.setDefaultEncoding("UTF-8");
+            this.msg = new GameMessageService(source);
+        }
     }
 
     /** 이전 호환용 기본 생성자 (메시지 서비스 부재 시 기본 리졸버 연동). */
@@ -40,71 +48,7 @@ public class BattleLogFormatter {
     }
 
     private String getMsg(final String code, final Object... args) {
-        if (msg != null) {
-            return msg.get(code, args);
-        }
-        // Fallback formatting when msg is null
-        return switch (code) {
-            case "battle.first_strike.monster_ambush" ->
-                    "⚠️ [적 선제공격] [" + args[0] + "] 기습 ➔ " + args[1] + " 피해 피격";
-            case "battle.attack.ultimate_multi" ->
-                    "👑 [결전 궁극기] ["
-                            + args[0]
-                            + "] "
-                            + args[1]
-                            + "연타 ("
-                            + args[2]
-                            + ") ➔ 총 "
-                            + args[3]
-                            + " 관통 피해";
-            case "battle.attack.ultimate_single" ->
-                    "👑 [결전 궁극기] [" + args[0] + "]" + args[1] + " 100% 관통 ➔ " + args[2] + " 피해";
-            case "battle.first_strike.hold" -> "⚡ [선제 공격] 선제 찬스였으나 [" + args[0] + "] 태세 유지";
-            case "battle.attack.multi" ->
-                    args[0] + " [" + args[1] + "] " + args[2] + "연타 (" + args[3] + ") ➔ 총 "
-                            + args[4] + " 피해";
-            case "battle.attack.single" ->
-                    args[0] + " [" + args[1] + "]" + args[2] + " ➔ " + args[3] + "에게 " + args[4]
-                            + " 피해";
-            case "battle.turn.block_perfect" ->
-                    "⚔️ [" + args[0] + "] 🛡️ " + args[1] + "의 완전 방어에 가로막힘 (0 피해)";
-            case "battle.turn.miss" -> args[0] + " [" + args[1] + "] 빗나감 (0 피해)";
-            case "battle.turn.vs_defense_multi" ->
-                    "⚔️ ["
-                            + args[0]
-                            + "] "
-                            + args[1]
-                            + "연타 ("
-                            + args[2]
-                            + ") 🛡️ 적 방어에 막힘 ➔ 총 "
-                            + args[3]
-                            + " 피해";
-            case "battle.turn.vs_defense_single" ->
-                    "⚔️ [" + args[0] + "]" + args[1] + " 🛡️ 적 방어에 막힘 ➔ " + args[2] + " 피해";
-            case "battle.turn.counter_crit" ->
-                    "⚡ [" + args[0] + "] 💥 적 공격을 흘려내며 ➔ " + args[1] + " 치명 반격!";
-            case "battle.turn.defense_success" ->
-                    "🛡️ [" + args[0] + "] 방어 성공 & 반격! ➔ " + args[1] + "에게 " + args[2] + " 반격 피해";
-            case "battle.turn.defense_window" ->
-                    "🛡️ [" + args[0] + "] 완벽 방어! ➔ 빈틈 포착 (다음 턴 선제 찬스⚡)";
-            case "battle.turn.defense_penetrated" -> "⚠️ [" + args[0] + "] 몬스터 강공격에 방어선 관통!";
-            case "battle.turn.counter_miss" -> "⚡ [" + args[0] + "] 적이 공격하지 않아 빗나감";
-            case "battle.turn.defense_stalemate" -> "🛡️ [" + args[0] + "] 맞방어 교착 상태";
-            case "battle.turn.defense_full_block" -> "🛡️ [" + args[0] + "] 적의 공격을 완벽히 막아냄 (0 피해)";
-            case "battle.monster.miss" -> "[" + args[0] + "] " + args[1] + " ➔ 빗나감";
-            case "battle.monster.blocked" ->
-                    "[" + args[0] + "] " + args[1] + " ➔ 🛡️ 방어로 경감되어 " + args[2] + " 피해";
-            case "battle.monster.hit" ->
-                    "[" + args[0] + "] " + args[1] + " ➔ " + args[2] + " 피해 피격";
-            case "battle.monster.defense_hold" -> "[" + args[0] + "] 🛡️ 방어 태세 유지";
-            case "battle.monster.defense_counter" ->
-                    "[" + args[0] + "] 🛡️ 방어 성공 & 반격 ➔ " + args[1] + " 피해 피격";
-            case "battle.monster.defense_alert" ->
-                    "[" + args[0] + "] 🛡️ 공격 방어 성공 ➔ 반격 태세 (다음 턴 선제 주의⚠️)";
-            case "battle.monster.defense_break" -> "[" + args[0] + "] 💥 방어선 관통됨!";
-            case "battle.monster.defense_full" -> "[" + args[0] + "] 🛡️ 완전 방어 (0 피해)";
-            default -> code;
-        };
+        return msg.get(code, args);
     }
 
     /**

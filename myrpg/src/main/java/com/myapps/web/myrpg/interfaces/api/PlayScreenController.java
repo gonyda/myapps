@@ -64,6 +64,7 @@ public class PlayScreenController {
     private final NodeViewAssembler nodeViewAssembler;
     private final DungeonService dungeonService;
     private final GatheringService gatheringService;
+    private final com.myapps.web.myrpg.support.GameMessageService gameMessageService;
 
     /**
      * PlayScreenController를 생성한다.
@@ -84,7 +85,51 @@ public class PlayScreenController {
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
      * @param dungeonService 던전 서비스
      * @param gatheringService 채집 관리 서비스
+     * @param gameMessageService 인게임 메시지 리졸버 서비스
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    public PlayScreenController(
+            final CharacterService characterService,
+            final MapService mapService,
+            final AmbienceService ambienceService,
+            final MovementService movementService,
+            final NpcService npcService,
+            final NpcDialogueService npcDialogueService,
+            final ProgressionService progressionService,
+            final MonsterService monsterService,
+            final MonsterDialogueService monsterDialogueService,
+            final MonsterEncounterService monsterEncounterService,
+            final BattleService battleService,
+            final ActionLog actionLog,
+            final PlayScreenViewHelper playScreenViewHelper,
+            final NodeViewAssembler nodeViewAssembler,
+            final DungeonService dungeonService,
+            final GatheringService gatheringService,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
+        this.characterService = characterService;
+        this.mapService = mapService;
+        this.ambienceService = ambienceService;
+        this.movementService = movementService;
+        this.npcService = npcService;
+        this.npcDialogueService = npcDialogueService;
+        this.progressionService = progressionService;
+        this.monsterService = monsterService;
+        this.monsterDialogueService = monsterDialogueService;
+        this.monsterEncounterService = monsterEncounterService;
+        this.battleService = battleService;
+        this.actionLog = actionLog;
+        this.playScreenViewHelper = playScreenViewHelper;
+        this.nodeViewAssembler = nodeViewAssembler;
+        this.dungeonService = dungeonService;
+        this.gatheringService = gatheringService;
+        this.gameMessageService =
+                gameMessageService != null
+                        ? gameMessageService
+                        : new com.myapps.web.myrpg.support.GameMessageService(null);
+    }
+
+    /** 이전 호환용 생성자. */
     public PlayScreenController(
             final CharacterService characterService,
             final MapService mapService,
@@ -102,22 +147,24 @@ public class PlayScreenController {
             final NodeViewAssembler nodeViewAssembler,
             final DungeonService dungeonService,
             final GatheringService gatheringService) {
-        this.characterService = characterService;
-        this.mapService = mapService;
-        this.ambienceService = ambienceService;
-        this.movementService = movementService;
-        this.npcService = npcService;
-        this.npcDialogueService = npcDialogueService;
-        this.progressionService = progressionService;
-        this.monsterService = monsterService;
-        this.monsterDialogueService = monsterDialogueService;
-        this.monsterEncounterService = monsterEncounterService;
-        this.battleService = battleService;
-        this.actionLog = actionLog;
-        this.playScreenViewHelper = playScreenViewHelper;
-        this.nodeViewAssembler = nodeViewAssembler;
-        this.dungeonService = dungeonService;
-        this.gatheringService = gatheringService;
+        this(
+                characterService,
+                mapService,
+                ambienceService,
+                movementService,
+                npcService,
+                npcDialogueService,
+                progressionService,
+                monsterService,
+                monsterDialogueService,
+                monsterEncounterService,
+                battleService,
+                actionLog,
+                playScreenViewHelper,
+                nodeViewAssembler,
+                dungeonService,
+                gatheringService,
+                null);
     }
 
     /**
@@ -210,7 +257,8 @@ public class PlayScreenController {
 
         final Optional<BattleState> activeBattle = battleService.resumeIfActive(progress);
         if (activeBattle.isPresent()) {
-            actionLog.add("전투 중에는 이동할 수 없습니다.", NOTIFICATION_TYPE);
+            final String blockedMsg = gameMessageService.get("system.move_blocked");
+            actionLog.add(blockedMsg, NOTIFICATION_TYPE);
             final PlayScreenView view = buildViewFromProgress(progress);
             model.addAttribute("view", view);
             return "fragments/move-response";
@@ -240,7 +288,9 @@ public class PlayScreenController {
                 ambusher.ifPresent(
                         monster -> {
                             battleService.start(progress, monster.id(), true);
-                            actionLog.add("🚨 " + monster.name() + " 기습!", COMBAT_TYPE);
+                            final String ambushMsg =
+                                    gameMessageService.get("battle.ambush", monster.name());
+                            actionLog.add(ambushMsg, COMBAT_TYPE);
                             model.addAttribute("ambushMonsterName", monster.name());
                         });
             }
@@ -338,15 +388,18 @@ public class PlayScreenController {
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final TalentType talent = TalentType.fromNameOrFallback(talentParam, TalentType.MELEE);
         final RebirthResult result = progressionService.rebirth(progress, talent);
-
         if (result instanceof RebirthResult.Reborn) {
             characterService.saveTurn(progress);
-            actionLog.add("환생했습니다 (재능: " + talent.label() + ")", NOTIFICATION_TYPE);
+            final String rebirthMsg =
+                    gameMessageService.get("log.system.rebirth_done", talent.label());
+            actionLog.add(rebirthMsg, NOTIFICATION_TYPE);
         } else if (result instanceof RebirthResult.CooldownActive cooldown) {
             final Duration remaining = cooldown.remaining();
             final long hours = remaining.toHours();
             final long minutes = remaining.toMinutes() % MINUTES_PER_HOUR;
-            actionLog.add("환생까지 " + hours + "시간 " + minutes + "분 남았습니다", NOTIFICATION_TYPE);
+            final String waitMsg =
+                    gameMessageService.get("log.system.rebirth_wait", hours, minutes);
+            actionLog.add(waitMsg, NOTIFICATION_TYPE);
         }
 
         final PlayScreenView view = buildViewFromProgress(progress);
@@ -369,15 +422,13 @@ public class PlayScreenController {
         characterService.saveTurn(progress);
 
         if (result.levelsGained() > 0) {
-            actionLog.add(
-                    "테스트 치트: 1,000 EXP를 획득했습니다! (Lv."
-                            + result.newLevel()
-                            + " 달성, AP +"
-                            + result.levelsGained()
-                            + ")",
-                    NOTIFICATION_TYPE);
+            final String expLevelMsg =
+                    gameMessageService.get(
+                            "log.cheat.exp_levelup", result.newLevel(), result.levelsGained());
+            actionLog.add(expLevelMsg, NOTIFICATION_TYPE);
         } else {
-            actionLog.add("테스트 치트: 1,000 EXP를 획득했습니다!", NOTIFICATION_TYPE);
+            final String expMsg = gameMessageService.get("log.cheat.exp");
+            actionLog.add(expMsg, NOTIFICATION_TYPE);
         }
 
         final PlayScreenView view = buildViewFromProgress(progress);
@@ -397,7 +448,8 @@ public class PlayScreenController {
         final CharacterProgress progress = resolveCurrentCharacter(session);
         progress.gainGold(1000);
         characterService.saveTurn(progress);
-        actionLog.add("테스트 치트: 1,000 Gold를 획득했습니다!", NOTIFICATION_TYPE);
+        final String goldMsg = gameMessageService.get("log.cheat.gold");
+        actionLog.add(goldMsg, NOTIFICATION_TYPE);
 
         final PlayScreenView view = buildViewFromProgress(progress);
         model.addAttribute("view", view);

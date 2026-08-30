@@ -53,6 +53,7 @@ public class BattleController {
     private final ActionLog actionLog;
     private final NodeViewAssembler nodeViewAssembler;
     private final ItemCatalogService itemCatalogService;
+    private final com.myapps.web.myrpg.support.GameMessageService gameMessageService;
 
     /**
      * BattleController를 생성한다.
@@ -64,7 +65,33 @@ public class BattleController {
      * @param actionLog 세션 보관 행동 로그
      * @param nodeViewAssembler 현재 노드 기준 플레이 화면 뷰 조립 컴포넌트
      * @param itemCatalogService 아이템 카탈로그 서비스
+     * @param gameMessageService 인게임 메시지 리졸버 서비스
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    public BattleController(
+            final BattleService battleService,
+            final CharacterService characterService,
+            final MonsterService monsterService,
+            final PlayScreenViewHelper playScreenViewHelper,
+            final ActionLog actionLog,
+            final NodeViewAssembler nodeViewAssembler,
+            final ItemCatalogService itemCatalogService,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
+        this.battleService = battleService;
+        this.characterService = characterService;
+        this.monsterService = monsterService;
+        this.playScreenViewHelper = playScreenViewHelper;
+        this.actionLog = actionLog;
+        this.nodeViewAssembler = nodeViewAssembler;
+        this.itemCatalogService = itemCatalogService;
+        this.gameMessageService =
+                gameMessageService != null
+                        ? gameMessageService
+                        : new com.myapps.web.myrpg.support.GameMessageService(null);
+    }
+
+    /** 이전 호환용 생성자. */
     public BattleController(
             final BattleService battleService,
             final CharacterService characterService,
@@ -73,13 +100,15 @@ public class BattleController {
             final ActionLog actionLog,
             final NodeViewAssembler nodeViewAssembler,
             final ItemCatalogService itemCatalogService) {
-        this.battleService = battleService;
-        this.characterService = characterService;
-        this.monsterService = monsterService;
-        this.playScreenViewHelper = playScreenViewHelper;
-        this.actionLog = actionLog;
-        this.nodeViewAssembler = nodeViewAssembler;
-        this.itemCatalogService = itemCatalogService;
+        this(
+                battleService,
+                characterService,
+                monsterService,
+                playScreenViewHelper,
+                actionLog,
+                nodeViewAssembler,
+                itemCatalogService,
+                null);
     }
 
     /**
@@ -109,7 +138,8 @@ public class BattleController {
         }
 
         final Monster monster = monsterOpt.get();
-        actionLog.add("⚔️ " + monster.name() + " 조우!", COMBAT_TYPE);
+        final String encounterMsg = gameMessageService.get("log.combat.encounter", monster.name());
+        actionLog.add(encounterMsg, COMBAT_TYPE);
         final BattleView battleView = buildBattleView(state, monster, progress);
         final List<String> turnLog = List.of(monster.name() + " Lv." + monster.level() + " 출현!");
         populateBattleModel(model, progress, battleView, turnLog);

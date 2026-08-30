@@ -57,7 +57,10 @@ public class SkillController {
         this.skillService = skillService;
         this.characterService = characterService;
         this.actionLog = actionLog;
-        this.gameMessageService = gameMessageService;
+        this.gameMessageService =
+                gameMessageService != null
+                        ? gameMessageService
+                        : new com.myapps.web.myrpg.support.GameMessageService(null);
     }
 
     /** 이전 호환용 생성자. */
@@ -139,16 +142,10 @@ public class SkillController {
         final SkillRankUpView rankUpView = skillService.buildRankUpView(progress.getId(), id);
         if (success) {
             final String rankUpMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get(
-                                    "skill.rankup",
-                                    rankUpView.label(),
-                                    rankUpView.currentRankLabel())
-                            : "✨ ["
-                                    + rankUpView.label()
-                                    + "] "
-                                    + rankUpView.currentRankLabel()
-                                    + "랭크로 승급되었습니다!";
+                    gameMessageService.get(
+                            "log.growth.skill_rankup",
+                            rankUpView.label(),
+                            rankUpView.currentRankLabel());
             actionLog.add(rankUpMsg, LOG_TYPE_GROWTH);
         }
         model.addAttribute("rankUp", rankUpView);

@@ -32,7 +32,10 @@ public class GlobalExceptionHandler {
     public GlobalExceptionHandler(
             @org.springframework.lang.Nullable
                     final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
-        this.gameMessageService = gameMessageService;
+        this.gameMessageService =
+                gameMessageService != null
+                        ? gameMessageService
+                        : new com.myapps.web.myrpg.support.GameMessageService(null);
     }
 
     /** 이전 호환용 기본 생성자. */
@@ -100,10 +103,7 @@ public class GlobalExceptionHandler {
     public String handleInsufficientAbilityPoints(
             final InsufficientAbilityPointsException exception, final Model model) {
         LOG.warn("AP 부족으로 승급 거부: {}", exception.getMessage());
-        final String msg =
-                gameMessageService != null
-                        ? gameMessageService.get("exception.skill.insufficient_ap")
-                        : "AP가 부족하여 승급할 수 없습니다.";
+        final String msg = gameMessageService.get("exception.skill.insufficient_ap");
         model.addAttribute("message", msg);
         return "error";
     }

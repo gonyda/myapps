@@ -127,7 +127,7 @@ class GatheringServiceTest {
         assertThat(progress.getStaminaCurrent()).isEqualTo(45);
         assertThat(gatheringService.isTreeAvailable(1L, "tir-chonaill")).isFalse();
         verify(inventoryService).acquireItem(1L, "firewood", 1);
-        verify(actionLog).add(eq("[채집] 🪵 단단한 장작을 1개 얻었습니다!"), eq("item"));
+        verify(actionLog).add(eq("[채집] 단단한 장작 획득!"), eq("item"));
     }
 
     @Test
@@ -157,6 +157,6 @@ class GatheringServiceTest {
         assertThat(progress.getStaminaCurrent()).isEqualTo(45);
         assertThat(gatheringService.isTreeAvailable(1L, "tir-chonaill")).isFalse();
         verify(inventoryService, never()).acquireItem(anyLong(), any(), anyInt());
-        verify(actionLog).add(eq("[채집] 💨 헛도끼질을 하여 장작을 얻지 못했습니다."), eq("system"));
+        verify(actionLog).add(eq("[채집] 채집에 실패했습니다."), eq("system"));
     }
 }

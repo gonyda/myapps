@@ -329,7 +329,7 @@ function showEquipmentToast(message) {
 // ===== 이동 패드: POST /move 호출 + DOM fragment swap =====
 function move(dx, dy) {
     if (battleActive) {
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.cannot_move_in_combat') : "전투 중에는 이동할 수 없습니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('system.move_blocked') : "전투 중에는 이동할 수 없습니다.");
         return;
     }
     fetch("/move?dx=" + dx + "&dy=" + dy, { method: "POST" })
@@ -397,7 +397,7 @@ function swapMoveResponse(html) {
     var ambushEl = container.querySelector("#ambushSignal");
     if (ambushEl) {
         var monsterName = ambushEl.getAttribute("data-monster");
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.ambush_alert', monsterName) : ("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!"));
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('battle.ambush', monsterName) : ("매복하고 있던 " + monsterName + "이(가) 기습해옵니다!"));
         battleActive = true;
         fetchBattleView();
     }
@@ -838,13 +838,13 @@ function handleTurnResultSignal(container) {
         battleActive = false;
         if (!dungeonCleared) {
             var monsterName = signal.getAttribute("data-monster-name") || "몬스터";
-            alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.monster_defeated', monsterName) : (monsterName + "이(가) 쓰러졌습니다!"));
+            alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('battle.monster_slain', monsterName) : (monsterName + "이(가) 쓰러졌습니다!"));
         }
     } else if (outcome === "LOSE") {
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.player_defeated') : "정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('battle.death') : "정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.");
         battleActive = false;
     } else if (outcome === "FLED") {
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.flee_success') : "도망 성공!");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('battle.flee.success') : "도망 성공!");
         battleActive = false;
     }
 }
@@ -885,9 +885,9 @@ function npcAction(label, npcId) {
     } else if (label === '치료받기') {
         heal();
     } else if (label === '인챈트') {
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.feature_planned') : "추후 설계 예정입니다.");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('system.notice.coming_soon') : "추후 설계 예정입니다.");
     } else {
-        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.feature_not_implemented') : "구현 예정입니다");
+        alert(window.GAME_MESSAGES ? window.GAME_MESSAGES.get('system.notice.coming_soon') : "구현 예정입니다");
     }
 }
 
@@ -900,7 +900,7 @@ function heal() {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('economy.insufficient_gold') : '골드가 부족합니다.'));
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('exception.economy.insufficient_gold') : '골드가 부족합니다.'));
                     return null;
                 });
             }
@@ -1357,7 +1357,7 @@ function confirmBankModal() {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('economy.insufficient_gold') : '골드가 부족합니다.'));
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('exception.economy.insufficient_gold') : '골드가 부족합니다.'));
                     return null;
                 });
             }
@@ -1380,7 +1380,7 @@ function depositItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.generic_error') : '요청을 처리할 수 없습니다.'));
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('system.error.generic') : '요청을 처리할 수 없습니다.'));
                     return null;
                 });
             }
@@ -1400,7 +1400,7 @@ function withdrawItem(ownedItemId) {
                     var container = document.createElement('div');
                     container.innerHTML = html;
                     var msg = container.querySelector('.error-message') || container.querySelector('p');
-                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('ui.generic_error') : '요청을 처리할 수 없습니다.'));
+                    alert(msg ? msg.textContent : (window.GAME_MESSAGES ? window.GAME_MESSAGES.get('system.error.generic') : '요청을 처리할 수 없습니다.'));
                     return null;
                 });
             }

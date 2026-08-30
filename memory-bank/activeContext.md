@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-30 10:37 (Asia/Seoul)
+> 최종 업데이트: 2026-08-30 11:00 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -19,11 +19,12 @@
 - **인게임 시간대별 앰비언트 스카이 & 천체 궤적 (2026-08-28)**: 6대 시간대(`TimeOfDay`) 딥 다크 스카이 그라디언트, 천체(해/달) 궤적 및 소프트 글로우 동적 연출 완비.
 - **스킬 승급 조건 단순화 & 유형 뱃지 표기 (2026-08-29)**: `RankUpRequirement(requiredUsage)` 단일화, 10대 스킬 유형별 다크 판타지 컬러 뱃지 구축.
 - **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**: `ItemType.MATERIAL`, `firewood` 아이템 등록, `GatheringService` (5 SP 소모, 50% 채집 성공/실패 롤), 5초 자동 완료형 채집 타이머 완비.
-- **메시지 및 게임 프로퍼티 외부화 리팩토링 (2026-08-30, 018-message-and-properties-externalization)**:
-  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외 110여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` 구현.
-  - **서비스 & 컨트롤러**: `GatheringService`, `ShopService`, `InventoryService`, `DungeonService`, `ProgressionService`, `BattleService`, `BattleLogFormatter`, `SkillController`, `HealController`, `RepairController`, `MovementService`, `GlobalExceptionHandler` 전수 연동 (Strict Invariance 완벽 보장).
-  - **프론트엔드**: `game-messages.js` 클라이언트 메시지 번들 및 `window.GAME_MESSAGES.get()` 연동, `myrpg.js` 내 하드코딩 알림/Confirm/토스트 23건 치환.
-  - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1267개 전체 단위 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
+- **메시지 및 게임 프로퍼티 외부화 리팩토링 및 코드리뷰 보완 완료 (2026-08-30, 018-message-and-properties-externalization)**:
+  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외 110여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` (MessageSource 자동 fallback 내장) 구현.
+  - **서비스 & 컨트롤러**: `BattleController`, `InventoryController`, `PlayScreenController`, `SkillController`, `GlobalExceptionHandler` 등 컨트롤러 계층 잔존 하드코딩 8건 전수 외부화 및 Nullable 자동 주입 지원.
+  - **중복 로직 및 매직넘버 제거**: `BattleLogFormatter` 중복 switch 문 제거 및 `GameMessageService` 위임, `BattleService` 내 `static final` 상수 8종 제거 및 `gameProperties.battle()` 전용화, 서비스 계층 `gameMessageService != null` 삼항 연산자 분기 전수 정리.
+  - **프론트엔드**: `game-messages.js` 키 네이밍을 `messages.properties`와 1:1 일원화, `myrpg.js` 알림/Confirm/토스트 전수 연동.
+  - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1,267개 전체 단위/통합 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
 
 ---
 

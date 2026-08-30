@@ -109,8 +109,12 @@ public class InventoryService {
         this.skillCatalogService = skillCatalogService;
         this.characterSkillRepository = characterSkillRepository;
         this.skillRankupBonus = new SkillRankupBonus();
-        this.gameMessageService = gameMessageService;
-        this.gameProperties = gameProperties;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
+        this.gameProperties =
+                gameProperties != null
+                        ? gameProperties
+                        : new GameProperties(null, null, null, null, null, null);
     }
 
     /** 이전 호환용 생성자. */
@@ -1158,12 +1162,10 @@ public class InventoryService {
     private void appendEquipmentDescription(
             final EquipmentItem equipItem, final OwnedItem owned, final List<String> lines) {
         final String kindType =
-                gameMessageService != null
-                        ? gameMessageService.get(
-                                "describe.equip.kind_type",
-                                equipItem.kind().label(),
-                                equipItem.type().label())
-                        : equipItem.kind().label() + " (" + equipItem.type().label() + ")";
+                gameMessageService.get(
+                        "describe.equip.kind_type",
+                        equipItem.kind().label(),
+                        equipItem.type().label());
         lines.add(kindType);
 
         for (final EquipBonus bonus : equipItem.bonuses()) {
@@ -1172,10 +1174,7 @@ public class InventoryService {
 
         if (equipItem.kind().primarySlot() == EquipSlot.MAIN_HAND
                 && equipItem.kind().requiredSlots().contains(EquipSlot.OFF_HAND)) {
-            final String shieldConflict =
-                    gameMessageService != null
-                            ? gameMessageService.get("exception.equip.shield_conflict")
-                            : "방패와 함께 착용할 수 없습니다.";
+            final String shieldConflict = gameMessageService.get("exception.equip.shield_conflict");
             lines.add(shieldConflict);
         }
 
@@ -1191,9 +1190,7 @@ public class InventoryService {
                 owned != null ? owned.getCurrentDurability() : equipItem.maxDurability();
         final String currentDuraStr = formatDurability(currentDura);
 
-        return gameMessageService != null
-                ? gameMessageService.get("describe.equip.durability", currentDuraStr, maxDura)
-                : "내구도: " + currentDuraStr + "/" + maxDura;
+        return gameMessageService.get("describe.equip.durability", currentDuraStr, maxDura);
     }
 
     // ─── Private helpers ────────────────────────────────────────────────────
@@ -1494,10 +1491,7 @@ public class InventoryService {
             final Long characterId, final DroppedItem droppedItem, final String itemName) {
         final Long targetCharId = characterId != null ? characterId : 1L;
         if (isInventoryFull(targetCharId)) {
-            final String failMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get("log.item.acquire_fail", itemName)
-                            : itemName + " 획득 실패!";
+            final String failMsg = gameMessageService.get("log.item.acquire_fail", itemName);
             actionLog.add(failMsg, LOG_TYPE_ITEM);
             return;
         }
@@ -1522,10 +1516,7 @@ public class InventoryService {
 
     private void logItemAcquireFailure(final String itemId) {
         final String itemName = itemCatalogService.byId(itemId).map(Item::name).orElse(itemId);
-        final String failMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.item.acquire_fail", itemName)
-                        : itemName + " 획득 실패!";
+        final String failMsg = gameMessageService.get("log.item.acquire_fail", itemName);
         actionLog.add(failMsg, LOG_TYPE_ITEM);
     }
 
@@ -1633,10 +1624,7 @@ public class InventoryService {
 
     private void autoUnequipBroken(final OwnedItem equipped, final String itemName) {
         equipped.unequip();
-        final String brokenMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.item.durability_broken", itemName)
-                        : itemName + " 내구도 0 — 장착 해제됨";
+        final String brokenMsg = gameMessageService.get("log.item.durability_broken", itemName);
         actionLog.add(brokenMsg, LOG_TYPE_ITEM);
     }
 

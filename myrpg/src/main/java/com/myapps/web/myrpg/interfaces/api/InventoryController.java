@@ -41,6 +41,7 @@ public class InventoryController {
     private final InventoryService inventoryService;
     private final CharacterService characterService;
     private final ActionLog actionLog;
+    private final com.myapps.web.myrpg.support.GameMessageService gameMessageService;
 
     /**
      * InventoryController를 생성한다.
@@ -48,14 +49,30 @@ public class InventoryController {
      * @param inventoryService 인벤토리 서비스
      * @param characterService 캐릭터 진행상황 서비스
      * @param actionLog 세션 보관 행동 로그
+     * @param gameMessageService 인게임 메시지 리졸버 서비스
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    public InventoryController(
+            final InventoryService inventoryService,
+            final CharacterService characterService,
+            final ActionLog actionLog,
+            @org.springframework.lang.Nullable
+                    final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
+        this.inventoryService = inventoryService;
+        this.characterService = characterService;
+        this.actionLog = actionLog;
+        this.gameMessageService =
+                gameMessageService != null
+                        ? gameMessageService
+                        : new com.myapps.web.myrpg.support.GameMessageService(null);
+    }
+
+    /** 이전 호환용 생성자. */
     public InventoryController(
             final InventoryService inventoryService,
             final CharacterService characterService,
             final ActionLog actionLog) {
-        this.inventoryService = inventoryService;
-        this.characterService = characterService;
-        this.actionLog = actionLog;
+        this(inventoryService, characterService, actionLog, null);
     }
 
     /**
@@ -93,7 +110,8 @@ public class InventoryController {
     public String usePotion(
             @RequestParam final long ownedItemId, final HttpSession session, final Model model) {
         final PotionItem potion = inventoryService.usePotion(ownedItemId);
-        actionLog.add("포션 사용: " + potion.name(), LOG_TYPE_ITEM);
+        final String potionMsg = gameMessageService.get("log.potion.use", potion.name());
+        actionLog.add(potionMsg, LOG_TYPE_ITEM);
 
         final CharacterProgress progress = resolveCurrentCharacter(session);
         final InventoryView view = resolveInventoryView(progress);

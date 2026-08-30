@@ -91,8 +91,12 @@ public class GatheringService {
         this.characterProgressRepository = characterProgressRepository;
         this.statProgression = statProgression;
         this.actionLog = actionLog;
-        this.gameMessageService = gameMessageService;
-        this.gameProperties = gameProperties;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
+        this.gameProperties =
+                gameProperties != null
+                        ? gameProperties
+                        : new GameProperties(null, null, null, null, null, null);
         this.random = random;
     }
 
@@ -208,17 +212,11 @@ public class GatheringService {
         final VitalMax vitalMax =
                 statProgression.vitalMaxFor(progress.getCurrentLevel(), progress.getTalent());
 
-        final int staminaCost =
-                gameProperties != null && gameProperties.gathering() != null
-                        ? gameProperties.gathering().woodcutStaminaCost()
-                        : DEFAULT_STAMINA_COST;
+        final int staminaCost = gameProperties.gathering().woodcutStaminaCost();
 
         if (progress.getStaminaCurrent() < staminaCost) {
             final String lackMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get(
-                                    "exception.vital.insufficient_stamina", staminaCost)
-                            : "스태미나가 부족합니다 (필요: " + staminaCost + " SP)";
+                    gameMessageService.get("exception.vital.insufficient_stamina", staminaCost);
             return new WoodcutResult(
                     false, lackMsg, null, progress.getStaminaCurrent(), vitalMax.stamina());
         }
@@ -226,29 +224,19 @@ public class GatheringService {
         progress.spendStamina(staminaCost);
         characterTreeNodes.remove(charId);
 
-        final double successRate =
-                gameProperties != null && gameProperties.gathering() != null
-                        ? gameProperties.gathering().woodcutSuccessRate() / 100.0
-                        : DEFAULT_SUCCESS_RATE;
-
+        final double successRate = gameProperties.gathering().woodcutSuccessRate() / 100.0;
         final boolean success = random.nextDouble() < successRate;
         final String message;
         final String itemId;
 
         if (success) {
             inventoryService.acquireItem(charId, FIREWOOD_ITEM_ID, 1);
-            final String logMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get("log.gathering.success", "단단한 장작")
-                            : "[채집] 🪵 단단한 장작을 1개 얻었습니다!";
+            final String logMsg = gameMessageService.get("log.gathering.success", "단단한 장작");
             actionLog.add(logMsg, LOG_TYPE_ITEM);
             message = logMsg;
             itemId = FIREWOOD_ITEM_ID;
         } else {
-            final String logMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get("log.gathering.failure")
-                            : "[채집] 💨 헛도끼질을 하여 장작을 얻지 못했습니다.";
+            final String logMsg = gameMessageService.get("log.gathering.failure");
             actionLog.add(logMsg, LOG_TYPE_SYSTEM);
             message = logMsg;
             itemId = null;

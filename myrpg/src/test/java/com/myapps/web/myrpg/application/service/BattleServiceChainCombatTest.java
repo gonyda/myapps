@@ -160,7 +160,6 @@ class BattleServiceChainCombatTest {
         final BattleState state = new BattleState(CHARACTER_ID, SPIDER_ID, 10, false);
         final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-1-0", "room-2-0");
 
-        given(rewardService.rollDrop(any())).willReturn(new DropResult(20, List.of()));
         given(monsterService.byId(SPIDER_ID)).willReturn(Optional.of(spider));
         given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
 
@@ -300,7 +299,6 @@ class BattleServiceChainCombatTest {
         final BattleState state = new BattleState(CHARACTER_ID, GIANT_SPIDER_ID, 20, false);
         final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-2-0", "room-2-0");
 
-        given(rewardService.rollDrop(any())).willReturn(new DropResult(20, List.of()));
         given(monsterService.byId(GIANT_SPIDER_ID)).willReturn(Optional.of(giantSpider));
         given(dungeonService.getActiveDungeon(CHARACTER_ID)).willReturn(Optional.of(dungeon));
         given(dungeonService.onBossDefeated(CHARACTER_ID))

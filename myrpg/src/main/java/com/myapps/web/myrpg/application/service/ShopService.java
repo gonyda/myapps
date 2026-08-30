@@ -68,7 +68,8 @@ public class ShopService {
         this.inventoryService = inventoryService;
         this.characterService = characterService;
         this.actionLog = actionLog;
-        this.gameMessageService = gameMessageService;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
     }
 
     /** 이전 호환용 생성자. */
@@ -349,10 +350,7 @@ public class ShopService {
         } else {
             inventoryService.acquireItem(progress.getId(), itemId, 1);
         }
-        final String buyMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.shop.buy", item.name())
-                        : "아이템을 구매했습니다: " + item.name();
+        final String buyMsg = gameMessageService.get("log.shop.buy", item.name());
         actionLog.add(buyMsg, LOG_TYPE_ITEM);
     }
 
@@ -378,9 +376,7 @@ public class ShopService {
 
         if (isItemEquippedOrAssigned(progress, owned)) {
             final String conflictMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get("exception.equip.unequip_before_sell")
-                            : "장착을 해제한 후 판매할 수 있습니다.";
+                    gameMessageService.get("exception.equip.unequip_before_sell");
             throw new EquipConflictException(conflictMsg);
         }
 
@@ -400,10 +396,7 @@ public class ShopService {
         }
 
         progress.gainGold(sellValue);
-        final String sellMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.shop.sell", catalogItem.name())
-                        : "아이템을 판매했습니다: " + catalogItem.name();
+        final String sellMsg = gameMessageService.get("log.shop.sell", catalogItem.name());
         actionLog.add(sellMsg, LOG_TYPE_ITEM);
     }
 

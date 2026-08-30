@@ -17,7 +17,19 @@ public class GameMessageService {
     private final MessageSource messageSource;
 
     public GameMessageService(final MessageSource messageSource) {
-        this.messageSource = messageSource;
+        if (messageSource != null) {
+            this.messageSource = messageSource;
+        } else {
+            final org.springframework.context.support.ResourceBundleMessageSource source =
+                    new org.springframework.context.support.ResourceBundleMessageSource();
+            source.setBasename("messages");
+            source.setDefaultEncoding("UTF-8");
+            this.messageSource = source;
+        }
+    }
+
+    public GameMessageService() {
+        this(null);
     }
 
     /**
@@ -30,6 +42,9 @@ public class GameMessageService {
     public String get(final String code, final Object... args) {
         if (code == null) {
             return "";
+        }
+        if (messageSource == null) {
+            return code;
         }
         try {
             return messageSource.getMessage(code, args, Locale.KOREAN);

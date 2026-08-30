@@ -81,8 +81,12 @@ public class DungeonService {
         this.itemCatalogService = itemCatalogService;
         this.actionLog = actionLog;
         this.objectMapper = objectMapper;
-        this.gameMessageService = gameMessageService;
-        this.gameProperties = gameProperties;
+        this.gameMessageService =
+                gameMessageService != null ? gameMessageService : new GameMessageService(null);
+        this.gameProperties =
+                gameProperties != null
+                        ? gameProperties
+                        : new GameProperties(null, null, null, null, null, null);
     }
 
     /** 이전 호환용 생성자. */
@@ -157,10 +161,7 @@ public class DungeonService {
         character.updateCurrentNodeId(instance.startRoomId());
         characterProgressRepository.save(character);
 
-        final String enterMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.dungeon.enter", spec.name())
-                        : spec.name() + "에 입장했습니다.";
+        final String enterMsg = gameMessageService.get("log.dungeon.enter", spec.name());
         actionLog.add(enterMsg, LOG_TYPE_DUNGEON);
         return instance;
     }
@@ -190,10 +191,7 @@ public class DungeonService {
             characterProgressRepository.save(character);
         }
 
-        final String exitMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.dungeon.exit")
-                        : "던전에서 나왔습니다.";
+        final String exitMsg = gameMessageService.get("log.dungeon.exit");
         actionLog.add(exitMsg, LOG_TYPE_DUNGEON);
     }
 
@@ -320,17 +318,11 @@ public class DungeonService {
             }
         }
 
-        final String clearMsg =
-                gameMessageService != null
-                        ? gameMessageService.get("log.dungeon.clear", spec.name())
-                        : spec.name() + "을(를) 완전히 정복했습니다!";
+        final String clearMsg = gameMessageService.get("log.dungeon.clear", spec.name());
         actionLog.add(clearMsg, LOG_TYPE_DUNGEON);
 
         final String clearRewardMsg =
-                gameMessageService != null
-                        ? gameMessageService.get(
-                                "log.dungeon.clear_reward", reward.exp(), reward.gold())
-                        : "던전 클리어 보상: EXP +" + reward.exp() + ", Gold +" + reward.gold() + "G";
+                gameMessageService.get("log.dungeon.clear_reward", reward.exp(), reward.gold());
         actionLog.add(clearRewardMsg, LOG_TYPE_DUNGEON);
 
         for (final DroppedItem item : droppedItems) {
@@ -342,10 +334,7 @@ public class DungeonService {
                                     .orElse(item.itemId())
                             : item.itemId();
             final String itemRewardMsg =
-                    gameMessageService != null
-                            ? gameMessageService.get(
-                                    "log.dungeon.item_reward", itemName, item.quantity())
-                            : "보상 획득: " + itemName + " x" + item.quantity();
+                    gameMessageService.get("log.dungeon.item_reward", itemName, item.quantity());
             actionLog.add(itemRewardMsg, LOG_TYPE_DUNGEON);
         }
 

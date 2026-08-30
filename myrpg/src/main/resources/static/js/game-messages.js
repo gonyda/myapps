@@ -5,15 +5,20 @@
     'use strict';
 
     const MESSAGES = {
-        // UI & System Alerts
-        'ui.cannot_move_in_combat': '전투 중에는 이동할 수 없습니다.',
-        'ui.ambush_alert': '매복하고 있던 {0}이(가) 기습해옵니다!',
-        'ui.monster_defeated': '{0}이(가) 쓰러졌습니다!',
-        'ui.player_defeated': '정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.',
-        'ui.flee_success': '도망 성공!',
-        'ui.feature_planned': '추후 설계 예정입니다.',
-        'ui.feature_not_implemented': '구현 예정입니다',
-        'ui.generic_error': '요청을 처리할 수 없습니다.',
+        // System & Common
+        'system.move_blocked': '전투 중에는 이동할 수 없습니다.',
+        'system.resource_lack': '{0}이(가) 부족합니다.',
+        'system.inventory.full': '인벤토리가 가득 찼습니다 (최대 {0}칸)',
+        'system.notice.coming_soon': '추후 구현 예정입니다.',
+        'system.error.weapon_swap': '무기 스왑 중 오류가 발생했습니다.',
+        'system.error.gathering': '채집 중 오류가 발생했습니다.',
+        'system.error.generic': '요청을 처리할 수 없습니다.',
+
+        // Action Log & Battle Notifications
+        'battle.ambush': '매복하고 있던 {0}이(가) 기습해옵니다!',
+        'battle.monster_slain': '{0}이(가) 쓰러졌습니다!',
+        'battle.death': '정신을 잃고 쓰러졌습니다… 티르코네일에서 되살아납니다.',
+        'battle.flee.success': '도망 성공!',
 
         // Town & Facilities
         'town.heal.success': '치료되었습니다!',
@@ -22,10 +27,13 @@
         'town.repair.cannot_repair': '수리할 수 없습니다.',
         'shop.cannot_buy': '구매할 수 없습니다.',
         'shop.cannot_sell': '판매할 수 없습니다.',
-        'exception.equip.cannot_equip': '착용 할 수 없습니다',
 
-        // Economy & Inventory
-        'economy.insufficient_gold': '골드가 부족합니다.',
+        // Economy & Exceptions
+        'exception.equip.shield_conflict': '방패와 함께 착용할 수 없습니다.',
+        'exception.equip.unequip_before_sell': '장착을 해제한 후 판매할 수 있습니다.',
+        'exception.equip.cannot_equip': '착용할 수 없습니다.',
+        'exception.economy.insufficient_gold': '골드가 부족합니다.',
+        'exception.vital.insufficient_stamina': '스태미나가 부족합니다 (필요: {0} SP)',
         'bank.invalid_amount': '1 이상의 금액을 입력해주세요.',
         'skill.invalid_slot': '1부터 10 사이의 슬롯 번호를 입력해 주세요.',
 
