@@ -15,7 +15,9 @@
 2. **원자적 완료 및 빌드 그린**:  
    기존 코드 확장 시 영향받는 호출부와 테스트를 함께 수정하여 각 단계 완료 시점에 빌드가 반드시 그린(`BUILD SUCCESS`)이어야 한다.
 3. **5대 품질 가드레일 준수**:  
-   Spotless(포맷팅) $\rightarrow$ Error Prone(정적 결함) $\rightarrow$ ArchUnit(계층 아키텍처) $\rightarrow$ JaCoCo(커버리지 80%+) $\rightarrow$ PMD/CPD(복잡도/중복)를 필수 검증한다.
+   Spotless(포맷팅) $\rightarrow$ Error Prone(정적 결함) $\rightarrow$ ArchUnit(계층 아키텍처) $\rightarrow$ JaCoCo(라인 80%+·브랜치 70%+) $\rightarrow$ PMD/CPD(복잡도/중복)를 필수 검증한다.
+4. **테스트 필수 & Given-When-Then**:  
+   기능 구현 Task는 테스트 코드를 함께 작성하며, 모든 테스트는 `// given` / `// when` / `// then` 3단계와 `should_{동작}_when_{조건}` 네이밍을 준수한다. (Spring Boot 4.0: `@MockitoBean`, `@WebMvcTest`/`@DataJpaTest` 신규 패키지, Jackson 3 `tools.jackson` 사용)
 
 ---
 
@@ -101,7 +103,7 @@
   - _Requirements: 4.3_ / _Design: 3.4_
 
 - [ ] 16. UI 및 자바스크립트 회귀 테스트 검증
-  - [ ] 16.1 `VisualJsPreservationAndJsonLoadingIntegrationTest.java` 등 기존 UI 보존 테스트 실행
+  - [ ] 16.1 기존 UI/JS 보존 회귀 테스트(예: `{Module}VisualPreservationIntegrationTest.java`) 실행하여 프래그먼트/정적 리소스 무결성 확인
   - _Validates: Requirements 4.1, 4.2, 4.3_
 
 - [ ] 17. **체크포인트 D** — 프론트엔드 연동 빌드 & 뷰 테스트 검증

@@ -101,12 +101,28 @@ sequenceDiagram
 - **`static/css/{module}.css`**:
   - `:root` 디자인 토큰 활용, 색상 및 애니메이션 정의.
 
+### 3.5. Error Handling (예외 처리 설계)
+- **커스텀 예외**: 비즈니스 예외는 `application/exception/{Domain}Exception.java`로 명시적 정의 (`RuntimeException` 직접 사용 금지).
+- **전역 처리**: `@ControllerAdvice`(또는 모듈 공통 `GlobalExceptionHandler`)에서 예외 → HTTP 상태/뷰 매핑.
+- **폴백 정책**: 미지 식별자·유효하지 않은 입력은 예외 또는 안전한 기본값으로 폴백하며, 빈 catch 블록 금지(최소 로깅 또는 재throw).
+
+| 예외 상황 | 처리 주체 | 응답/폴백 | 관련 요구사항 |
+|---|---|---|---|
+| {유효하지 않은 입력} | Controller/Service | 4xx + 활동 로그 피드백 | Req 3.x |
+| {도메인 규칙 위반} | Domain/Service | `{Domain}Exception` throw | Req 2.x |
+| {미지 식별자/데이터 누락} | CatalogService | 안전한 기본값 폴백 | Req 3.x |
+
 ---
 
 ## 4. Data Models (데이터 모델 및 영속 스키마)
 
 ### 4.1. JPA 엔티티 (`@Entity`)
+> **코딩 규칙 준수**: Lombok 금지(getter/setter 직접 작성), 클래스·public 메서드 JavaDoc 필수, JPA 스펙상 `protected` 기본 생성자 필요, 모든 메서드 파라미터에 `final` 선언.
+
 ```java
+/**
+ * {도메인 개념}의 영속 상태를 표현하는 JPA 엔티티.
+ */
 @Entity
 @Table(name = "{table_name}")
 public class {EntityName} {
@@ -122,7 +138,10 @@ public class {EntityName} {
     @Column(name = "status", nullable = false)
     private {StatusEnum} status;
 
-    // Getter, Setter, Business Methods
+    /** JPA 스펙용 기본 생성자 (직접 사용 금지). */
+    protected {EntityName}() {}
+
+    // 생성자, Getter, 상태 변경 도메인 메서드 (Lombok 미사용, 직접 작성)
 }
 ```
 
@@ -175,8 +194,19 @@ public record {Domain}View(
 1. **단위 테스트 (Unit Tests)**: JUnit 5, Mockito 기반 서비스/엔티티 상태 검증.
 2. **프로퍼티 기반 테스트 (PBT)**: jqwik (`@Property(tries = 100)`) 기반 순수 도메인 로직 및 경계값 검증.
 3. **웹 슬라이스 테스트 (WebSlice Tests)**: `@WebMvcTest` 및 `MockMvc` 기반 엔드포인트/모델/HTML 응답 검증.
+4. **레포지토리 슬라이스 테스트**: `@DataJpaTest` 기반 쿼리/영속 매핑 검증.
 
-### 6.2. 5대 품질 가드레일 실행 명령어
+### 6.2. 테스트 작성 규칙 (필수 준수 — `rules/coding/code-style.md`)
+- **Given-When-Then 3단계 주석** 필수 (`// given`, `// when`, `// then`), 경계값·null·예외 케이스 포함.
+- 테스트 클래스명 `{대상}Test`, 메서드명 `should_{기대동작}_when_{조건}`.
+- **Spring Boot 4.0 마이그레이션 주의** (아래 항목 위반 시 컴파일/실행 실패):
+  - `@MockBean`/`@SpyBean` → **`@MockitoBean`/`@MockitoSpyBean`** (`org.springframework.test.context.bean.override.mockito.*`)
+  - `@WebMvcTest` → `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest` (`spring-boot-starter-webmvc-test` 의존성 필요)
+  - `@DataJpaTest` → `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest` (`spring-boot-starter-data-jpa-test` 의존성 필요)
+  - `ObjectMapper` → Jackson 3 **`tools.jackson.databind.ObjectMapper`**
+- **jqwik + Mock**: `@Mock`/`MockitoExtension` 비호환 → `Mockito.mock()` 직접 호출 사용.
+
+### 6.3. 5대 품질 가드레일 실행 명령어
 ```bash
 mvn -B -q spotless:apply -pl {modulename} && (mvn -B clean install -pl {modulename} -am > /tmp/mvn.log 2>&1 || (tail -n 30 /tmp/mvn.log && exit 1)) && tail -n 12 /tmp/mvn.log && codegraph sync
 ```

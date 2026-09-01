@@ -42,6 +42,13 @@
 
 ## 3. Requirements (기능 요구사항)
 
+> **EARS 키워드 가이드** (Acceptance Criteria 작성 시 정확히 구분):
+> - **WHEN** {이벤트/트리거} — 특정 사건이 발생했을 때의 동작 (event-driven)
+> - **IF ... THEN** {조건} — 원치 않는 상태/오류 조건에 대한 분기 처리 (unwanted behavior)
+> - **WHILE** {지속 상태} — 특정 상태가 유지되는 동안의 동작 (state-driven)
+> - **WHERE** {기능 포함 조건} — 선택적 기능이 포함된 구성에서만 적용 (optional feature)
+> - 모든 문장은 `THE {주체} SHALL {동작}` 형태로 검증 가능한 단일 동작을 기술합니다.
+
 ### Requirement 1: {기능 그룹 명칭 1}
 
 **User Story:**  
@@ -80,8 +87,9 @@
 
 #### Acceptance Criteria
 
-1. **WHERE** {자원 부족 / 타임아웃 / 비정상 접근 상황}, **THE** {시스템} **SHALL** {명시된 예외 규정대로 처리한다}.
-2. **THE** {시스템} **SHALL** 불필요한 브라우저 `alert` 팝업을 띄우지 않고 하단 활동 로그에 피드백을 기록한다.
+1. **IF** {자원 부족 / 타임아웃 / 비정상 접근 상황이 발생하면}, **THEN THE** {시스템} **SHALL** {명시된 예외 규정대로 처리하고 데이터 무결성을 유지한다}.
+2. **WHILE** {비정상 상태가 지속되는 동안}, **THE** {시스템} **SHALL** {안전한 폴백 상태를 유지한다}.
+3. **THE** {시스템} **SHALL** 불필요한 브라우저 `alert` 팝업을 띄우지 않고 하단 활동 로그에 피드백을 기록한다.
 
 ---
 
@@ -91,7 +99,7 @@
    - **Spotless**: Java 포맷팅 자동 교정 (`mvn spotless:apply`).
    - **Error Prone**: 정적 결함 컴파일 타임 차단 (컴파일 경고 0건).
    - **ArchUnit**: DDD 4계층(`interfaces` → `application` → `domain`) 아키텍처 규칙 준수.
-   - **JaCoCo**: 신규 및 변경 코드 대상 테스트 라인 커버리지 80% 이상 달성.
+   - **JaCoCo**: 신규 및 변경 코드 대상 테스트 커버리지 **라인 80% 이상, 브랜치 70% 이상** 달성.
    - **PMD & CPD**: 복잡도(`CognitiveComplexity`), 안티패턴 및 중복 코드 0건.
 2. **데이터 무결성 및 밸런스 검증**:
    - JSON 카탈로그 추가/수정 시 밸런스 검증 스크립트(`tools/balance/`) 통과.
