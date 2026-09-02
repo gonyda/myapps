@@ -3,7 +3,6 @@ package com.myapps.web.myrpg.interfaces.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -26,7 +25,6 @@ import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -65,8 +63,6 @@ class PlayScreenControllerProgressionTest {
     @MockitoBean private CharacterService characterService;
 
     @MockitoBean private MapService mapService;
-
-    @MockitoBean private AmbienceService ambienceService;
 
     @MockitoBean private MovementService movementService;
 
@@ -172,7 +168,6 @@ class PlayScreenControllerProgressionTest {
                         topBar,
                         dummyMinimap(),
                         dummyFullMap(),
-                        "평화로운 마을",
                         null,
                         null,
                         null,
@@ -257,7 +252,6 @@ class PlayScreenControllerProgressionTest {
                         topBar,
                         dummyMinimap(),
                         dummyFullMap(),
-                        "평화로운 마을",
                         null,
                         null,
                         null,
@@ -391,7 +385,6 @@ class PlayScreenControllerProgressionTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(dummyMinimap());
         when(mapService.fullMap(anyString())).thenReturn(dummyFullMap());
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -401,15 +394,7 @@ class PlayScreenControllerProgressionTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        anyList(),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
     }
 
@@ -419,7 +404,6 @@ class PlayScreenControllerProgressionTest {
         when(mapService.node(anyString())).thenReturn(dummyNode());
         when(mapService.minimap(anyString())).thenReturn(dummyMinimap());
         when(mapService.fullMap(anyString())).thenReturn(dummyFullMap());
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -429,15 +413,7 @@ class PlayScreenControllerProgressionTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(view.info());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        anyList(),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), anyList(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
     }
 
@@ -448,16 +424,7 @@ class PlayScreenControllerProgressionTest {
         final TopBarView topBar = new TopBarView("고니", 50, exp, gauge, gauge, gauge);
         final InfoPopupView info = buildInfo(rebirthAvailable, elapsedText);
         return new PlayScreenView(
-                topBar,
-                dummyMinimap(),
-                dummyFullMap(),
-                "평화로운 마을",
-                null,
-                null,
-                null,
-                null,
-                List.of(),
-                info);
+                topBar, dummyMinimap(), dummyFullMap(), null, null, null, null, List.of(), info);
     }
 
     private PlayScreenView buildDefaultView() {
@@ -465,16 +432,7 @@ class PlayScreenControllerProgressionTest {
         final TopBarView topBar = new TopBarView("고니", 1, gauge, gauge, gauge, gauge);
         final InfoPopupView info = buildInfo(true, "환생 기록 없음");
         return new PlayScreenView(
-                topBar,
-                dummyMinimap(),
-                dummyFullMap(),
-                "평화로운 마을",
-                null,
-                null,
-                null,
-                null,
-                List.of(),
-                info);
+                topBar, dummyMinimap(), dummyFullMap(), null, null, null, null, List.of(), info);
     }
 
     private InfoPopupView buildInfo(final boolean rebirthAvailable, final String elapsedText) {

@@ -15,7 +15,6 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.DungeonService;
 import com.myapps.web.myrpg.application.service.MapService;
 import com.myapps.web.myrpg.application.service.MonsterService;
@@ -56,7 +55,6 @@ class NodeViewAssemblerDungeonTest {
     private static final long CHARACTER_ID = 1L;
 
     @Mock private MapService mapService;
-    @Mock private AmbienceService ambienceService;
     @Mock private NpcService npcService;
     @Mock private MonsterService monsterService;
     @Mock private ProgressionService progressionService;
@@ -78,7 +76,6 @@ class NodeViewAssemblerDungeonTest {
         nodeViewAssembler =
                 new NodeViewAssembler(
                         mapService,
-                        ambienceService,
                         npcService,
                         monsterService,
                         progressionService,
@@ -101,19 +98,16 @@ class NodeViewAssemblerDungeonTest {
         org.mockito.Mockito.lenient()
                 .when(
                         playScreenViewHelper.buildPlayScreen(
-                                any(), any(), any(), any(), any(), isNull(), isNull(), any(),
-                                any()))
+                                any(), any(), any(), any(), isNull(), isNull(), any(), any()))
                 .thenAnswer(
                         invocation -> {
                             final MinimapView mm = invocation.getArgument(1);
                             final FullMapView fm = invocation.getArgument(2);
-                            final String amb = invocation.getArgument(3);
-                            final List<InteractionItem> interactions = invocation.getArgument(4);
+                            final List<InteractionItem> interactions = invocation.getArgument(3);
                             return new PlayScreenView(
                                     createTestTopBar(),
                                     mm,
                                     fm,
-                                    amb,
                                     null,
                                     null,
                                     interactions,
@@ -130,21 +124,13 @@ class NodeViewAssemblerDungeonTest {
         org.mockito.Mockito.lenient()
                 .when(
                         playScreenViewHelper.buildPlayScreen(
-                                any(),
-                                any(),
-                                any(),
-                                any(),
-                                any(),
-                                any(TalkTarget.class),
-                                any(),
-                                any()))
+                                any(), any(), any(), any(), any(TalkTarget.class), any(), any()))
                 .thenAnswer(
                         invocation -> {
                             final MinimapView mm = invocation.getArgument(1);
                             final FullMapView fm = invocation.getArgument(2);
-                            final String amb = invocation.getArgument(3);
-                            final List<InteractionItem> interactions = invocation.getArgument(4);
-                            final TalkTarget tt = invocation.getArgument(5);
+                            final List<InteractionItem> interactions = invocation.getArgument(3);
+                            final TalkTarget tt = invocation.getArgument(4);
                             final String monsterName =
                                     tt != null && tt.monster() != null ? tt.monster().name() : null;
                             final String monsterDialogue = tt != null ? tt.dialogue() : null;
@@ -152,7 +138,6 @@ class NodeViewAssemblerDungeonTest {
                                     createTestTopBar(),
                                     mm,
                                     fm,
-                                    amb,
                                     null,
                                     null,
                                     interactions,
@@ -184,7 +169,6 @@ class NodeViewAssemblerDungeonTest {
 
         // then
         assertThat(view).isNotNull();
-        assertThat(view.ambience()).isEqualTo("던전의 입구로 이어지는 안전한 시작방이다.");
         assertThat(view.minimap()).isEqualTo(minimap);
         assertThat(view.fullMap()).isEqualTo(fullMap);
         assertThat(view.interactions()).hasSize(1);
@@ -225,15 +209,14 @@ class NodeViewAssemblerDungeonTest {
 
         // then
         assertThat(view).isNotNull();
-        assertThat(view.ambience()).isEqualTo("어둡고 축축한 거미줄이 드리워진 던전 방이다.");
         assertThat(view.interactions()).hasSize(1);
         assertThat(view.interactions().get(0).actionType()).isEqualTo("monster");
         assertThat(view.interactions().get(0).id()).isEqualTo("spider");
     }
 
     @Test
-    @DisplayName("던전 보스방(room-2-0)에서는 보스 전용 상황 멘트와 보스 전투 버튼이 제공된다")
-    void should_assembleBossRoom_with_bossAmbienceAndMonster() {
+    @DisplayName("던전 보스방(room-2-0)에서는 보스 전투 버튼이 제공된다")
+    void should_assembleBossRoom_with_bossMonster() {
         // given
         final DungeonInstance dungeon = createDungeonInstance(CHARACTER_ID, "room-2-0", "room-2-0");
         final Monster giantSpider =
@@ -264,7 +247,6 @@ class NodeViewAssemblerDungeonTest {
 
         // then
         assertThat(view).isNotNull();
-        assertThat(view.ambience()).isEqualTo("거대한 거미줄이 사방을 뒤덮고 있으며 압도적인 위압감이 감돈다.");
         assertThat(view.interactions()).hasSize(1);
         assertThat(view.interactions().get(0).actionType()).isEqualTo("monster");
         assertThat(view.interactions().get(0).name()).contains("거대거미");
@@ -293,11 +275,6 @@ class NodeViewAssemblerDungeonTest {
         given(mapService.minimap("alby-entrance"))
                 .willReturn(new MinimapView("알비 던전 입구", List.of()));
         given(mapService.fullMap("alby-entrance")).willReturn(new FullMapView(List.of(), 5, 5));
-        given(
-                        ambienceService.ambience(
-                                org.mockito.ArgumentMatchers.eq(entranceNode),
-                                org.mockito.ArgumentMatchers.anyInt()))
-                .willReturn("던전 입구다.");
         given(npcService.byNode("alby-entrance")).willReturn(List.of());
         given(monsterService.byNode("alby-entrance")).willReturn(List.of());
         given(playScreenViewHelper.buildInteractions(List.of(), List.of())).willReturn(List.of());

@@ -26,7 +26,6 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -68,8 +67,6 @@ class PlayScreenControllerMonsterTest {
     @MockitoBean private CharacterService characterService;
 
     @MockitoBean private MapService mapService;
-
-    @MockitoBean private AmbienceService ambienceService;
 
     @MockitoBean private MovementService movementService;
 
@@ -126,7 +123,6 @@ class PlayScreenControllerMonsterTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "어두운 숲",
                         null,
                         null,
                         interactions,
@@ -149,13 +145,11 @@ class PlayScreenControllerMonsterTest {
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(nodeId)).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(nodeId)).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("어두운 숲");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(playScreenViewHelper.buildPlayScreen(
                         any(),
                         any(),
                         any(),
-                        anyString(),
                         eq(interactions),
                         any(TalkTarget.class),
                         any(),
@@ -197,7 +191,6 @@ class PlayScreenControllerMonsterTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "평화로운 마을",
                         null,
                         null,
                         interactions,
@@ -213,13 +206,11 @@ class PlayScreenControllerMonsterTest {
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(nodeId)).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(nodeId)).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(playScreenViewHelper.buildPlayScreen(
                         any(),
                         any(),
                         any(),
-                        anyString(),
                         eq(interactions),
                         any(TalkTarget.class),
                         any(),
@@ -259,7 +250,6 @@ class PlayScreenControllerMonsterTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "어두운 숲",
                         null,
                         null,
                         interactions,
@@ -282,13 +272,11 @@ class PlayScreenControllerMonsterTest {
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(nodeId)).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(nodeId)).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("어두운 숲");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(playScreenViewHelper.buildPlayScreen(
                         any(),
                         any(),
                         any(),
-                        anyString(),
                         eq(interactions),
                         any(TalkTarget.class),
                         any(),
@@ -325,7 +313,6 @@ class PlayScreenControllerMonsterTest {
                         dummyTopBar(),
                         new MinimapView("두갈드 아일", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "위험한 들판",
                         null,
                         null,
                         interactions,
@@ -340,7 +327,6 @@ class PlayScreenControllerMonsterTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("두갈드 아일", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("위험한 들판");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(List.of());
         when(monsterService.byNode(anyString())).thenReturn(List.of(raccoon));
@@ -352,15 +338,7 @@ class PlayScreenControllerMonsterTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        eq(interactions),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), eq(interactions), isNull(), isNull(), any(), any()))
                 .thenReturn(movedView);
 
         final MvcResult result =

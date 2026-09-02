@@ -10,13 +10,7 @@
         <div class="stars-layer"></div>
     </div>
 
-    <!-- 1단: 상황 멘트 슬림 바 (고정 32px) -->
-    <div class="situation" id="situation">
-        <span class="situation-icon" th:text="${view.ambienceEmoji != null ? view.ambienceEmoji : '☀️'}">☀️</span>
-        <span class="situation-text" th:text="${view.ambience}">맵 데이터를 불러오는 중...</span>
-    </div>
-
-    <!-- 2단: 메인 인터랙션 스테이지 카드 -->
+    <!-- 메인 인터랙션 스테이지 카드 -->
     <div class="interaction-stage npc-talk" id="npcTalk"
          th:classappend="${view.npcName != null} ? ' active-npc' : (${view.monsterName != null} ? ' active-monster' : ' active-idle')">
 

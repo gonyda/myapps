@@ -7,7 +7,6 @@ import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.DungeonService;
 import com.myapps.web.myrpg.application.service.GatheringService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -38,7 +37,6 @@ import org.springframework.stereotype.Component;
 public class NodeViewAssembler {
 
     private final MapService mapService;
-    private final AmbienceService ambienceService;
     private final NpcService npcService;
     private final MonsterService monsterService;
     private final ProgressionService progressionService;
@@ -52,7 +50,6 @@ public class NodeViewAssembler {
      * NodeViewAssembler를 생성한다.
      *
      * @param mapService 맵 데이터 서비스
-     * @param ambienceService 상황 멘트 서비스
      * @param npcService NPC 데이터 서비스
      * @param monsterService 몬스터 카탈로그 서비스
      * @param progressionService 환생 상태 조회 서비스
@@ -64,7 +61,6 @@ public class NodeViewAssembler {
      */
     public NodeViewAssembler(
             final MapService mapService,
-            final AmbienceService ambienceService,
             final NpcService npcService,
             final MonsterService monsterService,
             final ProgressionService progressionService,
@@ -74,7 +70,6 @@ public class NodeViewAssembler {
             final MapViewFactory mapViewFactory,
             final GatheringService gatheringService) {
         this.mapService = mapService;
-        this.ambienceService = ambienceService;
         this.npcService = npcService;
         this.monsterService = monsterService;
         this.progressionService = progressionService;
@@ -126,15 +121,6 @@ public class NodeViewAssembler {
         final String currentRoomId = dungeon.currentRoomId();
         final DungeonRoomState roomState = dungeon.roomStates().get(currentRoomId);
 
-        final String ambience;
-        if (currentRoomId.equals(dungeon.bossRoomId())) {
-            ambience = "거대한 거미줄이 사방을 뒤덮고 있으며 압도적인 위압감이 감돈다.";
-        } else if (currentRoomId.equals(dungeon.startRoomId())) {
-            ambience = "던전의 입구로 이어지는 안전한 시작방이다.";
-        } else {
-            ambience = "어둡고 축축한 거미줄이 드리워진 던전 방이다.";
-        }
-
         final List<InteractionItem> interactions = new ArrayList<>();
         if (currentRoomId.equals(dungeon.startRoomId())) {
             interactions.add(new InteractionItem("leave", "던전 나가기 🚪", false, "dungeon-leave", ""));
@@ -160,8 +146,7 @@ public class NodeViewAssembler {
         final RebirthStatus status = progressionService.rebirthStatus(progress);
         final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
 
-        return assemblePlayScreen(
-                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+        return assemblePlayScreen(progress, minimap, fullMap, interactions, talkTarget, logs, info);
     }
 
     private PlayScreenView buildFieldView(
@@ -170,7 +155,6 @@ public class NodeViewAssembler {
         final MapNode currentNode = mapService.node(currentNodeId);
         final MinimapView minimap = mapService.minimap(currentNodeId);
         final FullMapView fullMap = mapService.fullMap(currentNodeId);
-        final String ambience = ambienceService.ambience(currentNode, progress.getInGameHour());
         final List<ActionLogEntry> logs = actionLog.getEntries();
 
         final List<Npc> npcsOnNode = npcService.byNode(currentNodeId);
@@ -195,15 +179,13 @@ public class NodeViewAssembler {
         final RebirthStatus status = progressionService.rebirthStatus(progress);
         final InfoPopupView info = playScreenViewHelper.buildInfo(progress, status);
 
-        return assemblePlayScreen(
-                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+        return assemblePlayScreen(progress, minimap, fullMap, interactions, talkTarget, logs, info);
     }
 
     private PlayScreenView assemblePlayScreen(
             final CharacterProgress progress,
             final MinimapView minimap,
             final FullMapView fullMap,
-            final String ambience,
             final List<InteractionItem> interactions,
             final TalkTarget talkTarget,
             final List<ActionLogEntry> logs,
@@ -213,7 +195,6 @@ public class NodeViewAssembler {
                     progress,
                     minimap,
                     fullMap,
-                    ambience,
                     interactions,
                     talkTarget.npc(),
                     talkTarget.dialogue(),
@@ -221,9 +202,9 @@ public class NodeViewAssembler {
         }
         if (talkTarget != null) {
             return playScreenViewHelper.buildPlayScreen(
-                    progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+                    progress, minimap, fullMap, interactions, talkTarget, logs, info);
         }
         return playScreenViewHelper.buildPlayScreen(
-                progress, minimap, fullMap, ambience, interactions, null, null, logs, info);
+                progress, minimap, fullMap, interactions, null, null, logs, info);
     }
 }

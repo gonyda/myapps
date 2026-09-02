@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-08-30 11:25 (Asia/Seoul)
+> 최종 업데이트: 2026-09-02 22:05 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -19,34 +19,36 @@
 - **인게임 시간대별 앰비언트 스카이 & 천체 궤적 (2026-08-28)**: 6대 시간대(`TimeOfDay`) 딥 다크 스카이 그라디언트, 천체(해/달) 궤적 및 소프트 글로우 동적 연출 완비.
 - **스킬 승급 조건 단순화 & 유형 뱃지 표기 (2026-08-29)**: `RankUpRequirement(requiredUsage)` 단일화, 10대 스킬 유형별 다크 판타지 컬러 뱃지 구축.
 - **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**: `ItemType.MATERIAL`, `firewood` 아이템 등록, `GatheringService` (5 SP 소모, 50% 채집 성공/실패 롤), 5초 자동 완료형 채집 타이머 완비.
-- **메시지 및 게임 프로퍼티 외부화 리팩토링 및 코드리뷰 보완 완료 (2026-08-30, 018-message-and-properties-externalization)**:
-  - **인프라**: `messages.properties` (로그, 전투, 묘사, 예외, 던전, 이동, 뱃지 등 120여 개 키 전수 외부화), `application-game.yml` 및 `GameProperties` 불변 Record (전투 계수, 밸런스, 마을/이동 상수 바인딩), `GameMessageService` (MessageSource 자동 fallback 내장) 구현.
-  - **서비스 & 컨트롤러**: `BattleController`, `InventoryController`, `PlayScreenController`, `SkillController`, `GlobalExceptionHandler`, `HealController`, `RepairController` 등 컨트롤러 계층 하드코딩 전수 외부화 및 Nullable 자동 주입 지원.
-  - **SSOT 일원화 & 중복 로직/매직넘버 제거**: 각 서비스/컨트롤러 내 `DEFAULT_*` 상수 전수 제거 및 `gameProperties` 단일 참조 일원화, `gameProperties != null` / `gameMessageService != null` 불필요 삼항 분기 15곳 이상 전면 단순화, `GatheringService` 내 카탈로그 아이템명 동적 조회, `BattleService` 뱃지 라벨 전수 외부화.
-  - **프론트엔드**: `game-messages.js` 키 네이밍 및 포맷 인자를 `messages.properties`와 1:1 일원화, `myrpg.js` 알림/Confirm/토스트 전수 연동.
-  - **검증**: `GameMessagePropertyTest`, `GamePropertiesPropertyTest` 등 PBT 및 1,267개 전체 단위/통합 테스트 100% 통과, 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green.
-  - **프로덕션 배포**: Oracle Cloud VM (134.185.116.35:8083) 배포 및 Health Check 정상 확인.
+- **메시지 및 게임 프로퍼티 외부화 리팩토링 (2026-08-30, 018-message-and-properties-externalization)**: `messages.properties` 120여 개 키 외부화, `GameProperties` 바인딩, `GameMessageService` 구축.
+- **화면 상단 상황 멘트 제거 및 잔여 코드 전수 정리 (2026-09-02, 019-remove-situation-ambience)**:
+  - **프론트엔드**: `center.html`의 `<div class="situation" id="situation">` 마크업 및 `myrpg.css`의 `.situation` 스타일 전수 제거 (인게임 시간대별 앰비언트 스카이 배경 그라디언트, 해/달 천체 궤적, 24시간 시계는 온전히 보존).
+  - **백엔드 DTO/헬퍼/어셈블러**: `PlayScreenView`에서 `ambience`/`ambienceEmoji` 컴포넌트 제거 및 생성자 정돈, `PlayScreenViewHelper.buildPlayScreen` 오버로드 단순화, `NodeViewAssembler` 및 `PlayScreenController`에서 `AmbienceService` 의존성 완전 제거.
+  - **파일 영구 삭제**: `AmbienceService.java`, `AmbienceData.java`, `src/main/resources/data/ambience.json` 전수 삭제.
+  - **테스트**: `AmbienceServiceTest` 및 PBT 3종 삭제, `InGameTimeNpcDialogueIntegrationTest` 분리 및 컨트롤러/헬퍼 테스트 전수 갱신.
+  - **검증**: 5대 품질 가드레일 (Spotless, Error Prone, ArchUnit, JaCoCo 80%+, PMD/CPD) 및 `codegraph sync` All-Green 통과.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **Spec & Task 상태**: 메시지 리팩토링 전수 보완 완료 및 프로덕션 배포 완료
-- **5대 품질 가드레일 상태**: 전체 멀티모듈 (`mystudy`, `mycalendar`, `myrpg`) 100% 그린, 5대 가드레일 올클리어 (`BUILD SUCCESS`).
+- **Spec & Task 상태**: `019-remove-situation-ambience` 5개 Task 100% 완료
+- **5대 품질 가드레일 상태**: `myrpg` 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
 
 ---
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
-1. **[기획 1] 캠프파이어 & 야간 위험도 시스템 (표준형)**:
+1. **[개선 1] 아이템 아이콘(이모지) 표시 불일치 수정 & 중앙 관리 (SSOT)**:
+   - 상점 `[내 물품]`과 장비 팝업 간 이모지 표시 일원화 및 아이템 카탈로그 중앙 `icon` 필드 SSOT 구축.
+2. **[기획 1] 캠프파이어 & 야간 위험도 시스템 (표준형)**:
    - 획득한 장작을 소비하여 모닥불 야영(야간 20~05시 위험 완화, 아침 08:00 스킵, 바이탈 완충, 음식 굽기 버프).
-2. **[기획 2] 마을 아르바이트 & 축복의 포션 시스템**:
+3. **[기획 2] 마을 아르바이트 & 축복의 포션 시스템**:
    - 시간대별 NPC 일일 의뢰 및 축복의 포션(내구도 보호) 보상 (추후 상세설계).
-3. **[기획 3] 타이틀(칭호) & 업적 도감 시스템**:
+4. **[기획 3] 타이틀(칭호) & 업적 도감 시스템**:
    - 업적 기반 고유 칭호 장착 및 스탯 보너스, 타이틀 도감 팝업.
-4. **[기획 4] 필드 보스 랜덤 스폰 (Field Boss Encounters)**:
+5. **[기획 4] 필드 보스 랜덤 스폰 (Field Boss Encounters)**:
    - 필드 랜덤 시간 + 랜덤 위치 보스 등장.
-5. **[기획 5] 인챈트 & 세공 장비 커스터마이징 시스템**:
+6. **[기획 5] 인챈트 & 세공 장비 커스터마이징 시스템**:
    - 접두/접미 인챈트 스크롤 및 마법 가루 성공률, 세공 옵션 부여.

@@ -157,7 +157,6 @@ public class PlayScreenViewHelper {
      * @param progress 캐릭터 진행상황
      * @param minimap 미니맵 뷰 모델
      * @param fullMap 전체지도 뷰 모델
-     * @param ambience 상황 멘트 텍스트
      * @param logs 행동 로그 항목 목록
      * @return 플레이 화면 전체 뷰 모델
      */
@@ -165,9 +164,8 @@ public class PlayScreenViewHelper {
             final CharacterProgress progress,
             final MinimapView minimap,
             final FullMapView fullMap,
-            final String ambience,
             final List<ActionLogEntry> logs) {
-        return buildPlayScreen(progress, minimap, fullMap, ambience, null, null, null, logs);
+        return buildPlayScreen(progress, minimap, fullMap, null, null, null, logs);
     }
 
     /**
@@ -179,7 +177,6 @@ public class PlayScreenViewHelper {
      * @param progress 캐릭터 진행상황
      * @param minimap 미니맵 뷰 모델
      * @param fullMap 전체지도 뷰 모델
-     * @param ambience 상황 멘트 텍스트
      * @param interactions 상호작용 대상 목록 (NPC 버튼, 정의 순서)
      * @param talkingNpc 대사 대상 NPC (없으면 {@code null})
      * @param dialogue 선택된 대사 텍스트 (없으면 {@code null})
@@ -190,21 +187,12 @@ public class PlayScreenViewHelper {
             final CharacterProgress progress,
             final MinimapView minimap,
             final FullMapView fullMap,
-            final String ambience,
             final List<InteractionItem> interactions,
             final Npc talkingNpc,
             final String dialogue,
             final List<ActionLogEntry> logs) {
         return buildPlayScreen(
-                progress,
-                minimap,
-                fullMap,
-                ambience,
-                interactions,
-                talkingNpc,
-                dialogue,
-                logs,
-                null);
+                progress, minimap, fullMap, interactions, talkingNpc, dialogue, logs, null);
     }
 
     /**
@@ -217,7 +205,6 @@ public class PlayScreenViewHelper {
      * @param progress 캐릭터 진행상황
      * @param minimap 미니맵 뷰 모델
      * @param fullMap 전체지도 뷰 모델
-     * @param ambience 상황 멘트 텍스트
      * @param interactions 상호작용 대상 목록 (NPC 버튼, 정의 순서)
      * @param talkingNpc 대사 대상 NPC (없으면 {@code null})
      * @param dialogue 선택된 대사 텍스트 (없으면 {@code null})
@@ -229,7 +216,6 @@ public class PlayScreenViewHelper {
             final CharacterProgress progress,
             final MinimapView minimap,
             final FullMapView fullMap,
-            final String ambience,
             final List<InteractionItem> interactions,
             final Npc talkingNpc,
             final String dialogue,
@@ -237,8 +223,7 @@ public class PlayScreenViewHelper {
             final InfoPopupView info) {
         final TalkTarget talkTarget =
                 talkingNpc != null ? TalkTarget.ofNpc(talkingNpc, dialogue) : TalkTarget.EMPTY;
-        return buildPlayScreen(
-                progress, minimap, fullMap, ambience, interactions, talkTarget, logs, info);
+        return buildPlayScreen(progress, minimap, fullMap, interactions, talkTarget, logs, info);
     }
 
     /**
@@ -250,7 +235,6 @@ public class PlayScreenViewHelper {
      * @param progress 캐릭터 진행상황
      * @param minimap 미니맵 뷰 모델
      * @param fullMap 전체지도 뷰 모델
-     * @param ambience 상황 멘트 텍스트
      * @param interactions 상호작용 대상 목록
      * @param talkTarget 대사 대상 묶음 (NPC 또는 몬스터 또는 없음)
      * @param logs 행동 로그 항목 목록
@@ -261,7 +245,6 @@ public class PlayScreenViewHelper {
             final CharacterProgress progress,
             final MinimapView minimap,
             final FullMapView fullMap,
-            final String ambience,
             final List<InteractionItem> interactions,
             final TalkTarget talkTarget,
             final List<ActionLogEntry> logs,
@@ -290,7 +273,6 @@ public class PlayScreenViewHelper {
         }
 
         final TimeOfDay timeOfDay = TimeOfDay.fromHour(progress.getInGameHour());
-        final String ambienceEmoji = timeOfDay.emoji();
         final String timeOfDayKey = timeOfDay.key();
         final String inGameTime = progress.getInGameTimeFormatted();
         final boolean monsterBoss =
@@ -300,8 +282,6 @@ public class PlayScreenViewHelper {
                 topBar,
                 minimap,
                 fullMap,
-                ambience,
-                ambienceEmoji,
                 timeOfDayKey,
                 inGameTime,
                 npcName,

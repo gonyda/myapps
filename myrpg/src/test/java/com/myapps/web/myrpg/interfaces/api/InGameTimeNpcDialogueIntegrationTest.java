@@ -15,7 +15,6 @@ import com.myapps.web.myrpg.application.dto.InfoPopupView;
 import com.myapps.web.myrpg.application.dto.MinimapView;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.DungeonService;
@@ -49,17 +48,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * 캐릭터의 인게임 시간({@link CharacterProgress#getInGameHour()})에 따른 상황 멘트({@link AmbienceService}) 및 NPC
- * 대사({@link NpcDialogueService}) 연동 통합 테스트.
+ * 캐릭터의 인게임 시간({@link CharacterProgress#getInGameHour()})에 따른 NPC 대사({@link NpcDialogueService}) 연동
+ * 통합 테스트.
  */
 @WebMvcTest(controllers = PlayScreenController.class)
 @Import(NodeViewAssembler.class)
-class InGameTimeAmbienceDialogueIntegrationTest {
+class InGameTimeNpcDialogueIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private NodeViewAssembler nodeViewAssembler;
 
-    @MockitoBean private AmbienceService ambienceService;
     @MockitoBean private NpcDialogueService npcDialogueService;
     @MockitoBean private CharacterService characterService;
     @MockitoBean private MapService mapService;
@@ -125,40 +123,6 @@ class InGameTimeAmbienceDialogueIntegrationTest {
     }
 
     @Test
-    @DisplayName("NodeViewAssembler는 캐릭터의 인게임 시간(inGameMinutes)을 기반으로 AmbienceService를 호출한다")
-    void should_passInGameHourToAmbienceService_when_assemblingFieldView() {
-        // given: 02:00 심야 (inGameMinutes = 120, hour = 2)
-        progress.setInGameMinutes(120);
-        when(ambienceService.ambience(eq(townNode), eq(2))).thenReturn("심야의 고요한 마을");
-
-        // when
-        nodeViewAssembler.fromProgress(progress);
-
-        // then
-        final ArgumentCaptor<Integer> hourCaptor = ArgumentCaptor.forClass(Integer.class);
-        verify(ambienceService).ambience(eq(townNode), hourCaptor.capture());
-        assertThat(hourCaptor.getValue()).isEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("인게임 시간이 바뀌면(아침 08:00 vs 밤 20:00) 각각 해당 시간대의 hour가 전달된다")
-    void should_passDifferentHour_when_inGameTimeChanges() {
-        // given: 아침 08:00 (inGameMinutes = 480, hour = 8)
-        progress.setInGameMinutes(480);
-        when(ambienceService.ambience(eq(townNode), eq(8))).thenReturn("상쾌한 아침 마을");
-        nodeViewAssembler.fromProgress(progress);
-
-        // given: 밤 20:00 (inGameMinutes = 1200, hour = 20)
-        progress.setInGameMinutes(1200);
-        when(ambienceService.ambience(eq(townNode), eq(20))).thenReturn("어두운 밤 마을");
-        nodeViewAssembler.fromProgress(progress);
-
-        // then
-        verify(ambienceService).ambience(eq(townNode), eq(8));
-        verify(ambienceService).ambience(eq(townNode), eq(20));
-    }
-
-    @Test
     @DisplayName("NPC 대화 시(POST /npc/talk) 캐릭터의 인게임 시간(hour)을 기반으로 NpcDialogueService를 호출한다")
     void should_selectTimeSpecificNpcDialogue_basedOnInGameHour() throws Exception {
         // given: 심야 02:00 (inGameMinutes = 120, hour = 2)
@@ -169,7 +133,6 @@ class InGameTimeAmbienceDialogueIntegrationTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "심야의 고요한 마을",
                         "던컨",
                         "이 시간까지 깨어 있다니.",
                         List.of(),
@@ -177,7 +140,7 @@ class InGameTimeAmbienceDialogueIntegrationTest {
                         List.of(),
                         dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(), any(), any(), any(), any(), eq(duncan), eq("이 시간까지 깨어 있다니."), any()))
+                        any(), any(), any(), any(), eq(duncan), eq("이 시간까지 깨어 있다니."), any()))
                 .thenReturn(talkView);
 
         // when

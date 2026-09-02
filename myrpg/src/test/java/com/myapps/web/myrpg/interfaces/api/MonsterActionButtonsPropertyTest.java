@@ -73,8 +73,7 @@ class MonsterActionButtonsPropertyTest {
 
         // When
         final PlayScreenView view =
-                helper.buildPlayScreen(
-                        progress, null, null, null, null, talkTarget, List.of(), null);
+                helper.buildPlayScreen(progress, null, null, null, talkTarget, List.of(), null);
 
         // Then
         final List<ActionButton> monsterActions = view.monsterActions();

@@ -418,8 +418,8 @@ public class BattleController {
     private PlayScreenView buildViewShell(
             final TopBarView topBar, final MinimapView minimap, final List<ActionLogEntry> logs) {
         return new PlayScreenView(
-                topBar, minimap, null, null, null, null, null, null, null, null, null, null, null,
-                logs, null);
+                topBar, minimap, null, null, null, null, null, null, null, null, null, null, logs,
+                null);
     }
 
     private CharacterProgress resolveCurrentCharacter(final HttpSession session) {

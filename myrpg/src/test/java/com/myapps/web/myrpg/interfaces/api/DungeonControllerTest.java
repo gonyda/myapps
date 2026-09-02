@@ -133,20 +133,7 @@ class DungeonControllerTest {
         final FullMapView fullMap = new FullMapView(List.of(), 1, 1);
 
         return new PlayScreenView(
-                topBar,
-                minimap,
-                fullMap,
-                "던전 안입니다.",
-                null,
-                null,
-                List.of(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                List.of(),
-                null);
+                topBar, minimap, fullMap, null, null, List.of(), null, null, null, null, null, null,
+                List.of(), null);
     }
 }

@@ -123,8 +123,7 @@ class PlayScreenViewHelperMonsterTest {
 
         // When
         final PlayScreenView view =
-                helper.buildPlayScreen(
-                        progress, minimap, fullMap, "숲속", null, talkTarget, logs, null);
+                helper.buildPlayScreen(progress, minimap, fullMap, null, talkTarget, logs, null);
 
         // Then — monster slots filled
         assertThat(view.monsterName()).isEqualTo("너구리");
@@ -152,7 +151,7 @@ class PlayScreenViewHelperMonsterTest {
 
         // When
         final PlayScreenView view =
-                helper.buildPlayScreen(progress, null, null, "마을", null, talkTarget, logs, null);
+                helper.buildPlayScreen(progress, null, null, null, talkTarget, logs, null);
 
         // Then — NPC slots filled
         assertThat(view.npcName()).isEqualTo("네리스");
@@ -174,8 +173,7 @@ class PlayScreenViewHelperMonsterTest {
 
         // When
         final PlayScreenView view =
-                helper.buildPlayScreen(
-                        progress, null, null, "평화로운 숲", null, TalkTarget.EMPTY, logs, null);
+                helper.buildPlayScreen(progress, null, null, null, TalkTarget.EMPTY, logs, null);
 
         // Then — both NPC and Monster slots null
         assertThat(view.npcName()).isNull();

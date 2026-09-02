@@ -24,7 +24,6 @@ import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.MapService;
@@ -65,8 +64,6 @@ class PlayScreenControllerNpcTest {
     @MockitoBean private CharacterService characterService;
 
     @MockitoBean private MapService mapService;
-
-    @MockitoBean private AmbienceService ambienceService;
 
     @MockitoBean private MovementService movementService;
 
@@ -124,7 +121,6 @@ class PlayScreenControllerNpcTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "평화로운 마을",
                         null,
                         null,
                         interactions,
@@ -136,7 +132,6 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(npcs);
         when(monsterService.byNode(nodeId)).thenReturn(List.of());
@@ -147,15 +142,7 @@ class PlayScreenControllerNpcTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        eq(interactions),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), eq(interactions), isNull(), isNull(), any(), any()))
                 .thenReturn(viewWithNpcs);
 
         final MvcResult result =
@@ -199,7 +186,6 @@ class PlayScreenControllerNpcTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "평화로운 마을",
                         "네리스",
                         "좋은 물건이 많아요!",
                         interactions,
@@ -216,17 +202,9 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(nodeId)).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(nodeId)).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(nodeId)).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        eq(interactions),
-                        eq(neris),
-                        eq("좋은 물건이 많아요!"),
-                        any()))
+                        any(), any(), any(), eq(interactions), eq(neris), eq("좋은 물건이 많아요!"), any()))
                 .thenReturn(talkView);
 
         final MvcResult result =
@@ -263,7 +241,6 @@ class PlayScreenControllerNpcTest {
                         dummyTopBar(),
                         new MinimapView("던바튼", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "활기찬 도시",
                         null,
                         null,
                         newInteractions,
@@ -278,7 +255,6 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(targetNode);
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("던바튼", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("활기찬 도시");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(anyString())).thenReturn(newNodeNpcs);
         when(monsterService.byNode(anyString())).thenReturn(List.of());
@@ -290,15 +266,7 @@ class PlayScreenControllerNpcTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        eq(newInteractions),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), eq(newInteractions), isNull(), isNull(), any(), any()))
                 .thenReturn(movedView);
 
         final MvcResult result =
@@ -329,7 +297,6 @@ class PlayScreenControllerNpcTest {
                         dummyTopBar(),
                         new MinimapView("테스트맵", List.of()),
                         new FullMapView(List.of(), 5, 5),
-                        "평화로운 마을",
                         null,
                         null,
                         List.of(),
@@ -341,7 +308,6 @@ class PlayScreenControllerNpcTest {
         when(mapService.node(anyString())).thenReturn(dummyNode(nodeId));
         when(mapService.minimap(anyString())).thenReturn(new MinimapView("테스트맵", List.of()));
         when(mapService.fullMap(anyString())).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(any(MapNode.class), anyInt())).thenReturn("평화로운 마을");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(npcService.byNode(nodeId)).thenReturn(List.of());
         when(monsterService.byNode(nodeId)).thenReturn(List.of());
@@ -352,15 +318,7 @@ class PlayScreenControllerNpcTest {
         when(playScreenViewHelper.buildInfo(any(CharacterProgress.class), any(RebirthStatus.class)))
                 .thenReturn(dummyInfo());
         when(playScreenViewHelper.buildPlayScreen(
-                        any(),
-                        any(),
-                        any(),
-                        anyString(),
-                        eq(List.of()),
-                        isNull(),
-                        isNull(),
-                        any(),
-                        any()))
+                        any(), any(), any(), eq(List.of()), isNull(), isNull(), any(), any()))
                 .thenReturn(emptyView);
 
         final MvcResult result =

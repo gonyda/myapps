@@ -126,18 +126,15 @@ class PlayScreenViewHelperTest {
         final CharacterProgress progress = CharacterProgress.createDefault();
         final MinimapView minimap = new MinimapView("티르 코네일", List.of());
         final FullMapView fullMap = new FullMapView(List.of(), 5, 5);
-        final String ambience = "마을 광장이 한적합니다.";
         final List<ActionLogEntry> logs =
                 List.of(new ActionLogEntry("2024-01-01 12:00:00", "이동했습니다.", "move"));
 
-        final PlayScreenView view =
-                helper.buildPlayScreen(progress, minimap, fullMap, ambience, logs);
+        final PlayScreenView view = helper.buildPlayScreen(progress, minimap, fullMap, logs);
 
         assertThat(view.topBar()).isNotNull();
         assertThat(view.topBar().nickname()).isEqualTo("고니");
         assertThat(view.minimap()).isEqualTo(minimap);
         assertThat(view.fullMap()).isEqualTo(fullMap);
-        assertThat(view.ambience()).isEqualTo(ambience);
         assertThat(view.logs()).hasSize(1);
     }
 
@@ -151,8 +148,7 @@ class PlayScreenViewHelperTest {
         final List<ActionLogEntry> logs = List.of();
 
         final PlayScreenView view =
-                helper.buildPlayScreen(
-                        progress, minimap, fullMap, "평화로운 마을", interactions, null, null, logs);
+                helper.buildPlayScreen(progress, minimap, fullMap, interactions, null, null, logs);
 
         assertThat(view.npcName()).isNull();
         assertThat(view.npcDialogue()).isNull();
@@ -171,8 +167,7 @@ class PlayScreenViewHelperTest {
         final List<ActionLogEntry> logs = List.of();
 
         final PlayScreenView view =
-                helper.buildPlayScreen(
-                        progress, minimap, fullMap, "평화로운 마을", null, npc, "반갑다.", logs);
+                helper.buildPlayScreen(progress, minimap, fullMap, null, npc, "반갑다.", logs);
 
         assertThat(view.npcName()).isEqualTo("네리스");
         assertThat(view.npcDialogue()).isEqualTo("반갑다.");
@@ -207,7 +202,7 @@ class PlayScreenViewHelperTest {
     }
 
     @Test
-    void should_populateAmbienceEmojiAndMonsterBoss_when_buildPlayScreen() {
+    void should_populateTimeOfDayKeyAndInGameTime_when_buildPlayScreen() {
         final SkillService skillService = mock(SkillService.class);
         final InventoryService inventoryService = mock(InventoryService.class);
         final PlayScreenViewHelper helper =
@@ -222,10 +217,8 @@ class PlayScreenViewHelperTest {
         final MinimapView minimap = mock(MinimapView.class);
         final FullMapView fullMap = mock(FullMapView.class);
 
-        final PlayScreenView view =
-                helper.buildPlayScreen(progress, minimap, fullMap, "테스트 상황", List.of());
+        final PlayScreenView view = helper.buildPlayScreen(progress, minimap, fullMap, List.of());
 
-        assertThat(view.ambienceEmoji()).isEqualTo("☀️");
         assertThat(view.timeOfDayKey()).isEqualTo("afternoon");
         assertThat(view.inGameTime()).isEqualTo("12:00");
     }

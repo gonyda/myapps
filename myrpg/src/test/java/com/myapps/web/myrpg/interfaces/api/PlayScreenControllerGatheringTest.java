@@ -1,7 +1,6 @@
 package com.myapps.web.myrpg.interfaces.api;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -20,7 +19,6 @@ import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthStatus;
 import com.myapps.web.myrpg.application.dto.StatLine;
 import com.myapps.web.myrpg.application.dto.TopBarView;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.DungeonService;
@@ -58,7 +56,6 @@ class PlayScreenControllerGatheringTest {
 
     @MockitoBean private CharacterService characterService;
     @MockitoBean private MapService mapService;
-    @MockitoBean private AmbienceService ambienceService;
     @MockitoBean private MovementService movementService;
     @MockitoBean private NpcService npcService;
     @MockitoBean private NpcDialogueService npcDialogueService;
@@ -101,7 +98,6 @@ class PlayScreenControllerGatheringTest {
         when(mapService.node("east-hill")).thenReturn(targetNode);
         when(mapService.minimap("east-hill")).thenReturn(new MinimapView("동쪽 언덕", List.of()));
         when(mapService.fullMap("east-hill")).thenReturn(new FullMapView(List.of(), 5, 5));
-        when(ambienceService.ambience(eq(targetNode), anyInt())).thenReturn("시원한 바람이 분다.");
         when(actionLog.getEntries()).thenReturn(List.of());
         when(progressionService.rebirthStatus(progress))
                 .thenReturn(new RebirthStatus(true, false, null, null));
@@ -118,7 +114,7 @@ class PlayScreenControllerGatheringTest {
                                         "gather-wood", "나무", false, "gathering", "wood")));
 
         when(playScreenViewHelper.buildPlayScreen(
-                        any(), any(), any(), any(), any(), isNull(), isNull(), any(), any()))
+                        any(), any(), any(), any(), isNull(), isNull(), any(), any()))
                 .thenReturn(view);
 
         mockMvc.perform(post("/move").param("dx", "1").param("dy", "0"))
@@ -149,7 +145,6 @@ class PlayScreenControllerGatheringTest {
                 topBar,
                 new MinimapView("테스트맵", List.of()),
                 new FullMapView(List.of(), 5, 5),
-                "평화로운 마을",
                 null,
                 null,
                 interactions,

@@ -2,7 +2,6 @@ package com.myapps.web.myrpg;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.myapps.web.myrpg.domain.model.AmbienceData;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -19,8 +18,7 @@ import tools.jackson.databind.ObjectMapper;
  *
  * <p>CSS 디자인 토큰(Req 1.2), JavaScript 줌/팬/팝업 함수(Req 1.3), 전투 시스템 JS 함수(008:
  * battleActive/startBattle/battleTurn/flee 등), fragment 존재와 {@code play.html} {@code th:replace}
- * 조합, 그리고 Jackson 3을 통한 {@code map.json}/{@code ambience.json} 역직렬화 및 양방향 링크 무결성(Req 4.5)을 통합
- * 검증합니다.
+ * 조합, 그리고 Jackson 3을 통한 {@code map.json} 역직렬화 및 양방향 링크 무결성(Req 4.5)을 통합 검증합니다.
  *
  * <p>Validates: Requirements 1.2, 1.3, 4.5, 18.1, 24.5
  */
@@ -31,7 +29,6 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
     private static final String JS_PATH = "static/js/myrpg.js";
     private static final String PLAY_HTML_PATH = "templates/play.html";
     private static final String MAP_JSON_PATH = "data/map.json";
-    private static final String AMBIENCE_JSON_PATH = "data/ambience.json";
     private static final String SKILL_JSON_PATH = "data/skill.json";
     private static final int EXPECTED_SKILL_COUNT = 35;
 
@@ -309,33 +306,6 @@ class VisualJsPreservationAndJsonLoadingIntegrationTest {
                             .contains(nodeId);
                 }
             }
-        }
-    }
-
-    /** ambience.json을 Jackson 3로 역직렬화하여 AmbienceData 구조를 확인한다. */
-    @Test
-    void should_deserializeAmbienceJson_when_jacksonObjectMapperUsed() throws IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final ClassPathResource resource = new ClassPathResource(AMBIENCE_JSON_PATH);
-
-        try (InputStream inputStream = resource.getInputStream()) {
-            final AmbienceData ambienceData =
-                    objectMapper.readValue(inputStream, AmbienceData.class);
-
-            assertThat(ambienceData).isNotNull();
-            assertThat(ambienceData.season()).isNotEmpty();
-            assertThat(ambienceData.season()).containsKeys("spring", "summer", "autumn", "winter");
-            assertThat(ambienceData.timeOfDay()).isNotEmpty();
-            assertThat(ambienceData.timeOfDay())
-                    .containsKeys(
-                            "dawn",
-                            "morning",
-                            "afternoon",
-                            "late-afternoon",
-                            "night",
-                            "late-night");
-            assertThat(ambienceData.themes()).isNotEmpty();
-            assertThat(ambienceData.themes()).containsKeys("town", "field", "dungeon");
         }
     }
 

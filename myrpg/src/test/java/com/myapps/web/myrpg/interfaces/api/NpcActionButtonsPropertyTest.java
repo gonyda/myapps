@@ -72,7 +72,7 @@ class NpcActionButtonsPropertyTest {
 
         // When
         final PlayScreenView view =
-                helper.buildPlayScreen(progress, null, null, null, null, npc, null, List.of());
+                helper.buildPlayScreen(progress, null, null, null, npc, null, List.of());
 
         // Then
         final List<ActionButton> npcActions = view.npcActions();

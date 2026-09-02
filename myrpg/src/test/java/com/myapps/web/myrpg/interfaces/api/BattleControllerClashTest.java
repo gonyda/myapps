@@ -323,7 +323,6 @@ class BattleControllerClashTest {
                 createTestTopBar(),
                 createTestMinimap(),
                 null,
-                "던바튼 외곽",
                 null,
                 null,
                 interactions,

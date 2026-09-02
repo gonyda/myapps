@@ -6,7 +6,6 @@ import com.myapps.web.myrpg.application.dto.MovementResult;
 import com.myapps.web.myrpg.application.dto.PlayScreenView;
 import com.myapps.web.myrpg.application.dto.RebirthResult;
 import com.myapps.web.myrpg.application.dto.TalkTarget;
-import com.myapps.web.myrpg.application.service.AmbienceService;
 import com.myapps.web.myrpg.application.service.BattleService;
 import com.myapps.web.myrpg.application.service.CharacterService;
 import com.myapps.web.myrpg.application.service.DungeonService;
@@ -50,7 +49,6 @@ public class PlayScreenController {
 
     private final CharacterService characterService;
     private final MapService mapService;
-    private final AmbienceService ambienceService;
     private final MovementService movementService;
     private final NpcService npcService;
     private final NpcDialogueService npcDialogueService;
@@ -71,7 +69,6 @@ public class PlayScreenController {
      *
      * @param characterService 캐릭터 진행상황 서비스
      * @param mapService 맵 데이터 서비스
-     * @param ambienceService 상황 멘트 서비스
      * @param movementService 좌표 이동 서비스
      * @param npcService NPC 데이터 서비스
      * @param npcDialogueService NPC 대사 서비스
@@ -91,7 +88,6 @@ public class PlayScreenController {
     public PlayScreenController(
             final CharacterService characterService,
             final MapService mapService,
-            final AmbienceService ambienceService,
             final MovementService movementService,
             final NpcService npcService,
             final NpcDialogueService npcDialogueService,
@@ -109,7 +105,6 @@ public class PlayScreenController {
                     final com.myapps.web.myrpg.support.GameMessageService gameMessageService) {
         this.characterService = characterService;
         this.mapService = mapService;
-        this.ambienceService = ambienceService;
         this.movementService = movementService;
         this.npcService = npcService;
         this.npcDialogueService = npcDialogueService;
@@ -133,7 +128,6 @@ public class PlayScreenController {
     public PlayScreenController(
             final CharacterService characterService,
             final MapService mapService,
-            final AmbienceService ambienceService,
             final MovementService movementService,
             final NpcService npcService,
             final NpcDialogueService npcDialogueService,
@@ -150,7 +144,6 @@ public class PlayScreenController {
         this(
                 characterService,
                 mapService,
-                ambienceService,
                 movementService,
                 npcService,
                 npcDialogueService,

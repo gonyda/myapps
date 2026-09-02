@@ -471,7 +471,6 @@ class BattleControllerTest {
                 createTestTopBar(),
                 createTestMinimap(),
                 null,
-                "숲 속 공터",
                 null,
                 null,
                 interactions,
