@@ -114,4 +114,19 @@ class EquipmentKindTest {
     void should_haveExactlyTenConstants() {
         assertThat(EquipmentKind.values()).hasSize(10);
     }
+
+    /** EquipmentKind 각 상수의 emoji()가 장비탭 규격과 일치함을 검증한다. */
+    @Test
+    void should_returnCorrectEmoji_when_equipmentKindQueried() {
+        assertThat(EquipmentKind.ONE_HANDED_SWORD.emoji()).isEqualTo("🗡️");
+        assertThat(EquipmentKind.TWO_HANDED_SWORD.emoji()).isEqualTo("🗡️");
+        assertThat(EquipmentKind.BOW.emoji()).isEqualTo("🏹");
+        assertThat(EquipmentKind.WAND.emoji()).isEqualTo("🔮");
+        assertThat(EquipmentKind.STAFF.emoji()).isEqualTo("🔮");
+        assertThat(EquipmentKind.HELMET.emoji()).isEqualTo("🪖");
+        assertThat(EquipmentKind.ARMOR_BODY.emoji()).isEqualTo("🥋");
+        assertThat(EquipmentKind.GLOVES.emoji()).isEqualTo("🧤");
+        assertThat(EquipmentKind.BOOTS.emoji()).isEqualTo("👢");
+        assertThat(EquipmentKind.SHIELD.emoji()).isEqualTo("🛡️");
+    }
 }

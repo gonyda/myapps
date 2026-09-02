@@ -236,7 +236,8 @@ public class RepairController {
                             effectiveMax,
                             shopService.sellValueOf(owned),
                             owned.isEquipped(),
-                            inventoryService.describe(equipItem, owned)));
+                            inventoryService.describe(equipItem, owned),
+                            equipItem.icon()));
         }
         return new RepairView(List.copyOf(repairItems), currentGold);
     }

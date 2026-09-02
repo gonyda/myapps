@@ -1230,7 +1230,8 @@ public class InventoryService {
                 equippable,
                 currentDurability,
                 maxDurability,
-                detailLines);
+                detailLines,
+                catalogItem.icon());
     }
 
     private OwnedItem findOwnedItemOrThrow(final long ownedItemId) {
@@ -1671,7 +1672,7 @@ public class InventoryService {
         final String duraStatus =
                 duraPercent <= 20 ? "danger" : (duraPercent <= 50 ? "warning" : "normal");
 
-        final String icon = resolveEquipIcon(equipItem);
+        final String icon = equipItem.icon();
         final String bonusSummary = formatBonusesSummary(equipItem.bonuses());
         final String detail = String.join("||", describe(equipItem, owned));
 
@@ -1692,19 +1693,6 @@ public class InventoryService {
                 duraStatus,
                 bonusSummary,
                 detail);
-    }
-
-    private static String resolveEquipIcon(final EquipmentItem equipItem) {
-        return switch (equipItem.kind()) {
-            case ONE_HANDED_SWORD, TWO_HANDED_SWORD -> "🗡️";
-            case BOW -> "🏹";
-            case WAND, STAFF -> "🔮";
-            case SHIELD -> "🛡️";
-            case ARMOR_BODY -> "🥋";
-            case HELMET -> "🪖";
-            case GLOVES -> "🧤";
-            case BOOTS -> "👢";
-        };
     }
 
     private String formatBonusesSummary(final List<EquipBonus> bonuses) {

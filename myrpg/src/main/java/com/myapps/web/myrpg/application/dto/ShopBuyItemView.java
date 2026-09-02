@@ -16,6 +16,7 @@ import java.util.List;
  * @param detailLines 상세 설명 줄 목록 (임베드용)
  * @param equippedItemName 현재 착용 중인 동일 부위 장비명 (미착용 시 null)
  * @param equippedDetailLines 현재 착용 중인 동일 부위 장비의 상세 설명 줄 목록 (미착용 시 빈 리스트)
+ * @param icon 아이템 표시용 아이콘 이모지
  */
 public record ShopBuyItemView(
         String id,
@@ -24,7 +25,8 @@ public record ShopBuyItemView(
         long buyPrice,
         List<String> detailLines,
         String equippedItemName,
-        List<String> equippedDetailLines) {
+        List<String> equippedDetailLines,
+        String icon) {
 
     /** 착용 장비 비교 정보가 없는 단독 상점 아이템 뷰를 생성한다. */
     public ShopBuyItemView(
@@ -32,8 +34,19 @@ public record ShopBuyItemView(
             final String name,
             final String typeLabel,
             final long buyPrice,
+            final List<String> detailLines,
+            final String icon) {
+        this(id, name, typeLabel, buyPrice, detailLines, null, List.of(), icon);
+    }
+
+    /** 하위 호환용 편의 생성자. */
+    public ShopBuyItemView(
+            final String id,
+            final String name,
+            final String typeLabel,
+            final long buyPrice,
             final List<String> detailLines) {
-        this(id, name, typeLabel, buyPrice, detailLines, null, List.of());
+        this(id, name, typeLabel, buyPrice, detailLines, null, List.of(), "🗡️");
     }
 
     /** 착용 장비 비교 대상이 존재하는지 여부를 반환한다. */

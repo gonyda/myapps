@@ -11,23 +11,25 @@ import java.util.Optional;
 public enum ItemType {
 
     /** 소비형 포션 아이템. */
-    POTION("potion", "포션"),
+    POTION("potion", "포션", "🧪"),
 
     /** 무기 장비 아이템. */
-    WEAPON("weapon", "무기"),
+    WEAPON("weapon", "무기", "🗡️"),
 
     /** 방어구 장비 아이템. */
-    ARMOR("armor", "방어구"),
+    ARMOR("armor", "방어구", "🛡️"),
 
     /** 생활 채집 및 제작용 재료 아이템. */
-    MATERIAL("material", "재료");
+    MATERIAL("material", "재료", "📦");
 
     private final String code;
     private final String label;
+    private final String emoji;
 
-    ItemType(final String code, final String label) {
+    ItemType(final String code, final String label, final String emoji) {
         this.code = code;
         this.label = label;
+        this.emoji = emoji;
     }
 
     /**
@@ -46,6 +48,15 @@ public enum ItemType {
      */
     public String label() {
         return label;
+    }
+
+    /**
+     * 아이템 타입의 기본 이모지를 반환한다.
+     *
+     * @return 아이템 타입의 이모지 문자열
+     */
+    public String emoji() {
+        return emoji;
     }
 
     /**

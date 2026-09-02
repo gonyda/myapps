@@ -34,7 +34,7 @@
                 <h4 class="rewards-items-title">🎁 획득 아이템</h4>
                 <div class="reward-items-grid">
                     <div class="reward-item-card" th:each="item : ${dungeonClear.items}">
-                        <span class="reward-item-icon">📦</span>
+                        <span class="reward-item-icon" th:text="${item.icon}">📦</span>
                         <span class="reward-item-name" th:text="${item.itemName}">마나 포션 50</span>
                         <span class="reward-item-qty" th:text="'x' + ${item.quantity}">x1</span>
                     </div>

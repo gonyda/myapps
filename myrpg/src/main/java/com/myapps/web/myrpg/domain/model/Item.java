@@ -44,4 +44,11 @@ public sealed interface Item permits PotionItem, EquipmentItem, MaterialItem {
      * @return 설명글 문자열, 없으면 {@code null}
      */
     String description();
+
+    /**
+     * 아이템의 표시용 아이콘(이모지)을 반환한다.
+     *
+     * @return 아이콘 이모지 문자열
+     */
+    String icon();
 }

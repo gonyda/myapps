@@ -51,4 +51,16 @@ public record EquipmentItem(
             final int maxDurability) {
         this(id, name, type, kind, bonuses, buyPrice, maxDurability, null);
     }
+
+    /**
+     * 장비 아이템의 표시용 아이콘(이모지)을 반환한다.
+     *
+     * <p>장비의 세부 종류({@link EquipmentKind})에 정의된 이모지를 반환한다.
+     *
+     * @return 장비 종류별 이모지 (예: 투구 "🪖", 갑옷 "🥋", 검 "🗡️", 방패 "🛡️")
+     */
+    @Override
+    public String icon() {
+        return kind != null ? kind.emoji() : (type != null ? type.emoji() : "🗡️");
+    }
 }

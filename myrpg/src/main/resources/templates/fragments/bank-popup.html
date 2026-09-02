@@ -99,13 +99,7 @@
                 <div class="bank-card" th:each="item : ${bank.bankItems}">
                     <div class="item-card-top">
                         <div class="item-info">
-                            <span class="item-icon" th:if="${item.type.name() == 'WEAPON'}">🗡️</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'ARMOR'}">🛡️</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'HELMET'}">🪖</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'GLOVES'}">🧤</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'BOOTS'}">👢</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'POTION'}">🧪</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'MISC'}">📦</span>
+                            <span class="item-icon" th:text="${item.icon}">🗡️</span>
                             <span class="item-name" th:text="${item.name}">아이템명</span>
                         </div>
                         <button class="item-detail-btn"
@@ -153,13 +147,7 @@
                      th:classappend="${item.equipped} ? ' item-is-equipped' : ''">
                     <div class="item-card-top">
                         <div class="item-info">
-                            <span class="item-icon" th:if="${item.type.name() == 'WEAPON'}">🗡️</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'ARMOR'}">🛡️</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'HELMET'}">🪖</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'GLOVES'}">🧤</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'BOOTS'}">👢</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'POTION'}">🧪</span>
-                            <span class="item-icon" th:if="${item.type.name() == 'MISC'}">📦</span>
+                            <span class="item-icon" th:text="${item.icon}">🗡️</span>
                             <span class="item-name" th:text="${item.name}">아이템명</span>
                             <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
                         </div>

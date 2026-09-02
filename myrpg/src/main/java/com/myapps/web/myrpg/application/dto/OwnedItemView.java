@@ -20,6 +20,7 @@ import java.util.List;
  * @param currentDurability 현재 내구도 (장비만, 포션이면 null)
  * @param maxDurability 최대 내구도 (장비만, 포션이면 null)
  * @param detailLines 상세 설명 줄 목록 (임베드용)
+ * @param icon 아이템 표시용 아이콘 이모지
  */
 public record OwnedItemView(
         long ownedItemId,
@@ -32,4 +33,34 @@ public record OwnedItemView(
         boolean equippable,
         Double currentDurability,
         Integer maxDurability,
-        List<String> detailLines) {}
+        List<String> detailLines,
+        String icon) {
+
+    /** 아이콘이 생략된 경우 타입 기본 이모지를 사용하는 하위 호환 생성자. */
+    public OwnedItemView(
+            final long ownedItemId,
+            final String name,
+            final String typeLabel,
+            final ItemType type,
+            final int quantity,
+            final boolean equipped,
+            final boolean usable,
+            final boolean equippable,
+            final Double currentDurability,
+            final Integer maxDurability,
+            final List<String> detailLines) {
+        this(
+                ownedItemId,
+                name,
+                typeLabel,
+                type,
+                quantity,
+                equipped,
+                usable,
+                equippable,
+                currentDurability,
+                maxDurability,
+                detailLines,
+                type != null ? type.emoji() : "📦");
+    }
+}

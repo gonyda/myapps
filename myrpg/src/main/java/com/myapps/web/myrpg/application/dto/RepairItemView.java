@@ -16,6 +16,7 @@ import java.util.List;
  * @param repairCost 1포인트 수리비 (= Sell_Value)
  * @param equipped 장착 여부
  * @param detailLines 상세 설명 줄 목록 (임베드용)
+ * @param icon 아이템 표시용 아이콘 이모지
  */
 public record RepairItemView(
         long ownedItemId,
@@ -25,4 +26,28 @@ public record RepairItemView(
         int maxDurability,
         long repairCost,
         boolean equipped,
-        List<String> detailLines) {}
+        List<String> detailLines,
+        String icon) {
+
+    /** 하위 호환용 편의 생성자. */
+    public RepairItemView(
+            final long ownedItemId,
+            final String name,
+            final String typeLabel,
+            final int currentDurabilityCeil,
+            final int maxDurability,
+            final long repairCost,
+            final boolean equipped,
+            final List<String> detailLines) {
+        this(
+                ownedItemId,
+                name,
+                typeLabel,
+                currentDurabilityCeil,
+                maxDurability,
+                repairCost,
+                equipped,
+                detailLines,
+                "🛡️");
+    }
+}

@@ -234,7 +234,8 @@ public class ShopService {
                             item.buyPrice(),
                             detailLines,
                             equippedItemName,
-                            equippedDetailLines));
+                            equippedDetailLines,
+                            item.icon()));
         }
         return List.copyOf(result);
     }
@@ -303,7 +304,8 @@ public class ShopService {
                             owned.getQuantity(),
                             sellValueOf(owned),
                             isEquipped,
-                            inventoryService.describe(catalogItem, owned)));
+                            inventoryService.describe(catalogItem, owned),
+                            catalogItem.icon()));
         }
         return List.copyOf(result);
     }

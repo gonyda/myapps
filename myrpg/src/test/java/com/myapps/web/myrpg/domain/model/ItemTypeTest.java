@@ -91,4 +91,13 @@ class ItemTypeTest {
     void should_haveExactlyFourConstants() {
         assertThat(ItemType.values()).hasSize(4);
     }
+
+    /** ItemType의 emoji()가 올바른 기본 이모지를 반환함을 검증한다. */
+    @Test
+    void should_returnCorrectEmoji_when_itemTypeQueried() {
+        assertThat(ItemType.POTION.emoji()).isEqualTo("🧪");
+        assertThat(ItemType.WEAPON.emoji()).isEqualTo("🗡️");
+        assertThat(ItemType.ARMOR.emoji()).isEqualTo("🛡️");
+        assertThat(ItemType.MATERIAL.emoji()).isEqualTo("📦");
+    }
 }

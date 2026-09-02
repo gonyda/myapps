@@ -13,44 +13,50 @@ import java.util.Set;
 public enum EquipmentKind {
 
     /** 한손검 — 주무기 슬롯 점유. */
-    ONE_HANDED_SWORD("한손검", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND)),
+    ONE_HANDED_SWORD("한손검", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND), "🗡️"),
 
     /** 양손검 — 주무기+보조손 슬롯 동시 점유. */
-    TWO_HANDED_SWORD("양손검", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND)),
+    TWO_HANDED_SWORD(
+            "양손검", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND), "🗡️"),
 
     /** 방패 — 보조손 슬롯 점유. */
-    SHIELD("방패", EquipSlot.OFF_HAND, Set.of(EquipSlot.OFF_HAND)),
+    SHIELD("방패", EquipSlot.OFF_HAND, Set.of(EquipSlot.OFF_HAND), "🛡️"),
 
     /** 갑옷 — 몸통 슬롯 점유. */
-    ARMOR_BODY("갑옷", EquipSlot.BODY, Set.of(EquipSlot.BODY)),
+    ARMOR_BODY("갑옷", EquipSlot.BODY, Set.of(EquipSlot.BODY), "🥋"),
 
     /** 활 — 양손 무기(주무기+보조손 동시 점유, 방패와 배타). */
-    BOW("활", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND)),
+    BOW("활", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND), "🏹"),
 
     /** 완드 — 한손 마법 무기(주무기 슬롯만 점유, 방패 병용 가능). */
-    WAND("완드", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND)),
+    WAND("완드", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND), "🔮"),
 
     /** 스태프 — 양손 마법 무기(주무기+보조손 동시 점유, 방패와 배타). */
-    STAFF("스태프", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND)),
+    STAFF("스태프", EquipSlot.MAIN_HAND, Set.of(EquipSlot.MAIN_HAND, EquipSlot.OFF_HAND), "🔮"),
 
     /** 투구 — 머리 슬롯 점유. */
-    HELMET("투구", EquipSlot.HEAD, Set.of(EquipSlot.HEAD)),
+    HELMET("투구", EquipSlot.HEAD, Set.of(EquipSlot.HEAD), "🪖"),
 
     /** 장갑 — 손 슬롯 점유. */
-    GLOVES("장갑", EquipSlot.HANDS, Set.of(EquipSlot.HANDS)),
+    GLOVES("장갑", EquipSlot.HANDS, Set.of(EquipSlot.HANDS), "🧤"),
 
     /** 부츠 — 발 슬롯 점유. */
-    BOOTS("부츠", EquipSlot.FEET, Set.of(EquipSlot.FEET));
+    BOOTS("부츠", EquipSlot.FEET, Set.of(EquipSlot.FEET), "👢");
 
     private final String label;
     private final EquipSlot primarySlot;
     private final Set<EquipSlot> requiredSlots;
+    private final String emoji;
 
     EquipmentKind(
-            final String label, final EquipSlot primarySlot, final Set<EquipSlot> requiredSlots) {
+            final String label,
+            final EquipSlot primarySlot,
+            final Set<EquipSlot> requiredSlots,
+            final String emoji) {
         this.label = label;
         this.primarySlot = primarySlot;
         this.requiredSlots = requiredSlots;
+        this.emoji = emoji;
     }
 
     /**
@@ -60,6 +66,15 @@ public enum EquipmentKind {
      */
     public String label() {
         return label;
+    }
+
+    /**
+     * 장비 종류의 기본 이모지를 반환한다.
+     *
+     * @return 장비 종류의 이모지 문자열
+     */
+    public String emoji() {
+        return emoji;
     }
 
     /**

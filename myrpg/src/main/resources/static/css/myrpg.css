@@ -3827,6 +3827,17 @@
             gap: 2px;
         }
 
+        .picker-item-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .picker-item-icon {
+            font-size: var(--fs-sm);
+            line-height: 1;
+        }
+
         .picker-item-name {
             font-size: var(--fs-xs);
             font-weight: bold;

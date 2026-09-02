@@ -15,6 +15,7 @@ import java.util.List;
  * @param sellValue 판매가 (Sell_Value, 계산값)
  * @param equipped 장착 여부 (true면 판매 거부)
  * @param detailLines 상세 설명 줄 목록 (임베드용)
+ * @param icon 아이템 표시용 아이콘 이모지
  */
 public record ShopSellItemView(
         long ownedItemId,
@@ -23,4 +24,18 @@ public record ShopSellItemView(
         int quantity,
         long sellValue,
         boolean equipped,
-        List<String> detailLines) {}
+        List<String> detailLines,
+        String icon) {
+
+    /** 하위 호환용 편의 생성자. */
+    public ShopSellItemView(
+            final long ownedItemId,
+            final String name,
+            final String typeLabel,
+            final int quantity,
+            final long sellValue,
+            final boolean equipped,
+            final List<String> detailLines) {
+        this(ownedItemId, name, typeLabel, quantity, sellValue, equipped, detailLines, "📦");
+    }
+}

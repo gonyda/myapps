@@ -66,4 +66,14 @@ public record PotionItem(
     public ItemType type() {
         return ItemType.POTION;
     }
+
+    /**
+     * 포션 아이템의 표시용 아이콘(이모지)을 반환한다.
+     *
+     * @return 포션 타입 기본 이모지 (예: "🧪")
+     */
+    @Override
+    public String icon() {
+        return ItemType.POTION.emoji();
+    }
 }

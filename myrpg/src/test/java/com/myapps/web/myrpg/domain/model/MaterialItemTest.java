@@ -36,4 +36,12 @@ class MaterialItemTest {
 
         assertThat(item.description()).isEqualTo("장작을 소모하여 캠프파이어를 할 수 있습니다.");
     }
+
+    @Test
+    @DisplayName("MaterialItem의 icon()은 MATERIAL 타입의 박스 이모지(📦)를 반환한다")
+    void should_returnBoxEmoji_when_iconQueried() {
+        final MaterialItem item = new MaterialItem("firewood", "장작", 20);
+
+        assertThat(item.icon()).isEqualTo("📦");
+    }
 }

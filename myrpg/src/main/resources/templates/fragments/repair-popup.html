@@ -42,12 +42,7 @@
                  th:classappend="${item.equipped} ? ' item-is-equipped' : ''">
                 <div class="item-card-top">
                     <div class="item-info">
-                        <span class="item-icon" th:if="${item.typeLabel == '무기'}">🗡️</span>
-                        <span class="item-icon" th:if="${item.typeLabel == '방어구'}">🛡️</span>
-                        <span class="item-icon" th:if="${item.typeLabel == '투구'}">🪖</span>
-                        <span class="item-icon" th:if="${item.typeLabel == '장갑'}">🧤</span>
-                        <span class="item-icon" th:if="${item.typeLabel == '신발'}">👢</span>
-                        <span class="item-icon" th:if="${item.typeLabel != '무기' and item.typeLabel != '방어구' and item.typeLabel != '투구' and item.typeLabel != '장갑' and item.typeLabel != '신발'}">📦</span>
+                        <span class="item-icon" th:text="${item.icon}">🗡️</span>
                         <span class="item-name" th:text="${item.name}">아이템명</span>
                         <span class="equipped-badge" th:if="${item.equipped}">[장착중]</span>
                     </div>

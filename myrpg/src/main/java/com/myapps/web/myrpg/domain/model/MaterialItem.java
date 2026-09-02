@@ -29,4 +29,14 @@ public record MaterialItem(String id, String name, Integer buyPrice, String desc
     public ItemType type() {
         return ItemType.MATERIAL;
     }
+
+    /**
+     * 재료 아이템의 표시용 아이콘(이모지)을 반환한다.
+     *
+     * @return 재료 타입 기본 이모지 (예: "📦")
+     */
+    @Override
+    public String icon() {
+        return ItemType.MATERIAL.emoji();
+    }
 }

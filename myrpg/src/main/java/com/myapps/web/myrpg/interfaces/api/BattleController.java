@@ -384,8 +384,15 @@ public class BattleController {
                                                                 .map(Item::name)
                                                                 .orElse(item.itemId())
                                                         : item.itemId();
+                                        final String itemIcon =
+                                                itemCatalogService != null
+                                                        ? itemCatalogService
+                                                                .byId(item.itemId())
+                                                                .map(Item::icon)
+                                                                .orElse("📦")
+                                                        : "📦";
                                         return new DungeonClearItemView(
-                                                item.itemId(), itemName, item.quantity());
+                                                item.itemId(), itemName, item.quantity(), itemIcon);
                                     })
                             .toList();
             final DungeonClearView dungeonClearView =

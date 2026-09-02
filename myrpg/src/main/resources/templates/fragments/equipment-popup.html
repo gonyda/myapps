@@ -209,8 +209,11 @@
              th:attr="data-owned-id=${item.ownedItemId}"
              onclick="equipFromPicker(this.getAttribute('data-owned-id'))">
             <div class="picker-item-main">
-                <span class="picker-item-name" th:text="${item.name}">아이템명</span>
-                <span class="picker-item-type" th:text="${item.type}">한손검</span>
+                <div class="picker-item-title-wrap">
+                    <span class="picker-item-icon" th:text="${item.icon}">🗡️</span>
+                    <span class="picker-item-name" th:text="${item.name}">아이템명</span>
+                </div>
+                <span class="picker-item-type" th:text="${item.typeLabel}">한손검</span>
             </div>
             <div class="picker-item-meta" th:if="${item.maxDurability != null}">
                 <span class="picker-dura-text" th:text="'내구 ' + ${#numbers.formatDecimal(item.currentDurability, 1, 0)} + '/' + ${item.maxDurability}">내구 20/20</span>
