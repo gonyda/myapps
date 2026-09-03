@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-09-03 21:25 (Asia/Seoul)
+> 최종 업데이트: 2026-09-03 23:05 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -22,11 +22,13 @@
 - **메시지 및 게임 프로퍼티 외부화 리팩토링 (2026-08-30, 018-message-and-properties-externalization)**: `messages.properties` 120여 개 키 외부화, `GameProperties` 바인딩, `GameMessageService` 구축.
 - **화면 상단 상황 멘트 제거 및 잔여 코드 전수 정리 (2026-09-02, 019-remove-situation-ambience)**: `AmbienceService`/DTO/JSON/테스트 완전 제거, 인게임 스카이 그라디언트/천체 궤적 보존, 5대 가드레일 통과.
 - **스킬 타입 다형화 및 전투 디스패치 Visitor 전환 (2026-09-03, 020-skill-type-polymorphism)**:
-  - **도메인 다형 계약**: `Skill` 인터페이스에 `primaryStatLabel()`, `primaryValueAt(rank)`, `resourceCostAt(rank)`, `counterValueAt(rank)`, `critBonusValueAt(rank)` 및 `<R> R accept(SkillCombatVisitor<R>)` 확장. 8종 서브타입(`DamageSkill`, `DefenseSkill`, `RecoverySkill`, `UltimateSkill`, `PassiveSkill`, `BuffSkill`, `CcSkill`, `DotSkill`)이 자신의 계산 규칙을 소유하도록 위임.
-  - **Visitor 패턴 도입**: `SkillCombatVisitor<R>` 도메인 인터페이스 선언 및 `BattleService` 내부 `CombatDispatchVisitor` 구현으로 전투 턴(`takeTurn`)의 궁극기/회복/버프/CC 디스패치를 `skill.accept(visitor)`로 전환.
-  - **서비스 instanceof 체인 제거**: `SkillService` 및 `BattleService`에 산재했던 수십 회의 서브타입 판별 `instanceof` 체인을 다형 메서드 호출 및 sealed switch 매칭으로 완전 치환.
-  - **회귀 및 PBT 검증**: `SkillPolymorphismTest`, `SkillCombatVisitorPropertyTest`(Property 1 동치성, Property 2 디스패치 정합성), `BattleCombatPreservationPropertyTest`(Property 3 동작 보존, Property 4 폴백 보존) 구축. 전체 1,264개 테스트 All-Green.
-  - **5대 가드레일**: Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD 전수 통과 및 `codegraph sync` 완료.
+  - 도메인 다형 계약 확장(8종 서브타입에 계산 규칙 위임) 및 `SkillCombatVisitor<R>` 방문자 패턴 도입.
+  - `SkillService`/`BattleService` 수십 회의 `instanceof` 체인을 다형 메서드 호출 및 sealed switch 매칭으로 완전 치환.
+  - 1,264개 테스트 All-Green, 5대 가드레일 통과 및 CodeGraph 동기화 완료.
+- **`InventoryService` God Class 협력 객체 분해 및 파사드화 (2026-09-03, 021-inventory-service-decomposition)**:
+  - **파사드 + 위임 아키텍처**: 1,708줄의 거대 클래스를 순수 위임 파사드(483줄, 72% 축소)로 개편. 27개 public API 및 2개 생성자(9-arg/7-arg) 시그니처 100% 보존.
+  - **관심사별 협력 객체 8종 분리**: `InventoryQuerySupport`(공유 조회/용량/무기재능), `EquipmentService`(착용/해제/스마트/스왑/후보), `ItemStorageService`(은행↔인벤 이동/용량), `ItemAcquisitionService`(드랍/구매/시딩), `EquipmentBonusService`(보너스합산/내구도감소), `PotionConsumptionService`(포션 소비 회복), `InventoryViewAssembler`(인벤/은행/장비 팝업 뷰 조립 및 describe), `CombatSkillLoadoutService`(전투 10슬롯 버튼 조립).
+  - **중복 통합 및 불변 검증**: 무기 세트 1/2 슬롯 분기 단일화, 카탈로그/캐릭터 폴백 중복 쿼리 제거, 클래스 레벨 복잡도 억제 어노테이션 제거. 1,270개 전체 테스트 All-Green, 5대 가드레일 통과 및 CodeGraph 동기화 완료.
 
 ---
 
@@ -35,27 +37,36 @@
 - **현재 브랜치**: `main`
 - **5대 품질 가드레일 상태**: `myrpg` 5대 가드레일 올클리어 (`BUILD SUCCESS`).
 - **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
+- **Spec 상태**:
+  - `021-inventory-service-decomposition` 전 태스크(A~E) 구현 및 검증 완료. 사용자 승인·요청 시 Git 커밋 착수 준비 완료.
+  - `022-battle-service-decomposition` SDD 3종 Spec 작성 완료 (사용자 검토 대기, 구현 미착수).
+
+### 2.1. 진행 중 Spec — 022 BattleService God Class 분해 (SDD Step 2 완료, 검토 대기)
+- **위치**: `.kiro/specs/myrpg/022-battle-service-decomposition/` (requirements/design/tasks 3종)
+- **대상**: `BattleService`(약 1,752줄, 의존성 19개) — 리팩토링 3순위.
+- **최우선 제약(사용자 확정)**: 기존 로직 **1%도 동작 안 바뀜**(전투 결과·로그 라우팅·예외·**RNG 소비 순서**·
+  트랜잭션 경계 보존) + 중복코드 제거 + 확장성 개편.
+- **확정 설계값**:
+  - **파사드 + 오케스트레이션/위임**: public 7메서드(`start`/`startClash`/`takeTurn`/`flee`/`resumeIfActive`/
+    `combatSkills`/`swapWeapon`)와 두 생성자(18-arg/16-arg) 100% 보존. 2컨트롤러·20여 테스트(16-arg 직접 생성) 무변경.
+  - **협력 객체 6종(빈 아님, 파사드가 두 생성자에서 raw 의존성으로 조립하는 plain 객체)**:
+    `CombatStatResolver`(스탯/자원 해석), `SkillCombatResolver`(스킬 전투 처리·디스패치, 020의
+    `CombatDispatchVisitor` 내부화), `TurnEffectApplier`(마나실드/DoT/명상), `BattleRewardService`(처치/던전/
+    사망 결산), `BattleViewAssembler`(대치 뷰/뱃지), `BattleTurnResultFactory`(결과 빌드).
+  - **내부 전달 타입**: `SkillCombatContext`/`SkillCombatOutcome`(신규), `TurnCombatResult`/`KillResolution`(이동).
+  - **배치**: `application/service/battle` 패키지. 파사드→협력객체→`CombatStatResolver`/`BattleResolver` 단방향(순환 방지).
+  - **RNG 결정성**: 파사드의 동일 `Random` 인스턴스를 협력 객체에 공유 주입해 소비 순서 보존.
+  - **중복 통합 5건**: 스킬 조회(5→1), 스탯 합산(3→1), 몬스터 배율(2→1), `BattleTurnResult` 빌드(6→팩토리),
+    턴 종료 확정 블록(3→`finalizeTurn`). `takeTurn` 오케스트레이션은 파사드 유지(단계 순서 보존).
+  - **검증**: 기존 전투 회귀/jqwik(시드 고정) 무수정 그린(Property 1~4) + 미커버 지점 characterization 선행.
+- **다음 액션**: 사용자 Spec 검토·승인 후 tasks.md 순차 구현 착수.
 
 ---
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
 ### 3.1. 기술 부채 리팩토링 백로그 (`docs/myrpg-refactoring-candidates.md`)
-1. **[🔴 2순위] `InventoryService` (1,708줄) God Class 분리**:
-   - 의존성 10개, 책임 과다(인벤토리/장비/수리/판매 등) → SRP에 맞게 서비스 분리 및 결합도 완화.
-2. **[🟡 3순위] `BattleService` (1,625줄) God Class 분리**:
-   - 1순위 스킬 다형화 완료로 낮아진 결합도를 기반으로 전투 상태/보상/턴 서비스 분리.
-
-### 3.2. 신규 게임 컨텐츠 기획 백로그
-1. **[기획 1] 캠프파이어 & 야간 위험도 시스템 (표준형)**:
-   - 획득한 장작을 소비하여 모닥불 야영(야간 20~05시 위험 완화, 아침 08:00 스킵, 바이탈 완충, 음식 굽기 버프).
-2. **[기획 2] 마을 아르바이트 & 축복의 포션 시스템**:
-   - 시간대별 NPC 일일 의뢰 및 축복의 포션(내구도 보호) 보상.
-3. **[기획 3] 타이틀(칭호) & 업적 도감 시스템**:
-   - 업적 기반 고유 칭호 장착 및 스탯 보너스, 타이틀 도감 팝업.
-4. **[기획 4] 필드 보스 랜덤 스폰 (Field Boss Encounters)**:
-   - 필드 랜덤 시간 + 랜덤 위치 보스 등장.
-5. **[기획 5] 인챈트 & 세공 장비 커스터마이징 시스템**:
-   - 접두/접미 인챈트 스크롤 및 마법 가루 성공률, 세공 옵션 부여.
-6. **[기획 6] 도박 컨텐츠 (던바튼 한정)**:
-   - 골드를 걸고 즐기는 도박 미니게임.
+1. **[🔴 3순위] `BattleService` (1,752줄) God Class 분리** — *Spec 022 작성 완료, 검토·구현 대기*:
+   - 파사드 + 협력 객체 6종으로 분해(§2.1 참조). SRP 회복 + 중복 통합(5건) + 동작·RNG 100% 보존.
+2. **신규 게임 컨텐츠 기획 백로그 연계**:
+   - 캠프파이어/야간 위험도, 마을 아르바이트 & 축복의 포션, 타이틀/업적 도감 등 기획 연계.
