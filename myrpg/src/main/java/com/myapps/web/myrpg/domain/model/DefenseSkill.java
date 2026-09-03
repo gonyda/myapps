@@ -129,6 +129,40 @@ public record DefenseSkill(
         return java.util.List.copyOf(rows);
     }
 
+    private static final SkillDamagePolicy POLICY = new SkillDamagePolicy();
+
+    @Override
+    public String primaryStatLabel() {
+        return "피해 경감";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return POLICY.blockRate(this, rank);
+    }
+
+    @Override
+    public java.util.Optional<Integer> counterValueAt(final SkillRank rank) {
+        final int multiplier = POLICY.counterMultiplier(this, rank);
+        if (multiplier > 0) {
+            return java.util.Optional.of(multiplier);
+        }
+        return java.util.Optional.empty();
+    }
+
+    @Override
+    public java.util.Optional<Integer> critBonusValueAt(final SkillRank rank) {
+        if (critBonusByRank != null && !critBonusByRank.isEmpty()) {
+            return java.util.Optional.of(critBonusAt(rank));
+        }
+        return java.util.Optional.empty();
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitDefense(this);
+    }
+
     @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {

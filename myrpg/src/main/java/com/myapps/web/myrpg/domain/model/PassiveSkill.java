@@ -121,4 +121,19 @@ public record PassiveSkill(
                 critDelta,
                 mpRegenDelta);
     }
+
+    @Override
+    public String primaryStatLabel() {
+        return "패시브 효과";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return 0;
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitPassive(this);
+    }
 }

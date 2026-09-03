@@ -51,6 +51,21 @@ public record CcSkill(
     }
 
     @Override
+    public String primaryStatLabel() {
+        return "성공률";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return successRateAt(rank);
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitCc(this);
+    }
+
+    @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {
         if (nextRank == null) {

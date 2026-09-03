@@ -7,18 +7,12 @@ import com.myapps.web.myrpg.application.dto.SkillRankUpView;
 import com.myapps.web.myrpg.application.dto.SkillRowView;
 import com.myapps.web.myrpg.application.exception.InsufficientAbilityPointsException;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
-import com.myapps.web.myrpg.domain.model.BuffSkill;
-import com.myapps.web.myrpg.domain.model.CcSkill;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
-import com.myapps.web.myrpg.domain.model.DamageSkill;
-import com.myapps.web.myrpg.domain.model.DefenseSkill;
-import com.myapps.web.myrpg.domain.model.DotSkill;
 import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.RankUpRequirement;
 import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.Skill;
-import com.myapps.web.myrpg.domain.model.SkillDamagePolicy;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillRankPolicy;
 import com.myapps.web.myrpg.domain.model.SkillRankupBonus;
@@ -63,15 +57,12 @@ public class SkillService {
     private static final String LABEL_ARCHERY = "활";
     private static final String LABEL_MAGIC = "마법";
     private static final String LABEL_COMMON = "공용";
-    private static final String PRIMARY_STAT_DAMAGE = "보너스 데미지";
-    private static final String PRIMARY_STAT_DEFENSE = "피해 경감";
 
     private final CharacterSkillRepository characterSkillRepository;
     private final CharacterProgressRepository characterProgressRepository;
     private final SkillCatalogService skillCatalogService;
     private final SkillRankPolicy skillRankPolicy;
     private final SkillRankupBonus skillRankupBonus;
-    private final SkillDamagePolicy skillDamagePolicy;
     private final StatProgression statProgression;
 
     /**
@@ -93,7 +84,6 @@ public class SkillService {
         this.skillCatalogService = skillCatalogService;
         this.skillRankPolicy = new SkillRankPolicy();
         this.skillRankupBonus = new SkillRankupBonus();
-        this.skillDamagePolicy = new SkillDamagePolicy();
         this.statProgression = new StatProgression();
     }
 
@@ -330,7 +320,7 @@ public class SkillService {
             throw new IllegalArgumentException("슬롯 번호는 0~9 사이여야 합니다: " + targetSlotIndex);
         }
         final Skill catalog = skillCatalogService.byId(skillId).orElseThrow();
-        if (catalog instanceof PassiveSkill) {
+        if (catalog.isPassive()) {
             throw new IllegalArgumentException("패시브 스킬은 슬롯에 등록할 수 없습니다: " + skillId);
         }
 
@@ -395,7 +385,7 @@ public class SkillService {
         int slot = 0;
         for (final CharacterSkill cs : owned) {
             final Optional<Skill> catalogOpt = skillCatalogService.byId(cs.getSkillId());
-            if (catalogOpt.isPresent() && !(catalogOpt.get() instanceof PassiveSkill)) {
+            if (catalogOpt.isPresent() && !catalogOpt.get().isPassive()) {
                 cs.setSlotIndex(slot++);
                 characterSkillRepository.save(cs);
                 if (slot >= 10) {
@@ -428,21 +418,22 @@ public class SkillService {
         final SkillRank nextRank = maxed ? null : currentRank.next().orElse(null);
         final String nextRankLabel = nextRank != null ? nextRank.label() : null;
 
-        final int currentValue = primaryValue(catalog, currentRank);
-        final int nextValue = maxed ? currentValue : primaryValue(catalog, nextRank);
+        final int currentValue = catalog.primaryValueAt(currentRank);
+        final int nextValue = maxed ? currentValue : catalog.primaryValueAt(nextRank);
 
-        final Integer currentCounterValue = counterValue(catalog, currentRank);
+        final Integer currentCounterValue = catalog.counterValueAt(currentRank).orElse(null);
         final Integer nextCounterValue =
-                maxed ? currentCounterValue : counterValue(catalog, nextRank);
+                maxed ? currentCounterValue : catalog.counterValueAt(nextRank).orElse(null);
 
-        final String primaryStatLabel = primaryStatLabel(catalog);
+        final String primaryStatLabel = catalog.primaryStatLabel();
 
         final String resourceKindLabel = catalog.talent().resourceKind().label();
-        final int resourceCost = resourceCost(catalog, currentRank);
-        final Integer nextResourceCost = maxed ? null : resourceCost(catalog, nextRank);
+        final int resourceCost = catalog.resourceCostAt(currentRank);
+        final Integer nextResourceCost = maxed ? null : catalog.resourceCostAt(nextRank);
 
-        final Integer currentCritBonus = critBonusValue(catalog, currentRank);
-        final Integer nextCritBonus = maxed ? null : critBonusValue(catalog, nextRank);
+        final Integer currentCritBonus = catalog.critBonusValueAt(currentRank).orElse(null);
+        final Integer nextCritBonus =
+                maxed ? null : catalog.critBonusValueAt(nextRank).orElse(null);
 
         final SkillRankupBonusDelta bonusDelta =
                 maxed
@@ -671,7 +662,7 @@ public class SkillService {
 
     private boolean matchesTab(final Skill catalog, final String tab) {
         final String effectiveTab = (tab == null || tab.isBlank()) ? TAB_ALL : tab;
-        if (catalog instanceof PassiveSkill) {
+        if (catalog.isPassive()) {
             return TAB_ALL.equals(effectiveTab) || TAB_COMMON.equals(effectiveTab);
         }
         return switch (effectiveTab) {
@@ -694,7 +685,7 @@ public class SkillService {
         final String talentLabel = talentLabel(catalog.talent());
         final boolean fieldUsable = catalog instanceof RecoverySkill;
         final String cooldownBadgeText = resolveCooldownBadgeText(characterSkill, catalog);
-        final boolean isPassive = catalog instanceof PassiveSkill;
+        final boolean isPassive = catalog.isPassive();
         final String icon = resolveSkillIcon(catalog);
         final String typeName = catalog.type().name();
         final String typeLabel = catalog.type().label();
@@ -720,7 +711,7 @@ public class SkillService {
         if (catalog == null) {
             return "⚔️";
         }
-        if (catalog.talent() == SkillTalent.COMMON || catalog instanceof PassiveSkill) {
+        if (catalog.talent() == SkillTalent.COMMON || catalog.isPassive()) {
             return "👑";
         }
         return switch (catalog.talent()) {
@@ -748,7 +739,7 @@ public class SkillService {
             final Skill catalog,
             final SkillRank rank,
             final boolean maxed) {
-        if (maxed || catalog instanceof PassiveSkill) {
+        if (maxed || catalog.isPassive()) {
             return FULL_PROGRESS_PERCENT;
         }
         final RankUpRequirement requirement =
@@ -772,7 +763,7 @@ public class SkillService {
         if (abilityPoints < apCost) {
             return false;
         }
-        if (catalog instanceof PassiveSkill) {
+        if (catalog.isPassive()) {
             return true;
         }
         final RankUpRequirement requirement =
@@ -787,81 +778,5 @@ public class SkillService {
             case MAGIC -> LABEL_MAGIC;
             case COMMON -> LABEL_COMMON;
         };
-    }
-
-    private String primaryStatLabel(final Skill catalog) {
-        if (catalog instanceof DefenseSkill) {
-            return PRIMARY_STAT_DEFENSE;
-        }
-        if (catalog instanceof RecoverySkill) {
-            return "회복량";
-        }
-        if (catalog instanceof BuffSkill) {
-            return "흡수율";
-        }
-        if (catalog instanceof CcSkill) {
-            return "성공률";
-        }
-        if (catalog instanceof DotSkill) {
-            return "초기 배율";
-        }
-        if (catalog instanceof PassiveSkill) {
-            return "패시브 효과";
-        }
-        return PRIMARY_STAT_DAMAGE;
-    }
-
-    private int primaryValue(final Skill catalog, final SkillRank rank) {
-        if (catalog instanceof DamageSkill damageSkill) {
-            return skillDamagePolicy.multiplier(damageSkill, rank);
-        }
-        if (catalog instanceof DefenseSkill defenseSkill) {
-            return skillDamagePolicy.blockRate(defenseSkill, rank);
-        }
-        if (catalog instanceof RecoverySkill recoverySkill) {
-            return recoverySkill.healAmountAt(rank);
-        }
-        if (catalog instanceof UltimateSkill ultimateSkill) {
-            return ultimateSkill.multiplierAt(rank);
-        }
-        if (catalog instanceof BuffSkill buffSkill) {
-            return buffSkill.absorbRateAt(rank);
-        }
-        if (catalog instanceof CcSkill ccSkill) {
-            return ccSkill.successRateAt(rank);
-        }
-        if (catalog instanceof DotSkill dotSkill) {
-            return dotSkill.initialMultiplierAt(rank);
-        }
-        return 0;
-    }
-
-    private int resourceCost(final Skill catalog, final SkillRank rank) {
-        if (catalog instanceof DefenseSkill defenseSkill) {
-            return defenseSkill.resourceCostAt(rank);
-        }
-        if (catalog instanceof RecoverySkill recoverySkill) {
-            return recoverySkill.resourceCostAt(rank);
-        }
-        return catalog.resourceCost();
-    }
-
-    private Integer counterValue(final Skill catalog, final SkillRank rank) {
-        if (catalog instanceof DefenseSkill defenseSkill) {
-            final int multiplier = skillDamagePolicy.counterMultiplier(defenseSkill, rank);
-            if (multiplier > 0) {
-                return multiplier;
-            }
-        }
-        return null;
-    }
-
-    private Integer critBonusValue(final Skill catalog, final SkillRank rank) {
-        if (catalog instanceof DefenseSkill defenseSkill
-                && defenseSkill.critBonusByRank() != null
-                && !defenseSkill.critBonusByRank().isEmpty()) {
-            return defenseSkill.critBonusAt(rank);
-        }
-        return null;
     }
 }

@@ -57,6 +57,21 @@ public record BuffSkill(
     }
 
     @Override
+    public String primaryStatLabel() {
+        return "흡수율";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return absorbRateAt(rank);
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitBuff(this);
+    }
+
+    @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {
         if (nextRank == null) {

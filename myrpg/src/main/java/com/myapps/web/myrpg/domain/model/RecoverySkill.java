@@ -69,6 +69,21 @@ public record RecoverySkill(
     }
 
     @Override
+    public String primaryStatLabel() {
+        return "회복량";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return healAmountAt(rank);
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitRecovery(this);
+    }
+
+    @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {
         if (nextRank == null) {

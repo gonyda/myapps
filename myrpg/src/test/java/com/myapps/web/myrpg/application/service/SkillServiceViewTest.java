@@ -7,11 +7,15 @@ import com.myapps.web.myrpg.application.dto.SkillListView;
 import com.myapps.web.myrpg.application.dto.SkillRankUpView;
 import com.myapps.web.myrpg.application.dto.SkillRowView;
 import com.myapps.web.myrpg.domain.model.BonusTarget;
+import com.myapps.web.myrpg.domain.model.BuffSkill;
+import com.myapps.web.myrpg.domain.model.CcSkill;
 import com.myapps.web.myrpg.domain.model.CharacterProgress;
 import com.myapps.web.myrpg.domain.model.CharacterSkill;
 import com.myapps.web.myrpg.domain.model.DamageSkill;
 import com.myapps.web.myrpg.domain.model.DefenseSkill;
+import com.myapps.web.myrpg.domain.model.DotSkill;
 import com.myapps.web.myrpg.domain.model.PassiveSkill;
+import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
@@ -333,6 +337,152 @@ class SkillServiceViewTest {
         assertThat(view.rows()).hasSize(1);
         assertThat(view.rows().get(0).id()).isEqualTo(DEFENSE_ID);
         assertThat(view.rows().get(0).talentLabel()).isEqualTo("공용");
+    }
+
+    @Test
+    void should_buildRankUpView_for_recovery_skill() {
+        final String healingId = "healing";
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, healingId, SkillRank.F, 2);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        final RecoverySkill healing =
+                new RecoverySkill(
+                        healingId,
+                        "힐링",
+                        SkillType.RECOVERY,
+                        SkillTalent.MAGIC,
+                        10,
+                        Map.of(SkillRank.F, 30, SkillRank.E, 35),
+                        Map.of(SkillRank.F, 12, SkillRank.E, 14),
+                        "체력 회복");
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, healingId))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(healingId)).thenReturn(Optional.of(healing));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, healingId);
+
+        assertThat(view.primaryStatLabel()).isEqualTo("회복량");
+        assertThat(view.currentValue()).isEqualTo(30);
+        assertThat(view.nextValue()).isEqualTo(35);
+        assertThat(view.resourceCost()).isEqualTo(12);
+        assertThat(view.nextResourceCost()).isEqualTo(14);
+        assertThat(view.currentCounterValue()).isNull();
+        assertThat(view.nextCounterValue()).isNull();
+        assertThat(view.currentCritBonus()).isNull();
+        assertThat(view.nextCritBonus()).isNull();
+    }
+
+    @Test
+    void should_buildRankUpView_for_buff_skill() {
+        final String manaShieldId = "mana_shield";
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, manaShieldId, SkillRank.F, 0);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        final BuffSkill manaShield =
+                new BuffSkill(
+                        manaShieldId,
+                        "마나 실드",
+                        SkillType.BUFF,
+                        SkillTalent.MAGIC,
+                        5,
+                        3,
+                        Map.of(SkillRank.F, 20, SkillRank.E, 25),
+                        "마나 방어막");
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, manaShieldId))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(manaShieldId)).thenReturn(Optional.of(manaShield));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, manaShieldId);
+
+        assertThat(view.primaryStatLabel()).isEqualTo("흡수율");
+        assertThat(view.currentValue()).isEqualTo(20);
+        assertThat(view.nextValue()).isEqualTo(25);
+        assertThat(view.resourceCost()).isEqualTo(5);
+        assertThat(view.nextResourceCost()).isEqualTo(5);
+    }
+
+    @Test
+    void should_buildRankUpView_for_cc_skill() {
+        final String iceboltId = "icebolt";
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, iceboltId, SkillRank.F, 0);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        final CcSkill icebolt =
+                new CcSkill(
+                        iceboltId,
+                        "아이스볼트",
+                        SkillType.CC,
+                        SkillTalent.MAGIC,
+                        8,
+                        Map.of(SkillRank.F, 85, SkillRank.E, 90),
+                        "빙결 화살");
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, iceboltId))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(iceboltId)).thenReturn(Optional.of(icebolt));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, iceboltId);
+
+        assertThat(view.primaryStatLabel()).isEqualTo("성공률");
+        assertThat(view.currentValue()).isEqualTo(85);
+        assertThat(view.nextValue()).isEqualTo(90);
+    }
+
+    @Test
+    void should_buildRankUpView_for_dot_skill() {
+        final String mirageId = "mirage_missile";
+        final CharacterSkill skill = new CharacterSkill(CHARACTER_ID, mirageId, SkillRank.F, 0);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        final DotSkill mirage =
+                new DotSkill(
+                        mirageId,
+                        "미라지 미사일",
+                        SkillType.DOT,
+                        SkillTalent.ARCHERY,
+                        10,
+                        Map.of(SkillRank.F, 35, SkillRank.E, 40),
+                        Map.of(SkillRank.F, 10, SkillRank.E, 12),
+                        Map.of(SkillRank.F, 1, SkillRank.E, 1),
+                        "독 화살");
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, mirageId))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(mirageId)).thenReturn(Optional.of(mirage));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, mirageId);
+
+        assertThat(view.primaryStatLabel()).isEqualTo("초기 배율");
+        assertThat(view.currentValue()).isEqualTo(35);
+        assertThat(view.nextValue()).isEqualTo(40);
+    }
+
+    @Test
+    void should_buildRankUpView_for_passive_skill() {
+        final CharacterSkill skill =
+                new CharacterSkill(CHARACTER_ID, MEDITATION_ID, SkillRank.F, 0);
+        final CharacterProgress progress = createProgressWithAp(5);
+
+        when(characterSkillRepository.findByCharacterIdAndSkillId(CHARACTER_ID, MEDITATION_ID))
+                .thenReturn(Optional.of(skill));
+        when(characterProgressRepository.findById(CHARACTER_ID)).thenReturn(Optional.of(progress));
+        when(skillCatalogService.byId(MEDITATION_ID)).thenReturn(Optional.of(createMeditation()));
+
+        final SkillRankUpView view = skillService.buildRankUpView(CHARACTER_ID, MEDITATION_ID);
+
+        assertThat(view.primaryStatLabel()).isEqualTo("패시브 효과");
+        assertThat(view.currentValue()).isZero();
+        assertThat(view.nextValue()).isZero();
+        assertThat(view.passive()).isTrue();
+        assertThat(view.hasUsageRequirement()).isFalse();
+        assertThat(view.usageRequired()).isZero();
+        assertThat(view.rankable()).isTrue();
     }
 
     private CharacterProgress createProgressWithAp(final int ap) {

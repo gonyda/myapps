@@ -24,13 +24,13 @@ import com.myapps.web.myrpg.domain.model.DungeonInstance;
 import com.myapps.web.myrpg.domain.model.HitResult;
 import com.myapps.web.myrpg.domain.model.Item;
 import com.myapps.web.myrpg.domain.model.Monster;
+import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.PreemptiveParty;
 import com.myapps.web.myrpg.domain.model.RecoverySkill;
 import com.myapps.web.myrpg.domain.model.ResolvedTurn;
 import com.myapps.web.myrpg.domain.model.ResourceKind;
 import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillDamagePolicy;
-import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
 import com.myapps.web.myrpg.domain.model.StatProgression;
@@ -42,6 +42,7 @@ import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
 import com.myapps.web.myrpg.domain.service.RockPaperScissors;
+import com.myapps.web.myrpg.domain.service.SkillCombatVisitor;
 import com.myapps.web.myrpg.support.GameMessageService;
 import java.util.ArrayList;
 import java.util.List;
@@ -294,9 +295,7 @@ public class BattleService {
         final Optional<CharacterSkill> ownedSkillOpt =
                 characterSkillRepository.findByCharacterIdAndSkillId(progress.getId(), skillId);
 
-        if (skill instanceof UltimateSkill
-                && ownedSkillOpt.isPresent()
-                && ownedSkillOpt.get().getUltimateCooldown() > 0) {
+        if (isUltimateOnCooldown(skill, ownedSkillOpt)) {
             final String cdMsg =
                     gameMessageService.get(
                             "log.combat.ultimate_cooldown",
@@ -348,88 +347,26 @@ public class BattleService {
                         currentPreemptive == PreemptiveParty.PLAYER
                                 || isBowFirstStrike(state, equippedTalent);
 
-                if (skill instanceof UltimateSkill ultimateSkill && ownedSkillOpt.isPresent()) {
-                    final TurnCombatResult combat =
-                            resolveUltimateCombat(
-                                    progress, monster, ultimateSkill, ownedSkillOpt.get());
-                    playerDamage = combat.playerDamage;
-                    playerCritical = combat.playerCritical;
-                    firstStrike = true;
-                    playerHits = combat.playerHits;
-                } else if (skill instanceof RecoverySkill recoverySkill
-                        && ownedSkillOpt.isPresent()) {
-                    final TurnCombatResult combat =
-                            resolveRecoveryCombat(
-                                    progress,
-                                    monster,
-                                    recoverySkill,
-                                    ownedSkillOpt.get(),
-                                    state,
-                                    combatLines,
-                                    isPlayerPreemptive ? null : monsterAction);
-                    monsterDamage = combat.monsterDamage;
-                    firstStrike = isPlayerPreemptive;
-                } else if (skill instanceof BuffSkill buffSkill && ownedSkillOpt.isPresent()) {
-                    final TurnCombatResult combat =
-                            resolveBuffCombat(
-                                    progress,
-                                    monster,
-                                    buffSkill,
-                                    ownedSkillOpt.get(),
-                                    state,
-                                    combatLines,
-                                    isPlayerPreemptive ? null : monsterAction);
-                    monsterDamage = combat.monsterDamage;
-                    firstStrike = isPlayerPreemptive;
-                } else if (skill instanceof CcSkill ccSkill && ownedSkillOpt.isPresent()) {
-                    final TurnCombatResult combat =
-                            resolveCcCombat(
-                                    progress,
-                                    monster,
-                                    ccSkill,
-                                    ownedSkillOpt.get(),
-                                    state,
-                                    combatLines,
-                                    isPlayerPreemptive ? null : monsterAction);
-                    monsterDamage = combat.monsterDamage;
-                    firstStrike = isPlayerPreemptive;
-                } else if (isPlayerPreemptive) {
-                    final TurnCombatResult combat =
-                            resolvePlayerPreemptive(progress, monster, skill, equippedTalent);
-                    playerDamage = combat.playerDamage;
-                    playerCritical = combat.playerCritical;
-                    firstStrike = true;
-                    playerHits = combat.playerHits;
-                } else {
-                    final TurnCombatResult combat =
-                            resolveNormalCombat(
-                                    progress, monster, skill, equippedTalent, monsterAction);
-                    playerDamage = combat.playerDamage;
-                    monsterDamage = combat.monsterDamage;
-                    playerCritical = combat.playerCritical;
-                    monsterCritical = combat.monsterCritical;
-                    blocked = combat.blocked;
-                    countered = combat.countered;
-                    firstStrike = combat.firstStrike;
-                    playerHits = combat.playerHits;
-
-                    if (!firstStrike && playerDamage > 0 && monsterDamage > 0) {
-                        final boolean playerFirst = determineTurnOrder(skill.type(), monsterAction);
-                        if (playerFirst && playerDamage >= state.getMonsterCurrentHp()) {
-                            monsterDamage = 0;
-                        } else if (!playerFirst && monsterDamage >= progress.getHpCurrent()) {
-                            playerDamage = 0;
-                        }
-                    }
-
-                    if ("defense".equals(skill.id())
-                            && RockPaperScissors.isNormalFamily(monsterAction)) {
-                        nextPreemptive = PreemptiveParty.PLAYER;
-                    } else if (RockPaperScissors.isNormalFamily(skill.type())
-                            && monsterAction == SkillType.DEFENSE) {
-                        nextPreemptive = PreemptiveParty.MONSTER;
-                    }
-                }
+                final CombatDispatchVisitor visitor =
+                        new CombatDispatchVisitor(
+                                progress,
+                                monster,
+                                state,
+                                ownedSkillOpt,
+                                combatLines,
+                                equippedTalent,
+                                isPlayerPreemptive,
+                                monsterAction);
+                final TurnCombatResult combat = skill.accept(visitor);
+                playerDamage = combat.playerDamage();
+                monsterDamage = combat.monsterDamage();
+                playerCritical = combat.playerCritical();
+                monsterCritical = combat.monsterCritical();
+                blocked = combat.blocked();
+                countered = combat.countered();
+                firstStrike = combat.firstStrike();
+                playerHits = combat.playerHits();
+                nextPreemptive = visitor.nextPreemptive();
 
                 if (playerDamage > 0
                         && state.getNextAttackAmpPercent() > 0
@@ -828,13 +765,7 @@ public class BattleService {
         final Optional<CharacterSkill> csOpt =
                 characterSkillRepository.findByCharacterIdAndSkillId(progress.getId(), skill.id());
         if (csOpt.isPresent()) {
-            final SkillRank rank = csOpt.get().getRank();
-            if (skill instanceof DefenseSkill defenseSkill) {
-                return defenseSkill.resourceCostAt(rank);
-            }
-            if (skill instanceof RecoverySkill recoverySkill) {
-                return recoverySkill.resourceCostAt(rank);
-            }
+            return skill.resourceCostAt(csOpt.get().getRank());
         }
         return skill.resourceCost();
     }
@@ -846,37 +777,40 @@ public class BattleService {
             return gameProperties.battle().monsterNormalMultiplier();
         }
         final CharacterSkill cs = csOpt.get();
-        if (skill instanceof DamageSkill damageSkill) {
-            return skillDamagePolicy.multiplier(damageSkill, cs.getRank());
-        }
-        if (skill instanceof DotSkill dotSkill) {
-            return dotSkill.initialMultiplierAt(cs.getRank());
-        }
-        return gameProperties.battle().monsterNormalMultiplier();
+        return switch (skill) {
+            case DamageSkill damageSkill -> skillDamagePolicy.multiplier(damageSkill, cs.getRank());
+            case DotSkill dotSkill -> dotSkill.initialMultiplierAt(cs.getRank());
+            default -> gameProperties.battle().monsterNormalMultiplier();
+        };
     }
 
     private int resolvePlayerBlockRate(final Skill skill, final CharacterProgress progress) {
-        if (!(skill instanceof DefenseSkill defenseSkill)) {
-            return 0;
-        }
-        final Optional<CharacterSkill> csOpt =
-                characterSkillRepository.findByCharacterIdAndSkillId(progress.getId(), skill.id());
-        if (csOpt.isEmpty()) {
-            return 0;
-        }
-        return skillDamagePolicy.blockRate(defenseSkill, csOpt.get().getRank());
+        return switch (skill) {
+            case DefenseSkill defenseSkill -> {
+                final Optional<CharacterSkill> csOpt =
+                        characterSkillRepository.findByCharacterIdAndSkillId(
+                                progress.getId(), skill.id());
+                yield csOpt.map(cs -> skillDamagePolicy.blockRate(defenseSkill, cs.getRank()))
+                        .orElse(0);
+            }
+            default -> 0;
+        };
     }
 
     private int resolvePlayerCounterPercent(final Skill skill, final CharacterProgress progress) {
-        if (!(skill instanceof DefenseSkill defenseSkill)) {
-            return 0;
-        }
-        final Optional<CharacterSkill> csOpt =
-                characterSkillRepository.findByCharacterIdAndSkillId(progress.getId(), skill.id());
-        if (csOpt.isEmpty()) {
-            return 0;
-        }
-        return skillDamagePolicy.counterMultiplier(defenseSkill, csOpt.get().getRank());
+        return switch (skill) {
+            case DefenseSkill defenseSkill -> {
+                final Optional<CharacterSkill> csOpt =
+                        characterSkillRepository.findByCharacterIdAndSkillId(
+                                progress.getId(), skill.id());
+                yield csOpt.map(
+                                cs ->
+                                        skillDamagePolicy.counterMultiplier(
+                                                defenseSkill, cs.getRank()))
+                        .orElse(0);
+            }
+            default -> 0;
+        };
     }
 
     private int resolvePlayerDefense(final CharacterProgress progress) {
@@ -920,17 +854,17 @@ public class BattleService {
     private int resolveEffectivePlayerCritical(
             final Skill skill, final CharacterProgress progress) {
         final int baseCritical = resolvePlayerCritical(progress);
-        int bonus = 0;
-        if (skill instanceof DamageSkill ds) {
-            bonus = ds.critBonus();
-        } else if (skill instanceof DefenseSkill defSkill) {
-            final Optional<CharacterSkill> csOpt =
-                    characterSkillRepository.findByCharacterIdAndSkillId(
-                            progress.getId(), skill.id());
-            if (csOpt.isPresent()) {
-                bonus = defSkill.critBonusAt(csOpt.get().getRank());
-            }
-        }
+        final int bonus =
+                switch (skill) {
+                    case DamageSkill ds -> ds.critBonus();
+                    case DefenseSkill defSkill -> {
+                        final Optional<CharacterSkill> csOpt =
+                                characterSkillRepository.findByCharacterIdAndSkillId(
+                                        progress.getId(), skill.id());
+                        yield csOpt.map(cs -> defSkill.critBonusAt(cs.getRank())).orElse(0);
+                    }
+                    default -> 0;
+                };
         return Math.min(CRITICAL_ROLL_MAX, baseCritical + bonus);
     }
 
@@ -943,7 +877,10 @@ public class BattleService {
      * @return 히트 수 (1 이상)
      */
     private int resolvePlayerHitCount(final Skill skill) {
-        return (skill instanceof DamageSkill ds) ? ds.hitCount() : 1;
+        return switch (skill) {
+            case DamageSkill ds -> ds.hitCount();
+            default -> 1;
+        };
     }
 
     // ─── Private: special skill combat handlers ─────────────────────────────
@@ -1081,24 +1018,28 @@ public class BattleService {
         }
         final CharacterSkill charSkill = ownedSkillOpt.get();
 
-        if (skill instanceof DamageSkill damageSkill) {
-            final int freezeRate = damageSkill.freezeRateAt(charSkill.getRank());
-            if (freezeRate > 0 && random.nextInt(PERCENT_DIVISOR) < freezeRate) {
-                state.setMonsterStunnedTurns(1);
-                final String freezeMsg = gameMessageService.get("battle.freeze", monster.name());
-                combatLines.add(freezeMsg);
+        switch (skill) {
+            case DamageSkill damageSkill -> {
+                final int freezeRate = damageSkill.freezeRateAt(charSkill.getRank());
+                if (freezeRate > 0 && random.nextInt(PERCENT_DIVISOR) < freezeRate) {
+                    state.setMonsterStunnedTurns(1);
+                    final String freezeMsg =
+                            gameMessageService.get("battle.freeze", monster.name());
+                    combatLines.add(freezeMsg);
+                }
             }
-        }
-
-        if (skill instanceof DotSkill dotSkill) {
-            final int dotTurns = dotSkill.dotTurnsAt(charSkill.getRank());
-            final int dotRate = dotSkill.dotPerTurnAt(charSkill.getRank());
-            final int playerAttack = attackPower(progress, equippedTalent);
-            final int dotDamage = Math.max(1, (playerAttack * dotRate) / 100);
-            state.setDotTurnsLeft(dotTurns);
-            state.setDotDamagePerTurn(dotDamage);
-            final String dotMsg = gameMessageService.get("battle.dot", monster.name(), dotDamage);
-            combatLines.add(dotMsg);
+            case DotSkill dotSkill -> {
+                final int dotTurns = dotSkill.dotTurnsAt(charSkill.getRank());
+                final int dotRate = dotSkill.dotPerTurnAt(charSkill.getRank());
+                final int playerAttack = attackPower(progress, equippedTalent);
+                final int dotDamage = Math.max(1, (playerAttack * dotRate) / 100);
+                state.setDotTurnsLeft(dotTurns);
+                state.setDotDamagePerTurn(dotDamage);
+                final String dotMsg =
+                        gameMessageService.get("battle.dot", monster.name(), dotDamage);
+                combatLines.add(dotMsg);
+            }
+            default -> {}
         }
 
         if (skill.type() == SkillType.DEBUFF) {
@@ -1612,6 +1553,192 @@ public class BattleService {
     }
 
     // ─── Private: internal record ───────────────────────────────────────────
+
+    private boolean isUltimateOnCooldown(
+            final Skill skill, final Optional<CharacterSkill> ownedSkillOpt) {
+        return skill.type() == SkillType.ULTIMATE
+                && ownedSkillOpt.isPresent()
+                && ownedSkillOpt.get().getUltimateCooldown() > 0;
+    }
+
+    /**
+     * 스킬 타입별 전투 처리를 디스패치하는 내부 방문자 구현체.
+     *
+     * <p>서비스 협력객체 및 턴 상태를 캡처하여 각 서브타입에 대응하는 전투 핸들러를 호출한다.
+     */
+    private final class CombatDispatchVisitor implements SkillCombatVisitor<TurnCombatResult> {
+        private final CharacterProgress progress;
+        private final Monster monster;
+        private final BattleState state;
+        private final Optional<CharacterSkill> ownedSkillOpt;
+        private final List<String> combatLines;
+        private final SkillTalent equippedTalent;
+        private final boolean isPlayerPreemptive;
+        private final SkillType monsterAction;
+        private PreemptiveParty nextPreemptive = PreemptiveParty.NONE;
+
+        private CombatDispatchVisitor(
+                final CharacterProgress progress,
+                final Monster monster,
+                final BattleState state,
+                final Optional<CharacterSkill> ownedSkillOpt,
+                final List<String> combatLines,
+                final SkillTalent equippedTalent,
+                final boolean isPlayerPreemptive,
+                final SkillType monsterAction) {
+            this.progress = progress;
+            this.monster = monster;
+            this.state = state;
+            this.ownedSkillOpt = ownedSkillOpt;
+            this.combatLines = combatLines;
+            this.equippedTalent = equippedTalent;
+            this.isPlayerPreemptive = isPlayerPreemptive;
+            this.monsterAction = monsterAction;
+        }
+
+        @Override
+        public TurnCombatResult visitDamage(final DamageSkill skill) {
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitDefense(final DefenseSkill skill) {
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitRecovery(final RecoverySkill skill) {
+            if (ownedSkillOpt.isPresent()) {
+                final TurnCombatResult combat =
+                        resolveRecoveryCombat(
+                                progress,
+                                monster,
+                                skill,
+                                ownedSkillOpt.get(),
+                                state,
+                                combatLines,
+                                isPlayerPreemptive ? null : monsterAction);
+                return new TurnCombatResult(
+                        0,
+                        combat.monsterDamage(),
+                        false,
+                        false,
+                        false,
+                        false,
+                        isPlayerPreemptive,
+                        List.of());
+            }
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitUltimate(final UltimateSkill skill) {
+            if (ownedSkillOpt.isPresent()) {
+                return resolveUltimateCombat(progress, monster, skill, ownedSkillOpt.get());
+            }
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitPassive(final PassiveSkill skill) {
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitBuff(final BuffSkill skill) {
+            if (ownedSkillOpt.isPresent()) {
+                final TurnCombatResult combat =
+                        resolveBuffCombat(
+                                progress,
+                                monster,
+                                skill,
+                                ownedSkillOpt.get(),
+                                state,
+                                combatLines,
+                                isPlayerPreemptive ? null : monsterAction);
+                return new TurnCombatResult(
+                        0,
+                        combat.monsterDamage(),
+                        false,
+                        false,
+                        false,
+                        false,
+                        isPlayerPreemptive,
+                        List.of());
+            }
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitCc(final CcSkill skill) {
+            if (ownedSkillOpt.isPresent()) {
+                final TurnCombatResult combat =
+                        resolveCcCombat(
+                                progress,
+                                monster,
+                                skill,
+                                ownedSkillOpt.get(),
+                                state,
+                                combatLines,
+                                isPlayerPreemptive ? null : monsterAction);
+                return new TurnCombatResult(
+                        0,
+                        combat.monsterDamage(),
+                        false,
+                        false,
+                        false,
+                        false,
+                        isPlayerPreemptive,
+                        List.of());
+            }
+            return resolveDefaultCombat(skill);
+        }
+
+        @Override
+        public TurnCombatResult visitDot(final DotSkill skill) {
+            return resolveDefaultCombat(skill);
+        }
+
+        private TurnCombatResult resolveDefaultCombat(final Skill skill) {
+            if (isPlayerPreemptive) {
+                return resolvePlayerPreemptive(progress, monster, skill, equippedTalent);
+            }
+            final TurnCombatResult combat =
+                    resolveNormalCombat(progress, monster, skill, equippedTalent, monsterAction);
+            int resolvedPlayerDamage = combat.playerDamage();
+            int resolvedMonsterDamage = combat.monsterDamage();
+
+            if (!combat.firstStrike() && resolvedPlayerDamage > 0 && resolvedMonsterDamage > 0) {
+                final boolean playerFirst = determineTurnOrder(skill.type(), monsterAction);
+                if (playerFirst && resolvedPlayerDamage >= state.getMonsterCurrentHp()) {
+                    resolvedMonsterDamage = 0;
+                } else if (!playerFirst && resolvedMonsterDamage >= progress.getHpCurrent()) {
+                    resolvedPlayerDamage = 0;
+                }
+            }
+
+            if ("defense".equals(skill.id()) && RockPaperScissors.isNormalFamily(monsterAction)) {
+                nextPreemptive = PreemptiveParty.PLAYER;
+            } else if (RockPaperScissors.isNormalFamily(skill.type())
+                    && monsterAction == SkillType.DEFENSE) {
+                nextPreemptive = PreemptiveParty.MONSTER;
+            }
+
+            return new TurnCombatResult(
+                    resolvedPlayerDamage,
+                    resolvedMonsterDamage,
+                    combat.playerCritical(),
+                    combat.monsterCritical(),
+                    combat.blocked(),
+                    combat.countered(),
+                    combat.firstStrike(),
+                    combat.playerHits());
+        }
+
+        public PreemptiveParty nextPreemptive() {
+            return nextPreemptive;
+        }
+    }
 
     private record TurnCombatResult(
             int playerDamage,

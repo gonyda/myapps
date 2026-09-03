@@ -181,6 +181,23 @@ public record DamageSkill(
         }
     }
 
+    private static final SkillDamagePolicy POLICY = new SkillDamagePolicy();
+
+    @Override
+    public String primaryStatLabel() {
+        return "보너스 데미지";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return POLICY.multiplier(this, rank);
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitDamage(this);
+    }
+
     @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {

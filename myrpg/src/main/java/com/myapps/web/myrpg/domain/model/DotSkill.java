@@ -91,6 +91,21 @@ public record DotSkill(
     }
 
     @Override
+    public String primaryStatLabel() {
+        return "초기 배율";
+    }
+
+    @Override
+    public int primaryValueAt(final SkillRank rank) {
+        return initialMultiplierAt(rank);
+    }
+
+    @Override
+    public <R> R accept(final com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor) {
+        return visitor.visitDot(this);
+    }
+
+    @Override
     public SkillRankupBonusDelta rankupBonusDelta(
             final SkillRank currentRank, final SkillRank nextRank) {
         if (nextRank == null) {

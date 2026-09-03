@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-09-02 22:05 (Asia/Seoul)
+> 최종 업데이트: 2026-09-03 21:25 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -21,11 +21,12 @@
 - **신규 아이템 '장작' 및 마을/필드 50% 나무 스폰 & 5초 채집 시스템 (2026-08-29, 017-firewood-gathering)**: `ItemType.MATERIAL`, `firewood` 아이템 등록, `GatheringService` (5 SP 소모, 50% 채집 성공/실패 롤), 5초 자동 완료형 채집 타이머 완비.
 - **메시지 및 게임 프로퍼티 외부화 리팩토링 (2026-08-30, 018-message-and-properties-externalization)**: `messages.properties` 120여 개 키 외부화, `GameProperties` 바인딩, `GameMessageService` 구축.
 - **화면 상단 상황 멘트 제거 및 잔여 코드 전수 정리 (2026-09-02, 019-remove-situation-ambience)**: `AmbienceService`/DTO/JSON/테스트 완전 제거, 인게임 스카이 그라디언트/천체 궤적 보존, 5대 가드레일 통과.
-- **아이템 아이콘(이모지) 일원화 및 Java Enum(SSOT) 중앙 관리 (2026-09-02)**:
-  - **도메인 SSOT**: `ItemType`(`🧪`, `🗡️`, `🛡️`, `📦`) 및 `EquipmentKind`(`🗡️`, `🛡️`, `🥋`, `🏹`, `🔮`, `🪖`, `🧤`, `👢`)에 `emoji` 필드 중앙 정의, `Item.icon()` 인터페이스 및 `PotionItem`/`MaterialItem`/`EquipmentItem` 구현체 일원화.
-  - **DTO 확장**: `OwnedItemView`, `ShopBuyItemView`, `ShopSellItemView`, `RepairItemView`, `DungeonClearItemView`에 `icon` 필드 추가 및 백엔드 뷰 조립 시 `item.icon()` 주입.
-  - **프론트엔드 템플릿 단순화**: 상점(`shop-popup.html`), 인벤토리(`inventory-popup.html`), 은행(`bank-popup.html`), 수리(`repair-popup.html`), 장비 착용 피커(`equipment-popup.html`), 던전 보상(`dungeon-clear-modal.html`)의 불완전했던 40여 줄의 `th:if` 분기를 전수 제거하고 `th:text="${item.icon}"` 단일 바인딩으로 일원화. 장작 등 재료 아이템 `📦`, 장비탭 슬롯 실루엣과 100% 일치.
-  - **검증**: 5대 품질 가드레일 (Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) 및 `codegraph sync` All-Green 완료.
+- **스킬 타입 다형화 및 전투 디스패치 Visitor 전환 (2026-09-03, 020-skill-type-polymorphism)**:
+  - **도메인 다형 계약**: `Skill` 인터페이스에 `primaryStatLabel()`, `primaryValueAt(rank)`, `resourceCostAt(rank)`, `counterValueAt(rank)`, `critBonusValueAt(rank)` 및 `<R> R accept(SkillCombatVisitor<R>)` 확장. 8종 서브타입(`DamageSkill`, `DefenseSkill`, `RecoverySkill`, `UltimateSkill`, `PassiveSkill`, `BuffSkill`, `CcSkill`, `DotSkill`)이 자신의 계산 규칙을 소유하도록 위임.
+  - **Visitor 패턴 도입**: `SkillCombatVisitor<R>` 도메인 인터페이스 선언 및 `BattleService` 내부 `CombatDispatchVisitor` 구현으로 전투 턴(`takeTurn`)의 궁극기/회복/버프/CC 디스패치를 `skill.accept(visitor)`로 전환.
+  - **서비스 instanceof 체인 제거**: `SkillService` 및 `BattleService`에 산재했던 수십 회의 서브타입 판별 `instanceof` 체인을 다형 메서드 호출 및 sealed switch 매칭으로 완전 치환.
+  - **회귀 및 PBT 검증**: `SkillPolymorphismTest`, `SkillCombatVisitorPropertyTest`(Property 1 동치성, Property 2 디스패치 정합성), `BattleCombatPreservationPropertyTest`(Property 3 동작 보존, Property 4 폴백 보존) 구축. 전체 1,264개 테스트 All-Green.
+  - **5대 가드레일**: Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD 전수 통과 및 `codegraph sync` 완료.
 
 ---
 
@@ -39,10 +40,17 @@
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
+### 3.1. 기술 부채 리팩토링 백로그 (`docs/myrpg-refactoring-candidates.md`)
+1. **[🔴 2순위] `InventoryService` (1,708줄) God Class 분리**:
+   - 의존성 10개, 책임 과다(인벤토리/장비/수리/판매 등) → SRP에 맞게 서비스 분리 및 결합도 완화.
+2. **[🟡 3순위] `BattleService` (1,625줄) God Class 분리**:
+   - 1순위 스킬 다형화 완료로 낮아진 결합도를 기반으로 전투 상태/보상/턴 서비스 분리.
+
+### 3.2. 신규 게임 컨텐츠 기획 백로그
 1. **[기획 1] 캠프파이어 & 야간 위험도 시스템 (표준형)**:
    - 획득한 장작을 소비하여 모닥불 야영(야간 20~05시 위험 완화, 아침 08:00 스킵, 바이탈 완충, 음식 굽기 버프).
 2. **[기획 2] 마을 아르바이트 & 축복의 포션 시스템**:
-   - 시간대별 NPC 일일 의뢰 및 축복의 포션(내구도 보호) 보상 (추후 상세설계).
+   - 시간대별 NPC 일일 의뢰 및 축복의 포션(내구도 보호) 보상.
 3. **[기획 3] 타이틀(칭호) & 업적 도감 시스템**:
    - 업적 기반 고유 칭호 장착 및 스탯 보너스, 타이틀 도감 팝업.
 4. **[기획 4] 필드 보스 랜덤 스폰 (Field Boss Encounters)**:

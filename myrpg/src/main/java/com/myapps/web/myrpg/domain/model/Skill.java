@@ -101,4 +101,58 @@ public sealed interface Skill
     default boolean isPassive() {
         return type() == SkillType.PASSIVE;
     }
+
+    /**
+     * 스킬 표시용 기본 스탯 라벨을 반환한다 (예: "보너스 데미지", "피해 경감", "회복량", "흡수율").
+     *
+     * @return 기본 스탯 라벨
+     */
+    String primaryStatLabel();
+
+    /**
+     * 지정 랭크에서의 기본 대표값을 반환한다 (배율/블록률/회복량/성공률 등).
+     *
+     * @param rank 스킬 랭크
+     * @return 대표값 (정의 없으면 0)
+     */
+    int primaryValueAt(SkillRank rank);
+
+    /**
+     * 지정 랭크에서의 자원 소모량을 반환한다. 기본은 랭크 무관 고정값.
+     *
+     * @param rank 스킬 랭크
+     * @return 자원 소모량
+     */
+    default int resourceCostAt(final SkillRank rank) {
+        return resourceCost();
+    }
+
+    /**
+     * 지정 랭크에서의 카운터 값을 반환한다. 카운터가 없으면 빈 값.
+     *
+     * @param rank 스킬 랭크
+     * @return 카운터 배율 Optional
+     */
+    default java.util.Optional<Integer> counterValueAt(final SkillRank rank) {
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * 지정 랭크에서의 크리티컬 보너스 값을 반환한다. 없으면 빈 값.
+     *
+     * @param rank 스킬 랭크
+     * @return 크리 보너스 Optional
+     */
+    default java.util.Optional<Integer> critBonusValueAt(final SkillRank rank) {
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * 전투 처리 방문자를 수락하여 서브타입별 처리로 디스패치한다.
+     *
+     * @param visitor 전투 방문자
+     * @param <R> 방문 결과 타입
+     * @return 방문 결과
+     */
+    <R> R accept(com.myapps.web.myrpg.domain.service.SkillCombatVisitor<R> visitor);
 }

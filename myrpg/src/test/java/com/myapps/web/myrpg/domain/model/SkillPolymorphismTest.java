@@ -175,4 +175,166 @@ class SkillPolymorphismTest {
         assertThat(delta.dexDelta()).isEqualTo(1);
         assertThat(delta.toDisplayText()).isEqualTo("솜씨(DEX) +1");
     }
+
+    @Test
+    @DisplayName(
+            "8종 스킬 서브타입의 primaryStatLabel, primaryValueAt, resourceCostAt, counter/crit 다형 계약 검증")
+    void should_verifyPolymorphicValueMethodsAcrossAllSubtypes() {
+        // 1. DamageSkill
+        final DamageSkill damage =
+                new DamageSkill(
+                        "slash",
+                        "베기",
+                        SkillType.NORMAL,
+                        SkillTalent.MELEE,
+                        7,
+                        Map.of(SkillRank.F, 90, SkillRank.E, 95),
+                        "desc",
+                        1,
+                        15);
+        assertThat(damage.primaryStatLabel()).isEqualTo("보너스 데미지");
+        assertThat(damage.primaryValueAt(SkillRank.F)).isEqualTo(90);
+        assertThat(damage.resourceCostAt(SkillRank.F)).isEqualTo(7);
+        assertThat(damage.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(damage.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 2. DefenseSkill (디펜스 - 카운터 없음, 랭크별 자원소모 6)
+        final DefenseSkill defense =
+                new DefenseSkill(
+                        "defense",
+                        "디펜스",
+                        SkillType.DEFENSE,
+                        SkillTalent.COMMON,
+                        5,
+                        Map.of(SkillRank.F, 70),
+                        Map.of(SkillRank.F, 0),
+                        "desc",
+                        Map.of(SkillRank.F, 6),
+                        Map.of(SkillRank.F, 20));
+        assertThat(defense.primaryStatLabel()).isEqualTo("피해 경감");
+        assertThat(defense.primaryValueAt(SkillRank.F)).isEqualTo(70);
+        assertThat(defense.resourceCostAt(SkillRank.F)).isEqualTo(6);
+        assertThat(defense.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(defense.critBonusValueAt(SkillRank.F)).contains(20);
+
+        // 3. DefenseSkill (카운터 어택 - 반격 배율 90)
+        final DefenseSkill counter =
+                new DefenseSkill(
+                        "counter_attack",
+                        "카운터 어택",
+                        SkillType.DEFENSE,
+                        SkillTalent.COMMON,
+                        8,
+                        Map.of(SkillRank.F, 100),
+                        Map.of(SkillRank.F, 90),
+                        "desc");
+        assertThat(counter.primaryStatLabel()).isEqualTo("피해 경감");
+        assertThat(counter.primaryValueAt(SkillRank.F)).isEqualTo(100);
+        assertThat(counter.resourceCostAt(SkillRank.F)).isEqualTo(8);
+        assertThat(counter.counterValueAt(SkillRank.F)).contains(90);
+        assertThat(counter.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 4. RecoverySkill
+        final RecoverySkill recovery =
+                new RecoverySkill(
+                        "healing",
+                        "힐링",
+                        SkillType.RECOVERY,
+                        SkillTalent.MAGIC,
+                        10,
+                        Map.of(SkillRank.F, 30),
+                        Map.of(SkillRank.F, 12),
+                        "desc");
+        assertThat(recovery.primaryStatLabel()).isEqualTo("회복량");
+        assertThat(recovery.primaryValueAt(SkillRank.F)).isEqualTo(30);
+        assertThat(recovery.resourceCostAt(SkillRank.F)).isEqualTo(12);
+        assertThat(recovery.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(recovery.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 5. UltimateSkill
+        final UltimateSkill ultimate =
+                new UltimateSkill(
+                        "final_hit",
+                        "파이널 히트",
+                        SkillType.ULTIMATE,
+                        SkillTalent.MELEE,
+                        15,
+                        Map.of(SkillRank.F, 250),
+                        Map.of(SkillRank.F, 5),
+                        100,
+                        Map.of(SkillRank.F, 30),
+                        "desc");
+        assertThat(ultimate.primaryStatLabel()).isEqualTo("보너스 데미지");
+        assertThat(ultimate.primaryValueAt(SkillRank.F)).isEqualTo(250);
+        assertThat(ultimate.resourceCostAt(SkillRank.F)).isEqualTo(15);
+        assertThat(ultimate.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(ultimate.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 6. BuffSkill
+        final BuffSkill buff =
+                new BuffSkill(
+                        "mana_shield",
+                        "마나 실드",
+                        SkillType.BUFF,
+                        SkillTalent.MAGIC,
+                        8,
+                        3,
+                        Map.of(SkillRank.F, 20),
+                        "desc");
+        assertThat(buff.primaryStatLabel()).isEqualTo("흡수율");
+        assertThat(buff.primaryValueAt(SkillRank.F)).isEqualTo(20);
+        assertThat(buff.resourceCostAt(SkillRank.F)).isEqualTo(8);
+        assertThat(buff.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(buff.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 7. CcSkill
+        final CcSkill cc =
+                new CcSkill(
+                        "spider_shot",
+                        "스파이더 샷",
+                        SkillType.CC,
+                        SkillTalent.ARCHERY,
+                        9,
+                        Map.of(SkillRank.F, 85),
+                        "desc");
+        assertThat(cc.primaryStatLabel()).isEqualTo("성공률");
+        assertThat(cc.primaryValueAt(SkillRank.F)).isEqualTo(85);
+        assertThat(cc.resourceCostAt(SkillRank.F)).isEqualTo(9);
+        assertThat(cc.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(cc.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 8. DotSkill
+        final DotSkill dot =
+                new DotSkill(
+                        "mirage_missile",
+                        "미라지 미사일",
+                        SkillType.DOT,
+                        SkillTalent.ARCHERY,
+                        10,
+                        Map.of(SkillRank.F, 35),
+                        Map.of(SkillRank.F, 40),
+                        Map.of(SkillRank.F, 3),
+                        "desc");
+        assertThat(dot.primaryStatLabel()).isEqualTo("초기 배율");
+        assertThat(dot.primaryValueAt(SkillRank.F)).isEqualTo(35);
+        assertThat(dot.resourceCostAt(SkillRank.F)).isEqualTo(10);
+        assertThat(dot.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(dot.critBonusValueAt(SkillRank.F)).isEmpty();
+
+        // 9. PassiveSkill
+        final PassiveSkill passive =
+                new PassiveSkill(
+                        "meditation",
+                        "메디테이션",
+                        SkillType.PASSIVE,
+                        SkillTalent.MAGIC,
+                        0,
+                        Map.of(BonusTarget.MP, 30),
+                        "desc");
+        assertThat(passive.primaryStatLabel()).isEqualTo("패시브 효과");
+        assertThat(passive.primaryValueAt(SkillRank.F)).isZero();
+        assertThat(passive.resourceCostAt(SkillRank.F)).isZero();
+        assertThat(passive.counterValueAt(SkillRank.F)).isEmpty();
+        assertThat(passive.critBonusValueAt(SkillRank.F)).isEmpty();
+    }
 }
