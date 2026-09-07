@@ -181,6 +181,8 @@ class BattleServiceChainCombatTest {
         then(dungeonService).should().onMonsterDefeated(CHARACTER_ID, SPIDER_ID);
         then(dungeonService).should(never()).onBossDefeated(any());
         assertThat(result.combatLines()).anyMatch(line -> line.contains("연쇄 조우"));
+        // 연쇄 발동으로 몬스터 HP가 부활해도 처치 경험치는 그대로 보고되어야 한다(동작 보존).
+        assertThat(result.experienceGained()).isEqualTo(spider.experience());
     }
 
     @Test

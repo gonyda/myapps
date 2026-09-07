@@ -22,7 +22,6 @@ import com.myapps.web.myrpg.domain.model.Monster;
 import com.myapps.web.myrpg.domain.model.MonsterType;
 import com.myapps.web.myrpg.domain.model.PassiveSkill;
 import com.myapps.web.myrpg.domain.model.RecoverySkill;
-import com.myapps.web.myrpg.domain.model.Skill;
 import com.myapps.web.myrpg.domain.model.SkillRank;
 import com.myapps.web.myrpg.domain.model.SkillTalent;
 import com.myapps.web.myrpg.domain.model.SkillType;
@@ -34,7 +33,6 @@ import com.myapps.web.myrpg.domain.repository.BattleStateRepository;
 import com.myapps.web.myrpg.domain.repository.CharacterSkillRepository;
 import com.myapps.web.myrpg.domain.service.BattleResolver;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -331,35 +329,16 @@ class BattleServiceCombatCharacterizationTest {
 
         final CharacterProgress progress = createProgress(100, 100, 100);
 
-        final Method resCostMethod =
-                BattleService.class.getDeclaredMethod(
-                        "resolveResourceCost", Skill.class, CharacterProgress.class);
-        resCostMethod.setAccessible(true);
-
-        final Method multMethod =
-                BattleService.class.getDeclaredMethod(
-                        "resolvePlayerMultiplier", Skill.class, CharacterProgress.class);
-        multMethod.setAccessible(true);
-
-        final Method blockRateMethod =
-                BattleService.class.getDeclaredMethod(
-                        "resolvePlayerBlockRate", Skill.class, CharacterProgress.class);
-        blockRateMethod.setAccessible(true);
-
-        final Method counterPercentMethod =
-                BattleService.class.getDeclaredMethod(
-                        "resolvePlayerCounterPercent", Skill.class, CharacterProgress.class);
-        counterPercentMethod.setAccessible(true);
-
-        final Method hitCountMethod =
-                BattleService.class.getDeclaredMethod("resolvePlayerHitCount", Skill.class);
-        hitCountMethod.setAccessible(true);
+        final Field statResolverField = BattleService.class.getDeclaredField("combatStatResolver");
+        statResolverField.setAccessible(true);
+        final com.myapps.web.myrpg.application.service.battle.CombatStatResolver statResolver =
+                (com.myapps.web.myrpg.application.service.battle.CombatStatResolver)
+                        statResolverField.get(battleService);
 
         // 1. resolveResourceCost: Defense/Recovery만 랭크별 소모 (스킬 미보유 시에는 skill.resourceCost 고정)
-        assertThat((int) resCostMethod.invoke(battleService, defenseSkill, progress)).isEqualTo(5);
-        assertThat((int) resCostMethod.invoke(battleService, recoverySkill, progress))
-                .isEqualTo(10);
-        assertThat((int) resCostMethod.invoke(battleService, buffSkill, progress)).isEqualTo(8);
+        assertThat(statResolver.resolveResourceCost(defenseSkill, progress)).isEqualTo(5);
+        assertThat(statResolver.resolveResourceCost(recoverySkill, progress)).isEqualTo(10);
+        assertThat(statResolver.resolveResourceCost(buffSkill, progress)).isEqualTo(8);
 
         when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "defense"))
                 .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "defense")));
@@ -368,10 +347,9 @@ class BattleServiceCombatCharacterizationTest {
         when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "shield"))
                 .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "shield")));
 
-        assertThat((int) resCostMethod.invoke(battleService, defenseSkill, progress)).isEqualTo(6);
-        assertThat((int) resCostMethod.invoke(battleService, recoverySkill, progress))
-                .isEqualTo(15);
-        assertThat((int) resCostMethod.invoke(battleService, buffSkill, progress)).isEqualTo(8);
+        assertThat(statResolver.resolveResourceCost(defenseSkill, progress)).isEqualTo(6);
+        assertThat(statResolver.resolveResourceCost(recoverySkill, progress)).isEqualTo(15);
+        assertThat(statResolver.resolveResourceCost(buffSkill, progress)).isEqualTo(8);
 
         // 2. resolvePlayerMultiplier: Damage -> policy 배율, Dot -> initialMultiplier, 그 외 ->
         // monsterNormalMultiplier(100)
@@ -380,27 +358,24 @@ class BattleServiceCombatCharacterizationTest {
         when(characterSkillRepo.findByCharacterIdAndSkillId(CHARACTER_ID, "poison"))
                 .thenReturn(Optional.of(CharacterSkill.newSkill(CHARACTER_ID, "poison")));
 
-        assertThat((int) multMethod.invoke(battleService, damageSkill, progress)).isEqualTo(120);
-        assertThat((int) multMethod.invoke(battleService, dotSkill, progress)).isEqualTo(50);
-        assertThat((int) multMethod.invoke(battleService, buffSkill, progress)).isEqualTo(100);
-        assertThat((int) multMethod.invoke(battleService, passiveSkill, progress)).isEqualTo(100);
+        assertThat(statResolver.resolvePlayerMultiplier(damageSkill, progress)).isEqualTo(120);
+        assertThat(statResolver.resolvePlayerMultiplier(dotSkill, progress)).isEqualTo(50);
+        assertThat(statResolver.resolvePlayerMultiplier(buffSkill, progress)).isEqualTo(100);
+        assertThat(statResolver.resolvePlayerMultiplier(passiveSkill, progress)).isEqualTo(100);
 
         // 3. resolvePlayerBlockRate: DefenseSkill만 블록률, 그 외 0
-        assertThat((int) blockRateMethod.invoke(battleService, defenseSkill, progress))
-                .isEqualTo(70);
-        assertThat((int) blockRateMethod.invoke(battleService, damageSkill, progress)).isZero();
-        assertThat((int) blockRateMethod.invoke(battleService, recoverySkill, progress)).isZero();
+        assertThat(statResolver.resolvePlayerBlockRate(defenseSkill, progress)).isEqualTo(70);
+        assertThat(statResolver.resolvePlayerBlockRate(damageSkill, progress)).isZero();
+        assertThat(statResolver.resolvePlayerBlockRate(recoverySkill, progress)).isZero();
 
         // 4. resolvePlayerCounterPercent: DefenseSkill만 카운터, 그 외 0
-        assertThat((int) counterPercentMethod.invoke(battleService, defenseSkill, progress))
-                .isZero();
-        assertThat((int) counterPercentMethod.invoke(battleService, damageSkill, progress))
-                .isZero();
+        assertThat(statResolver.resolvePlayerCounterPercent(defenseSkill, progress)).isZero();
+        assertThat(statResolver.resolvePlayerCounterPercent(damageSkill, progress)).isZero();
 
         // 5. resolvePlayerHitCount: DamageSkill만 ds.hitCount(), 그 외 1
-        assertThat((int) hitCountMethod.invoke(battleService, damageSkill)).isEqualTo(2);
-        assertThat((int) hitCountMethod.invoke(battleService, defenseSkill)).isEqualTo(1);
-        assertThat((int) hitCountMethod.invoke(battleService, recoverySkill)).isEqualTo(1);
-        assertThat((int) hitCountMethod.invoke(battleService, buffSkill)).isEqualTo(1);
+        assertThat(statResolver.resolvePlayerHitCount(damageSkill)).isEqualTo(2);
+        assertThat(statResolver.resolvePlayerHitCount(defenseSkill)).isEqualTo(1);
+        assertThat(statResolver.resolvePlayerHitCount(recoverySkill)).isEqualTo(1);
+        assertThat(statResolver.resolvePlayerHitCount(buffSkill)).isEqualTo(1);
     }
 }

@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-09-03 23:05 (Asia/Seoul)
+> 최종 업데이트: 2026-09-07 21:10 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -29,44 +29,40 @@
   - **파사드 + 위임 아키텍처**: 1,708줄의 거대 클래스를 순수 위임 파사드(483줄, 72% 축소)로 개편. 27개 public API 및 2개 생성자(9-arg/7-arg) 시그니처 100% 보존.
   - **관심사별 협력 객체 8종 분리**: `InventoryQuerySupport`(공유 조회/용량/무기재능), `EquipmentService`(착용/해제/스마트/스왑/후보), `ItemStorageService`(은행↔인벤 이동/용량), `ItemAcquisitionService`(드랍/구매/시딩), `EquipmentBonusService`(보너스합산/내구도감소), `PotionConsumptionService`(포션 소비 회복), `InventoryViewAssembler`(인벤/은행/장비 팝업 뷰 조립 및 describe), `CombatSkillLoadoutService`(전투 10슬롯 버튼 조립).
   - **중복 통합 및 불변 검증**: 무기 세트 1/2 슬롯 분기 단일화, 카탈로그/캐릭터 폴백 중복 쿼리 제거, 클래스 레벨 복잡도 억제 어노테이션 제거. 1,270개 전체 테스트 All-Green, 5대 가드레일 통과 및 CodeGraph 동기화 완료.
+- **`BattleService` God Class 협력 객체 분해 및 파사드화 (2026-09-07, 022-battle-service-decomposition)**:
+  - **오케스트레이션 파사드 + 관심사별 협력 객체 6종 분리**: 1,752줄의 거대 클래스를 693줄(약 1,059줄 / 61% 축소)의 슬림한 오케스트레이터로 개편. 7개 public API 및 2개 생성자(18-arg/16-arg) 시그니처 100% 불변 보존.
+  - **협력 객체 6종**: `CombatStatResolver`(스탯/자원/캐스팅 실패), `SkillCombatResolver`(스킬 타입별 전투/디스패치/선후공), `TurnEffectApplier`(마나실드/DoT/명상), `BattleRewardService`(처치/던전/사망 결산), `BattleViewAssembler`(대치 뷰 조립), `BattleTurnResultFactory`(19-인자 결과 조립 팩토리).
+  - **5대 중복 통합 및 불변 검증**: `findCharacterSkill`(5곳), `aggregatedStats`(3곳), `monsterMultiplier`(2곳), `finalizeTurn`(3곳), `turnResultFactory`(7곳) 단일화.
+  - **복잡도 억제 어노테이션 완전 제거**: 클래스 및 `takeTurn` 메서드의 `@SuppressWarnings` 4건(`CyclomaticComplexity`, `CognitiveComplexity`, `NcssCount`)을 100% 제거하고도 PMD 통과. 1,313개 전체 테스트 All-Green, 5대 가드레일 통과 및 CodeGraph 동기화 완료.
+  - **코드 리뷰 반영 (2026-09-07)**: ① 연쇄 전투 시 `takeTurn`의 `experienceGained` 동작 회귀 수정 — `resolveSettlement`가 몬스터 HP를 `maxHp`로 부활시키기 전에 `monsterKilled`를 캡처하도록 복원(원본 동치). ② 데드 코드 3건 제거(`SkillCombatResolver.resolveCombat`, `SkillCombatContext` 8-arg 레거시 생성자, `BattleService.LOG_TYPE_GROWTH`), 2-arg `resolveSkillCombat`는 1-arg에 인라인. ③ 연쇄 전투 `experienceGained` characterization 단언 추가(테스트 공백 보강). 재빌드 5대 가드레일 통과.
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
 - **현재 브랜치**: `main`
-- **5대 품질 가드레일 상태**: `myrpg` 5대 가드레일 올클리어 (`BUILD SUCCESS`).
-- **CodeGraph**: 최신 코드베이스와 동기화 완료 (`codegraph sync`).
+- **5대 품질 가드레일 상태**: `myrpg` 1,313개 전체 테스트 All-Green (`BUILD SUCCESS`).
+- **CodeGraph**: 최신 동기화 완료 (`Already up to date`).
 - **Spec 상태**:
-  - `021-inventory-service-decomposition` 전 태스크(A~E) 구현 및 검증 완료. 사용자 승인·요청 시 Git 커밋 착수 준비 완료.
-  - `022-battle-service-decomposition` SDD 3종 Spec 작성 완료 (사용자 검토 대기, 구현 미착수).
-
-### 2.1. 진행 중 Spec — 022 BattleService God Class 분해 (SDD Step 2 완료, 검토 대기)
-- **위치**: `.kiro/specs/myrpg/022-battle-service-decomposition/` (requirements/design/tasks 3종)
-- **대상**: `BattleService`(약 1,752줄, 의존성 19개) — 리팩토링 3순위.
-- **최우선 제약(사용자 확정)**: 기존 로직 **1%도 동작 안 바뀜**(전투 결과·로그 라우팅·예외·**RNG 소비 순서**·
-  트랜잭션 경계 보존) + 중복코드 제거 + 확장성 개편.
-- **확정 설계값**:
-  - **파사드 + 오케스트레이션/위임**: public 7메서드(`start`/`startClash`/`takeTurn`/`flee`/`resumeIfActive`/
-    `combatSkills`/`swapWeapon`)와 두 생성자(18-arg/16-arg) 100% 보존. 2컨트롤러·20여 테스트(16-arg 직접 생성) 무변경.
-  - **협력 객체 6종(빈 아님, 파사드가 두 생성자에서 raw 의존성으로 조립하는 plain 객체)**:
-    `CombatStatResolver`(스탯/자원 해석), `SkillCombatResolver`(스킬 전투 처리·디스패치, 020의
-    `CombatDispatchVisitor` 내부화), `TurnEffectApplier`(마나실드/DoT/명상), `BattleRewardService`(처치/던전/
-    사망 결산), `BattleViewAssembler`(대치 뷰/뱃지), `BattleTurnResultFactory`(결과 빌드).
-  - **내부 전달 타입**: `SkillCombatContext`/`SkillCombatOutcome`(신규), `TurnCombatResult`/`KillResolution`(이동).
-  - **배치**: `application/service/battle` 패키지. 파사드→협력객체→`CombatStatResolver`/`BattleResolver` 단방향(순환 방지).
-  - **RNG 결정성**: 파사드의 동일 `Random` 인스턴스를 협력 객체에 공유 주입해 소비 순서 보존.
-  - **중복 통합 5건**: 스킬 조회(5→1), 스탯 합산(3→1), 몬스터 배율(2→1), `BattleTurnResult` 빌드(6→팩토리),
-    턴 종료 확정 블록(3→`finalizeTurn`). `takeTurn` 오케스트레이션은 파사드 유지(단계 순서 보존).
-  - **검증**: 기존 전투 회귀/jqwik(시드 고정) 무수정 그린(Property 1~4) + 미커버 지점 characterization 선행.
-- **다음 액션**: 사용자 Spec 검토·승인 후 tasks.md 순차 구현 착수.
+  - `021-inventory-service-decomposition` 전 태스크(A~E) 구현 및 검증 완료. Git 커밋 대기.
+  - `022-battle-service-decomposition` 전 태스크(A~J, 1~19) 구현 및 검증 완료. Git 커밋 대기.
 
 ---
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
-### 3.1. 기술 부채 리팩토링 백로그 (`docs/myrpg-refactoring-candidates.md`)
-1. **[🔴 3순위] `BattleService` (1,752줄) God Class 분리** — *Spec 022 작성 완료, 검토·구현 대기*:
-   - 파사드 + 협력 객체 6종으로 분해(§2.1 참조). SRP 회복 + 중복 통합(5건) + 동작·RNG 100% 보존.
-2. **신규 게임 컨텐츠 기획 백로그 연계**:
-   - 캠프파이어/야간 위험도, 마을 아르바이트 & 축복의 포션, 타이틀/업적 도감 등 기획 연계.
+### 3.1. Git 커밋 및 배포
+- 021 및 022 완료 사항 Git 커밋 착수 (사용자 요청 시 즉시 실행).
+
+### 3.2. 기술 부채 리팩토링 백로그 현황 (`docs/myrpg-refactoring-candidates.md`)
+- **[완료] 1순위**: 스킬 타입 다형화 및 Visitor 전환 (020 완료)
+- **[완료] 2순위**: `InventoryService` God Class 협력 객체 분해 (021 완료)
+- **[완료] 3순위**: `BattleService` God Class 협력 객체 분해 (022 완료)
+- **기술 부채 3대 과제 전수 완료 달성!**
+
+### 3.3. 신규 게임 컨텐츠 기획 백로그 연계
+- `skills/myrpg-system-design` 활용 신규 컨텐츠 기획 착수:
+  - 캠프파이어 & 야간 위험도 시스템
+  - 마을 아르바이트 & 축복의 포션 시스템
+  - 타이틀 & 업적 도감 시스템
+  - 기믹 던전 및 장비 인챈트/수리 연계
