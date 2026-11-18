@@ -23,3 +23,13 @@ spring:
         "[dialect]": org.hibernate.dialect.OracleDialect
   thymeleaf:
     cache: false
+
+mycalendar:
+  github-sync:
+    enabled: ${MYCALENDAR_GITHUB_SYNC_ENABLED:false}
+    token: ${MIKE_GITHUB_TOKEN:}
+    owner: gonyda
+    repo: mike
+    branch: main
+    path: calendar/mycalendar.json
+    commit-message: "chore(calendar): sync mycalendar events"

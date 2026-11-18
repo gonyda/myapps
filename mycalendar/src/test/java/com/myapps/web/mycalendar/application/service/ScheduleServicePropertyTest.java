@@ -28,6 +28,7 @@ import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * ScheduleService에 대한 Property-Based 테스트.
@@ -53,7 +54,8 @@ class ScheduleServicePropertyTest {
             @ForAll("validCreateCommands") final ScheduleCreateCommand command) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         when(mockRepo.save(any(Schedule.class)))
                 .thenAnswer(
@@ -86,7 +88,8 @@ class ScheduleServicePropertyTest {
             @ForAll("overLengthContent") final String content) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final ScheduleCreateCommand command =
                 new ScheduleCreateCommand(
@@ -105,7 +108,8 @@ class ScheduleServicePropertyTest {
             @ForAll("overLengthContent") final String content) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final Schedule existingSchedule =
                 new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "기존 내용");
@@ -131,7 +135,8 @@ class ScheduleServicePropertyTest {
             @ForAll("commandsWithNullRequiredField") final ScheduleCreateCommand command) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         assertThrows(InvalidScheduleException.class, () -> service.create(command));
     }
@@ -148,7 +153,8 @@ class ScheduleServicePropertyTest {
             @ForAll("invalidDateRangeCommands") final ScheduleCreateCommand command) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         assertThrows(InvalidScheduleException.class, () -> service.create(command));
     }
@@ -163,7 +169,8 @@ class ScheduleServicePropertyTest {
             @ForAll("invalidDateRangeCommands") final ScheduleCreateCommand command) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final Schedule existingSchedule =
                 new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "기존 내용");
@@ -193,7 +200,8 @@ class ScheduleServicePropertyTest {
             @ForAll("whitespaceOnlyContent") final String content) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final ScheduleCreateCommand command =
                 new ScheduleCreateCommand(
@@ -216,7 +224,8 @@ class ScheduleServicePropertyTest {
             @ForAll("yearMonths") final YearMonth yearMonth) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         when(mockRepo.findByMonth(any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(List.of());
@@ -247,7 +256,8 @@ class ScheduleServicePropertyTest {
     void deleteMustInvokeRepositoryDeleteOnFoundSchedule() {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final Schedule schedule = new Schedule(Category.DATE, LocalDate.of(2026, 7, 1), "삭제 대상");
         invokeOnCreate(schedule);
@@ -274,7 +284,8 @@ class ScheduleServicePropertyTest {
             @ForAll("validUpdateCommands") final ScheduleUpdateCommand command) {
 
         final ScheduleRepository mockRepo = mock(ScheduleRepository.class);
-        final ScheduleService service = new ScheduleService(mockRepo);
+        final ScheduleService service =
+                new ScheduleService(mockRepo, mock(ApplicationEventPublisher.class));
 
         final Schedule existingSchedule =
                 new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 1, 1), "원본 내용");

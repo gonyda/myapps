@@ -23,3 +23,8 @@ spring:
 logging:
   level:
     root: warn
+
+mycalendar:
+  github-sync:
+    enabled: false
+    token: ""

@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.myapps.web.mycalendar.application.dto.ScheduleChangedEvent;
+import com.myapps.web.mycalendar.application.dto.ScheduleChangedEvent.ChangeType;
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
@@ -24,18 +26,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 /** ScheduleService 단위 테스트. */
 @ExtendWith(MockitoExtension.class)
 class ScheduleServiceTest {
 
     @Mock private ScheduleRepository scheduleRepository;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     private ScheduleService scheduleService;
 
     @BeforeEach
     void setUp() {
-        scheduleService = new ScheduleService(scheduleRepository);
+        scheduleService = new ScheduleService(scheduleRepository, eventPublisher);
     }
 
     @Test
@@ -60,6 +64,7 @@ class ScheduleServiceTest {
         assertThat(response.content()).isEqualTo("저녁 데이트");
         assertThat(response.startDate()).isEqualTo(LocalDate.of(2026, 7, 1));
         verify(scheduleRepository).save(any(Schedule.class));
+        verify(eventPublisher).publishEvent(new ScheduleChangedEvent(ChangeType.CREATED, null));
     }
 
     @Test
@@ -230,6 +235,7 @@ class ScheduleServiceTest {
         assertThat(response.content()).isEqualTo("수정된 내용");
         assertThat(response.startDate()).isEqualTo(LocalDate.of(2026, 7, 2));
         assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 7, 5));
+        verify(eventPublisher).publishEvent(new ScheduleChangedEvent(ChangeType.UPDATED, null));
     }
 
     @Test
@@ -289,6 +295,7 @@ class ScheduleServiceTest {
 
         // then
         verify(scheduleRepository).delete(schedule);
+        verify(eventPublisher).publishEvent(new ScheduleChangedEvent(ChangeType.DELETED, 1L));
     }
 
     @Test

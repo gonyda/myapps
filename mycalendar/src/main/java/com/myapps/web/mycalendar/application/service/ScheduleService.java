@@ -1,5 +1,7 @@
 package com.myapps.web.mycalendar.application.service;
 
+import com.myapps.web.mycalendar.application.dto.ScheduleChangedEvent;
+import com.myapps.web.mycalendar.application.dto.ScheduleChangedEvent.ChangeType;
 import com.myapps.web.mycalendar.application.dto.ScheduleCreateCommand;
 import com.myapps.web.mycalendar.application.dto.ScheduleResponse;
 import com.myapps.web.mycalendar.application.dto.ScheduleUpdateCommand;
@@ -10,6 +12,7 @@ import com.myapps.web.mycalendar.domain.repository.ScheduleRepository;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +28,19 @@ public class ScheduleService {
     private static final int MAX_CONTENT_LENGTH = 200;
 
     private final ScheduleRepository scheduleRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * ScheduleService를 생성합니다.
      *
      * @param scheduleRepository 일정 리포지토리
+     * @param eventPublisher 일정 변경 이벤트 발행기
      */
-    public ScheduleService(final ScheduleRepository scheduleRepository) {
+    public ScheduleService(
+            final ScheduleRepository scheduleRepository,
+            final ApplicationEventPublisher eventPublisher) {
         this.scheduleRepository = scheduleRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -53,6 +61,8 @@ public class ScheduleService {
         schedule.updateScheduleTime(command.scheduleTime());
 
         final Schedule savedSchedule = scheduleRepository.save(schedule);
+        eventPublisher.publishEvent(
+                new ScheduleChangedEvent(ChangeType.CREATED, savedSchedule.getId()));
         return toResponse(savedSchedule);
     }
 
@@ -119,6 +129,7 @@ public class ScheduleService {
         schedule.updateScheduleTime(command.scheduleTime());
         schedule.updateContent(command.content());
 
+        eventPublisher.publishEvent(new ScheduleChangedEvent(ChangeType.UPDATED, schedule.getId()));
         return toResponse(schedule);
     }
 
@@ -132,6 +143,7 @@ public class ScheduleService {
     public void delete(final Long id) {
         final Schedule schedule = findScheduleById(id);
         scheduleRepository.delete(schedule);
+        eventPublisher.publishEvent(new ScheduleChangedEvent(ChangeType.DELETED, id));
     }
 
     private Schedule findScheduleById(final Long id) {

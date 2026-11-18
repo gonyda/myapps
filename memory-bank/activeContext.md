@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-09-07 21:26 (Asia/Seoul)
+> 최종 업데이트: 2026-11-18 19:34 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -26,18 +26,20 @@
 - **`BattleService` God Class 협력 객체 분해 및 파사드화 (2026-09-07, 022-battle-service-decomposition, 커밋 `f285060`)**:
   - 1,752줄 거대 클래스를 슬림한 오케스트레이터(693줄, 61% 축소)로 개편. 7개 public API 및 2개 생성자(18-arg/16-arg) 계약 100% 보존.
   - 협력 객체 6종 분리(`CombatStatResolver`, `SkillCombatResolver`, `TurnEffectApplier`, `BattleRewardService`, `BattleViewAssembler`, `BattleTurnResultFactory`), `@SuppressWarnings` 완전 제거, 5대 가드레일 및 1,313개 테스트 All-Green.
+- **`mycalendar` GitHub 단방향 스냅샷 동기화 구현 (2026-11-18, `mycalendar/003-github-calendar-sync`)**:
+  - `ScheduleService` CUD 커밋 완료(`AFTER_COMMIT`) 시 `SingleThreadExecutor`로 직렬화된 비동기 전체 스냅샷 푸시(`gonyda/mike` `calendar/mycalendar.json`), `409 Conflict` 1회 재시도, Fail-safe 격리, `POST /schedules/sync/github` 수동 재동기화 엔드포인트 구현.
+  - `mycalendar` 5대 품질 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) 및 117개 테스트 All-Green (`BUILD SUCCESS`).
 
 ---
 
 ## 2. 현재 작업 맥락 및 상태
 
-- **현재 브랜치**: `main` (최근 커밋: `f285060` 022 전투 서비스 분해 완료)
-- **5대 품질 가드레일 상태**: `myrpg` 1,313개 전체 테스트 All-Green (`BUILD SUCCESS`)
+- **현재 브랜치**: `main`
+- **5대 품질 가드레일 상태**:
+  - `mycalendar`: 117개 전체 테스트 All-Green (`BUILD SUCCESS`, Spotless/Error Prone/ArchUnit/JaCoCo/PMD/CPD 통과)
+  - `myrpg`: 1,313개 전체 테스트 All-Green
 - **CodeGraph**: 최신 동기화 완료 (`Already up to date`)
-- **기술 부채 리팩토링 현황**:
-  - 1순위(020 스킬 다형화), 2순위(021 InventoryService 분해), 3순위(022 BattleService 분해) **3대 핵심 과제 전수 완료**.
-  - `docs/myrpg-refactoring-candidates.md` 정리(삭제) 완료.
-- **현재 활성 작업**: 대기 중 (신규 게임 컨텐츠 기획 및 개발 착수 준비)
+- **현재 활성 작업**: `mycalendar/003-github-calendar-sync` 구현 및 검증 완료 (미커밋 상태)
 
 ---
 

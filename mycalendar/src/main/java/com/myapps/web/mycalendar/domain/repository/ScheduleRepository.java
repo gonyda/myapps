@@ -55,4 +55,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findByWeek(
             @Param("weekStart") final LocalDate weekStart,
             @Param("weekEnd") final LocalDate weekEnd);
+
+    /**
+     * 스냅샷 동기화를 위해 전체 일정을 시작 날짜, 일정 시간(null 후순위), ID 오름차순으로 조회합니다.
+     *
+     * @return 정렬된 전체 일정 목록
+     */
+    @Query(
+            "SELECT s FROM Schedule s "
+                    + "ORDER BY s.startDate ASC, s.scheduleTime ASC NULLS LAST, s.id ASC")
+    List<Schedule> findAllForSync();
 }

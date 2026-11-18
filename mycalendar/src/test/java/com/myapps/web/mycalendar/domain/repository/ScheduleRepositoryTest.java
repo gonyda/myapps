@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.myapps.web.mycalendar.domain.model.Category;
 import com.myapps.web.mycalendar.domain.model.Schedule;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -105,5 +106,35 @@ class ScheduleRepositoryTest {
         entityManager.clear();
 
         assertThat(scheduleRepository.findById(scheduleId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("스냅샷 동기화 조회 시 시작일, 시간(null 후순위), ID 오름차순으로 정렬된다")
+    void should_returnSortedSchedules_when_findAllForSyncCalled() {
+        // given
+        final Schedule laterDate =
+                new Schedule(Category.DATE, LocalDate.of(2026, 11, 30), "30일 일정");
+        final Schedule sameDateNoTime =
+                new Schedule(Category.SEUNGKWON, LocalDate.of(2026, 11, 28), "종일 일정");
+        final Schedule sameDateMorning =
+                new Schedule(Category.CHIWON, LocalDate.of(2026, 11, 28), "오전 일정");
+        sameDateMorning.updateScheduleTime(LocalTime.of(7, 0));
+        final Schedule sameDateEvening =
+                new Schedule(Category.DATE, LocalDate.of(2026, 11, 28), "저녁 일정");
+        sameDateEvening.updateScheduleTime(LocalTime.of(19, 0));
+
+        entityManager.persistAndFlush(laterDate);
+        entityManager.persistAndFlush(sameDateNoTime);
+        entityManager.persistAndFlush(sameDateEvening);
+        entityManager.persistAndFlush(sameDateMorning);
+        entityManager.clear();
+
+        // when
+        final List<Schedule> result = scheduleRepository.findAllForSync();
+
+        // then
+        assertThat(result)
+                .extracting(Schedule::getContent)
+                .containsExactly("오전 일정", "저녁 일정", "종일 일정", "30일 일정");
     }
 }
