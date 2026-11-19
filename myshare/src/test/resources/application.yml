@@ -1,0 +1,15 @@
+logging:
+  level:
+    root: warn
+
+myshare:
+  github:
+    enabled: false
+    token: ""
+    owner: gonyda
+    repo: mike
+    branch: main
+    base-path: share
+  cache:
+    ttl-seconds: 20
+    max-entries: 200

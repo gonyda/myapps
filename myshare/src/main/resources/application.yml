@@ -1,0 +1,25 @@
+server:
+  port: 8084
+  error:
+    whitelabel:
+      enabled: false
+
+logging:
+  level:
+    root: info
+
+spring:
+  profiles:
+    active: local
+
+myshare:
+  github:
+    enabled: ${MYSHARE_GITHUB_ENABLED:true}
+    token: ${MIKE_GITHUB_TOKEN:}
+    owner: ${MYSHARE_GITHUB_OWNER:gonyda}
+    repo: ${MYSHARE_GITHUB_REPO:mike}
+    branch: ${MYSHARE_GITHUB_BRANCH:main}
+    base-path: ${MYSHARE_GITHUB_BASE_PATH:share}
+  cache:
+    ttl-seconds: ${MYSHARE_CACHE_TTL_SECONDS:20}
+    max-entries: ${MYSHARE_CACHE_MAX_ENTRIES:200}

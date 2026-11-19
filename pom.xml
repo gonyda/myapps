@@ -30,6 +30,7 @@
         <module>mystudy</module>
         <module>mycalendar</module>
         <module>myrpg</module>
+        <module>myshare</module>
     </modules>
 
     <dependencies>
