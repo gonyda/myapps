@@ -2,9 +2,9 @@ package com.myapps.web.myshare.interfaces.api;
 
 import com.myapps.web.myshare.application.exception.ShareNotFoundException;
 import com.myapps.web.myshare.application.service.SharePageService;
-import com.myapps.web.myshare.domain.exception.InvalidShareSlugException;
 import com.myapps.web.myshare.domain.model.SharePage;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -55,20 +56,21 @@ public class ShareController {
     }
 
     /**
-     * 하위 슬래시가 포함된 경로 탐색 요청({@code /share/{slug}/...})을 400 Bad Request로 차단합니다.
+     * 하위 슬래시가 포함된 경로 탐색 및 {@code data.json} 등 내부 자산 직접 접근 요청({@code /share/{slug}/...})을 404 Not
+     * Found로 차단합니다.
      *
      * @param slug 첫 번째 경로 세그먼트
-     * @return 항상 {@link InvalidShareSlugException} 발생 (400 Bad Request)
+     * @return 항상 {@link ShareNotFoundException} 발생 (404 Not Found)
      */
-    @GetMapping("/share/{slug}/**")
+    @RequestMapping("/share/{slug}/**")
     public ResponseEntity<String> rejectNestedSharePath(@PathVariable final String slug) {
-        throw new InvalidShareSlugException("허용되지 않은 공유 경로 형식입니다.");
+        throw new ShareNotFoundException("허용되지 않은 공유 경로입니다.");
     }
 
     /**
      * 지정된 슬러그의 단일 HTML 문서를 조회해 웹 브라우저로 서빙합니다.
      *
-     * @param slug 공유 파일 슬러그 ({@code ^[a-zA-Z0-9_-]{1,200}$})
+     * @param slug 공유 파일 슬러그 ({@code ^[a-z0-9_-]{1,200}$})
      * @param ifNoneMatch 클라이언트가 보낸 조건부 ETag 헤더
      * @return {@code 200 OK} HTML 응답 또는 ETag 일치 시 {@code 304 Not Modified}
      */
@@ -77,6 +79,9 @@ public class ShareController {
             @PathVariable final String slug,
             @RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false)
                     final String ifNoneMatch) {
+        if (slug.toLowerCase(Locale.ROOT).endsWith(".json")) {
+            throw new ShareNotFoundException("JSON 파일은 직접 서빙하지 않습니다.");
+        }
         final SharePage page = sharePageService.loadPage(slug);
         final HttpHeaders headers = buildCommonHeaders(page.sha());
 

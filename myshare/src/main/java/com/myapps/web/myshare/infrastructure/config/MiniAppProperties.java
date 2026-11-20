@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record MiniAppProperties(String pin, int maxPayloadBytes, GitHub github) {
 
     private static final int DEFAULT_MAX_PAYLOAD_BYTES = 1_048_576;
-    private static final String DEFAULT_GITHUB_BASE_PATH = "mini";
+    private static final String DEFAULT_GITHUB_BASE_PATH = "share";
     private static final String DEFAULT_COMMIT_PREFIX = "chore(mini): sync";
 
     /** 누락되거나 비어 있는 설정 필드에 안전한 기본값을 적용합니다. */
@@ -61,7 +61,7 @@ public record MiniAppProperties(String pin, int maxPayloadBytes, GitHub github) 
      * 미니앱 JSON 백업 파일의 GitHub 업로드 경로 및 커밋 메시지 설정.
      *
      * @param enabled 동기화 활성화 여부
-     * @param basePath 저장소 내 기본 디렉터리 (기본값: {@code mini})
+     * @param basePath 저장소 내 기본 디렉터리 (기본값: {@code share})
      * @param commitMessagePrefix 커밋 메시지 접두사 (기본값: {@code chore(mini): sync})
      */
     public record GitHub(boolean enabled, String basePath, String commitMessagePrefix) {

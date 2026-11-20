@@ -22,7 +22,7 @@ class MiniAppPropertiesTest {
         assertThat(props.isPinConfigured()).isTrue();
         assertThat(props.maxPayloadBytes()).isEqualTo(1_048_576);
         assertThat(props.isGitHubSyncEnabled()).isTrue();
-        assertThat(props.github().basePath()).isEqualTo("mini");
+        assertThat(props.github().basePath()).isEqualTo("share");
         assertThat(props.github().commitMessagePrefix()).isEqualTo("chore(mini): sync");
         assertThat(rendered).doesNotContain("secret-pin-9999");
         assertThat(rendered).contains("pinConfigured=true");
@@ -41,7 +41,7 @@ class MiniAppPropertiesTest {
         // when & then
         assertThat(nullPin.isPinConfigured()).isFalse();
         assertThat(nullPin.isGitHubSyncEnabled()).isFalse();
-        assertThat(nullPin.github().basePath()).isEqualTo("mini");
+        assertThat(nullPin.github().basePath()).isEqualTo("share");
         assertThat(nullPin.github().commitMessagePrefix()).isEqualTo("chore(mini): sync");
         assertThat(blankPin.isPinConfigured()).isFalse();
         assertThat(blankPin.github().basePath()).isEqualTo("apps");

@@ -28,7 +28,7 @@ import org.springframework.web.client.RestClient;
 class RestClientGitHubMiniAppSyncClientTest {
 
     private static final String CONTENTS_URL =
-            "https://api.github.com/repos/gonyda/mike/contents/mini/todo.json";
+            "https://api.github.com/repos/gonyda/mike/contents/share/todo/data.json";
 
     private MockRestServiceServer mockServer;
     private RestClientGitHubMiniAppSyncClient client;
@@ -56,7 +56,7 @@ class RestClientGitHubMiniAppSyncClientTest {
         mockServer
                 .expect(requestTo(CONTENTS_URL))
                 .andExpect(method(HttpMethod.PUT))
-                .andExpect(jsonPath("$.message").value("chore(mini): sync todo.json"))
+                .andExpect(jsonPath("$.message").value("chore(mini): sync todo/data.json"))
                 .andExpect(jsonPath("$.content").value(expectedBase64))
                 .andExpect(jsonPath("$.branch").value("main"))
                 .andExpect(jsonPath("$.sha").value("old-sha-1"))
@@ -153,6 +153,113 @@ class RestClientGitHubMiniAppSyncClientTest {
                 .isInstanceOf(GitHubMiniAppSyncException.class);
     }
 
+    @Test
+    @DisplayName("data.json이 존재하면 sha를 조회한 뒤 해당 파일만 DELETE 커밋·푸시한다")
+    void should_deleteExistingDataJsonWithSha_when_getReturns200() {
+        // given
+        mockServer
+                .expect(requestTo(CONTENTS_URL + "?ref=main"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer ghp_test_token"))
+                .andRespond(withSuccess("{\"sha\":\"del-sha-1\"}", MediaType.APPLICATION_JSON));
+        mockServer
+                .expect(requestTo(CONTENTS_URL))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(jsonPath("$.message").value("chore(mini): delete todo/data.json"))
+                .andExpect(jsonPath("$.sha").value("del-sha-1"))
+                .andExpect(jsonPath("$.branch").value("main"))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+        // when
+        final boolean deleted = client.deleteJson("todo");
+
+        // then
+        assertThat(deleted).isTrue();
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("GitHub에 data.json이 이미 없으면 DELETE 호출 없이 조용히 false를 반환한다")
+    void should_skipQuietlyWithoutDelete_when_fileAlreadyMissing() {
+        // given
+        mockServer
+                .expect(requestTo(CONTENTS_URL + "?ref=main"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        // when
+        final boolean deleted = client.deleteJson("todo");
+
+        // then
+        assertThat(deleted).isFalse();
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("DELETE 중 409 Conflict가 발생하면 최신 sha를 재조회해 재시도한다")
+    void should_refetchShaAndRetryDelete_when_deleteReturns409Conflict() {
+        // given
+        mockServer
+                .expect(requestTo(CONTENTS_URL + "?ref=main"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"sha\":\"del-v1\"}", MediaType.APPLICATION_JSON));
+        mockServer
+                .expect(requestTo(CONTENTS_URL))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(jsonPath("$.sha").value("del-v1"))
+                .andRespond(withStatus(HttpStatus.CONFLICT));
+        mockServer
+                .expect(requestTo(CONTENTS_URL + "?ref=main"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"sha\":\"del-v2\"}", MediaType.APPLICATION_JSON));
+        mockServer
+                .expect(requestTo(CONTENTS_URL))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(jsonPath("$.sha").value("del-v2"))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+        // when
+        final boolean deleted = client.deleteJson("todo");
+
+        // then
+        assertThat(deleted).isTrue();
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("동기화 비활성화 또는 토큰 누락 시 deleteJson은 HTTP 호출 없이 false를 반환한다")
+    void should_skipDeleteWithoutHttpCall_when_disabledOrTokenMissing() {
+        // given
+        final RestClientGitHubMiniAppSyncClient disabledClient =
+                createClient(true, "ghp_tok", false);
+        final RestClientGitHubMiniAppSyncClient noTokenClient = createClient(true, "", true);
+
+        // when & then
+        assertThat(disabledClient.deleteJson("todo")).isFalse();
+        assertThat(noTokenClient.deleteJson("todo")).isFalse();
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("deleteJson 호출 시 공백 키 또는 GitHub 5xx 오류이면 GitHubMiniAppSyncException을 던진다")
+    void should_throwException_when_deleteBlankKeyOrServerError() {
+        // given
+        mockServer
+                .expect(requestTo(CONTENTS_URL + "?ref=main"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"sha\":\"del-sha\"}", MediaType.APPLICATION_JSON));
+        mockServer
+                .expect(requestTo(CONTENTS_URL))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        // when & then
+        assertThatThrownBy(() -> client.deleteJson("todo"))
+                .isInstanceOf(GitHubMiniAppSyncException.class);
+        assertThatThrownBy(() -> client.deleteJson(" "))
+                .isInstanceOf(GitHubMiniAppSyncException.class);
+    }
+
     private RestClientGitHubMiniAppSyncClient createClient(
             final boolean shareGitHubEnabled, final String token, final boolean miniGitHubEnabled) {
         final GitHubShareProperties shareProps =
@@ -163,7 +270,7 @@ class RestClientGitHubMiniAppSyncClientTest {
                         "pin",
                         1_048_576,
                         new MiniAppProperties.GitHub(
-                                miniGitHubEnabled, "mini", "chore(mini): sync"));
+                                miniGitHubEnabled, "share", "chore(mini): sync"));
         return new RestClientGitHubMiniAppSyncClient(
                 restClientBuilder.build(), shareProps, miniProps);
     }

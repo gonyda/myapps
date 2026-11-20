@@ -28,8 +28,8 @@ public class MiniAppGitHubSyncService {
     }
 
     /**
-     * 단일 스레드 비동기 실행기({@code miniAppGitHubSyncExecutor})를 통해 {@code mini/{appKey}.json}을 GitHub에
-     * 푸시합니다.
+     * 단일 스레드 비동기 실행기({@code miniAppGitHubSyncExecutor})를 통해 {@code share/{appKey}/data.json}을
+     * GitHub에 푸시합니다.
      *
      * @param appKey 검증된 미니앱 키
      * @param jsonContent 저장된 UTF-8 JSON 문자열
@@ -44,6 +44,28 @@ public class MiniAppGitHubSyncService {
         } catch (final Exception ex) {
             LOG.error(
                     "GitHub 미니앱 비동기 동기화 실패 (DB 저장은 정상 유지됨): appKey={}, error={}",
+                    appKey,
+                    ex.getMessage(),
+                    ex);
+        }
+    }
+
+    /**
+     * 단일 스레드 비동기 실행기({@code miniAppGitHubSyncExecutor})를 통해 {@code share/{appKey}/data.json} 파일만
+     * GitHub에서 삭제합니다.
+     *
+     * @param appKey 검증된 미니앱 키
+     */
+    @Async("miniAppGitHubSyncExecutor")
+    public void deleteAsync(final String appKey) {
+        try {
+            final boolean deleted = gitHubMiniAppSyncClient.deleteJson(appKey);
+            if (deleted) {
+                LOG.info("GitHub 미니앱 파일 삭제 완료: appKey={}", appKey);
+            }
+        } catch (final Exception ex) {
+            LOG.error(
+                    "GitHub 미니앱 비동기 삭제 실패 (DB 삭제는 정상 유지됨): appKey={}, error={}",
                     appKey,
                     ex.getMessage(),
                     ex);

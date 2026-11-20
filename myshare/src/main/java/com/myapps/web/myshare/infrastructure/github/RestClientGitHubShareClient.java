@@ -29,6 +29,7 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
     private static final String ACCEPT_RAW_VALUE = "application/vnd.github.raw+json";
     private static final String API_VERSION_HEADER = "X-GitHub-Api-Version";
     private static final String API_VERSION_VALUE = "2022-11-28";
+    private static final String INDEX_HTML_FILE = "index.html";
     private static final String HTML_EXTENSION = ".html";
     private static final String FILE_TYPE = "file";
     private static final String BASE64_ENCODING = "base64";
@@ -52,6 +53,9 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
     /**
      * 지정된 슬러그의 HTML 파일을 GitHub Contents API로 조회합니다.
      *
+     * <p>{@code {basePath}/{slug}/index.html}을 우선 조회하고, 존재하지 않는 경우에만 하위 호환 경로인 {@code
+     * {basePath}/{slug}.html}을 폴백 조회합니다.
+     *
      * @param slug 검증된 공유 슬러그
      * @param knownSha 이전 캐시에 보관 중인 파일 SHA (없으면 {@code null})
      * @return 조회 결과 ({@link ShareFetchResult})
@@ -63,11 +67,19 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
         if (!properties.isActive()) {
             throw new ShareConfigurationException("GitHub 공유 연동이 비활성화되었거나 인증 토큰이 설정되지 않았습니다.");
         }
+        final ShareFetchResult folderResult = fetchFile(knownSha, slug, INDEX_HTML_FILE);
+        if (!(folderResult instanceof ShareFetchResult.NotFound)) {
+            return folderResult;
+        }
+        return fetchFile(knownSha, slug + HTML_EXTENSION);
+    }
+
+    private ShareFetchResult fetchFile(final String knownSha, final String... fileSegments) {
         try {
             final JsonOutcome outcome =
                     restClient
                             .get()
-                            .uri(uriBuilder -> buildContentsUri(uriBuilder, slug))
+                            .uri(uriBuilder -> buildContentsUri(uriBuilder, fileSegments))
                             .headers(
                                     headers ->
                                             applyGitHubHeaders(
@@ -93,7 +105,8 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
                                     });
             return switch (outcome) {
                 case JsonOutcome.Resolved resolved -> resolved.result();
-                case JsonOutcome.NeedsRawFallback fallback -> fetchRawHtml(slug, fallback.sha());
+                case JsonOutcome.NeedsRawFallback fallback ->
+                        fetchRawHtml(fallback.sha(), fileSegments);
             };
         } catch (final RestClientException ex) {
             throw new GitHubShareException("GitHub Contents API 통신 중 오류가 발생했습니다.", ex);
@@ -114,10 +127,10 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
         return new JsonOutcome.Resolved(new ShareFetchResult.Found(decodedHtml, body.sha()));
     }
 
-    private ShareFetchResult fetchRawHtml(final String slug, final String sha) {
+    private ShareFetchResult fetchRawHtml(final String sha, final String... fileSegments) {
         return restClient
                 .get()
-                .uri(uriBuilder -> buildContentsUri(uriBuilder, slug))
+                .uri(uriBuilder -> buildContentsUri(uriBuilder, fileSegments))
                 .headers(headers -> applyGitHubHeaders(headers, ACCEPT_RAW_VALUE, null))
                 .exchange(
                         (request, response) -> {
@@ -164,7 +177,7 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
         }
     }
 
-    private URI buildContentsUri(final UriBuilder uriBuilder, final String slug) {
+    private URI buildContentsUri(final UriBuilder uriBuilder, final String... fileSegments) {
         uriBuilder.pathSegment("repos", properties.owner(), properties.repo(), "contents");
         final String[] segments = properties.basePath().split("/", -1);
         for (final String segment : segments) {
@@ -172,7 +185,9 @@ public class RestClientGitHubShareClient implements GitHubShareClient {
                 uriBuilder.pathSegment(segment);
             }
         }
-        uriBuilder.pathSegment(slug + HTML_EXTENSION);
+        for (final String fileSegment : fileSegments) {
+            uriBuilder.pathSegment(fileSegment);
+        }
         uriBuilder.queryParam("ref", properties.branch());
         return uriBuilder.build();
     }

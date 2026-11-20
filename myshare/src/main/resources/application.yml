@@ -37,5 +37,5 @@ myshare:
     max-payload-bytes: ${MINI_APP_MAX_PAYLOAD_BYTES:1048576}
     github:
       enabled: ${MINI_APP_GITHUB_SYNC_ENABLED:true}
-      base-path: ${MINI_APP_GITHUB_BASE_PATH:mini}
+      base-path: ${MINI_APP_GITHUB_BASE_PATH:share}
       commit-message-prefix: "chore(mini): sync"

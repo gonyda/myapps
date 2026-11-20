@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.myapps.web.myshare.application.exception.GitHubMiniAppSyncException;
@@ -95,12 +97,49 @@ class MiniAppIntegrationTest {
     }
 
     @Test
-    @DisplayName("기존 /health 및 /share/ 엔드포인트는 X-Mini-Pin 헤더 없이도 정상 응답한다")
+    @DisplayName("기존 /health, /share/ 엔드포인트는 무인증 동작하며 /share/{slug}/data.json 직접 접근은 404를 반환한다")
     void should_keepExistingShareEndpointsOpen_when_pinFilterRegistered() throws Exception {
         // given & when & then
         mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"));
         mockMvc.perform(get("/share")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/budget-mini/data.json")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/data.json")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("DELETE 호출 시 DB row가 멱등하게 삭제되고 GitHub 비동기 삭제 실패 시에도 200 OK를 유지한다")
+    void should_deleteIdempotentlyAndTriggerAsyncDelete_when_deleteExecuted() throws Exception {
+        // given
+        final String json = "{\"note\":\"hello\"}";
+        given(gitHubMiniAppSyncClient.pushJson("notes-app", json)).willReturn(true);
+        given(gitHubMiniAppSyncClient.deleteJson("notes-app"))
+                .willThrow(new GitHubMiniAppSyncException("Simulated delete outage"))
+                .willReturn(false);
+
+        mockMvc.perform(
+                        put("/api/mini/notes-app")
+                                .header(HEADER_PIN, TEST_PIN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                .andExpect(status().isOk());
+
+        // when & then: 첫 번째 DELETE -> deleted=true
+        mockMvc.perform(delete("/api/mini/notes-app").header(HEADER_PIN, TEST_PIN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deleted").value(true));
+
+        // when & then: 두 번째 DELETE -> 이미 없음에도 200 OK + deleted=false (멱등성)
+        mockMvc.perform(delete("/api/mini/notes-app").header(HEADER_PIN, TEST_PIN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deleted").value(false));
+
+        // when & then: 삭제 후 GET -> {}
+        mockMvc.perform(get("/api/mini/notes-app").header(HEADER_PIN, TEST_PIN))
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
+
+        verify(gitHubMiniAppSyncClient, timeout(3000).times(2)).deleteJson("notes-app");
     }
 }

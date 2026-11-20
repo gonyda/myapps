@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * 공유 HTML 파일을 식별하는 불변 슬러그 값 객체.
  *
- * <p>영문, 숫자, 하이픈({@code -}), 언더스코어({@code _}) 조합(1~200자)만 허용하여 경로 탐색 공격을 차단합니다.
+ * <p>영문 소문자, 숫자, 하이픈({@code -}), 언더스코어({@code _}) 조합(1~200자)만 허용하여 경로 탐색 공격을 차단합니다.
  *
  * @param value 검증을 통과한 슬러그 문자열
  */
@@ -14,7 +14,7 @@ public record ShareSlug(String value) {
 
     private static final int MAX_LENGTH = 200;
     private static final Pattern ALLOWED_PATTERN =
-            Pattern.compile("^[a-zA-Z0-9_-]{1," + MAX_LENGTH + "}$");
+            Pattern.compile("^[a-z0-9_-]{1," + MAX_LENGTH + "}$");
 
     /** 슬러그 형식과 길이를 검증합니다. */
     public ShareSlug {

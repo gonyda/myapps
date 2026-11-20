@@ -75,4 +75,23 @@ public class MiniAppStoreService {
         }
         return validatedJson;
     }
+
+    /**
+     * 지정된 {@code appKey}의 데이터를 {@code MINI_APP_STORE}에서 멱등하게 삭제합니다.
+     *
+     * <p>대상이 이미 존재하지 않는 경우에도 예외를 발생시키지 않고 {@code false}를 반환합니다.
+     *
+     * @param rawAppKey 요청 경로의 미니앱 키
+     * @return 기존 행을 삭제했으면 {@code true}, 이미 없었으면 {@code false}
+     */
+    @Transactional
+    public boolean deleteApp(final String rawAppKey) {
+        final MiniAppKey appKey = MiniAppKey.of(rawAppKey);
+        final Optional<MiniAppStore> existing = repository.findById(appKey.value());
+        if (existing.isEmpty()) {
+            return false;
+        }
+        repository.delete(existing.get());
+        return true;
+    }
 }

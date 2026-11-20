@@ -7,6 +7,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -95,6 +96,20 @@ public class MiniAppController {
         final String savedJson = miniAppStoreService.upsertJson(appKey, rawBody);
         miniAppGitHubSyncService.syncAsync(appKey, savedJson);
         return buildJsonResponse(savedJson);
+    }
+
+    /**
+     * 지정된 {@code appKey}의 데이터를 {@code MINI_APP_STORE}에서 멱등하게 삭제하고 {@code share/{appKey}/data.json}
+     * 비동기 삭제를 예약합니다.
+     *
+     * @param appKey 미니앱 식별자 ({@code ^[a-z0-9_-]{1,64}$})
+     * @return {@code {"deleted":true}} 또는 {@code {"deleted":false}}를 담은 {@code 200 OK} JSON 응답
+     */
+    @DeleteMapping("/{appKey}")
+    public ResponseEntity<String> deleteAppData(@PathVariable final String appKey) {
+        final boolean deleted = miniAppStoreService.deleteApp(appKey);
+        miniAppGitHubSyncService.deleteAsync(appKey);
+        return buildJsonResponse("{\"deleted\":" + deleted + "}");
     }
 
     private ResponseEntity<String> buildJsonResponse(final String jsonBody) {

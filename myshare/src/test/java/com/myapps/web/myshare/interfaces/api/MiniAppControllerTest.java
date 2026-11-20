@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -40,7 +41,7 @@ class MiniAppControllerTest {
     @MockitoBean private MiniAppGitHubSyncService miniAppGitHubSyncService;
 
     @Test
-    @DisplayName("X-Mini-Pin 헤더가 없거나 불일치하면 GET/PUT 모두 401 Unauthorized를 반환한다")
+    @DisplayName("X-Mini-Pin 헤더가 없거나 불일치하면 GET/PUT/DELETE 모두 401 Unauthorized를 반환한다")
     void should_return401Unauthorized_when_pinMissingOrInvalid() throws Exception {
         // given & when & then
         mockMvc.perform(get("/api/mini/todo"))
@@ -53,6 +54,10 @@ class MiniAppControllerTest {
                                 .header(HEADER_PIN, "wrong-pin")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"a\":1}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Unauthorized"));
+
+        mockMvc.perform(delete("/api/mini/todo").header(HEADER_PIN, "wrong-pin"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Unauthorized"));
 
@@ -146,5 +151,43 @@ class MiniAppControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Internal Server Error"));
+    }
+
+    @Test
+    @DisplayName("유효한 PIN으로 DELETE /api/mini/{appKey} 호출 시 멱등 삭제 결과와 200 OK를 반환하고 비동기 삭제를 트리거한다")
+    void should_deleteIdempotentlyAndTriggerAsyncDelete_when_deleteWithValidPin() throws Exception {
+        // given
+        given(miniAppStoreService.deleteApp("todo")).willReturn(true);
+        given(miniAppStoreService.deleteApp("missing")).willReturn(false);
+
+        // when & then
+        mockMvc.perform(delete("/api/mini/todo").header(HEADER_PIN, VALID_PIN))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                .andExpect(jsonPath("$.deleted").value(true));
+        mockMvc.perform(delete("/api/mini/missing").header(HEADER_PIN, VALID_PIN))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.deleted").value(false));
+
+        then(miniAppGitHubSyncService).should().deleteAsync("todo");
+        then(miniAppGitHubSyncService).should().deleteAsync("missing");
+    }
+
+    @Test
+    @DisplayName("잘못된 appKey로 DELETE 호출 시 400 Bad Request를 반환하고 GitHub 비동기 삭제를 호출하지 않는다")
+    void should_return400BadRequest_when_deleteInvalidAppKey() throws Exception {
+        // given
+        given(miniAppStoreService.deleteApp("UpperCase"))
+                .willThrow(new InvalidMiniAppKeyException("허용되지 않은 미니앱 키 형식입니다."));
+
+        // when & then
+        mockMvc.perform(delete("/api/mini/UpperCase").header(HEADER_PIN, VALID_PIN))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").exists());
+
+        then(miniAppGitHubSyncService).should(never()).deleteAsync(anyString());
     }
 }

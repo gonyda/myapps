@@ -35,6 +35,8 @@ class RestClientGitHubShareClientTest {
 
     private static final String BASE_URL = "https://api.github.com";
     private static final String EXPECTED_URL =
+            "https://api.github.com/repos/gonyda/mike/contents/share/hello-mike/index.html?ref=main";
+    private static final String EXPECTED_LEGACY_URL =
             "https://api.github.com/repos/gonyda/mike/contents/share/hello-mike.html?ref=main";
     private static final String TOKEN = "test-read-only-token";
 
@@ -101,7 +103,39 @@ class RestClientGitHubShareClientTest {
     }
 
     @Test
-    @DisplayName("GitHub이 404를 반환하거나 파일 타입이 dir이면 NotFound를 반환한다")
+    @DisplayName("index.html이 404이면 하위 호환 경로 share/{slug}.html로 폴백 조회한다")
+    void should_fallbackToLegacyHtml_when_indexHtmlReturns404() {
+        // given
+        final RestClientGitHubShareClient client =
+                new RestClientGitHubShareClient(restClientBuilder.build(), activeProperties());
+        final String legacyHtml = "<!DOCTYPE html><html><body>legacy html</body></html>";
+        final String base64 =
+                Base64.getEncoder().encodeToString(legacyHtml.getBytes(StandardCharsets.UTF_8));
+
+        mockServer
+                .expect(requestTo(EXPECTED_URL))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+        mockServer
+                .expect(requestTo(EXPECTED_LEGACY_URL))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(
+                        withSuccess(
+                                "{\"type\":\"file\",\"encoding\":\"base64\",\"sha\":\"legacy-sha\",\"content\":\""
+                                        + base64
+                                        + "\"}",
+                                MediaType.APPLICATION_JSON));
+
+        // when
+        final ShareFetchResult result = client.fetchHtml("hello-mike", null);
+
+        // then
+        assertThat(result).isEqualTo(new ShareFetchResult.Found(legacyHtml, "legacy-sha"));
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("index.html과 레거시 html이 모두 404이거나 파일 타입이 dir이면 NotFound를 반환한다")
     void should_returnNotFound_when_404OrNonFileType() {
         // given
         final RestClientGitHubShareClient client =
@@ -109,6 +143,10 @@ class RestClientGitHubShareClientTest {
 
         mockServer
                 .expect(requestTo(EXPECTED_URL))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+        mockServer
+                .expect(requestTo(EXPECTED_LEGACY_URL))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
@@ -119,7 +157,7 @@ class RestClientGitHubShareClientTest {
         assertThat(notFoundResult).isInstanceOf(ShareFetchResult.NotFound.class);
         mockServer.verify();
 
-        // given (dir type)
+        // given (dir type on index.html and 404 on legacy)
         mockServer.reset();
         mockServer
                 .expect(requestTo(EXPECTED_URL))
@@ -127,6 +165,9 @@ class RestClientGitHubShareClientTest {
                         withSuccess(
                                 "{\"type\":\"dir\",\"sha\":\"dir-sha\"}",
                                 MediaType.APPLICATION_JSON));
+        mockServer
+                .expect(requestTo(EXPECTED_LEGACY_URL))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
         // when
         final ShareFetchResult dirResult = client.fetchHtml("hello-mike", null);

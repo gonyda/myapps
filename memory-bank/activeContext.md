@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-11-20 21:22 (Asia/Seoul)
+> 최종 업데이트: 2026-11-20 21:54 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -23,12 +23,10 @@
   - `AFTER_COMMIT` + `SingleThreadExecutor` 직렬화로 `gonyda/mike` `calendar/mycalendar.json` 푸시(`MIKE_GITHUB_TOKEN`), `409 Conflict` 1회 재시도, 117개 테스트 All-Green.
 - **`myshare` Mike HTML 공유 웹 서빙 모듈 신설 (`myshare/001-mike-html-share`, 2026-11-19)**:
   - `RestClientGitHubShareClient` + `InMemoryShareCache`(TTL 20s/200건) + `ShareController`(`GET /share/{slug}`) 구축, 46개 테스트 All-Green.
-- **`myshare` 미니앱 공용 JSON 저장소 API (`myshare/002-mini-app-store`, 2026-11-20)**:
-  - Oracle Cloud DB(`ADMIN.MINI_APP_STORE`: `app_key`, `data_json` CLOB, `updated_at`) 영속화 활성화 (`MyshareApplication` DB AutoConfig 제외 해제, `local`/`prod` Wallet 및 테스트 H2 구성).
-  - `MiniAppController` (`GET`/`PUT /api/mini/{appKey}`, `^[a-z0-9_-]{1,64}$`, 미존재 시 `{}` 200 OK, Jackson 3 `ObjectMapper.readTree()` + `FAIL_ON_TRAILING_TOKENS` + 1MB 제한 검증).
-  - `MiniAppPinFilter` (`/api/mini/**` 전용 `X-Mini-Pin` 상수 시간 검증, `MINI_APP_PIN`, 기존 `/share/**`·`/health` 무간섭, Spring Security 미도입 유지).
-  - `MiniAppGitHubSyncService` + `RestClientGitHubMiniAppSyncClient` (`@Async("miniAppGitHubSyncExecutor")` 단일 스레드 FIFO 직렬화, `gonyda/mike` `mini/{appKey}.json` 푸시 및 `409 Conflict` 최대 2회 재시도, 실패 시 예외 로깅 후 삼킴).
-  - 78개 전체 테스트 및 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) All-Green (`BUILD SUCCESS`).
+- **`myshare` 미니앱 공용 JSON 저장소 & 폴더 구조 통일 (`myshare/002-mini-app-store`, `myshare/003-share-folder-unification-and-delete`, 2026-11-20)**:
+  - Oracle Cloud DB(`ADMIN.MINI_APP_STORE`: `app_key`, `data_json` CLOB, `updated_at`), `MiniAppPinFilter` (`/api/mini/**` `X-Mini-Pin` 상수 시간 검증), `MiniAppController` (`GET`/`PUT`/`DELETE /api/mini/{appKey}`, 멱등 삭제 `{"deleted":true/false}`), `MiniAppGitHubSyncService` (`@Async` 단일 스레드 FIFO 직렬화).
+  - `gonyda/mike` 경로를 `share/{slug}/` 폴더 단위(`index.html`, `data.json`)로 통일 (`MINI_APP_GITHUB_BASE_PATH` 기본값 `share`). `GET /share/{slug}`는 `^[a-z0-9_-]{1,200}$` 검증 후 `share/{slug}/index.html` 우선 조회 → `share/{slug}.html` 폴백, `/share/{slug}/**` 및 `*.json` 직접 접근은 `404 Not Found` 차단. `DELETE` 시 `share/{appKey}/data.json`만 삭제(404 조용히 스킵, `index.html` 무간섭).
+  - 95개 전체 테스트 및 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) All-Green (`BUILD SUCCESS`).
 
 ---
 
@@ -36,11 +34,11 @@
 
 - **현재 브랜치**: `main`
 - **5대 품질 가드레일 상태**:
-  - `myshare`: 78개 전체 테스트 All-Green (`BUILD SUCCESS`, Spotless/Error Prone/ArchUnit/JaCoCo/PMD/CPD 통과)
+  - `myshare`: 95개 전체 테스트 All-Green (`BUILD SUCCESS`, Spotless/Error Prone/ArchUnit/JaCoCo/PMD/CPD 통과)
   - `mycalendar`: 117개 전체 테스트 All-Green
   - `myrpg`: 1,313개 전체 테스트 All-Green
 - **CodeGraph**: `codegraph sync` 완료 (`Already up to date`)
-- **현재 활성 작업**: `myshare/002-mini-app-store` 구현 및 검증 완료
+- **현재 활성 작업**: `myshare/003-share-folder-unification-and-delete` 구현 및 검증 완료
 
 ---
 

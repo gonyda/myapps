@@ -47,9 +47,11 @@ class ShareSlugPropertyTest {
                 "../secret",
                 "report.html",
                 "hello%20world",
-                "한글슬러그"
+                "한글슬러그",
+                "UpperCase",
+                "My_App"
             })
-    @DisplayName("경로 탐색 문자나 허용되지 않은 특수문자가 포함된 슬러그는 차단된다")
+    @DisplayName("경로 탐색 문자나 대문자·허용되지 않은 특수문자가 포함된 슬러그는 차단된다")
     void should_throwInvalidShareSlugException_when_malformedInput(final String malformed) {
         // given & when & then
         assertThatThrownBy(() -> ShareSlug.of(malformed))
@@ -76,7 +78,6 @@ class ShareSlugPropertyTest {
     Arbitrary<String> validSlugs() {
         return Arbitraries.strings()
                 .withCharRange('a', 'z')
-                .withCharRange('A', 'Z')
                 .withCharRange('0', '9')
                 .withChars('-', '_')
                 .ofMinLength(1)
@@ -87,7 +88,7 @@ class ShareSlugPropertyTest {
     Arbitrary<String> invalidSlugs() {
         final Arbitrary<String> prefix = validSlugs();
         final Arbitrary<String> badChar =
-                Arbitraries.of(".", "..", "/", "\\", " ", "%", "?", "&", "#");
+                Arbitraries.of(".", "..", "/", "\\", " ", "%", "?", "&", "#", "A", "Z");
         return prefix.flatMap(p -> badChar.map(bad -> p + bad));
     }
 }

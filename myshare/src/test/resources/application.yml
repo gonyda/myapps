@@ -31,5 +31,5 @@ myshare:
     max-payload-bytes: 1048576
     github:
       enabled: false
-      base-path: mini
+      base-path: share
       commit-message-prefix: "chore(mini): sync"

@@ -11,4 +11,12 @@ public interface GitHubMiniAppSyncClient {
      * @return 실제 GitHub 업로드 수행 시 {@code true}, 비활성화·토큰 미설정으로 스킵 시 {@code false}
      */
     boolean pushJson(String appKey, String jsonContent);
+
+    /**
+     * 지정된 {@code appKey}에 해당하는 {@code data.json} 파일을 GitHub 저장소에서 삭제합니다.
+     *
+     * @param appKey 검증된 미니앱 키
+     * @return 실제 삭제 커밋 수행 시 {@code true}, 비활성화·토큰 미설정·원격 파일 미존재로 스킵 시 {@code false}
+     */
+    boolean deleteJson(String appKey);
 }

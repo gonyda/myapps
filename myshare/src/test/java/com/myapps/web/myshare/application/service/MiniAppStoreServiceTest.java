@@ -125,4 +125,46 @@ class MiniAppStoreServiceTest {
                 .isInstanceOf(InvalidMiniAppPayloadException.class);
         then(repository).should(never()).save(any());
     }
+
+    @Test
+    @DisplayName("존재하는 appKey 삭제 시 엔티티를 삭제하고 true를 반환한다")
+    void should_deleteExistingEntityAndReturnTrue_when_deleteAppCalled() {
+        // given
+        final MiniAppStore stored =
+                new MiniAppStore(
+                        "todo",
+                        "{\"v\":1}",
+                        LocalDateTime.ofInstant(FIXED_INSTANT, ZoneOffset.UTC));
+        given(repository.findById("todo")).willReturn(Optional.of(stored));
+
+        // when
+        final boolean deleted = service.deleteApp("todo");
+
+        // then
+        assertThat(deleted).isTrue();
+        then(repository).should().delete(stored);
+    }
+
+    @Test
+    @DisplayName("이미 없는 appKey 삭제 시 예외 없이 false를 반환해 멱등성을 보장한다")
+    void should_returnFalseIdempotently_when_deleteAppCalledForMissingKey() {
+        // given
+        given(repository.findById("missing")).willReturn(Optional.empty());
+
+        // when
+        final boolean deleted = service.deleteApp("missing");
+
+        // then
+        assertThat(deleted).isFalse();
+        then(repository).should(never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 appKey로 삭제 요청 시 리포지토리를 호출하지 않고 예외를 던진다")
+    void should_throwInvalidMiniAppKeyException_when_deleteAppCalledWithInvalidKey() {
+        // given & when & then
+        assertThatThrownBy(() -> service.deleteApp("BadKey"))
+                .isInstanceOf(InvalidMiniAppKeyException.class);
+        then(repository).shouldHaveNoInteractions();
+    }
 }

@@ -81,19 +81,34 @@ class ShareControllerTest {
     }
 
     @Test
-    @DisplayName("유효하지 않은 슬러그나 하위 경로 탐색 요청은 400 Bad Request를 반환한다")
-    void should_return400BadRequest_when_slugInvalidOrNestedPath() throws Exception {
+    @DisplayName("유효하지 않은 슬러그(대문자·점·경로탐색) 요청은 400 Bad Request를 반환한다")
+    void should_return400BadRequest_when_slugInvalid() throws Exception {
         // given
         given(sharePageService.loadPage(".."))
                 .willThrow(new InvalidShareSlugException("유효하지 않은 슬러그"));
         given(sharePageService.loadPage("report.html"))
                 .willThrow(new InvalidShareSlugException("유효하지 않은 슬러그"));
+        given(sharePageService.loadPage("UpperCase"))
+                .willThrow(new InvalidShareSlugException("유효하지 않은 슬러그"));
 
         // when & then
         mockMvc.perform(get("/share/..")).andExpect(status().isBadRequest());
         mockMvc.perform(get("/share/report.html")).andExpect(status().isBadRequest());
-        mockMvc.perform(get("/share/a/b")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/share/UpperCase")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("data.json 등 .json 파일 직접 접근 및 중첩 경로 요청은 404 Not Found로 차단한다")
+    void should_return404NotFound_when_nestedOrJsonPathRequested() throws Exception {
+        // given & when & then
+        mockMvc.perform(get("/share/todo/data.json")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/todo/index.html")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/a/b")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/data.json")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/share/TODO.JSON")).andExpect(status().isNotFound());
+        then(sharePageService).should(never()).loadPage("todo");
         then(sharePageService).should(never()).loadPage("a");
+        then(sharePageService).should(never()).loadPage("data.json");
     }
 
     @Test
