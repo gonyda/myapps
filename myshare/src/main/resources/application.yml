@@ -11,6 +11,15 @@ logging:
 spring:
   profiles:
     active: local
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        "[default_schema]": admin
+        "[dialect]": org.hibernate.dialect.OracleDialect
 
 myshare:
   github:
@@ -23,3 +32,10 @@ myshare:
   cache:
     ttl-seconds: ${MYSHARE_CACHE_TTL_SECONDS:20}
     max-entries: ${MYSHARE_CACHE_MAX_ENTRIES:200}
+  mini-app:
+    pin: ${MINI_APP_PIN:}
+    max-payload-bytes: ${MINI_APP_MAX_PAYLOAD_BYTES:1048576}
+    github:
+      enabled: ${MINI_APP_GITHUB_SYNC_ENABLED:true}
+      base-path: ${MINI_APP_GITHUB_BASE_PATH:mini}
+      commit-message-prefix: "chore(mini): sync"

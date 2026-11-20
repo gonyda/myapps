@@ -7,6 +7,8 @@ import com.myapps.web.myshare.domain.exception.InvalidShareSlugException;
 import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /** {@code myshare} 웹 계층에서 발생하는 예외를 안전한 모바일 친화적 HTTP HTML 응답으로 변환하는 전역 예외 처리기. */
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class ShareExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShareExceptionHandler.class);

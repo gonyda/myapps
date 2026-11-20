@@ -1,6 +1,6 @@
 # Active Context
 
-> 최종 업데이트: 2026-11-19 19:56 (Asia/Seoul)
+> 최종 업데이트: 2026-11-20 21:22 (Asia/Seoul)
 
 ## 0. 핵심 전역 규칙 (`AGENTS.md` & `memory-bank/memory-bank.md` 참조)
 
@@ -22,10 +22,13 @@
 - **`mycalendar` GitHub 단방향 스냅샷 동기화 (`mycalendar/003-github-calendar-sync`, 2026-11-18)**:
   - `AFTER_COMMIT` + `SingleThreadExecutor` 직렬화로 `gonyda/mike` `calendar/mycalendar.json` 푸시(`MIKE_GITHUB_TOKEN`), `409 Conflict` 1회 재시도, 117개 테스트 All-Green.
 - **`myshare` Mike HTML 공유 웹 서빙 모듈 신설 (`myshare/001-mike-html-share`, 2026-11-19)**:
-  - 신규 Web 모듈 `myshare`(`com.myapps.web.myshare`, 포트 `8084`, DB/JPA AutoConfig 제외) 추가.
-  - `RestClientGitHubShareClient`: `gonyda/mike`(`main`, `share/{slug}.html`) 읽기 전용 조회(`MIKE_GITHUB_TOKEN` 공유), Base64 UTF-8 디코딩, 1MB 초과 `raw+json` 폴백, `If-None-Match` 304 지원.
-  - `InMemoryShareCache`(TTL 20s, 최대 200건) + `ShareController`(`GET /share/{slug}`, slug 정규식 `^[a-zA-Z0-9_-]{1,200}$` 검증 및 Path Traversal `400`, `/share` 인덱스 `404` 차단, 모바일 인라인 HTML 서빙).
-  - 46개 테스트 및 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) All-Green (`BUILD SUCCESS`).
+  - `RestClientGitHubShareClient` + `InMemoryShareCache`(TTL 20s/200건) + `ShareController`(`GET /share/{slug}`) 구축, 46개 테스트 All-Green.
+- **`myshare` 미니앱 공용 JSON 저장소 API (`myshare/002-mini-app-store`, 2026-11-20)**:
+  - Oracle Cloud DB(`ADMIN.MINI_APP_STORE`: `app_key`, `data_json` CLOB, `updated_at`) 영속화 활성화 (`MyshareApplication` DB AutoConfig 제외 해제, `local`/`prod` Wallet 및 테스트 H2 구성).
+  - `MiniAppController` (`GET`/`PUT /api/mini/{appKey}`, `^[a-z0-9_-]{1,64}$`, 미존재 시 `{}` 200 OK, Jackson 3 `ObjectMapper.readTree()` + `FAIL_ON_TRAILING_TOKENS` + 1MB 제한 검증).
+  - `MiniAppPinFilter` (`/api/mini/**` 전용 `X-Mini-Pin` 상수 시간 검증, `MINI_APP_PIN`, 기존 `/share/**`·`/health` 무간섭, Spring Security 미도입 유지).
+  - `MiniAppGitHubSyncService` + `RestClientGitHubMiniAppSyncClient` (`@Async("miniAppGitHubSyncExecutor")` 단일 스레드 FIFO 직렬화, `gonyda/mike` `mini/{appKey}.json` 푸시 및 `409 Conflict` 최대 2회 재시도, 실패 시 예외 로깅 후 삼킴).
+  - 78개 전체 테스트 및 5대 가드레일(Spotless, Error Prone, ArchUnit, JaCoCo, PMD/CPD) All-Green (`BUILD SUCCESS`).
 
 ---
 
@@ -33,19 +36,19 @@
 
 - **현재 브랜치**: `main`
 - **5대 품질 가드레일 상태**:
-  - `myshare`: 46개 전체 테스트 All-Green (`BUILD SUCCESS`, Spotless/Error Prone/ArchUnit/JaCoCo/PMD/CPD 통과)
+  - `myshare`: 78개 전체 테스트 All-Green (`BUILD SUCCESS`, Spotless/Error Prone/ArchUnit/JaCoCo/PMD/CPD 통과)
   - `mycalendar`: 117개 전체 테스트 All-Green
   - `myrpg`: 1,313개 전체 테스트 All-Green
 - **CodeGraph**: `codegraph sync` 완료 (`Already up to date`)
-- **현재 활성 작업**: `myshare/001-mike-html-share` 구현 및 검증 완료 (`main` 반영 및 운영 배포 진행)
+- **현재 활성 작업**: `myshare/002-mini-app-store` 구현 및 검증 완료
 
 ---
 
 ## 3. 다음 단계 (Next Steps / 백로그)
 
-### 3.1. `myshare` 운영 배포 및 프록시 연동
-- Oracle Cloud VM `/home/ubuntu/app/deploy.sh`의 `get_port()`에 `myshare) echo 8084 ;;` 추가 및 `.env`에 `MIKE_GITHUB_TOKEN` 설정 확인 후 배포.
-- 리버스 프록시(Nginx 등) `/share/` → `http://127.0.0.1:8084` 라우팅 매핑 적용.
+### 3.1. `myshare` 운영 DB DDL 및 배포 반영
+- Oracle Cloud DB(`ADMIN` 스키마)에 `MINI_APP_STORE` 테이블 생성 확인(또는 `ddl-auto: update` 자동 반영).
+- Oracle Cloud VM `/home/ubuntu/app/.env`에 `MINI_APP_PIN`, `MIKE_GITHUB_TOKEN`, `DB_PASSWORD` 설정 후 `/home/ubuntu/app/deploy.sh myshare` 배포 및 리버스 프록시(`/share/`, `/api/mini/` → `127.0.0.1:8084`) 연동.
 
 ### 3.2. `myrpg` 신규 게임 컨텐츠 기획 및 SDD 개발 연계
 `skills/myrpg-system-design` 활용 신규 컨텐츠 기획서(GDD) 산출 및 SDD 워크플로우 연계:

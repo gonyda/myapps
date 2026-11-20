@@ -2,25 +2,12 @@ package com.myapps.web.myshare;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
 
 /**
- * Mike가 생성한 단일 HTML 공유 페이지를 서빙하는 웹 애플리케이션 진입점.
- *
- * <p>외부 로그인이나 데이터베이스 연결 없이 공유 링크({@code /share/{slug}}) 열람을 지원합니다.
+ * Mike 공유 HTML 페이지({@code /share/{slug}}) 및 미니앱 공용 JSON 저장소({@code /api/mini/{appKey}})를 제공하는 웹
+ * 애플리케이션 진입점.
  */
-@SpringBootApplication(
-        exclude = {
-            DataSourceAutoConfiguration.class,
-            DataSourceInitializationAutoConfiguration.class,
-            DataSourceTransactionManagerAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class,
-            DataJpaRepositoriesAutoConfiguration.class
-        })
+@SpringBootApplication
 public class MyshareApplication {
 
     /**
